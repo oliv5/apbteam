@@ -1,0 +1,14 @@
+*-15,452410 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+@28
+test_input_latch.clk
+test_input_latch.rst
+test_input_latch.q
+test_input_latch.ql
+test_input_latch.ql1
+test_input_latch.ql2
+test_input_latch.qlr1
+test_input_latch.qlr2
+test_input_latch.qnl1
+test_input_latch.qnl2
+test_input_latch.qnlr1
+test_input_latch.qnlr2

@@ -1,0 +1,10 @@
+*-16,630791 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+@28
+test_noise_filter.clk
+test_noise_filter.rst
+test_noise_filter.q
+test_noise_filter.ql2
+test_noise_filter.ql3
+test_noise_filter.ql5
+@25
+test_noise_filter.r[63:0]

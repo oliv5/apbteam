@@ -1,0 +1,17 @@
+*-14,155944 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+@28
+test_quad_decoder.clk
+test_quad_decoder.rst
+@24
+test_quad_decoder.n[31:0]
+@420
+test_quad_decoder.diff[31:0]
+test_quad_decoder.count[31:0]
+test_quad_decoder.countdiv16[27:0]
+test_quad_decoder.countdiv16_smp[27:0]
+@28
+test_quad_decoder.q_nat[1:0]
+test_quad_decoder.q[1:0]
+@22
+test_quad_decoder.count_div4[7:0]
+test_quad_decoder.count_full[7:0]
