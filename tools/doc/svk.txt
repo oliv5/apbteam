@@ -1,0 +1,248 @@
+===============================
+ Use SVK for Subversion access
+===============================
+:Author: Nicolas Schodet
+
+This document will cover the use of SVK as an enhanced client to access a
+Subversion repository.  The first section will list simple recipes biased to
+my own preferences.  The second section will explain which tests I have done
+in order to understand the behaviour of SVK.
+
+I used version 1.00 of SVK, therefore, some comments may be outdated.
+
+Quick instructions
+==================
+
+Quick instructions are available with the ``svk help intro`` commands, but
+here is my favorite way of using SVK.
+
+First of all, initialise a mirror::
+
+    svk mirror http://path/to/my-svn-repos //mirror/my-svn-repos
+
+Synchronise it with remote repository::
+
+    svk sync --all
+
+Now you can unplug the network.
+
+Create the local branch::
+
+    svk copy --parent //mirror/my-svn-repos //local/my-svn-repos
+
+Check it out::
+
+    svk co //local/my-svn-repos/trunk my-work-dir
+
+Now you can edit your working copy as usual, just use the ``svk`` commands
+instead of ``svn`` ones.
+
+.. warning:: SVK will not propagate file rename or copy to the SVN repository
+   at the current SVK version.  It seems to be fixed in the version 2.  Prefer
+   to use the usual SVN tools if you need to make any copy or rename.
+
+From time to time, you can commit changes even without having any network
+access.
+
+OK, now let's connect back our network.
+
+Someone may have changed something on the SVN repository, let's pull it::
+
+    svk sync --all
+    svk pull //local/my-svn-repos
+
+You will also have to update your working copy::
+
+    svk update
+
+Now you can push your modifications::
+
+    svk push --verbatim //local/my-svn-repos
+
+Conflicts
+---------
+
+This can get more complicated if you have conflicts.  You can read more about
+this in the next section.  Here is one possible recipe:
+
+1. During the ``pull``, resolve the conflicts using SVK.
+2. Then try to ``push`` and stop at the first conflict (use the "s" key, as
+   skip).
+3. Finally, commit your changes and the conflict resolution in one revision,
+   using the ``--lump`` option.
+
+This might not be perfect but will minimise the effort needed to commit all
+your changes.   
+
+One other solution for the perfectionists is to manually resolve conflict
+again when pushing changes.  But this is not perfect because you try to
+resolve a conflict without testing.
+
+Be careful when resolving conflict, for SVK, you are always merging *their*
+version **into** *your* version.
+
+Test case
+=========
+
+All the tests will be done in this directory::
+
+    mkdir ~/testsvk
+    cd ~/testsvk
+    b=$PWD
+
+Initialise a SVN repository::
+
+    svnadmin create --fs-type=fsfs svn
+    svn co file://$b/svn svn-wc
+    cd svn-wc
+    svn mkdir a b
+    for ((i = 0; i < 10; i++)); do echo aa $i >>| a/aa; done
+    for ((i = 0; i < 10; i++)); do echo bb $i >>| b/bb; done
+    for ((i = 0; i < 10; i++)); do echo c $i >>| c; done
+    svn add a/aa b/bb c
+    svn commit
+    cd ..
+
+Initialise a SVK depot::
+
+    svk depotmap testsvk $b/svk
+    svk depotmap --list
+
+Mirror the SVN repository and create a local branch::
+
+    svk mirror file://$b/svn /testsvk/mirror/svn
+    svk mirror --list
+    svk sync --all testsvk
+    svk copy --parent /testsvk/mirror/svn /testsvk/local/svn
+
+Check out our branch, and make some changes::
+
+    svk co /testsvk/local/svn svk-wc
+    cd svk-wc
+    vi c
+    svk cp a/aa a/aa2
+    svk mv b/bb b/bb2
+    svk commit
+    vi c
+    svk commit
+
+If the SVN repository has changed, changes can be retrieved with::
+
+    svk sync --all testsvk
+    svk pull /testsvk/local/svn
+    svk update
+
+Now push to SVN repository::
+
+    svk push /testsvk/local/svn
+
+Observe result::
+
+    svn log -v file://$b/svn
+    svn proplist -v file://$b/svn
+
+Observations: SVK updated the SVN repository but the commit is different from
+a normal SVN client in several points:
+
+1. The commit log is specially formated, I guess this will not work nicely
+   with trac.
+2. SVK added a ``svk:merge`` property.
+3. SVK did not handle file renames (this might be corrected in version 2).
+
+The commit log can be fixed using the ``--verbatim`` option to the ``push``
+command.
+
+.. note::
+   The ``svk pull`` used on a working directory instead of a depot path will
+   lump all the change in one commit in the current SVK version.  This might
+   not be a problem in this direction as the detailed changes are always
+   available in the mirror path.
+
+   The ``svk push`` does not seems to have this problem.
+
+Conflicts
+---------
+
+Now time to try the conflict resolution, introduce some conflicts::
+
+    cd $b/svk-wc
+    vi c
+    svk commit
+    cd $b/svn-wc
+    vi c
+    svn commit
+
+And try to synchronise all this mess::
+
+    svk sync --all testsvk
+    svk pull /testsvk/local/svn
+
+Here, SVK propose to resolve conflicts during the ``pull`` operation.  Let's
+send our resolved data::
+
+    svk push --verbatim /testsvk/local/svn
+
+Here again, SVK ask help to do the synchronisation.  This is not quite good as
+we have already done the merge.  Are we supposed to resolve the conflict
+again?
+
+The problem is that incremental merge will try to merge our commit to SVK
+prior to conflict resolution, and once this is done, it will merge the
+revision where we commit the resolution.  This is reasonable because if you
+want to commit each of your modification using incremental merge, you want all
+of your version to be usable.
+
+Now, time for examination::
+
+    svnadmin dump $b/svn | less
+
+As seen above, the ``push`` does not seems to handle conflict right.  I
+managed to do what I wanted using either ``push --lump`` or a clever
+``smerge`` instead of the previous command::
+
+    svk smerge --log --verbatim /testsvk/local/svn /testsvk/mirror/svn
+
+You might want to start with a ``push``, until a conflict is found, then stop
+the merge using ``skip`` (press the "s" key), merge your conflicting commit
+and its resolution in one commit with ``merge`` and its ``-r`` option, and
+continue with the ``push``.
+
+Operation Stealth
+-----------------
+
+What if you do not want any merge ticket in your SVN repository?
+
+This need could arise if you do not own the SVN repository and do not want to
+annoy others with your SVK traces.
+
+To do this, you need to use the ``--no-ticket`` option of ``merge`` or
+``smerge``.  Of course you will lose many features like the incremental merge
+for example.
+
+Protect our SVN repository from SVK handling errors
+---------------------------------------------------
+
+If you decide to use SVK for your SVN repository access as an enhanced SVN
+client, without any SVK trace in the SVN repository, you can add some tests in
+pre-commit hook in order to prevent mistakes::
+
+    REPOS="$1"
+    TXN="$2"
+    SVNLOOK=/usr/bin/svnlook
+    # Protect from SVK mess.
+    #  Force --verbatim usage:
+    $SVNLOOK log -t "$TXN" "$REPOS" | head -1 | \
+       grep "^ r" -q && echo Please use verbatim message with SVK && exit 1
+    #  Force --no-ticket usage:
+    $SVNLOOK proplist -t "$TXN" "$REPOS" / | \
+       grep "svk" -q && echo Please do not commit SVK merge tickets && exit 1
+    exit 0
+
+This hook code is not perfect, for example, it will not catch any merge ticket
+which is not on the root directory.
+
+You could also modify this code to permit merge ticket only at the repository
+root, minimising effect on non SVK users.
+
+Sadly, at least with my version of SVK, error messages are not displayed to
+the client.  Actually, no message is displayed at all.
