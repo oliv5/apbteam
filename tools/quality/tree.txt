@@ -1,0 +1,218 @@
+==================
+ Development tree
+==================
+:Author: Ni
+
+General considerations
+======================
+
+All filenames are lowercase and written without any embedded space.  As a
+general rule, hyphens can be used in directory names, or underscores in file
+names, to separate words.  For example, here is the path to a motor power
+interface board: ``analog/motor-power/motor_power.brd``.
+
+This file mainly contains guidelines which could potentially be violated if
+the decision is driven by a valuable reason.
+
+Root trees
+==========
+
+Analog electronic
+-----------------
+
+The ``analog`` root tree is used for analog electronic, mostly power
+interfaces.  Each design lies in its own directory (for example
+``example-design``) which contains:
+
+README:
+    which quickly describes the design and its role.  It also contains
+    copyright and licence informations.
+STATUS:
+    which describes the current status of realisation and test of the design.
+    Tell if the design has been used, if it works as expected, if it needs
+    changes...  If this file is not present, the design is considered to be
+    under preliminary development.
+example_design.txt (optional):
+    which is a reStructuredText formatted file describing the design more
+    in depth.  This can include:
+
+    - design specifications,
+    - explanations about the components choice and calculation,
+    - description of usage,
+    - special notes for realisation,
+    - and so on...
+example_design.sch & example_design.brd:
+    Eagle_ format schematics and printed circuit board files.
+
+In general, do not put Eagle libraries in this directory, they should lie in
+the ``tools/eagle`` directory.  This directory could potentially contains some
+more files, like companion adaptor boards, pictures, and so on...
+
+.. _Eagle: http://cadsoft.de/
+
+Example::
+
+    motor-power/
+        README
+        STATUS
+        motor_power.brd
+        motor_power.sch
+        motor_power.txt
+
+Digital electronic
+------------------
+
+The ``digital`` root tree is used for digital electronic designs, that is,
+electronic board with a major part of digital components and their optional
+program files.  Each design lies in its own directory (for example
+``example-design``) which contains:
+
+README:
+    which quickly describes the design and its role.  It also contains
+    copyright and licence informations.
+STATUS:
+    which describes the current status of realisation and test of the design.
+    Tell if the design has been used, if it works as expected, if it needs
+    changes...  If this file is not present, the design is considered to be
+    under preliminary development.
+example_design.txt (optional):
+    more precise information about the design in general.  Implementation
+    details for a particular program are better kept separated in its own
+    directory.
+pcb/:
+    which contains printed circuit board.
+src/ (if any):
+    which contains program source files related to this design.
+
+The ``pcb`` directory contains the board related to this design.  It follows
+the same structure as the analog design one.  If there is several boards
+implementing the design, they can be separated in their own directories.
+
+The ``src`` directory contains the sources of the programs related to this
+design.  It can also be divided into several sub-directories (for example, for
+each programmable components, for related host programs...).  It can contains:
+
+example_design.txt or example_program.txt:
+    if you need to tell a story about this implementation, this is the right
+    place to express yourself.
+Makefile:
+    this file is used with GNU make to generate binary files.
+sources files:
+    for example C or Verilog files.  Do not forget tests!
+
+Example::
+
+    motor-control/
+        README
+        STATUS
+        motor_control.txt
+        pcb/
+            motor_control.sch
+            motor_control.brd
+        src/
+            motor-control/
+                main.c
+                ...
+                Makefile
+            counter/
+                counter.v
+                ...
+
+Beside designs, the ``digital`` directory also contains the AVR modules in the
+``avr`` directory.
+
+Host system
+-----------
+
+The ``host`` root tree contains programs aimed at working on a regular
+personal computer.  Each program is contained in its own directory, with its
+``README`` and ``STATUS`` file and use a varying structure decided per
+project.
+
+Mechanical design
+-----------------
+
+The ``mechanical`` root tree contains information about mechanical design. The
+structure is almost free.  Each category should have its own directory.
+
+Tools
+-----
+
+The ``tools`` root tree contains development tools.  This includes:
+
+avr:
+    Documents to easy the use of AVR microcontrollers.
+doc:
+    Documents helping at developing.
+eagle:
+    Eagle libraries and design rules check files.  Eagle libraries are grouped
+    by components manufacturers and product lines, in order to be easily
+    reused by others.
+quality:
+    Documents listing rules chosen for our designs in order to keep a high
+    quality level (what a program!).
+vim:
+    Files to be used with the Vim editor.  For the moment, nobody at APBTeam
+    use Emacs :).
+
+Eurobot productions
+-------------------
+
+The ``eurobot`` root tree contains documents related to the Eurobot or the
+national robotic cup.  This includes pre-documents, homologation CD...
+
+Administrative documents
+------------------------
+
+The ``admin`` root tree contains documents not related to technical projects.
+
+This include legal association papers, logistic documents for travels, food or
+accommodation...
+
+Subversion tree
+---------------
+
+All the tree structure described in this document is base in one of the three
+Subversion root directories: ``trunk`` which contains the main branch of
+development, ``branches`` which contains a list of separate branches created
+for development of a particular feature, and ``tags`` used to record precise
+versions of the repository.
+
+The README file
+===============
+
+This file must contain on the first line, the name of the design, followed
+with a hyphen and a one line description. For example::
+
+    motor-control - Microcontroller based speed and position motor control.
+
+This line can be automatically inserted in the first few lines of the source
+files.
+
+After this line follow a more detailed description and the licence
+information.  Licence will almost always be GNU GPL.  This gives the following
+structure::
+
+    « design name » - « Short design description. »
+
+    « Design longer description »
+
+    Copyright (C) «year» «author»
+
+    APBTeam Robot
+       Web: http://apbteam.org/
+     Email: team AT apbteam DOT org
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
