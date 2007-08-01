@@ -42,7 +42,7 @@ module test_counter_top();
     // Counter top setup.
     wire [0:nc-1] quad_full = 4'b0011;
     reg [31:0] filter_size[0:nc-1];
-    parameter max_filter = 5;
+    parameter max_filter = 7;
     initial begin
 	filter_size[0] = 4;
 	filter_size[1] = 4;
@@ -121,7 +121,7 @@ module test_counter_top();
 	    @(negedge clk)
 	    // Check result *after* rising edge.
 	    if (oe) begin
-		countassert = countdiv32_smp[sel*max_filter + filter_size[sel]];
+		countassert = countdiv32_smp[sel*max_filter + filter_size[sel] + 2];
 		countassert8 = quad_full[sel] ? countassert[7:0] : countassert[9:2];
 		// If equiped with a noise filter, accept a difference of 1.
 		// This is more difficult to find the exact expected value (I
@@ -135,11 +135,12 @@ module test_counter_top();
 		assertv8 (8'bz, countout);
 	    end
 	    // Prepare next check.
-	    if (($mti_random & 6'b111111) == 0)
+	    if (oe == 1) begin
 		oe = 0;
+		sel = $random & 2'b11;
+	    end
 	    else begin
 		oe = 1;
-		sel = $random & 2'b11;
 	    end
 	end
     end

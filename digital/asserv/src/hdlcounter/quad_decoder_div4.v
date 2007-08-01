@@ -60,10 +60,10 @@ module quad_decoder_div4(clk, rst, q, count);
 	else begin
 	    case ({ q[0], zq1, q[1] })
 		// 1 to 0 transition on q[1], when q[0] is 0.
-		2'b0_1_0:
+		3'b0_1_0:
 		    count <= count + 1;
 		// 0 to 1 transition on q[1], when q[0] is 0.
-		2'b0_0_1:
+		3'b0_0_1:
 		    count <= count - 1;
 		default:
 		    count <= count;

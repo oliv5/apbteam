@@ -48,11 +48,21 @@ module counter_top(clk, rst, q0, q1, q2, q3, oe, sel, count);
     input_latch f3[1:0] (clk, rst, q3, qf3);
     quad_decoder_full qd3 (clk, rst, qf3, count3);
 
-    assign count =
-	    !oe ? 8'bz :
-	    sel == 0 ? count0 :
-	    sel == 1 ? count1 :
-	    sel == 2 ? count2 :
-	    count3;
+    reg [size-1:0] lcount;
+
+    always @(posedge clk or negedge rst) begin
+	if (!rst)
+	    lcount <= 0;
+	else begin
+	    if (!oe) begin
+		lcount <= sel == 0 ? count0 :
+		    sel == 1 ? count1 :
+		    sel == 2 ? count2 :
+		    count3;
+	    end
+	end
+    end
+
+    assign count = !oe ? 8'bz : lcount;
 
 endmodule
