@@ -1,0 +1,152 @@
+==============================
+ Printed Circuit Board Design
+==============================
+:Author: Ni
+
+This document should gather any useful information for PCB [1]_ design at APBTeam.
+
+.. [1] Printed Circuit Board
+
+Standards
+=========
+
+Software
+--------
+
+The software used currently for any PCB is Eagle from CadSoft.  CadSoft
+distributes a freeware version running under Linux or MS Windows for
+non-profit usage, limited by the PCB size and the number of usable layers.
+
+In the future, we may switch to a free software solution: KiCad.  But Eagle
+offers several advantages: all previously designed libraries and boards were
+using Eagle and Olimex takes directly Eagle files.
+
+Manufacturer
+------------
+
+Our boards should be suitable to be manufactured by Olimex, a low-cost
+prototype board manufacturer.  They make double sided Europe size boards for
+about 30 euros, with solder mask, metallised holes and one silk screen.
+
+PCB Size
+--------
+
+Most boards are a division of a Europe format board.  Europe is 10x16cm, 1/2
+Europe is 8x10cm and 1/4 Europe is 5x8cm.  Actually, a margin must be
+subtracted for panelization.
+
+Some components have a standard position.  This include mounting holes and
+side connectors.
+
+- mounting holes: MOUNT-HOLE3.3 in the holes library:
+
+  - at (0.15 0.15) and (0.15 2.925) for 1/4 Europe,
+  - at (0.15 0.15), (0.15 2.925), (3.65 0.15) and (3.65 2.925) for 1/2 Europe.
+
+For exact dimensions and positions, please see the asserv board for 1/4 Europe
+and the puiss board for 1/2 Europe.
+
+Connectors
+----------
+
+Here is the list of used connectors:
+
+- HE10 for signals, usually 10 pins
+- HE10, 6 pins for I2C
+- pin heads for servomotors
+- HE14 (TBC) for miscellaneous sensors and low pin number signals
+- HE14 (TBC) for digital board power
+- Phoenix 381 connectors for power connections
+- Micromatch SMD connectors for small size connections
+
+As a rule of thumb, use the pin number 1 for ground and pin number 2 for
+positive voltage.
+
+Check List
+==========
+
+For board manufactured at Olimex use their DRC file for auto-routing and
+Design Rules Check!
+
+As the same errors occurs again and again, here is a list of items you should
+check when you design a PCB:
+
+Power connections
+    Are all the components powered?  Is there a power connector?
+
+Decoupling
+    Use decoupling capacitors on the power and near each components.
+    Capacitors should be the nearest possible of the components.  Do not put
+    to much decoupling or the board will drain to much current when switched
+    on.
+
+Text size
+    Check text size in order to be able to read it.  For Olimex: vectorial
+    font, 70 mils, 15%.
+
+Text on each layer
+    There should be text on each circuit layer (top and bottom).  This makes
+    it easy to known if the layer is in the right direction.  This is also a
+    Olimex requirement.
+
+Board size
+    Has the board the right size?  Is there extra margin for panelization?
+
+Mounting holes
+    Check holes types and positions.
+
+Connectors
+    Are the connector near enough of the board edge?  Some connectors, like
+    Phoenix ones, use space lower than the board, if the connector is to far
+    from the edge, it will not be possible to plug it.
+    
+    Are they at the right position ?
+
+Track size
+    Use the largest possible tracks.  Use larger tracks for power.  For high
+    power tracks, the solder mask can be removed on a particular region.
+
+Component side
+    Are the components on the right side?  This is particularly hard to see
+    for through hole mounted components.
+
+Component placement
+    Check than no component override each other.  Check that it is possible to
+    solder them without a master level of dexterity.
+
+    For board without metallised holes, use restrict layer to forbid
+    connection where soldering would be very hard (for example, it is not a
+    nice thing to try to solder a track going under a HE10 connector).
+
+    Always place component on the grid.
+
+Logistic
+    Check that all components are available with the right size and package.
+    This is particularly true for capacitors.
+
+Serial ports
+    Double check pinout!  Should TX and RX be inverted?  This one is for you
+    Pierre!
+
+Protection
+    Use pull-up or down resistors or shorts-protection resistors.
+
+Optocouplers
+    Use them to separate command and power.
+
+ERC and DRC
+    Use Eagle tools to check the board.  For boards manufactured by Olimex,
+    use the file they provide for DRC.
+
+Drills
+    Limit the use of different drill size and use standard drill size.  This
+    increase the board cost.  Be careful, the metalization will reduce the
+    hole size!
+
+Routing
+    Prefer auto-routing as this is easier to make modifications.
+
+Silk screen
+    Print useful information on it.  Do not forget to run the Olimex provided
+    script to fix it right before sending file to them, but do not save the
+    result in the repository as this make editing harder.
