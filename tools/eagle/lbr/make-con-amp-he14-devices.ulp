@@ -1,0 +1,51 @@
+// ULP to automatically create devices.
+// Created by Nicolas Schodet.
+
+string make_device (int npad) {
+    int i, j;
+    string dev;
+    sprintf (dev, "E?1X%02d", npad);
+    string pac[] = { "C", "D" };
+    string devcmd = "EDIT " + dev + ".dev;\n";
+    devcmd += "PREFIX 'J';\n";
+    string npads;
+    sprintf (npads, "%d", npad);
+    devcmd += "DESCRIPTION '<b>Male header simple row, " + npads + " positions</b>';\n";
+    devcmd += "VALUE OFF;\n";
+    real pos = (npad - 1) * 0.2 / 2;
+    for (i = 1; i <= npad; i++) {
+	string sym = i == 1 ? "MS" : "M";
+	string addsym;
+	sprintf (addsym, "ADD %s '-%d' 0 Always (0 %.1f);\n", sym, i, pos);
+	devcmd += addsym;
+	pos -= 0.2;
+    }
+    for (j = 0; j < 2; j++) {
+	string pacs;
+	sprintf (pacs, "E%s1X%02d", pac[j], npad);
+	devcmd += "PACKAGE '" + pacs + "' '" + pac[j] + "';\n";
+	for (i = 1; i <= npad; i++) {
+	    string is;
+	    sprintf (is, "%d", i);
+	    devcmd += "CONNECT '-" + is + ".S' '" + is + "';\n";
+	}
+    }
+    devcmd += "TECHNOLOGY '';\n";
+    devcmd += "WIN FIT;\n";
+    return devcmd;
+}
+
+if (0) {
+    int res = dlgDialog ("Device creation") {
+	dlgTextView (make_device (4));
+    };
+    exit (0);
+} else {
+    int i
+    string allcmd = "";
+    for (i = 1; i <= 10; i++)
+	allcmd += make_device (i);
+    exit (allcmd);
+}
+
+// vim:ft=conf:sw=4:
