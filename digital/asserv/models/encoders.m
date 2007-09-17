@@ -4,6 +4,7 @@ global trace;
 % Robot characteristics:
 robot.res = 2 * pi * 20 / 2000;	% Resolution (mm/step).
 robot.radius = 250 / 2;	% Half distance between wheels (mm).
+robot.samp = 0.01;	% Sampling period (s).
 
 % Reset all simulation results.
 function reset ()
@@ -138,14 +139,11 @@ function r_f824 = cos_f824 (a_f824)
     r_f824 = round (r * 2^24);
 end
 
-% Make a trajectory with the given acceleration, during the given time.
-function traj (ta, aa, t)
+% Step for a given time.
+function step_time (dt)
     global robot;
-    robot.ta = ta;
-    robot.aa = aa / robot.radius;
-    stop = robot.t + t;
-    while (robot.t < stop)
-	step (0.010);
+    for i = 1 : floor (dt / robot.samp)
+	step (robot.samp);
     end
 end
 
@@ -153,24 +151,78 @@ end
 function stop ()
     global robot;
     robot.ts = 0;
+    robot.ta = 0;
     robot.as = 0;
+    robot.aa = 0;
+end
+
+% Make a straight trajectory.
+function traj_dist (dtx, tsmax, ta)
+    global robot;
+    txf = robot.tx + dtx;
+    t_tsmax = tsmax / ta;
+    tx_tsmax = 0.5 * ta * t_tsmax^2;
+    if (tx_tsmax > dtx / 2)
+	% Triangle.
+	t_tsmax = sqrt (2 * 0.5 * dtx / ta);
+	robot.ta = ta;
+	step_time (t_tsmax);
+	robot.ta = -ta;
+	step_time (t_tsmax);
+    else
+	% Trapeze.
+	robot.ta = ta;
+	step_time (t_tsmax);
+	t_tscst = (dtx - 2 * tx_tsmax) / robot.ts;
+	robot.ta = 0;
+	step_time (t_tscst);
+	robot.ta = -ta;
+	step_time (t_tsmax);
+    end
+    % One more step to adjust.
+    robot.ta = 2 * (txf - robot.tx - robot.ts * robot.samp) / robot.samp^2;
+    step (robot.samp);
+    robot.ta = 0;
+    stop ();
+end
+
+% Make a rotation.
+function traj_angle (dax, asmax, aa)
+    global robot;
+    axf = robot.ax + dax;
+    t_asmax = asmax / aa;
+    ax_asmax = 0.5 * aa * t_asmax^2;
+    if (ax_asmax > dax / 2)
+	% Triangle.
+	t_asmax = sqrt (2 * 0.5 * dax / aa);
+	robot.aa = aa;
+	step_time (t_asmax);
+	robot.aa = -aa;
+	step_time (t_asmax);
+    else
+	% Trapeze.
+	robot.aa = aa;
+	step_time (t_asmax);
+	t_ascst = (dax - 2 * ax_asmax) / robot.as;
+	robot.aa = 0;
+	step_time (t_ascst);
+	robot.aa = -aa;
+	step_time (t_asmax);
+    end
+    % One more step to adjust.
+    robot.aa = 2 * (axf - robot.ax - robot.as * robot.samp) / robot.samp^2;
+    step (robot.samp);
+    stop ();
 end
 
 % Example path.
 function path ()
     global robot;
-    traj (0, 500, 0.3);
-    traj (0, 0, 0.5);
-    traj (0, -500, 0.3);
-    stop ();
-    traj (1000, 0, 0.2);
-    traj (0, 0, 2);
-    traj (-1000, 0, 0.2);
-    stop ();
-    traj (1000, 500, 0.3);
-    traj (0, 0, 2);
-    traj (-1000, -500, 0.3);
-    stop ();
+    traj_dist (1000, 2000, 1000);
+    traj_angle (pi/2, 2000 / robot.radius, 1000 / robot.radius);
+    traj_dist (1000, 2000, 1000);
+    traj_angle (pi/4, 2000 / robot.radius, 1000 / robot.radius);
+    traj_dist (1000, 2000, 1000);
 end
 
 motor;
