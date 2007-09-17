@@ -256,12 +256,17 @@ end
 % Example path.
 function path ()
     global robot;
-    traj_dist (1000, 2000, 1000);
-    traj_angle (pi/2, 2000 / robot.radius, 1000 / robot.radius);
-    traj_dist (1000, 2000, 1000);
-    traj_angle (pi/4, 2000 / robot.radius, 1000 / robot.radius);
-    traj_dist (1000, 2000, 1000);
-    traj_curve (1000, pi, 2000, 1000);
+    while (robot.t < 120)
+	printf ("time: %f\r", robot.t);
+	traj_dist (1000, 2000, 1000);
+	traj_angle (pi/2, 2000 / robot.radius, 1000 / robot.radius);
+	traj_dist (1000, 2000, 1000);
+	traj_angle (pi/4, 2000 / robot.radius, 1000 / robot.radius);
+	traj_dist (1000 * sqrt (2), 2000, 1000);
+	traj_curve (3000, pi + pi / 4, 2000, 1000);
+	traj_dist (1000, 2000, 1000);
+    end
+    printf ("\n");
 end
 
 motor;
