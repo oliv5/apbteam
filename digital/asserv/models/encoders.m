@@ -33,7 +33,6 @@ function reset ()
     robot.rc_i = 0;	% Integer absolute right coder position (step).
 
     % Calculated position from integer encoder output:
-    % TODO: is 2f248 sufficient? Look at the a = pi/4 example.
     robot.x_2f248 = 0;	% X position (2 * 2^8 => 1 step).
     robot.y_2f248 = 0;	% Y position (2 * 2^8 => 1 step).
     robot.a_f824 = 0;	% Angle (2^24 => 2 * pi).
@@ -215,6 +214,45 @@ function traj_angle (dax, asmax, aa)
     stop ();
 end
 
+% Make a curve.
+function traj_curve (dtx, dax, tsmax, ta)
+    global robot;
+    dtf = robot.tx + dtx;
+    daf = robot.ax + dax;
+    t_tsmax = tsmax / ta;
+    tx_tsmax = 0.5 * ta * t_tsmax^2;
+    if (tx_tsmax > dtx / 2)
+	% Triangle.
+	t_tsmax = sqrt (2 * 0.5 * dtx / ta);
+	aa = dax / (t_tsmax^2);
+	robot.ta = ta;
+	robot.aa = aa;
+	step_time (t_tsmax);
+	robot.ta = -ta;
+	robot.aa = -aa;
+	step_time (t_tsmax);
+    else
+	% Trapeze.
+	t_tscst = (dtx - 2 * tx_tsmax) / robot.ts;
+	aa = dax / (t_tsmax * t_tscst + t_tsmax^2);
+	robot.ta = ta;
+	robot.aa = aa;
+	step_time (t_tsmax);
+	robot.ta = 0;
+	robot.aa = 0;
+	step_time (t_tscst);
+	robot.ta = -ta;
+	robot.aa = -aa;
+	step_time (t_tsmax);
+    end
+    % One more step to adjust.
+    %robot.ta = 2 * (txf - robot.tx - robot.ts * robot.samp) / robot.samp^2;
+    %step (robot.samp);
+    robot.ta = 0;
+    robot.aa = 0;
+    stop ();
+end
+
 % Example path.
 function path ()
     global robot;
@@ -223,6 +261,7 @@ function path ()
     traj_dist (1000, 2000, 1000);
     traj_angle (pi/4, 2000 / robot.radius, 1000 / robot.radius);
     traj_dist (1000, 2000, 1000);
+    traj_curve (1000, pi, 2000, 1000);
 end
 
 motor;
