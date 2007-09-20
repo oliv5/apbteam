@@ -1,0 +1,41 @@
+Essais sur le robot SI2E 2007 avec des RE025CLL, des réducteurs à renvois
+d'angle x10 et des roues de diamètre 42 mm.
+
+Base de temps : b = 65536 / 14745600 Hz ~= 0.0044444 s
+
+Après conversion par filter.c, sur chaque ligne :
+ - compteur gauche et droit
+ - différence avec la valeur précédente de compteur = vitesse
+ - différence avec la valeur précédente de vitesse = accélération
+
+Pas par mm : res = 1/2 * 75.78 1/mm
+
+Essais :
+
+a: réponse à 5 V
+b: réponse à 8 V
+c: réponse à 12 V
+d: réponse à 500 mA
+e: réponse à 1 A environ (conditions d'essais foireuses)
+f: rotation à 8 V
+g: rotation à 12 V
+h: rotation à 1 A
+i: marche avant roue libre
+j: marche arrière roue libre
+
+Courant à vide sous 12 V :
+ - gauche : 120 mA
+ - droit : 220 mA
+
+Force frottement dynamique : environ 300 à 400 g +/- une vache près
+
+Force frottement statique : environ 500 g
+
+(oui, je sais, le gramme est une unité de masse et non de force. Mais ma
+balance est graduée en grammes, j'y peux rien)
+
+Résistance des 2 câbles ensembles : 0.4 ohm
+Résistance à vide du moteur : 2.4 ohm
+Résistance câbles + moteur : 2.4 ohm (cherchez l'erreur)
+
+Poids total du robot testé : 7.5 kg
