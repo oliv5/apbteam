@@ -24,14 +24,13 @@
 // }}}
 `timescale 1ns / 1ps
 
-module counter_top(clk, rst, q0, q1, q2, q3, oe, sel, count);
+module counter_top(clk, rst, q0, q1, q2, q3, ale, rd, wr, ad);
     parameter size = 8;
     input clk;
     input rst;
     input [1:0] q0, q1, q2, q3;
-    input oe;
-    input [1:0] sel;
-    output [size-1:0] count;
+    input ale, rd, wr;
+    inout [size-1:0] ad;
 
     wire [1:0] qf0, qf1, qf2, qf3;
     wire [size-1:0] count0, count1, count2, count3;
@@ -49,20 +48,18 @@ module counter_top(clk, rst, q0, q1, q2, q3, oe, sel, count);
     quad_decoder_full qd3 (clk, rst, qf3, count3);
 
     reg [size-1:0] lcount;
-
-    always @(posedge clk or negedge rst) begin
+    
+    always @(negedge ale or negedge rst) begin
 	if (!rst)
 	    lcount <= 0;
 	else begin
-	    if (!oe) begin
-		lcount <= sel == 0 ? count0 :
-		    sel == 1 ? count1 :
-		    sel == 2 ? count2 :
-		    count3;
-	    end
+	    lcount <= ad[1:0] == 0 ? count0 :
+		ad[1:0] == 1 ? count1 :
+		ad[1:0] == 2 ? count2 :
+		count3;
 	end
     end
 
-    assign count = !oe ? 8'bz : lcount;
+    assign ad = rd ? 8'bz : lcount;
 
 endmodule

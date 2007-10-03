@@ -30,9 +30,10 @@ module test_counter_top();
     reg clk;
     reg rst;
     reg [1:0] q[0:nc-1];
-    reg oe;
+    reg oe, ale, rd, aord;
     reg [1:0] sel;
-    wire [7:0] countout;
+    wire [7:0] ad;
+    wire wr = 1;
 
     `include "common.v"
 
@@ -51,7 +52,8 @@ module test_counter_top();
     end
 
     // Instantiation.
-    counter_top uut (clk, rst, q[0], q[1], q[2], q[3], oe, sel, countout);
+    assign ad = aord ? { 6'b0, sel } : 8'bz;
+    counter_top uut (clk, rst, q[0], q[1], q[2], q[3], ale, rd, wr, ad);
 
     // The count variable is the true encoder position, multiplied by 32,
     // which is more than one encoder minimum period with a noise filter of
@@ -70,7 +72,7 @@ module test_counter_top();
     initial begin
 	$dumpfile ("test_counter_top.vcd");
 	$dumpvars (1, clk, rst, countdiv32_0, countdiv32_1, countdiv32_2,
-	    countdiv32_3, uut, oe, sel, countout, countassert, a);
+	    countdiv32_3, uut, ale, rd, sel, ad, countassert, a);
 	clk <= 1;
 	rst <= 0;
 	for (i = 0; i < nc; i = i + 1) begin
@@ -111,6 +113,9 @@ module test_counter_top();
     wire [27:0] a = countdiv32_smp[0*max_filter+4];
 
     initial begin
+	oe = 1;
+	ale = 0;
+	rd = 1;
 	forever begin
 	    @(posedge clk)
 	    // Sample countdiv32 at rising edge.
@@ -127,20 +132,30 @@ module test_counter_top();
 		// This is more difficult to find the exact expected value (I
 		// mean, without copy-paste the unit under test verbatim).
 		if (filter_size[sel] > 1)
-		    assert ((countassert8 - countout) | 1, 1);
+		    assert ((countassert8 - ad) | 1, 1);
 		else
-		    assertv8 (countassert8, countout);
+		    assertv8 (countassert8, ad);
 	    end
 	    else begin
-		assertv8 (8'bz, countout);
+		assertv8 (8'bz, ad);
 	    end
 	    // Prepare next check.
 	    if (oe == 1) begin
 		oe = 0;
+		rd = 1;
 		sel = $random & 2'b11;
+		aord = 1;
+		#1
+		ale = 1;
+		#1
+		ale = 0;
+		#1
+		aord = 0;
 	    end
 	    else begin
 		oe = 1;
+		aord = 0;
+		rd = 0;
 	    end
 	end
     end

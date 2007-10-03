@@ -8,10 +8,11 @@ test_counter_top.countdiv32_1[27:0]
 test_counter_top.countdiv32_2[27:0]
 test_counter_top.countdiv32_3[27:0]
 @28
-test_counter_top.oe
+test_counter_top.ale
+test_counter_top.rd
 test_counter_top.sel[1:0]
 @22
-test_counter_top.countout[7:0]
+test_counter_top.ad[7:0]
 test_counter_top.uut.count0[7:0]
 test_counter_top.uut.count1[7:0]
 test_counter_top.uut.count2[7:0]
