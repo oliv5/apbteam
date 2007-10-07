@@ -1,0 +1,48 @@
+# Makefile.host - Host Makefile.
+#
+# Flags.
+
+HOST_CFLAGS := $(CFLAGS)
+HOST_CPPFLAGS := $(CPPFLAGS) $(HOST_DEFS) -DHOST=1
+HOST_LDFLAGS := $(LDFLAGS)
+HOST_LDLIBS := $(LDLIBS) $(HOST_LIBS)
+
+HOST_COMPILE.c := $(CC) $(HOST_CFLAGS) $(HOST_CPPFLAGS) -c
+HOST_LINK.o := $(CC) $(HOST_CFLAGS) $(HOST_LDFLAGS)
+
+# Main rules.
+
+host: exe
+
+.PHONY: host clean.host exe
+
+# General rules.
+
+HOST_PROGS += $(PROGS)
+HOST_EXES := $(HOST_PROGS:%=%.host)
+HOST_SOURCES := $(filter-out %.avr.c %.avr.S,$(ALL_SOURCES))
+HOST_OBJECTS := $(HOST_SOURCES:%.c=%.host.o)
+
+exe: $(HOST_EXES)
+
+define HOST_PROG_template
+$(1).host: $$(patsubst %.c,%.host.o,\
+	$$(filter-out %.avr.c %.avr.S,$$($(1)_SOURCES)))
+endef
+
+$(foreach prog,$(HOST_PROGS),$(eval $(call HOST_PROG_template,$(prog))))
+
+$(HOST_EXES):
+	$(HOST_LINK.o) $^ $(HOST_LDLIBS) -o $@
+
+%.host.o: %.c
+	$(HOST_COMPILE.c) -o $@ $<
+
+# Dependency checking.
+-include $(HOST_OBJECTS:%.host.o=%.host.d)
+
+# Cleaning.
+
+clean.host:
+	rm -f *.host.o *.host.d $(HOST_EXES)
+

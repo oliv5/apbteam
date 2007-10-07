@@ -1,0 +1,52 @@
+*Title: Module AVR math à virgule fixe
+*Author: Ni
+
+* La virgule fixe
+
+Le format à virgule fixe, à opposer à la virgule flottante, divise un mot
+binaire en deux parties, la partie entière et la partie fractionnaire.
+
+L'inconvénient par rapport à la virgule flottante, c'est de pouvoir
+représenter une plage plus petite de nombres. Il faut aussi faire très
+attention de ne pas déborder lors des calculs intermédiaires.
+
+L'avantage, c'est la vitesse d'exécution, ça tombe bien, on est pressé !
+
+Je vous laisse consulter internet pour plus d'informations.
+
+* Notation des nombres
+
+Pour décoder le nom des fonctions :
+
+^<<
+	[u]{i|f}x[.y]
+^>>
+
+	[u] non signé ;
+	[i] entier ;
+	[f] virgule fixe ;
+	[x] taille de la partie entière en bits ;
+	[y] taille de la partie fractionnaire en bits.
+
+Par exemple :
+
+	[i16] mot signé 16 bits ;
+	[uf24.8] nombre en virgule fixe non signé, avec 24 bits pour la partie
+	entière et 8 bits pour la partie fractionnaire.
+
+* Format des angles
+
+Les angles utilisés sont dans l'intervalle [0 ; 1[. La valeur 1 correspond à 2
+pi radians, soit un tour complet. Le sens des angles orientés est le sens
+trigonométrique bien sur.
+
+* Routines de tests
+
+Pour tester les algorithmes, on compile test_fixed pour hôte et pour AVR. On
+lance les deux et l'on compare les résultats, ils doivent être identiques.
+
+La version hôte vérifie les calculs avec la bibliothèque mathématique du C.
+
+* Doc
+
+*File: fixed.exd

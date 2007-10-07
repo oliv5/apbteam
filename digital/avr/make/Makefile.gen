@@ -1,0 +1,101 @@
+# Makefile.gen - General Makefile.
+
+# Flags
+
+INCLUDES := -I$(BASE) -I$(BASE)/common
+CFLAGS := -g -Wall -W -Wundef -Wno-unused-parameter -Wno-pointer-sign \
+	  $(OPTIMIZE)
+ASFLAGS := -Wa,--gstabs
+CPPFLAGS := $(DEFS) $(INCLUDES) -MMD \
+	    $(if $(CONFIGFILE),$(CONFIGFILE:%=-include %))
+LDFLAGS :=
+LDLIBS := $(LIBS)
+
+# Usefull macros.
+## Return $(A) only if defined, else return B.
+## $(call defval A,B)
+defval = $(if $(filter undefined,$(origin $(1))),$(2),$($(1)))
+
+# Main rules.
+
+all: avr simu host
+
+.PHONY: all clean doc
+
+# General rules.
+
+ALL_PROGS := $(PROGS) $(AVR_PROGS) $(HOST_PROGS) $(SIMU_PROGS)
+ALL_SOURCES = $(foreach prog,$(ALL_PROGS),$($(prog)_SOURCES))
+
+# Modules.
+
+MODULES += host
+
+ALL_MODULES := $(sort $(MODULES) \
+		 $(foreach prog,$(ALL_PROGS),$($(prog)_MODULES)))
+
+include $(ALL_MODULES:%=$(BASE)/modules/%/Makefile.module)
+
+define MODULES_template
+$(1)_SOURCES += $(foreach module,\
+	$(call defval,$(1)_MODULES,$(MODULES)),\
+	$($(subst /,_,$(module))_SOURCES)\
+)
+endef
+
+$(foreach prog,$(ALL_PROGS),$(eval $(call MODULES_template,$(prog))))
+
+vpath %.c $(ALL_MODULES:%=$(BASE)/modules/%)
+vpath %.S $(ALL_MODULES:%=$(BASE)/modules/%)
+
+# Compilation test rules.
+
+define TEST_MCU_template
+test.sub::
+	$$(MAKE) CONFIGFILE=$(1) AVR_MCU=$(2) clean elf
+endef
+
+define TEST_template
+$$(foreach mcu,\
+	$$(if $$($(1:%.h=%)_TEST_MCU),$$($(1:%.h=%)_TEST_MCU),$$(TEST_MCU)),\
+	$$(eval $$(call TEST_MCU_template,$(1),$$(mcu))))
+test.sub::
+	$$(MAKE) CONFIGFILE=$(1) clean host
+endef
+
+$(foreach config,$(TEST_CONFIGFILES),$(eval $(call TEST_template,$(config))))
+
+test: test.sub clean
+
+# Include other Makefiles.
+
+ifneq (,$(filter-out %.c %.avr.S,$(ALL_SOURCES)))
+$(error Sources should be .c or .avr.S files)
+endif
+
+ifneq (,$(strip $(ALL_PROGS)))
+include $(BASE)/make/Makefile.avr
+include $(BASE)/make/Makefile.host
+else
+avr:
+simu:
+host:
+clean.avr:
+clean.host:
+endif
+
+# Rules for building the doc.
+
+doc: $(DOC)
+
+%.html: %.txt %.exd
+	aft $<
+
+%.exd: $(EXTRACTDOC)
+	test -n "$^" && extractdoc $^ > $@ || true
+
+# Cleaning.
+
+clean: clean.avr clean.host
+	rm -f *.bak *~ $(DOC) *.exd $(EXTRA_CLEAN_FILES)
+

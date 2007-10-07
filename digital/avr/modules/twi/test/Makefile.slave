@@ -1,0 +1,24 @@
+BASE = ../../..
+AVR_PROGS = test_twi_sl
+test_twi_sl_SOURCES = test_twi_sl.c
+DOC =
+EXTRACTDOC =
+MODULES = twi uart
+
+
+CONFIGFILE = avrconfig_slave.h
+TEST_CONFIGFILES = avrconfig_slave.h
+
+# atmega8, atmega8535, atmega128...
+AVR_MCU = atmega128
+# -O2 : speed
+# -Os : size
+OPTIMIZE = -O2
+
+DEFS =
+LIBS =
+
+# Test compilations.
+TEST_MCU = atmega8535 atmega128
+
+include $(BASE)/make/Makefile.gen

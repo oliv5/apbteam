@@ -1,0 +1,26 @@
+*Title: Module AVR UART
+*Author: Ni
+
+* Utilisation
+
+Rien de plus simple. Appeler la fonction |uart0_init| au démarrage, puis
+|uart0_putc| pour envoyer un caractère, |uart0_getc| pour en recevoir. La
+fonction |uart0_poll| permet de connaître à l'avance si des caractère sont
+disponibles.
+
+En cas d'erreur de réception, la fonction |uart0_getc| renvois 0xff. Ce n'est
+pas forcément adapté à une transmission binaire car on ne peut pas distinguer
+un 0xff légitime d'une erreur de transmission.
+
+On peut configurer deux uarts, dans ce cas les fonctions sont en double.
+
+Comme pour tous les modules, copier la partie concernant l'uart depuis
+|avrconfig.h|.
+
+Dans le cas de la compilation en host, un pseudo-terminal est ouvert pour les
+communications, un lien vers le pseudo-terminal est crée en |uart0.pts|. Dans
+le futur, on pourra peut-être configurer ce fichier par la ligne de commande.
+
+* Doc
+
+*File: uart.exd

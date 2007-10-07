@@ -1,0 +1,3 @@
+uart_SOURCES = uart0.c uart1.c
+EXTRA_CLEAN_FILES += uart0.pts uart1.pts
+HOST_LIBS += -lutil

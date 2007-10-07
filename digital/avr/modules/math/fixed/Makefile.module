@@ -1,0 +1,3 @@
+math_fixed_SOURCES = fixed_mul_f824.avr.S fixed_div_f824.avr.S \
+		     fixed_cosin_f824.c \
+		     fixed_sqrt_uf248.c fixed_sqrt_ui32.c

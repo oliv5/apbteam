@@ -1,0 +1,25 @@
+BASE = ../../..
+AVR_PROGS = test_twi_master
+test_twi_master_SOURCES = test_twi_master.c
+DOC =
+EXTRACTDOC =
+MODULES = twi uart proto
+
+
+CONFIGFILE = avrconfig_master.h
+TEST_CONFIGFILES = avrconfig_master.h
+
+
+# atmega8, atmega8535, atmega128...
+AVR_MCU = atmega8535
+# -O2 : speed
+# -Os : size
+OPTIMIZE = -O2
+
+DEFS =
+LIBS =
+
+# Test compilations.
+TEST_MCU = atmega8535 atmega128
+
+include $(BASE)/make/Makefile.gen

@@ -1,0 +1,107 @@
+#!/usr/bin/perl -w
+use strict;
+
+sub syntax
+{
+    print <<EOF;
+$0 - Décodeur de protocol série pour le robot.
+Syntaxe : $0 code [colonnes] [code [colonnes] ...
+Exemple : $0 l 1 2u 3-4 m 1-2.8
+décode pour les codes l et m. Pour l, décode la première colonne en 8 bits, la
+deuxième en 8 bits non signés, les troisième et quatrième en 16 bits. Pour m,
+décode la première et deuxième en 16 bits, virgule fixe à 8 bits derrière la
+virgule.
+EOF
+    exit 1;
+}
+
+# Convert hexa to unsigned.
+sub cvhexu
+{
+    my $h = join '', @_;
+    return hex $h;
+}
+
+# Convert hexa to signed.
+sub cvhex
+{
+    my $h = cvhexu @_;
+    my $b = 8 * scalar @_;
+    if ($h >= 2 ** ($b - 1)) {
+	return -(2 ** $b - $h);
+    } else {
+	return $h;
+    }
+}
+
+# Process one proto packet.
+sub prcmd
+{
+    my ($cmd, $c, @v) = @_;
+    # Return if not wanted.
+    return unless exists $$cmd{$c};
+    print $c;
+    # Print each args.
+    for (@{$$cmd{$c}})
+    {
+	/^(\d+)-(\d+)(?:\.(\d+))?(u?)$/o;
+	my $fp = 0;
+	$fp = $3 if $3;
+	if ($4 eq 'u') {
+	    print ' ', (cvhexu @v[$1 - 1 .. $2 - 1]) / (1 << $fp);
+	} else {
+	    print ' ', (cvhex @v[$1 - 1 .. $2 - 1]) / (1 << $fp);
+	}
+    }
+    print "\n";
+};
+
+# Read command line.
+my %cmd;
+my ($acmd, @acmdl);
+
+while ($_ = shift)
+{
+    # Command char.
+    /^[a-zA-Z]$/ and do {
+	$cmd{$acmd} = [ @acmdl ] if defined $acmd;
+	@acmdl = ();
+	$acmd = $_;
+	next;
+    };
+    # Single arg.
+    /^(\d+)(\.\d+)?(u?)$/ and do {
+	syntax if !defined $acmd;
+	push @acmdl, "$1-$1$2";
+	next;
+    };
+    # Range arg.
+    /^(\d+)-(\d+)(\.\d+)?(u?)$/ and do {
+	syntax if !defined $acmd;
+	syntax if $2 <= $1;
+	push @acmdl, $_;
+	next;
+    };
+    syntax;
+}
+$cmd{$acmd} = [ @acmdl ] if defined $acmd;
+
+syntax if !scalar %cmd;
+
+# For each line.
+while (<>)
+{
+    chomp;
+    # Match a proto packet.
+    if (/^!([a-zA-Z])(?:[a-f0-9]{2})*$/o)
+    {
+	my $c = $1;
+	s/^!([a-zA-Z])//;
+	my @args = /[a-f0-9]{2}/og;
+	prcmd \%cmd, $c, @args;
+    }
+    if (/^#.*$/o)
+    {
+	print "$_\n";
+    }
+}

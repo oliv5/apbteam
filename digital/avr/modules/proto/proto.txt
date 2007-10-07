@@ -1,0 +1,89 @@
+*Title: Module AVR Protocole série
+*Author: Ni
+
+* Principe
+
+Ce module s'occupe de gérer le protocole de communication sur une ligne de type
+port série. Il propose un service de décodage et un service d'encodage.
+
+Pour utiliser le décodage, il suffit d'appeler une fonctions à chaque
+caractère reçu. Si une commande a été reçu, ou en cas d'erreur, elle appelle
+une fonction définie par l'utilisateur avec pour paramètres les informations
+sur la commande reçue.
+
+Pour utiliser l'encodage, il suffit d'appeler une fonction émission avec
+les paramètres que l'on veux envoyer.
+
+* Protocole
+
+Le protocole de communication est basé sur des trames. Chaque trame commence
+par un point d'exclamation et se termine par un retour chariot. Tout ce qui
+n'est pas entouré de ces caractères est ignoré.
+
+Le point d'exclamation est directement suivi de la commande. La commande est
+un caractère alphabétique minuscule ou majuscule.
+
+Après la commande vient une liste de d'arguments. Les arguments sont codés en
+hexadécimal.
+
+Par exemple :
+
+^<<
+!z
+!v03f5
+!c0094ffa8
+^>>
+
+On peut aussi envoyer directement un caractère ascii en paramètre en le
+précédant d'une apostrophe, ce caractère devant être imprimable.
+
+Par exemple :
+
+^<<
+!p'sa800
+^>>
+
+Enfin, on peut envoyer une chaine de caractères imprimables.
+
+Par exemple :
+
+^<<
+!p"Hello World
+^>>
+
+Attention, le point d'exclamation reste un caractère spécial.
+
+* Vérification d'erreur
+
+La vérification d'erreur n'est pas forcée par l'utilisation de ce module. En
+règle générale, on utilisera le fonctionnement suivant :
+
+	* pour un message fiable, le périphérique doit retourner la commande
+	  dès réception ;
+	* pour un message non-fiable, le périphérique ne retourne rien.
+
+Par message non-fiable, on entend un message qui arrive en permanence, et dont
+l'on a pas besoin de vérifier la bonne réception. En effet, une valeur plus à
+jour est préférable à une réémission.
+
+Seul le périphérique renvois des messages de vérification ou des messages
+d'erreur. Le protocole d'échange doit être prévu en prenant cela en compte. Il
+n'est par exemple pas conseillé de déclencher des messages non demandé depuis
+le périphérique, en effet, il n'y a aucun moyen de vérifier s'il est arrivé
+correctement. Des messages envoyés sous l'initiative du périphérique doivent
+donc être des messages périodiques, pas événementiels.
+
+* Utilisation
+
+On doit définir une fonction de callback afin de traiter les messages arrivant
+et une fonction d'envois de caractère utilisée dans les fonctions d'envois. Le
+nom de ces deux fonctions est défini dans |avrconfig.h|
+
+Pour chaque caractère reçu, on appelle |proto_accept|. Pour envoyer des
+commandes, on utilise les fonctions |proto_send...|.
+
+Regarder le programme de test pour avoir un example.
+
+* Doc
+
+*File: proto.exd
