@@ -1,0 +1,248 @@
+Statuts de APBTeam
+==================
+
+Article 1: Titre
+----------------
+
+Il est fondé entre les adhérents aux présents statuts une association régie
+par la loi du 1er juillet 1901 et le décret du 16 août 1901, ayant pour titre
+"APB Public Bot Team" sous le sigle APBTeam.
+
+Article 2: Buts
+---------------
+
+Cette association a pour but :
+
+- la recherche de techniques innovantes, utiles à la réalisation de projets en
+  électronique et informatique embarquée, et plus particulièrement de robots ;
+- la documentation et le partage pour tous des solutions développées ;
+- l'explication de techniques couramment utilisées dans ces domaines, mais
+  généralement incomprises.
+
+Pour cela, l'association peut fourni des moyens permettant de mettre en oeuvre
+les techniques développées.
+
+Article 3: Siège social
+-----------------------
+
+Le siège social est fixé au :
+
+  <Adresse>
+
+Il pourra être transféré sur simple décision du Conseil d'Administration.
+
+Article 4: Durée
+----------------
+
+La durée de l'association est illimitée.
+
+Article 5: Composition de l'association
+---------------------------------------
+
+L'association se compose de:
+
+- membres actifs ;
+- membres d'honneur ;
+- membres bienfaiteurs.
+
+Sont membres actifs, les personnes physiques ou morales qui satisfont aux
+conditions fixées par l'article 6, et qui auront versé une cotisation annuelle
+égale au montant fixé par le règlement intérieur.
+
+Sont membres d'honneur, les personnes nommées par le Conseil d'Administration
+pour service rendu à l'association. Ils sont dispensés du paiement de la
+cotisation.
+
+Sont membres bienfaiteurs, les personnes qui versent une cotisation annuelle
+fixée par le règlement intérieur.
+
+Article 6: Conditions d'admission des membres
+---------------------------------------------
+
+Les conditions d'adhésion sont fixées par le règlement intérieur. Le bureau
+peut rejeter toute demande d'adhésion, avec avis motivé aux intéressés.
+
+Article 7: Perte de la qualité de membre
+----------------------------------------
+
+La qualité de membre se perd par :
+
+- la démission adressée par écrit au président de l'association ;
+- le décès ;
+- la radiation prononcée par le conseil d'administration pour non-paiement de
+  la cotisation, pour infraction aux présents statuts, pour non-respect du
+  règlement intérieur ou pour motif grave portant préjudice moral ou matériel
+  à l'association. L'intéressé ayant été préalablement appelé à fournir ses
+  explications. Un recours non suspensif devant l'assemblée générale peut être
+  demandé.
+
+Article 8: Les ressources de l'association
+------------------------------------------
+
+Les ressources de l'association comprennent:
+
+- les cotisations des membres ;
+- les dons manuels de toute sorte, conformément à la législation en vigueur ;
+- les prix de prestations fournies par l'association ;
+- les subventions qui pourront lui être accordées par les structures de
+  l'Union Européenne, de l'État, des collectivités locales, des collectivités
+  publiques ou des établissements publics, ainsi que d'associations ou toute
+  autre personne morale dans les conditions légales ;
+- toutes autres ressources ou subventions qui lui seraient accordées et qui ne
+  seraient pas contraires aux lois en vigueur.
+
+Article 9: Conseil d'administration
+-----------------------------------
+
+L'association est dirigée par un conseil d'administration élu chaque année sur
+liste complète par l'assemblée générale annuelle. Il est prévu un égal accès
+des femmes et des hommes au Conseil d'Administration. Les mineurs de 16 ans
+révolus sont éligibles au conseil d'administration mais ne peuvent pas l'être
+au bureau.
+
+Chaque liste de candidats au conseil d'administration comporte au minimum 3
+personnes et au maximum 6. Au moins 30% des personnes de la liste doivent être
+des membres à jour de cotisation depuis 1 ans ou plus. Pour être valable, la
+liste doit être signée par tous les candidats qui la composent et être
+adressée au secrétaire de l'association au moins 1 semaines avant la date de
+l'assemblée générale annuelle.
+
+La liste qui obtient une majorité simple des voix devant l'assemblée générale
+annuelle est élue. Tous les candidats de cette liste deviennent membres du
+nouveau conseil d'administration. Le mandat de ce nouveau conseil
+d'administration débute dès la clôture de l'assemblée générale annuelle qui
+l'a élu.
+
+Les membres du conseil d'administration choisissent parmi eux un bureau
+composé de :
+
+- un président et, s'il y a lieu, un vice-président ;
+- un secrétaire et, s'il y a lieu, un secrétaire adjoint ;
+- un trésorier et, s'il y a lieu, un trésorier adjoint.
+
+Le président du bureau devient de facto le président de l'association.
+
+Le conseil d'administration est investi des pouvoirs les plus étendus pour
+décider et autoriser toutes opérations ayant pour but la réalisation de
+l'objet de l'association ainsi que pour gérer sa gestion, son développement et
+son fonctionnement.
+
+Article 10: Rôles des membres du bureau
+---------------------------------------
+
+Le président convoque les assemblées générales et les réunions du conseil
+d'administration. Il représente l'association dans tous les actes de la vie
+civile et est investi des pouvoirs à cet effet. Il représente l'association en
+justice. En cas d'absence ou de maladie, il peut être remplacé par le
+vice-président qui dispose alors des mêmes pouvoirs.
+
+Le secrétaire est chargé de tout ce qui concerne la correspondance et les
+archives. Il rédige les procès-verbaux des délibérations du conseil et en
+assure la transcription sur les registres. En cas d'absence ou de maladie, il
+est remplacé par un membre du conseil désigné par le président qui dispose
+alors des mêmes pouvoirs.
+
+Le trésorier est chargé de tout ce qui concerne la gestion du patrimoine de
+l'association. Il effectue tous paiements et perçoit toutes recettes sous la
+surveillance du président. Il tient une comptabilité régulière de toutes les
+opérations. En cas d'absence ou de maladie, il est remplacé par un membre du
+conseil désigné par le président qui dispose alors des mêmes pouvoirs.
+
+Article 11: Gratuité du mandat
+------------------------------
+
+Les membres du conseil d'administration de l'association ne peuvent recevoir
+aucune rétribution à raison des fonctions qui leur sont conférées. Ils
+pourront toutefois obtenir le remboursement des dépenses engagées pour les
+besoins de l'association sur justification et après accord du bureau.
+
+Article 12: Réunion du conseil d'administration
+-----------------------------------------------
+
+Le conseil d'administration se réunit au moins quatre fois par an sur
+convocation (par courrier papier ou électronique) du président et aussi
+souvent que nécessaire sur la demande de la moitié de ses membres.
+
+Les décisions sont prises à la majorité des voix. En cas de partage, la voix
+du président est prépondérante.
+
+Tout membre du conseil qui, sans excuse, n'aura pas assisté à trois réunions
+consécutives, pourra être considéré comme démissionnaire.
+
+Article 13: Assemblée générale ordinaire
+----------------------------------------
+
+L'assemblée générale ordinaire est constituée par les membres actifs,
+participants ou représentés.
+
+L'assemblée générale se réunit sur convocation du président de l'association.
+Elle peut être également convoquée sur la demande collective des 2/3 des
+membres, adressée au président.
+
+Les convocations sont faites au moins 15 jours à l'avance par notification
+(par courrier papier ou électronique) indiquant le jour et le lieu de la
+réunion, ainsi que l'ordre du jour dressé par le conseil d'administration.
+
+Tout membre de l'association peut adresser au conseil d'administration,
+jusqu'à 7jours avant la date de la réunion, une proposition d'inscription d'un
+sujet à l'ordre du jour. Toute proposition faisant l'objet d'un vote positif
+d'un quart au moins des membres de l'association, participants ou représentés
+à l'assemblée générale, sera rajouté à l'ordre du jour.
+
+L'assemblée générale délibère alors sur tous les points inscrits à l'ordre du
+jour ainsi complété.
+
+Les délibérations à l'assemblée générale sont prises à la majorité simple des
+voix des membres actifs depuis plus de 4 mois, participants ou représentés.
+
+En cas de partage, la voix du président est prépondérante. Tout membre actif
+peut se faire représenter par un autre membre actif et muni d'un pouvoir comme
+précisé dans le règlement intérieur.
+
+Pour délibérer valablement, l'assemblée générale devra être composée d'au
+moins 30% des membres actifs, participants ou représentés. Dans le cas où le
+quorum ne serait pas atteint, une seconde assemblée générale sera convoquée et
+statuera valablement sans règle de quorum, après un délai de 15 jours.
+
+Les membres de l'association sont convoqués au moins une fois par année civile
+en assemblée générale. Cette assemblée générale annuelle entend, approuve ou
+rejette le rapport qui lui est présenté par le conseil d'administration
+sortant, ainsi que les comptes de l'exercice précédent. Cette assemblée
+générale élit ensuite le nouveau conseil d'administration suivant les
+modalités de l'article 9.
+
+Article 14: Assemblée générale convoquée de façon extraordinaire
+----------------------------------------------------------------
+
+L'assemblée générale, convoquée de façon extraordinaire, délibère
+exclusivement sur les questions portées à son ordre du jour.
+
+Elle peut, en particulier, modifier les statuts de l'association ou proposer
+la dissolution de l'association, mais seulement sur proposition du conseil
+d'administration. Ces décisions ne peuvent alors être votées que si les 3/4
+des membres de l'association sont présents ou représentés, et à la majorité
+qualifiée des 3/4 des votants. Si une première assemblée ne réunit pas le
+quorum des 3/4, une seconde assemblée doit être convoquée dans un délai d'un
+mois et peut valablement délibérer.
+
+Article 15: Comptabilité
+------------------------
+
+Il est tenu à jour une comptabilité-deniers par recettes et par dépenses et,
+s'il a lieu, une comptabilité journalière.
+
+Article 16: Règlement intérieur
+-------------------------------
+
+Un règlement intérieur est établi par le conseil d'administration.
+
+Ce règlement éventuel est destiné à fixer les divers points non prévus par les
+statuts et utiles à la réalisation des objectifs de l'association.
+
+Article 17: Dissolution
+-----------------------
+
+En cas de dissolution volontaire, statutaire ou prononcée par la Justice, le
+conseil d'administration disposera de l'actif en faveur d'une association sans
+but lucratif poursuivant des objectifs analogues.
+
