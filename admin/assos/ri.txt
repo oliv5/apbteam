@@ -1,0 +1,94 @@
+Règlement intérieur
+===================
+
+Règlement intérieur de l'APB Public Bot Team (APBTeam), association à but non
+lucratif régie par la loi du 1er juillet 1901 et le décret du 16 août 1901.
+
+Préambule
+---------
+
+Ceci constitue le règlement intérieur de l'association APBTeam. Conformément
+aux statuts de l'association, il est établi et voté par le conseil
+d'administration.
+
+Tout adhérent s'engage au vu des statuts et du règlement intérieur de
+l'association.
+
+Conditions d'admission
+----------------------
+
+Les montants des cotisations sont fixés comme suit :
+
+- la cotisation annuelle des membres actifs est fixée à un montant de 30 euros
+  à strictement inférieur à 1 500 euros, au choix de l'adhérent ;
+- la cotisation annuelle des membres bienfaiteurs est fixée à un montant de
+  1 500 euros minimun, sans limite, au choix de l'adhérent.
+
+Le Conseil d'Administration se réserve le droit de dispenser une personne
+de cotisation.
+
+La liste des membres est publique pour l'ensemble des membres de l'association
+sans distinction de la qualité de membre.
+
+Pour obtenir le statut d'adhérent, la personne devra prendre connaissance des
+statuts et du règlement intérieur de l'association, et contacter le Conseil
+d'Administration. Elle devra fournir les informations suivantes :
+
+- montant de la cotisation ;
+- nom et prénoms ;
+- date et lieu de naissance ;
+- adresse postale complète et tout autre moyen de communication permettant de
+  la joindre (la possession d'une adresse de courriel est fortement
+  recommandée) ;
+- téléphone ;
+- les motivations qui le poussent à rejoindre l'association.
+
+Conformément à la loi n° 78-17 du 6 janvier 1978 relative à l'informatique, aux
+fichiers et aux libertés, l'adhérent dispose d'un droit d'accès et de
+rectification des données le concernant auprès du secrétaire de l'association.
+
+L'adhérent s'engage à porter à la connaissance de l'association toutes
+modifications portant sur son adresse postale, adresse électronique, téléphone.
+
+Pour faire partie de l'assocation, il faut être agréé par le Conseil
+d'Administration qui statue, lors de chacune de ses réunions, sur les demandes
+d'adhésions présentées. Le vote du conseil, concernant les adhésions, a lieu à
+bulletin secret et à la majorité absolue des votes exprimés. Conformément aux
+statuts, en dernier ressort, le bureau de l'association se réserve le droit
+d'accepter ou non un nouveau membre.
+
+Les adhésions sont valables douze mois, de date anniversaire d'adhésion à date
+anniversaire. Le conseil d'administration se réserve le droit de refuser toute
+réadhésion.
+
+Code de conduite
+----------------
+
+Tout membre de l'association s'engage à respecter les statuts et le règlement
+intérieur de l'association.
+
+Le RFC 1855 (Netiquette) s'applique au sein de l'association, et tout
+manquement grave à cette netiquette ou au code de conduite entrainera des
+sanctions pouvant aller jusqu'à l'exclusion de l'adhérent.
+
+Méthodes de votes
+-----------------
+
+Lorsque le sujet d'un vote est connu et fixé à l'avance, un vote physique peut
+être complété par un vote électronique réalisé préalablement (et donc clos
+préalablement pour permettre un décompte des bulletins électroniques). Les
+personnes ayant choisi le vote électronique ne peuvent participer au vote
+physique (en étant présentes ou représentées).
+
+Le résultat du vote est proclamé en prenant en compte les bulletins
+électroniques et le vote des personnes présentes et représentées.
+
+Le nombre de votants pour les questions éventuelles de quorum est donc la somme
+des nombres de bulletins électroniques et physiques.
+
+Toute contestation soulevée sur la validité d'un vote électronique doit être
+examinée et tranchée par le conseil d'administration, avec consignation dans le
+compte-rendu.
+
+Le conseil d'administration déterminera en fonction des techniques et de la
+règlementation du moment les procédures de vote électronique.
