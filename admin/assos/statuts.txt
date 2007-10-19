@@ -20,7 +20,8 @@ Cette association a pour but :
   généralement incomprises.
 
 Pour cela, l'association peut fourni des moyens permettant de mettre en oeuvre
-les techniques développées.
+les techniques développées. Cela passe par la réalisation de projets, par
+exemple la participation à la coupe française de robotique.
 
 Article 3: Siège social
 -----------------------
@@ -210,6 +211,12 @@ rejette le rapport qui lui est présenté par le conseil d'administration
 sortant, ainsi que les comptes de l'exercice précédent. Cette assemblée
 générale élit ensuite le nouveau conseil d'administration suivant les
 modalités de l'article 9.
+
+Le quorum étant ou non atteint, on procède ensuite à l'apéro. Chaque membre du
+conseil d'administration est tenu d'apporter un saucison, les membres actifs
+se chargent eux de rapporter les bieres ou tout autre liquides consomables.
+Les trois personnes les plus en retards par ordre d'arrivé se chargeront de
+couper les saucisons par ordre de taille croissante.
 
 Article 14: Assemblée générale convoquée de façon extraordinaire
 ----------------------------------------------------------------
