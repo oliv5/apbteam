@@ -19,16 +19,19 @@ Cette association a pour but :
 - l'explication de techniques couramment utilisées dans ces domaines, mais
   généralement incomprises.
 
-Pour cela, l'association peut fourni des moyens permettant de mettre en oeuvre
-les techniques développées. Cela passe par la réalisation de projets, par
-exemple la participation à la coupe française de robotique.
+Pour cela, l'association fourni un cadre permettant de mettre en oeuvre les
+techniques développées. Cela passe par la réalisation de projets, par exemple
+la participation à la coupe française de robotique.
 
 Article 3: Siège social
 -----------------------
 
 Le siège social est fixé au :
 
-  <Adresse>
+   APBTeam
+   chez Pierre-André Galmes
+   26, rue Marcel Bourdarias
+   94140 Alfortville
 
 Il pourra être transféré sur simple décision du Conseil d'Administration.
 
@@ -213,10 +216,10 @@ générale élit ensuite le nouveau conseil d'administration suivant les
 modalités de l'article 9.
 
 Le quorum étant ou non atteint, on procède ensuite à l'apéro. Chaque membre du
-conseil d'administration est tenu d'apporter un saucison, les membres actifs
-se chargent eux de rapporter les bieres ou tout autre liquides consomables.
+conseil d'administration est tenu d'apporter un saucisson, les membres actifs
+se chargent eux de rapporter les bières ou tout autre liquides consommables.
 Les trois personnes les plus en retards par ordre d'arrivé se chargeront de
-couper les saucisons par ordre de taille croissante.
+couper les saucissons par ordre de taille croissante.
 
 Article 14: Assemblée générale convoquée de façon extraordinaire
 ----------------------------------------------------------------
