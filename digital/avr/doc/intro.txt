@@ -1,0 +1,25 @@
+==========================
+ AVR Modules Introduction
+==========================
+:Author: Ni
+
+AVR modules is a set of small and simple reusable modules to make it easier to
+program a robot using AVR microcontrollers.
+
+It is currently only tested under Linux, using the GCC compiler for both host
+and target compilation.
+
+If you are running Debian, you will need:
+
+- gcc-avr,
+- avr-libc,
+- gcc, make and other classic development packages...
+
+And you will probably need:
+
+- avrdude, to program the AVR chips,
+- gdb-avr and avarice, if you plan to use a JTAG connection,
+- simulavr to run simulated algorithms.
+
+This directory is populated with general documentation.  You can find further
+help in the modules directories and in the source code.
