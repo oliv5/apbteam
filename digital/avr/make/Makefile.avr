@@ -116,6 +116,8 @@ esrec: $(AVR_PROGS:%=%_eeprom.srec)
 
 clean.avr:
 	rm -f *.avr.o *.avr.d $(AVR_ELFS) \
-		*.avr.simu.o *.avr.simu.d $(AVR_SIMU_ELFS) \
 		*.avr.lst *.avr.map $(TEXTS) $(EEPROMS)
+
+clean.simu:
+	rm -f *.avr.simu.o *.avr.simu.d $(AVR_SIMU_ELFS)
 

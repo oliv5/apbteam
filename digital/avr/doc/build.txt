@@ -1,0 +1,189 @@
+==========================
+ AVR Modules build system
+==========================
+:Author: Ni
+
+Introduction
+============
+
+The build system handle projects composed of several executables.  An
+executable can be run on a combination of targets: avr, host, or simu.  The
+avr target is used for programs running on the AVR chip, directly on the
+electronic board.  The host target is used for programs running on the host
+computer, used for algorithms testing for example.  The simu target is used to
+run the program on the AVR simulator *simulavr*, which does not provide as
+much peripherals as a real AVR, but can be used for example to tests a math
+library.
+
+Makefile
+========
+
+Each project should include a ``Makefile`` file to declare executables to
+built, associated sources and options.  Here is a example of such a file::
+
+    BASE = ../../..
+    PROGS = test_proto
+    test_proto_SOURCES = test_proto.c
+    MODULES = proto uart utils
+    CONFIGFILE = avrconfig.h
+    # atmega8, atmega8535, atmega128...
+    AVR_MCU = atmega8
+    # -O2 : speed
+    # -Os : size
+    OPTIMIZE = -Os
+
+    include $(BASE)/make/Makefile.gen
+
+``BASE``:
+    Give the path of the AVR Modules root directory relative to the current
+    directory.
+``PROGS``:
+    List of programs to build.
+``the_program_SOURCES``:
+    List the sources to compile and link for the given program.
+``MODULES``:
+    List of modules_ used for all the listed programs.
+``CONFIGFILE``:
+    This file is included automatically in each compilation unit, see `Config
+    file`_.
+``AVR_MCU``:
+    The model of AVR chip for which code is generated.
+``OPTIMIZE``:
+    Optimisation option, should be -Os for AVR.
+``include $(BASE)/make/Makefile.gen``:
+    This line will include the AVR Modules build system.
+
+More project variables can be used.  For a complete list, see `Makefile
+variables`_.
+
+Config file
+===========
+
+The configuration file is automatically included in all compilation units.
+It define options for the used modules.
+
+Here is an example of a config file::
+
+    #ifndef avrconfig_h
+    #define avrconfig_h
+
+    /* global */
+    /** AVR Frequency : 1000000, 1843200, 2000000, 3686400, 4000000, 7372800,
+     * 8000000, 11059200, 14745600, 16000000, 18432000, 20000000. */
+    #define AC_FREQ 14745600
+
+    /* uart - UART module. */
+    /** Select hardware uart for primary uart: 0, 1 or -1 to disable. */
+    #define AC_UART0_PORT 0
+    /** Baudrate: 2400, 4800, 9600, 14400, 19200, 28800, 38400, 57600, 76800,
+     * 115200, 230400, 250000, 500000, 1000000. */
+    #define AC_UART0_BAUDRATE 115200
+    /** Send mode:
+     *  - POLLING: no interrupts.
+     *  - RING: interrupts, ring buffer. */
+    #define AC_UART0_SEND_MODE RING
+
+    /* ... */
+
+    #endif /* avrconfig_h */
+
+Each module provides a template for config file in ``avrconfig.h``.
+
+In the future, a tool could be used to create and update such files.
+
+Modules
+=======
+
+Modules listed in the ``MODULES`` are searched in the modules directory in the
+AVR Modules root.  Each module directory should contain a file named
+``Makefile.module`` which is included by the build system when a module is
+requested for a project.  Here is an example of such a file::
+
+    proto_SOURCES = proto.c
+
+That's (most of the time) all!
+
+This file can also contains changes to other build variables, for example::
+
+    uart_SOURCES = uart0.c uart1.c
+    EXTRA_CLEAN_FILES += uart0.pts uart1.pts
+    HOST_LIBS += -lutil
+
+If the module uses options to be included in the config file, it should have a
+``avrconfig.h`` file that the user can use as a template for its project
+configuration.
+
+The user can include module headers using a full path relative to the AVR
+Modules root::
+
+    #include "modules/uart/uart.h"
+
+Makefile targets
+================
+
+``avr``, ``simu``, ``host``:
+    Build only for the given target.
+``all``:
+    Build all of the above.
+``clean.avr``, ``clean.simu``, ``clean.host``:
+    Clean up produced files for the given target.
+``clean``:
+    Clean up all of the above.
+``test``:
+    Run automated compilation tests.
+
+Makefile variables
+==================
+
+Sources matching ``*.avr.*`` will only be compiled for avr and simu targets.
+Sources matching ``*.host.*`` will only be compiled for host target.
+
+This is subject to change in the future.
+
+User variables
+--------------
+
+``BASE``:
+    Give the path of the AVR Modules root directory relative to the current
+    directory.
+``PROGS``:
+    List of programs compiled for avr and host.
+``AVR_PROGS``:
+    List of programs compiled for avr only.
+``HOST_PROGS``:
+    List of programs compiled for host only.
+``SIMU_PROGS``:
+    List of programs compiled for simu only.
+``prog_SOURCES``:
+    Sources for the program ``prog``.
+``mod_SOURCES``:
+    Source for the module ``mod``.
+``MODULES``:
+    Modules for all programs.
+``prog_MODULES``:
+    Modules for the program ``prog``, override the preceding variable.
+``CONFIGFILE``:
+    This file is included automatically in each compilation unit, see `Config
+    file`_.
+``AVR_MCU``:
+    The model of AVR chip for which code is generated.
+``OPTIMIZE``:
+    Optimisation option, can be ``-O``, ``-O2``, ``-O3`` or ``-Os``.
+``DEFS``:
+    Extra preprocessor definitions.
+``AVR_DEFS``, ``HOST_DEFS``:
+    Extra preprocessor definitions for avr or host only.
+``LIBS``:
+    Extra library to link with all programs.
+``prog_LIBS``:
+    Extra library to link with the program ``prog``.
+``AVR_LIBS``, ``HOST_LIBS``:
+    Extra library to link for avr or host only
+``EXTRA_CLEAN_FILES``:
+    Extra files to delete with the ``clean`` rule.
+``TEST_MCU``:
+    List of AVR chip to test compilation with.
+``TEST_CONFIGFILES``:
+    List of config files to test compilation with.
+``conf_TEST_MCU``:
+    Restricted list of AVR chip for a particular config file.

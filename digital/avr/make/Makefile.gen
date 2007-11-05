@@ -81,6 +81,7 @@ avr:
 simu:
 host:
 clean.avr:
+clean.simu:
 clean.host:
 endif
 
@@ -96,6 +97,6 @@ doc: $(DOC)
 
 # Cleaning.
 
-clean: clean.avr clean.host
+clean: clean.avr clean.simu clean.host
 	rm -f *.bak *~ $(DOC) *.exd $(EXTRA_CLEAN_FILES)
 
