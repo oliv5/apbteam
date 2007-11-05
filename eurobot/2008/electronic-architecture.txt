@@ -1,0 +1,50 @@
+=========================
+ Electronic architecture
+=========================
+
+Boards
+======
+
+IO:
+    Input/Output board. It acquires information from sensors (switches, IR
+    distance detectors, color sensors...) and it controls actuators (servo
+    motors, auxiliary motors...).
+
+    The main component is an AVR, surrounded by many connectors.
+AI:
+    Artificial intelligence board, may optionally be merged with IO board.  It
+    runs the robot automaton and decision algorithms.
+    
+    The main component is an AVR, as the board is the same as the IO one.  It
+    contains a flash memory to record the decisions taken by the robot.
+Asserv:
+    Motor control board.  Run the algorithms to control robot movement and
+    position.
+
+    An AVR runs the control logic, and a programmable logic component (an
+    XC9572, a CPLD from Xilinx) computes the encoders positions.
+Motor Power:
+    It applies consigns from the Asserv board to the motors.  An AVR is
+    responsible to control the current sunk in the motors and a owned-built
+    H-bridge drive the power.
+
+Communications
+==============
+
+I²C:
+    High level communication bus between boards.  The AI board is the master
+    of this bus.
+SPI:
+    The motor power board is connected using a serial high speed bus.
+PWM:
+    Pulse Width Modulation used to drive the motors.
+Quadrature:
+    Raw signal given by the encoders to determine rotation steps and direction.
+AVR ISP:
+    Used to program the AVR microcontrollers.
+AVR JTAG:
+    Used for in circuit debugging.
+DEBUG UART:
+    Used for debug control and diagnostic messages.
+CPLD JTAG:
+    Used to program the CPLD.
