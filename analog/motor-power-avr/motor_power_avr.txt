@@ -1,0 +1,45 @@
+=================
+ Motor Power AVR
+=================
+:Author: PP
+
+- La carte est pilotable soit par RS232, soit par bus SPI 5V, soit par
+  commande analogique. Les liaisons séries sont bidirectionelles et permettent
+  de remonter des infos sur l'état de la carte. Une ligne de spare peut servir
+  d'IT pour remonter des infos urgentes.
+
+- La carte est équipée de 2 capteurs de température pour monitorer la
+  température de chacun des deux ponts en H
+
+- La carte fixe elle-même le courant max autorisé dans les ponts. Les courants
+  max peuvent être différents entre les deux ponts (utile par ex si on utilise
+  la carte pour driver deux moteurs d'accessoires). Cette limite en courant
+  est fixée par une tension analogique produite par une PWM de l'AVR (Vref_L
+  et Vref_R). Quand, sous l'effet du courant, la tension produite sur le shunt
+  dans une branche du pont dépasse le Vref, le comparateur force le signal
+  LIM_R ou LIM_L à 0 ce qui déclenche une interruption. Le soft relache alors
+  tous les MOSFETS.
+
+- La carte monitore la tension de batterie filtrée à 2,5ms. Elle peut par
+  exemple limiter le courant dans les ponts en cas de baisse trop forte de la
+  tension de batterie, ou renvoyer un signal "low batt" à la carte-mère
+
+- La carte dispose d'une ligne de spare pour IT ou pour autre...
+
+- On pilote chaque MOS indépendament afin de pouvoir appliquer en soft un
+  dead-time entre les commutations (on coupe un MOS, on attend, et on allume
+  l'autre). Ca permet d'éviter les shoot-through sans avoir à rajouter une
+  tripaille de composants. 100ns de dead time devraient être l'idéal. Si l'AVR
+  tourne à 10MHz, ça fait 1 cycle.
+
+- les drivers de MOS sont alimentés en 10V. Si leur alim tombe en-dessous de
+  leur UVLO (8V environ), ils se coupent. Ils consomment 1mA à 20kHz. Après il
+  faut ajouter la conso des gates des MOS (2mA par MOS environ). Ca fait un
+  total de 20mA sur le 10V. Les 47nF sur le 12V donnent une autonomie de 4 à
+  5ms avant de tomber en dessous de 10V. Si la tension de batterie tombe
+  brusquement, on a donc le temps de voir qu'elle a baissé sous son seuil
+  normal, et on peut donc limiter le courant dans les ponts avant que les
+  drivers ne se coupent.
+
+- le 10V est fait un peu bizarement, avec deux régu de 5V. Le régu 10V prend
+  sa référence par rapport au 5V.
