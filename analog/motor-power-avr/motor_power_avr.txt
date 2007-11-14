@@ -43,3 +43,15 @@
 
 - le 10V est fait un peu bizarement, avec deux régu de 5V. Le régu 10V prend
   sa référence par rapport au 5V.
+
+- la référence des MOSFETs est PHK24NQ04LT. Ils ont un Rdson d'environ 5mOhm.
+
+- la référence des drivers de MOS est MAX5063AASA. Ce sont d'excellents
+  drivers (rapides, fort courant, délais précis).
+
+En cas de difficultés d'appro pour ce composant, on pourra prendre des IR2010,
+de moins bonne facture, mais qui feront l'affaire.
+
+Il faudra peut-etre modifier le soft de manière à alonger le dead time, et il
+faudra limiter le courant un peu plus bas (30% environ) pour limiter la
+surchauffe due aux moins bonnes performances de ce driver.
