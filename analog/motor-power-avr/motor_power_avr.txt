@@ -4,9 +4,29 @@
 :Author: PP
 
 - La carte est pilotable soit par RS232, soit par bus SPI 5V, soit par
-  commande analogique. Les liaisons séries sont bidirectionelles et permettent
-  de remonter des infos sur l'état de la carte. Une ligne de spare peut servir
-  d'IT pour remonter des infos urgentes.
+  commande analogique (ou PWM > 20kHz). Les liaisons séries sont
+  bidirectionelles et permettent de remonter des infos sur l'état de la carte. 
+
+- le connecteur micromatch en entrée est un 10 points. Il contient tous les
+  signaux de commande (SPI, RS232, analogique/PWM)
+
+- le connecteur de DEV contient le SPI pour la programation ISP et le RS232
+
+- le pinout des connecteurs est étudié pour que les signaux rapides (SPI)
+  soient situés proches de masses HF (GND ou signaux lents). Les signaux RX232
+  sont découplés à la masse par une capa de 1nF dans ce but.
+
+- il subsite 4 straps à câble filairement. Ces straps sont des signaux de
+  commande des PWM. Ils vont aux drivers de MOS. Leur cablage par strap est
+  volontaire : il s'agit de ne pas couper le plan de masse sous les pistes de
+  puissance qui supportent de très forts dI/dt et qui donc doivent être
+  proches d'un signal de retour de masse. Si on passait une piste dans le
+  plan, celà créerait une fente qui augmenterait l'impédance du plan à cet
+  endroit jusqu'à atteindre quelques nano-henrys qui, avec des dI/dt de 15A en
+  30ns (temps de montée typ des MOS, soit une fréquence équivalente de 10MHz),
+  pourrait créer des ddp jusqu'à 1V voire un peu plus. Bon, en fait, c'est la
+  règle CEM de base : ne jamais fendre les plans de masse surtout en présence
+  de forts dI/dT. (TODO : compléter le fichier excel de calcul)
 
 - La carte est équipée de 2 capteurs de température pour monitorer la
   température de chacun des deux ponts en H
