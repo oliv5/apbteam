@@ -35,16 +35,26 @@ Most boards are a division of a Europe format board.  Europe is 10x16cm, 1/2
 Europe is 8x10cm and 1/4 Europe is 5x8cm.  Actually, a margin must be
 subtracted for panelization.
 
-Some components have a standard position.  This include mounting holes and
-side connectors.
+Some components have a standard position.  This include mounting holes
+(MOUNT-HOLE3.3 in the holes library) and side connectors.
 
-- mounting holes: MOUNT-HOLE3.3 in the holes library:
+Exact dimensions and positions:
 
-  - at (0.15 0.15) and (0.15 2.925) for 1/4 Europe,
-  - at (0.15 0.15), (0.15 2.925), (3.65 0.15) and (3.65 2.925) for 1/2 Europe.
+- 1/4 Europe:
+  - board dimensions: (1.900 3.100)
+  - mounting holes: (0.175 0.175) and (0.175 2.925)
+- 1/2 Europe:
+  - board dimensions: (3.900 3.100)
+  - mounting holes: (0.175 0.175), (0.175 2.925), (3.725 2.925), and (0.175
+    2.925).
+- 1/8 Europe:
+  - board dimensions: (1.900 1.500)
+  - mounting holes: (0.175 0.175) and (TBD)
+- smaller boards:
+  - minimum boad dimensions: (0.800 0.800)
+  - no standard mounting holes position.
 
-For exact dimensions and positions, please see the asserv board for 1/4 Europe
-and the puiss board for 1/2 Europe.
+Theses dimensions are designed with Olimex design rules in mind.
 
 Connectors
 ----------
