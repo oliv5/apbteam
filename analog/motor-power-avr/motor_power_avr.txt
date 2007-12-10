@@ -7,16 +7,16 @@
   commande analogique (ou PWM > 20kHz). Les liaisons séries sont
   bidirectionelles et permettent de remonter des infos sur l'état de la carte. 
 
-- le connecteur micromatch en entrée est un 10 points. Il contient tous les
+- Le connecteur micromatch en entrée est un 10 points. Il contient tous les
   signaux de commande (SPI, RS232, analogique/PWM)
 
-- le connecteur de DEV contient le SPI pour la programation ISP et le RS232
+- Le connecteur de DEV contient le SPI pour la programation ISP et le RS232
 
-- le pinout des connecteurs est étudié pour que les signaux rapides (SPI)
-  soient situés proches de masses HF (GND ou signaux lents). Les signaux RX232
+- Le pinout des connecteurs est étudié pour que les signaux rapides (SPI)
+  soient situés proches de masses HF (GND ou signaux lents). Les signaux RS232
   sont découplés à la masse par une capa de 1nF dans ce but.
 
-- il subsite 4 straps à câble filairement. Ces straps sont des signaux de
+- Il subsite 4 straps à câbler filairement. Ces straps sont des signaux de
   commande des PWM. Ils vont aux drivers de MOS. Leur cablage par strap est
   volontaire : il s'agit de ne pas couper le plan de masse sous les pistes de
   puissance qui supportent de très forts dI/dt et qui donc doivent être
@@ -26,10 +26,10 @@
   30ns (temps de montée typ des MOS, soit une fréquence équivalente de 10MHz),
   pourrait créer des ddp jusqu'à 1V voire un peu plus. Bon, en fait, c'est la
   règle CEM de base : ne jamais fendre les plans de masse surtout en présence
-  de forts dI/dT. (TODO : compléter le fichier excel de calcul)
+  de forts dI/dT.
 
 - La carte est équipée de 2 capteurs de température pour monitorer la
-  température de chacun des deux ponts en H
+  température de chacun des deux ponts en H.
 
 - La carte fixe elle-même le courant max autorisé dans les ponts. Les courants
   max peuvent être différents entre les deux ponts (utile par ex si on utilise
@@ -42,9 +42,7 @@
 
 - La carte monitore la tension de batterie filtrée à 2,5ms. Elle peut par
   exemple limiter le courant dans les ponts en cas de baisse trop forte de la
-  tension de batterie, ou renvoyer un signal "low batt" à la carte-mère
-
-- La carte dispose d'une ligne de spare pour IT ou pour autre...
+  tension de batterie, ou renvoyer un signal "low batt" à la carte-mère.
 
 - On pilote chaque MOS indépendament afin de pouvoir appliquer en soft un
   dead-time entre les commutations (on coupe un MOS, on attend, et on allume
@@ -52,7 +50,7 @@
   tripaille de composants. 100ns de dead time devraient être l'idéal. Si l'AVR
   tourne à 10MHz, ça fait 1 cycle.
 
-- les drivers de MOS sont alimentés en 10V. Si leur alim tombe en-dessous de
+- Les drivers de MOS sont alimentés en 10V. Si leur alim tombe en-dessous de
   leur UVLO (8V environ), ils se coupent. Ils consomment 1mA à 20kHz. Après il
   faut ajouter la conso des gates des MOS (2mA par MOS environ). Ca fait un
   total de 20mA sur le 10V. Les 47nF sur le 12V donnent une autonomie de 4 à
@@ -61,12 +59,12 @@
   normal, et on peut donc limiter le courant dans les ponts avant que les
   drivers ne se coupent.
 
-- le 10V est fait un peu bizarement, avec deux régu de 5V. Le régu 10V prend
+- Le 10V est fait un peu bizarement, avec deux régu de 5V. Le régu 10V prend
   sa référence par rapport au 5V.
 
-- la référence des MOSFETs est PHK24NQ04LT. Ils ont un Rdson d'environ 5mOhm.
+- La référence des MOSFETs est PHK24NQ04LT. Ils ont un Rdson d'environ 5mOhm.
 
-- la référence des drivers de MOS est MAX5063AASA. Ce sont d'excellents
+- La référence des drivers de MOS est MAX5063AASA. Ce sont d'excellents
   drivers (rapides, fort courant, délais précis).
 
 En cas de difficultés d'appro pour ce composant, on pourra prendre des IR2010,
@@ -75,3 +73,53 @@ de moins bonne facture, mais qui feront l'affaire.
 Il faudra peut-etre modifier le soft de manière à alonger le dead time, et il
 faudra limiter le courant un peu plus bas (30% environ) pour limiter la
 surchauffe due aux moins bonnes performances de ce driver.
+
+Micromatch command connector
+============================
+
+Pinout:
+
+== ====================================
+1  Gnd
+2  Vcom_R (force to 0 when in SPI mode)
+3  SPI_MOSI / Dir_R
+4  Vcom_L (force to 0 when in SPI mode)
+5  SPI_CLK / Dir_L
+6  Gnd
+7  SPI_MISO
+8  TX_slave / SPI_IT*
+9  SPI_CS*
+10 RX_slave
+== ====================================
+
+Use in SPI mode:
+
+== ==================
+1  Gnd
+2  Force to 0
+3  SPI_MOSI
+4  Force to 0
+5  SPI_CLK
+6  GND
+7  SPI_MISO
+8  TX_slave / SPI_IT*
+9  SPI_CS*
+10 RX_slave
+== ==================
+
+Use in old PWM mode:
+
+========= ================ =============== ===========================
+PWM conn. Master cmd conn. Slave cmd conn. Signame
+========= ================ =============== ===========================
+6         ..               1               Gnd
+7         ..               2               Vcom_R
+8         ..               3               Dir_R
+9         ..               4               Vcom_L
+10        ..               5               Dir_L
+..        6                6               Gnd
+..        7                7               NC (force to 0 if possible)
+..        8                8               TX_slave
+..        9                9               NC (force to 0 if possible)
+..        10               10              RX_slave
+========= ================ =============== ===========================
