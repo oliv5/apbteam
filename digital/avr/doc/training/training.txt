@@ -146,21 +146,22 @@ To prevent the change of the bits of the other pins of the port, we need to
 use some logical function:
 
   to put a bit to 1
-    you need to use a logical *or*. Here is a sample algorithm to change from
-    1 to 0 the third bit of the ``PORTA`` register::
+    you need to use a logical *or*. Here is a sample algorithm to change the
+    change from 0 to 1 the third bit of the ``PORTA`` register::
+
+      // 8 correspond, in binary, to 00001000.
+      PORTA |= 8
+
+  to put a bit to 0
+    you need to use a logical *and* between the ``PIN`` register and an 8 bits
+    word with all bits set to 1 expect the bit you want to change.  Here is a
+    sample algorithm to change from 1 to 0 the third bit of the ``PORTA``
+    register::
 
       // ~8 correspond to the opposite of 8. In binary, it means the opposite
       // of 00001000, that is to say 11110111. Only the third bit is set to 0
       // because it is the one we would like to change.
       PORTA &= ~8
-
-  to put a bit to 0
-    you need to use a logical *and* between the ``PIN`` register and an 8 bits
-    word with all bits set to 1 expect the bit you want to change. Here is a
-    sample algorithm to change the change from 0 to 1 the third bit of the
-    ``PORTA`` register::
-
-      PORTA |= 8
 
 In fact, there is a macro ``BV_`` (defined in ``common/io.h``) which lets you
 directly work with the desired bit of a byte. If we use this macro, the
@@ -177,7 +178,7 @@ can do the following::
   // 2³ + 2² = 12
   PORTA |= 12
   // You can also use the BV_ macro:
-  PORTA |= _BV(2) + _BV(3)
+  PORTA |= _BV(2) | _BV(3)
 
 In fact, you should try to use the ``BV_`` macro as much as possible: it
 usually make the code easier to read and understand.
@@ -211,7 +212,7 @@ The polling mode corresponds to the action of regularly check something to see
 if there is change and take actions according to. For example, with the serial
 port, you need to do something like::
 
-  If there is a bit arrived on the serial port?
+  If there is a byte arrived on the serial port
     If no:
        Go on with the main program;
     If yes:
@@ -309,11 +310,11 @@ following way::
 	`-- modules
 	    |   >>> Many modules ready to use
 	    |-- adc
-	    |   >>> Analogic to digital convertion
+	    |   >>> Analogic to digital conversion
 	    |-- host
-	    |   >>> AVR simulator for PC
+	    |   >>> Build AVR program for PC architecture
 	    |-- math
-	    |   >>> floating point computatin, random number generation
+	    |   >>> floating point computation, random number generation
 	    |-- proto
 	    |   >>> Serial protocol management
 	    |-- twi
