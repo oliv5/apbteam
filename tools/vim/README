@@ -1,12 +1,12 @@
-Pour utiliser ces fichiers, copier le tout dans votre répertoire .vim dans
-votre répertoire home :
+To use theses files, copy everything in your .vim directory in your home
+directory:
 
 	mkdir ~/.vim
 	cp -r * ~/.vim
 
-Et ajouter dans votre .vimrc :
+And add in your .vimrc:
 
 let g:fullname = "Henri Dugenou"
 let g:copyright = g:fullname
-let g:email = "dugenou@efrei.fr"
+let g:email = "dugenou@example.com"
 let g:nickname = "Dug"
