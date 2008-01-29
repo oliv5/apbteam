@@ -1,0 +1,189 @@
+The power supply board aims at :
+
+
+*** 5V bucks ***
+- the bucks used are LM2678. They are compliant with the fllowing requierements :
+  * Input voltage : 8V to 40V.
+  * 120mOhm switcher allow up to 92% efficiency up to 5A
+  * 260 kHz operation
+  * simple design
+  * good power design, allow easy dissipation
+  * package handcratfly solderable
+
+- dc converting from 12V to 5V@4A allows a power dissipation of only 1.5W in the buck component (see calculs table)
+
+- the feedback is made of 1% resistors which allows an overall precsion of +/-3%. Good isn't it ?
+
+- a few capacitors are placed into the feedback loop as a provision for stability improvement if needed. Normally, they shoudn't be needed, but only tests will validate that fact.
+
+- according to methodology explained in the datasheet, we use a 22µH inductor. It can stand a continuous 4A current and have a 60mOhm resistance. at 4A, they will dissipate around 0.8W.
+
+- the output cap is 47µH, but shall probably be upgraded to 100µF
+
+- input cap is 10µF/50V. It is the most critical capacitor, because it shall stand great dI/dT, so a ceramic type is chosen for it aibility to react very well to high frequencies
+
+- we use 4 40V/1A schottky diodes in parallel for cost reasons and
+  dissipation. I guess a single well-sized diode would have been better
+  for efficiency, but global cost would be higher and dissipation problems would not be kind. They are expected to dissipate the most when input voltage is the highest. At 25V, 4A in output, they should stand a 0.8A current each, which will produce something like a 0.6V forward voltage. Thus, they would dissipate around 0.5W each.
+
+*** Power input ***
+- battery input as well as nestor input are protected against overvoltage and
+  reverse pluggin with a transil coupled to a polyswitch. 
+  - In case of a default, the transil is passing and the polyswitch is expected
+    to blow off (it as capable to rearm itself). 
+  - Anyway, in the case where the transil is stressed before it breaks, it may
+    (seldom) blow as an open circuit : in that case, if the polyswitch has not
+    be blown (which is supposed to be the case, otherwise, the transil doesn't
+    breaks), and the overvoltage will apply on the supply rail.  So => avoid
+    problems : don't try to apply overvoltages
+
+- when a voltage is present on nestor input, it enlightens LED_NES_PRE
+
+- the power selection is achieved by a relay driven by the selection circuitry.
+  The relay switches either V_nestor, nor V_battery on the signal V_alim.
+
+- an input tank capacitor is implemented. We used 2 aluminium 470µF/63V
+  electrolytic capacitors which can be upgraded to 1000µF each for a little
+  overcost. 
+  - For max consumption (40W on each output), they allow approx 0.5ms which is
+    clearly not enough for saving power during the relay switch time (estimated
+    to 5ms).
+  - For a 1A output current on 5V_dirty, we suppose anyway that the transparecy
+    time given by these tank capacitors will be long enough for ensuring no
+    voltage drop to output
+
+- the tank capacitors are connected to V_alim through a soft start circuitry. 
+  - It aims at preventing from harmfull surge charging current which may happen
+    on power-on. 
+  - This is done by a MOS whose gate is driven at off state by a capacitor. 
+  - When power is quickly applied, the capacitor is slowly charged.  When gate
+    voltages reaches linearity zone, the current begins to flow and charge
+    smoothly the tank capacitor. 
+  - After the gate capacitor is fully charged, the soft-start circuitry looks
+    for the tank like a very small resistor.
+
+*** Power selection control ***
+- this circuitry checks nestor voltage to decide wheather the board is supplied
+  by nestor or by the battery
+
+- It is power by an independant 5V linear regulator powered by V_nestor. It is
+  expected to be +/-2% precise and produces the +5V voltage.
+
+- A comparators checks V_nestor to a reference derived from +5V. The threshold
+  is set 11.0V for 12V operation and 22.0V for 24V operation. The time constant
+  is set between 0.5 and 0.8ms.
+
+- upon the comparator trips low (nestor drops under the threshold), it shorts
+  to GND a timer capacitor, which cuts the relay command. Thus, the relay
+  releases and selects V_bat for powering the board
+
+- when nestor goes up, the comparator's output becomes high impedance (through
+  the diode), the timer capacitor can charge smoothly through R14 resistor.
+  When it reached the thresholds of the buffer gate, the relay switches on and
+  selects V_nestor as power supply for the board.
+
+- the timer allows thus :
+  - a short switching time to battery when V_nestor drops
+  - a long switching time to nestor when nestor arrives. This is done to be
+    sure nestor voltage is valid for sufficient time to be really present when
+    we switch it.
+
+- the led LED_NES_ACT is enlightened when nestor powering is activated
+  
+- for avoiding the linear regulator to heat too much, the relay is powered by
+  when P5V_NUM when it is present. This is done by closing a P-MOSFET with
+  P5V_NUM voltage. If this voltage is absent (in case of a startup on nestor
+  without a battery), the P-MOS allows +5V to power the relay solenoïd until
+  nestor powers on the board and P5V_NUM takes the hand to poer the relay.
+
+- the diode D16 is used to protect the regulator from power arrival via its
+  output. Indeed, when V_nestor is not present, P5V_NUM takes back to +5V
+  trough the P-MOS body diode and could break the regulator if it's input was
+  0V.
+
+*** Led voltmeter ***
+- The led voltmeter checks battery voltage. It is implemented around 4
+  comparators packaged in the MAX969.
+
+- Battery voltage is fed to a divider bridge with a filtering capacitor, and
+  then fed to the 4 comparators.
+
+- Each comparator has a different voltage reference. The references are
+  generated by a multiple divider bridge powered by the 1.2V reference included
+  into the MAX969.
+
+- An hysteresis is set to 1% of battery voltage
+- The thresholds are calculated with steps of about 4% of battery range
+- See calculs.xls for detailed threshold calculation.
+
+*** Charge controler ***
+- The battery charge control is ensured by a SEPIC converter. This topology
+  allow DC conversion from an input voltage hich can be either greater or lower
+  than the output voltage. It is opposed to bucks (step-down) and boost
+  (step-up) topology, and similar to flyback, but with simplified switching (no
+  snubber problems)
+
+- We use this converter from 10V to 30V input to a 10V to 28V current-limited
+  output.
+
+- Normally, SEPIC are built with a boost-type controler. For cost and
+  availability reasons (it's been hard to find a boost regulator matching our
+  requierments), we use a buck controler which is a bit modified.
+  - The normal loopback reaction of a buck is acted on the high-side MOS : the
+    lower the output voltage (sensed by the feedback pin), the higher the 'ON'
+    duty cycle on the MOS (that will result as a growth in inductor current
+    which will compensate the fall of output voltage).
+  - In a SEPIC (as in a boost or a flyback), the MOS is low-side (source
+    conected to GND, inductor on the drain). It shall react as the high-side
+    MOS of a buck ('ON' duty cycle augmentation upon output voltage fall).
+  - For availability reasons (we didn't find boost controlers with high enough
+    output voltage, high enough current, small enough price and package), we
+    will then use a Buck controler with external MOS, and we will use the
+    high-side gate drive output for driving our SEPIC low-side MOS. 
+  - The MOS is sized according to the following constraints :
+    - it shall stand a Vds equal to input voltage + output voltage (due to the
+      fact that the transformer's primary voltage is always equal to
+      transformer's secondary voltage). Takin a few margin, if we want 30V
+      input and 30V output, we need at least a 60V MOS. For security, we take a
+      100V.
+    - it shall have the lowest Rdson. The MOS chosen has a 30mOhm Rdson, which
+      will result in a 30mW dissipation at 1A charge current
+    - solderability (handcraft), small package, price.
+
+- The unloaded output voltage is limited to the final charging voltage fitted
+  to the battery : we have chosen 14V (28V for a 28V battery). This voltage is
+  set by a divider bridge, as the "normal" working mode of the buck controler
+  implies. See calcul.xls for detailed calculation.
+
+- The current is limited by a current sense sending proportional positive
+  feedback to the buck controler upon overcurrent condition.
+  - a shunt resistor accumulates the current into the transformer secondary.
+    This current is exactly equal (in mean value) to battery charge current.
+    V_shunt is the voltage accumulated on the shunt resistor ; it is negative
+    (below GND).
+  - a low-pass filter is used to get more or less the mean value of V_shunt :
+    V_shunt_f
+  - a negative amplifier amplifies V_shunt_f relatively to a reference voltage
+    of 100mV. The gain is about 3. It's output is equal to :
+           V_out=(|V_shunt_f| + 100mV) * 3 + 100mV
+  - a diode is inserted at the right output of this amplifier. Then, when
+    amplifier's output is intended to be lower than V_fb=0.7V, it is inactive on
+    buck's feedback. It it is intended to be greater than V_fb, the diode is
+    passing and the positive feedback action makes the controler to lower duty
+    cycle, reducing inductor current. The diode is inserted in the feedback
+    loop of the amplifier so that when it works in linear region, the diode's
+    drop is compensated.
+  - the threshold voltage on V_shunt_f over which the limitation occurs is
+    equal to :
+            V_shunt_f_th=(0.7 - 0.1) / 3 - 0.1
+  - for a 0.22 ohm resistor, it represents a charging current of about 400mA.
+
+- See calcul.xls table for detailed (and maybe up-to-date) calculus and values
+
+- The SEPIC is compensated (which means "the system frequency response is
+  corrected for ensuring the closed-loop stability) by a few capacitors in the
+  feedback loop. These caps are defined by nose metrics and a kind of black
+  magics that I don't master enough for explaining it in a comprehensive way.
+  It may work properly... or not, we will see upon real testsand after the help
+  of simulation
+
