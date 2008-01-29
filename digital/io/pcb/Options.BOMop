@@ -1,0 +1,7 @@
+ScreenWidth=800
+ScreenHeight=600
+AutoOpen=N
+AutoDatabase=
+AutoOpenSetup=Y
+AutoSetup=/home/pp/eagle/robot.BOMsu
+Setup=/home/pp/eagle/robot.BOMsu
