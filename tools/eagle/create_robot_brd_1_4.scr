@@ -1,0 +1,18 @@
+# Euro Format Board
+#
+# Draws the dimension lines of an APBTeam's 1/4 euro format board (50mm x 80mm).
+
+
+Grid mil 5 2 on;
+Set Wire_Bend 0;
+Layer Dimension;
+Wire 0  (0 0) (3100 1900) (0 0);
+Layer Top;
+Wire 10  (0 0) (3100 1900) (0 0);
+Layer Bottom;
+Wire 10  (0 0) (3100 1900) (0 0);
+
+add 3,3 (175 175)
+add 3,3 (2925 175)
+
+Window Fit;
