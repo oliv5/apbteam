@@ -3,24 +3,28 @@
 =================
 :Author: PP
 
-- La carte est pilotable soit par RS232, soit par bus SPI 5V, soit par
-  commande analogique (ou PWM > 20kHz). Les liaisons séries sont
-  bidirectionelles et permettent de remonter des infos sur l'état de la carte. 
+- La carte est pilotable par le connecteur CMD micromatch 10 points, soit en
+  RS232, soit par bus SPI 5V, soit par commande analogique (ou PWM > 20kHz).
+  Les liaisons séries de ce connecteur sont bidirectionelles et permettent de
+  remonter des infos sur l'état de la carte. 
 
-- Le connecteur micromatch en entrée est un 10 points. Il contient tous les
-  signaux de commande (SPI, RS232, analogique/PWM)
+- La carte est aussi pilotable par le connecteur I2C
 
 - Le connecteur de DEV contient le SPI pour la programation ISP et le RS232
 
 - Le pinout des connecteurs est étudié pour que les signaux rapides (SPI)
   soient situés proches de masses HF (GND ou signaux lents). Les signaux RS232
-  sont découplés à la masse par une capa de 1nF dans ce but.
+  sont découplés à la masse par une capa de 1nF dans ce but. La capa de 1nF
+  n'est pas gênante pour le RS232, et constitue une faible impédance face aux
+  hautes harmoniques des signaux à fronts rapide (10ns = 35MHz de fréquence
+  équivalente)
 
 - Il subsite 4 straps à câbler filairement. Ces straps sont des signaux de
-  commande des PWM. Ils vont aux drivers de MOS. Leur cablage par strap est
-  volontaire : il s'agit de ne pas couper le plan de masse sous les pistes de
-  puissance qui supportent de très forts dI/dt et qui donc doivent être
-  proches d'un signal de retour de masse. Si on passait une piste dans le
+  commande des PWM. Ils vont aux drivers de MOS. Ils devront être câblés en
+  face bottom, plaqués au plus près contre le plan de masse. Leur cablage par
+  strap est volontaire : il s'agit de ne pas couper le plan de masse sous les
+  pistes de puissance qui supportent de très forts dI/dt et qui donc doivent
+  être proches d'un signal de retour de masse. Si on passait une piste dans le
   plan, celà créerait une fente qui augmenterait l'impédance du plan à cet
   endroit jusqu'à atteindre quelques nano-henrys qui, avec des dI/dt de 15A en
   30ns (temps de montée typ des MOS, soit une fréquence équivalente de 10MHz),
@@ -28,17 +32,28 @@
   règle CEM de base : ne jamais fendre les plans de masse surtout en présence
   de forts dI/dT.
 
-- La carte est équipée de 2 capteurs de température pour monitorer la
-  température de chacun des deux ponts en H.
-
 - La carte fixe elle-même le courant max autorisé dans les ponts. Les courants
   max peuvent être différents entre les deux ponts (utile par ex si on utilise
   la carte pour driver deux moteurs d'accessoires). Cette limite en courant
-  est fixée par une tension analogique produite par une PWM de l'AVR (Vref_L
-  et Vref_R). Quand, sous l'effet du courant, la tension produite sur le shunt
+  est fixée par une tension analogique produite par une PWM sortant de l'AVR
+  (Vref_L et Vref_R). Sous l'effet du courant, la tension produite sur le shunt
   dans une branche du pont dépasse le Vref, le comparateur force le signal
   LIM_R ou LIM_L à 0 ce qui déclenche une interruption. Le soft relache alors
   tous les MOSFETS.
+
+- La carte est équipée de 2 capteurs de température pour monitorer la
+  température de chacun des deux ponts en H. Le monitoring s'effectue par ADC,
+  puis comparaison en interne de l'AVR. Cette comparaison doit être effectuée
+  régulièrement, par exemple toutes les 2s, ou moins. Eventuellement, il serait
+  également intéressant de surveiller les variations rapides de température (ex
+  : si au-delà de 50°C, on prend 10° en 5 secondes, il y a un problème). Cette
+  comparaison est optionelle. Le strict minimum est de limiter le courant
+  graduellement à partir de 60°C et de couper tous les MOS du pont concerné si
+  la température dépasse 70°.
+    * en dessous de 60°C : limit = 15A 
+    * de 60°C à 70° : limit = descend linéairement de 15A à 4A
+    * au delà de 70° : pont coupé
+
 
 - La carte monitore la tension de batterie filtrée à 2,5ms. Elle peut par
   exemple limiter le courant dans les ponts en cas de baisse trop forte de la
