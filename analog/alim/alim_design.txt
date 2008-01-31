@@ -1,4 +1,20 @@
 The power supply board aims at :
+- Generating 5V power for electronics in the robot
+- Generating 5V power for servo motors (separate 5V to avoid perturbations of
+  the electronics by servomotors)
+- The power is taken on a battery (between 8V and 30V)
+- An external supply (Nestor) can be plugged on the board for charging the
+  battery while powering the robot. When Nestor voltage is present, the board
+  shall switch to it automatically.
+- A voltmeter shall give a visual and quickly understandable information on
+  battery state
+
+It is composed of the following elements :
+- 5V bucks
+- a switch controled by a switching circuitry for input power selection (Nestor
+  or Battery)
+- a SEPIC controler for battery charge
+- a 4-leds voltmeter
 
 
 *** 5V bucks ***
@@ -10,21 +26,33 @@ The power supply board aims at :
   * good power design, allow easy dissipation
   * package handcratfly solderable
 
-- dc converting from 12V to 5V@4A allows a power dissipation of only 1.5W in the buck component (see calculs table)
+- dc converting from 12V to 5V@4A allows a power dissipation of only 1.5W in
+  the buck component (see calculs table)
 
-- the feedback is made of 1% resistors which allows an overall precsion of +/-3%. Good isn't it ?
+- the feedback is made of 1% resistors which allows an overall precsion of
+  +/-3%. Good isn't it ?
 
-- a few capacitors are placed into the feedback loop as a provision for stability improvement if needed. Normally, they shoudn't be needed, but only tests will validate that fact.
+- a few capacitors are placed into the feedback loop as a provision for
+  stability improvement if needed. Normally, they shoudn't be needed, but only
+  tests will validate that fact.
 
-- according to methodology explained in the datasheet, we use a 22µH inductor. It can stand a continuous 4A current and have a 60mOhm resistance. at 4A, they will dissipate around 0.8W.
+- according to methodology explained in the datasheet, we use a 22µH inductor.
+  It can stand a continuous 4A current and have a 60mOhm resistance. at 4A,
+  they will dissipate around 0.8W.
 
 - the output cap is 47µH, but shall probably be upgraded to 100µF
 
-- input cap is 10µF/50V. It is the most critical capacitor, because it shall stand great dI/dT, so a ceramic type is chosen for it aibility to react very well to high frequencies
+- input cap is 10µF/50V. It is the most critical capacitor, because it shall
+  stand great dI/dT, so a ceramic type is chosen for it aibility to react very
+  well to high frequencies
 
-- we use 4 40V/1A schottky diodes in parallel for cost reasons and
-  dissipation. I guess a single well-sized diode would have been better
-  for efficiency, but global cost would be higher and dissipation problems would not be kind. They are expected to dissipate the most when input voltage is the highest. At 25V, 4A in output, they should stand a 0.8A current each, which will produce something like a 0.6V forward voltage. Thus, they would dissipate around 0.5W each.
+- we use 4 40V/1A schottky diodes in parallel for cost reasons and dissipation.
+  I guess a single well-sized diode would have been better for efficiency, but
+  global cost would be higher and dissipation problems would not be kind. They
+  are expected to dissipate the most when input voltage is the highest. At 25V,
+  4A in output, they should stand a 0.8A current each, which will produce
+  something like a 0.6V forward voltage. Thus, they would dissipate around 0.5W
+  each.
 
 *** Power input ***
 - battery input as well as nestor input are protected against overvoltage and
@@ -164,18 +192,17 @@ The power supply board aims at :
   - a low-pass filter is used to get more or less the mean value of V_shunt :
     V_shunt_f
   - a negative amplifier amplifies V_shunt_f relatively to a reference voltage
-    of 100mV. The gain is about 3. It's output is equal to :
-           V_out=(|V_shunt_f| + 100mV) * 3 + 100mV
+    of 100mV. The gain is about 3. It's output is equal to : V_out=(|V_shunt_f|
+    + 100mV) * 3 + 100mV
   - a diode is inserted at the right output of this amplifier. Then, when
-    amplifier's output is intended to be lower than V_fb=0.7V, it is inactive on
-    buck's feedback. It it is intended to be greater than V_fb, the diode is
+    amplifier's output is intended to be lower than V_fb=0.7V, it is inactive
+    on buck's feedback. It it is intended to be greater than V_fb, the diode is
     passing and the positive feedback action makes the controler to lower duty
     cycle, reducing inductor current. The diode is inserted in the feedback
     loop of the amplifier so that when it works in linear region, the diode's
     drop is compensated.
   - the threshold voltage on V_shunt_f over which the limitation occurs is
-    equal to :
-            V_shunt_f_th=(0.7 - 0.1) / 3 - 0.1
+    equal to : V_shunt_f_th=(0.7 - 0.1) / 3 - 0.1
   - for a 0.22 ohm resistor, it represents a charging current of about 400mA.
 
 - See calcul.xls table for detailed (and maybe up-to-date) calculus and values
