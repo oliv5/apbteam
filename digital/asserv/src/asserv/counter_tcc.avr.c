@@ -1,4 +1,4 @@
-/* counter.avr.c */
+/* counter_tcc.avr.c - Internal counter support. */
 /* asserv - Position & speed motor control on AVR. {{{
  *
  * Copyright (C) 2005 Nicolas Schodet
@@ -22,6 +22,12 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+
+/**
+ * This file add support for an AVR internal counter.  This uses one TCC
+ * hardware per counter, and an external circuitry to compute rotation
+ * direction.
+ */
 
 /** Define to 1 to reverse the left counter. */
 #define COUNTER_REVERSE_LEFT 0

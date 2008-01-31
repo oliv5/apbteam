@@ -83,4 +83,8 @@
 /** Support for quote parameter. */
 #define AC_PROTO_QUOTE 1
 
+/* asserv. */
+/** Use external counters. */
+#define AC_ASSERV_COUNTER_EXTERNAL 1
+
 #endif /* avrconfig_h */

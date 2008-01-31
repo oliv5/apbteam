@@ -38,7 +38,11 @@ uint8_t main_sequence, main_sequence_ack, main_sequence_finish;
 /* This is implementation include. */
 #ifndef HOST
 # include "timer.avr.c"
-# include "counter.avr.c"
+# if AC_ASSERV_COUNTER_EXTERNAL
+#  include "counter_ext.avr.c"
+# else
+#  include "counter_tcc.avr.c"
+# endif
 # include "pwm.avr.c"
 #else
 # include "simu.host.h"
