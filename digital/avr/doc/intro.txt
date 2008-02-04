@@ -13,6 +13,7 @@ If you are running Debian, you will need:
 
 - gcc-avr,
 - avr-libc,
+- binutils-avr,
 - gcc, make and other classic development packages...
 
 And you will probably need:
