@@ -1,25 +1,15 @@
 #include "mp_pwm_LR_.h"
 #include "mp_pwm_L_.h"
-
+#include "io.h"
 
 
 // Le PC, afin de faire le saut calculé
-#define PC PC_REG
-
-// Les sorties de contrôdu pont en H
-// A/B : branche du pont
-// H/L : High ou Low
-// _L_ : pont Left
-#define _L_AL // TODO ! à conpléter !
-#define _L_AH // TODO ! à conpléter !
-#define _L_BL // TODO ! à conpléter !
-#define _L_BH // TODO ! à conpléter !
+//#define PC PC_REG
 
 // static variables
 static uint8_t state_L_;
 static uint8_t state_L_cmd = 0x03;
 static uint8_t pwm_L_;
-
 
 // this file contains routines for managing the _L_ channel of mp board
 // the command sed -e 's/_L_/_R_/g' can be used for generating the _R_ file
@@ -39,10 +29,10 @@ void rise_L_ (void) {
       case 0x00:
 	// dir 0
 	//rise_L_label0:
-	_L_BH = 0;
-	_L_BL = 1;
-	_L_AL = 0;
-	_L_AH = 1;
+	_L_BH_0;
+	_L_BL_1;
+	_L_AL_0;
+	_L_AH_1;
 	sei();	// set back interrupts
 	return;
 	break;
@@ -50,10 +40,10 @@ void rise_L_ (void) {
       case 0x01:
 	// dir 1
 	//org rise_L_label0 + 0x10
-	_L_AH = 0;
-	_L_AL = 1;
-	_L_BL = 0;
-	_L_BH = 1;
+	_L_AH_0;
+	_L_AL_1;
+	_L_BL_0;
+	_L_BH_1;
 	sei(); 	// set back interrupts
 	return;
 	break;
@@ -61,10 +51,10 @@ void rise_L_ (void) {
       case 0x02:
 	// switch to forced low steady state
 	//org rise_L_label0 + 0x20
-	_L_AH = 0;
-	_L_AL = 1;
-	_L_BH = 0;
-	_L_BL = 1;
+	_L_AH_0;
+	_L_AL_1;
+	_L_BH_0;
+	_L_BL_1;
 	sei(); 	// set back interrupts
 	return;
 	break;
@@ -72,10 +62,10 @@ void rise_L_ (void) {
       case 0x03:
 	// switch to high impedance steady state
 	//org rise_L_label0 + 0x30
-	_L_AL = 0;
-	_L_AH = 0;
-	_L_BL = 0;
-	_L_BH = 0;
+	_L_AL_0;
+	_L_AH_0;
+	_L_BL_0;
+	_L_BH_0;
 	sei(); 	// set back interrupts
 	return;
 	break;
@@ -92,8 +82,8 @@ void fall_L_ (void) {
       {
       case 0x00:
 	// in the case we are in 0x00 direction
-	_L_AH = 0;
-	_L_AL = 1;
+	_L_AH_0;
+	_L_AL_1;
 	sei(); 	// set back interrupts
 	return;
 	break;
@@ -101,8 +91,8 @@ void fall_L_ (void) {
       case 0x01:
 	// in the case we are in 0x10 direction
 	//org fall_L_label0 + 0x10
-	_L_BH = 0;
-	_L_BL = 1;
+	_L_BH_0;
+	_L_BL_1;
 	sei(); 	// set back interrupts
 	return;
 	break;
@@ -126,10 +116,10 @@ void fall_L_ (void) {
 
 // overcurrent detected by comparators
 void ovc_L_ (void) {
-    _L_AL = 0;
-    _L_AH = 0;
-    _L_BL = 0;
-    _L_BH = 0;
+    _L_AL_0;
+    _L_AH_0;
+    _L_BL_0;
+    _L_BH_0;
     sei(); 	// set back interrupts
     // following line orders to keep high Z state when faling edge will arrive
     state_L_ = 0x30;

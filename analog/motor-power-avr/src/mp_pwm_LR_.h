@@ -26,17 +26,63 @@
  * }}} */
 
 #include "common.h"
+#include "io.h"
 
-#define OCR_L_ OCR0
-#define OCR_R_ OCR2
+// Control outputs of H-bridges
+// _L_/_R_ : Left or Right bridge
+// A/B : bridge leg
+// H/L : High or Low side
 
-#define Timer_L_ TOCNT
-#define Timer_R_ T2CNT
+// _L_AH : PORTC6
+#define _L_AH_1 PORTC |= 0x40
+#define _L_AH_0 PORTC &= ~0x40
+// _L_AL : PORTC7
+#define _L_AL_1 PORTC |= 0x80
+#define _L_AL_0 PORTC &= ~0x80
+// _L_BH : PORTC4
+#define _L_BH_1 PORTC |= 0x10
+#define _L_BH_0 PORTC &= ~0x10
+// _L_BL : PORTC5
+#define _L_BL_1 PORTC |= 0x20
+#define _L_BL_0 PORTC &= ~0x20
 
+
+// _R_AH : PORTD6
+#define _R_AH_1 PORTD |= 0x40
+#define _R_AH_0 PORTD &= ~0x40
+// _R_AL : PORTD7
+#define _R_AL_1 PORTD |= 0x80
+#define _R_AL_0 PORTD &= ~0x80
+// _R_BH : PORTC2
+#define _R_BH_1 PORTC |= 0x04
+#define _R_BH_0 PORTC &= ~0x04
+// _R_BL : PORTC3
+#define _R_BL_1 PORTC |= 0x08
+#define _R_BL_0 PORTC &= ~0x08
+
+// Timer for _L_ and _R_ control
+#define TCNT_L_	TCNT0
+#define TCNT_R_	TCNT2
+#define OCR_L_	OCR0
+#define OCR_R_	OCR2
+#define TCCR_L_	TCCR0
+#define TCCR_R_	TCCR2
+
+// timer configuration
+// for 57.21kHz : prescaler = 0 : CSx2:0 = 0x01
+// for 7.68kHz  : prescaler = 8 : CSx2:0 = 0x02
+#define TCCR_CFG (regv (FOC0, WGM00, COM01, COM00, WGM01, CS02, CS01, CS00, \
+			     0,     0,     0,     0,     0,    0,    1,    0))
+
+// timer interrupts configuration
+#define TIMSK (regv (OCIE2
+
+// PWM max, min, and offset values
 #define PWM_MIN_LR_ 0x10
 #define PWM_MAX_LR_ 0xF0
 #define PWM_OFFSET_LR_ 0x00
 
+// functions
 void init_timer_LR_(void);
 void init_curLim (void);
 uint8_t get_curLim_temp (uint8_t temperature);
