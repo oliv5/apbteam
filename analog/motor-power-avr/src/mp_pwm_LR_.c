@@ -1,4 +1,11 @@
+#include "common.h"
+#include "mp_pwm_LR_.h"
+#include "mp_pwm_L_.h"
 
+// Variables for current limitation
+static uint8_t curLim_temp;
+static uint8_t curLim_bat;
+static uint8_t curLim_soft;
 
 // This file contains general pwm routines for mp (motor-power) board
 //
@@ -6,18 +13,28 @@
 // Timer_L_ : timer dedicated to Left side
 
 void init_timer_LR_(void) {
-    Timer_L_ = 0x00;
-    state_L_ = 0x40;
-    Timer_R_ = 0x80;
-    state_R_ = 0x40;
-    // TODO : set interrupts
-    // TODO : set OCR to 0
-    START_TIMER_L_;
-    START_TIMER_R_;
+    init_pwm_L_();
+    //init_pwm_R_();
+
+    TCNT_L_ = 0x00;
+    TCNT_R_ = 0x80;	// 180° phase shifted to TCNT_L
+
+    OCR_L_ = PWM_MIN_LR_;
+    OCR_R_ = PWM_MIN_LR_;
+
+    // set interrupts
+    TIMSK |= TIMSK_LR_CFG;
+
+    // launch timers
+    TCCR_L_ = TCCR_LR_CFG;
+    TCCR_R_ = TCCR_LR_CFG;
 }
 
 void init_curLim (void) {
     // TODO : set interrupts
+    curLim_soft = 0x80;
+    curLim_bat = 0x00;
+    curLim_temp = 0x00;
 }
 
 uint8_t get_curLim_temp (uint8_t temperature) {
@@ -30,17 +47,27 @@ uint8_t get_curLim_bat (uint8_t battery) {
 
 // this function shall be called after each adjustment of any current limit
 void update_curLim(void) {
-    uint8 curLim_tmp;
-    uint8 ret;
+    uint8_t curLim_tmp;
 
-    if (curLim_soft > curLim_temp) then
-        curLim_tmp = curLim_temp
-    else
-        curLim_tmp = curLim_soft;
+    // search for MIN(curLim_soft, curLim_temp, curLim_bat)
+    curLim_tmp = curLim_soft;
 
-    if (curLim_tmp > curLim_bat) then
+    if (curLim_tmp > curLim_temp)
+      {
+        curLim_tmp = curLim_temp;
+      }
+
+    if (curLim_tmp > curLim_bat) 
+      {
         curLim_tmp = curLim_bat;
+      }
 
+    if (curLim_tmp > CURLIM_MAX) 
+      {
+        curLim_tmp = CURLIM_MAX;
+      }
+
+    // set curlim for _L_ and _R_ channel
     OCR_CurLim_L_ = curLim_tmp;
     OCR_CurLim_R_ = curLim_tmp;
 }
@@ -49,15 +76,15 @@ void update_curLim(void) {
 void launch_envTest(void) {
     // TODO : acquerir les donnees de batterie
     // TODO : acquerir les donnees de temperature
-    curLim_temp = 1;
-    curLim_bat = 2;
+    curLim_temp = 50;
+    curLim_bat = 60;
 
-    update_current_limit();
+    update_curLim();
 }
 
 // set the software-programmed current limit
 void setCurLim_soft(uint8_t curLim) {
     curLim_soft = curLim;
-    update_current_limit();
+    update_curLim();
 }
 

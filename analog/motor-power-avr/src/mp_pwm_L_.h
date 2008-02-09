@@ -25,6 +25,8 @@
  *
  * }}} */
 
+
+void init_pwm_L_ (void);
 void rise_L_ (void);
 void fall_L_ (void);
 void ovc_L_ (void);

@@ -71,16 +71,22 @@
 // timer configuration
 // for 57.21kHz : prescaler = 0 : CSx2:0 = 0x01
 // for 7.68kHz  : prescaler = 8 : CSx2:0 = 0x02
-#define TCCR_CFG (regv (FOC0, WGM00, COM01, COM00, WGM01, CS02, CS01, CS00, \
-			     0,     0,     0,     0,     0,    0,    1,    0))
+#define TCCR_LR_CFG (regv (FOC0, WGM00, COM01, COM00, WGM01, CS02, CS01, CS00, \
+			      0,     0,     0,     0,     0,    0,    1,    0))
 
 // timer interrupts configuration
-#define TIMSK (regv (OCIE2
+#define TIMSK_LR_CFG (regv (OCIE2, TOIE2, TICIE1, OCIE1A, OCIE1B, OCIE0, TOIE0,\
+			        1,     1,      0,      0,      0,     1,     1))
 
 // PWM max, min, and offset values
 #define PWM_MIN_LR_ 0x10
 #define PWM_MAX_LR_ 0xF0
 #define PWM_OFFSET_LR_ 0x00
+
+// Current limitation
+#define CURLIM_MAX 0x80
+#define OCR_CurLim_L_ OCR1A
+#define OCR_CurLim_R_ OCR1B
 
 // functions
 void init_timer_LR_(void);

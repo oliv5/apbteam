@@ -61,6 +61,19 @@
  *  - PTS: use pseudo terminal. */
 #define AC_UART0_HOST_DRIVER PTS
 
+/** Same thing for secondary port. */
+#define AC_UART1_PORT -1
+#define AC_UART1_BAUDRATE 115200
+#define AC_UART1_SEND_MODE RING
+#define AC_UART1_RECV_MODE RING
+#define AC_UART1_CHAR_SIZE 8
+#define AC_UART1_PARITY EVEN
+#define AC_UART1_STOP_BITS 1
+#define AC_UART1_SEND_BUFFER_SIZE 32
+#define AC_UART1_RECV_BUFFER_SIZE 32
+#define AC_UART1_SEND_BUFFER_FULL WAIT
+#define AC_UART1_HOST_DRIVER PTS
+
 /* proto - Protocol module. */
 /** Maximum argument size. */
 #define AC_PROTO_ARGS_MAX_SIZE 12

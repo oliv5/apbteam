@@ -1,26 +1,33 @@
+/* "mp_pwm_L_.c"
+ * this file contains routines for managing the _L_ channel of mp board
+ * the command sed -e 's/_L_/_R_/g' can be used for generating the _R_ file
+ */
+
 #include "mp_pwm_LR_.h"
 #include "mp_pwm_L_.h"
 #include "io.h"
-
-
-// Le PC, afin de faire le saut calculé
-//#define PC PC_REG
 
 // static variables
 static uint8_t state_L_;
 static uint8_t state_L_cmd = 0x03;
 static uint8_t pwm_L_;
 
-// this file contains routines for managing the _L_ channel of mp board
-// the command sed -e 's/_L_/_R_/g' can be used for generating the _R_ file
-//
+// Le PC, afin de faire le saut calculé
+//#define PC PC_REG
+
+// init
+void init_pwm_L_ (void) {
+    state_L_cmd = 0x40;
+    pwm_L_ = 0x00;
+}
+
 // rising edge = timer overflow = TOV interrupt (TODO : à programmer)
-void rise_L_ (void) {
+void rise (void) {
     // programs the state which is ordered by the core code
     state_L_ = state_L_cmd;
 
     // the falling of the other side may have delayed a few our IT
-    OCR_L_ = pwm_L_ + Timer_L_; // TODO: OCR_L_value shall be > than x%
+    OCR_L_ = pwm_L_ + TCNT_L_;	// TODO: OCR_L_value shall be > than x%
 
     //PC = PC + state_L_;	// j'aurais bien aimé faire un calculated jump
 
@@ -71,7 +78,6 @@ void rise_L_ (void) {
 	break;
 
       }
-
 }
 
 // falling edge = timer crossing OCR : OCn interrupt (TODO : à programmer)
@@ -82,6 +88,7 @@ void fall_L_ (void) {
       {
       case 0x00:
 	// in the case we are in 0x00 direction
+	//fall_L_label0:
 	_L_AH_0;
 	_L_AL_1;
 	sei(); 	// set back interrupts
@@ -144,17 +151,19 @@ void start_motor_L_ (uint8_t pwmspeed, uint8_t direction) {
 	state_L_cmd = 0x20;
 	pwm_L_ = 0;
       }
-    else if (pwmspeed > PWM_MAX_LR_) 
-      {// over PWM_MAX_LR_
-	pwm_L_ = PWM_MAX_LR_ + PWM_OFFSET_LR_;
-      }
-    else if (pwmspeed < PWM_MIN_LR_) 
-      {// under PWM_MIN_LR_
-	pwm_L_ = PWM_MIN_LR_ + PWM_OFFSET_LR_;
-      }
-    else 
-      {// correct PWM value
-	pwm_L_ = pwmspeed + PWM_OFFSET_LR_;
+    else
+      {
+	// adding offset
+	pwmspeed = pwmspeed + PWM_OFFSET_LR_;
+	
+	if (pwmspeed > PWM_MAX_LR_) 
+	  {// over PWM_MAX_LR_
+	    pwm_L_ = PWM_MAX_LR_;
+	  }
+	else if (pwmspeed < PWM_MIN_LR_) 
+	  {// under PWM_MIN_LR_
+	    pwm_L_ = PWM_MIN_LR_;
+	  }
       }
 }
 
