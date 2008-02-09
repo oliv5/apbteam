@@ -1,0 +1,11 @@
+TOTOlist pour le programe avr de motor-power
+
+- régler le problème de compilation du regv (inclure le bon utils.h ?)
+- attribuer les fonctions rise et fall aux interruptions TOV et OCR du timer
+- peuafiner la boucle de mesure automatique de la température et de la batterie
+
+Tester :
+- la génération de la PWM des moteurs
+- la génération de la PWM de la limitation de courant
+- le protocole
+
