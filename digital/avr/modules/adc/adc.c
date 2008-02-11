@@ -30,6 +30,7 @@
 #elif defined (__AVR_ATmega8535__)
 #elif defined (__AVR_ATmega128__)
 #elif defined (__AVR_ATmega64__)
+#elif defined (__AVR_ATmega16__)
 #else
 # warning "adc: not tested on this chip."
 #endif
