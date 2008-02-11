@@ -1,7 +1,7 @@
 BASE = ../../..
 PROGS = test_spi
-test_spi_SOURCES = test_spi.c spi_host.c 
-MODULES = proto uart utils 
+test_spi_SOURCES = test_spi.c 
+MODULES = utils spi 
 CONFIGFILE = avrconfig.h
 # atmega8, atmega8535, atmega128...
 AVR_MCU = atmega8

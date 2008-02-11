@@ -27,13 +27,9 @@
 #include "io.h"
 #include "../spi.h"
 
-#ifdef HOST
-extern volatile uint8_t SPDR;
-#endif
-
 /** Call back function to be called on the AVR interruption */
 void
-spi_interruption_function (void *user_data)
+spi_interruption_function (void *user_data, uint8_t data)
 {
 }
 
@@ -42,6 +38,31 @@ main (void)
 {
     uint8_t test [10];
     uint8_t res;
+
+    res = SPI_IT_ENABLE;
+    spi_init (res, spi_interruption_function, 0x0);
+    res = SPI_IT_DISABLE;
+    spi_init (res, spi_interruption_function, 0x0);
+    res = SPI_ENABLE;
+    spi_init (res, spi_interruption_function, 0x0);
+    res = SPI_DISABLE;
+    spi_init (res, spi_interruption_function, 0x0);
+    res = SPI_LSB_FIRST;
+    spi_init (res, spi_interruption_function, 0x0);
+    res = SPI_MSB_FIRST;
+    spi_init (res, spi_interruption_function, 0x0);
+    res = SPI_MASTER;
+    spi_init (res, spi_interruption_function, 0x0);
+    res = SPI_SLAVE;
+    spi_init (res, spi_interruption_function, 0x0);
+    res = SPI_CPOL_RISING;
+    spi_init (res, spi_interruption_function, 0x0);
+    res = SPI_CPOL_FALLING;
+    spi_init (res, spi_interruption_function, 0x0);
+    res = SPI_CPHA_SAMPLE;
+    spi_init (res, spi_interruption_function, 0x0);
+    res = SPI_CPHA_SETUP;
+    spi_init (res, spi_interruption_function, 0x0);
 
     //initialise the spi.
     spi_init (0x14, spi_interruption_function, 0x0);

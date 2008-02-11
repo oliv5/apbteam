@@ -24,9 +24,34 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "io.h"
+
+#define SPI_IT_ENABLE 0x80
+#define SPI_IT_DISABLE 0x0
+#define SPI_ENABLE 0x40
+#define SPI_DISABLE 0x0
+#define SPI_MSB_FIRST 0x00
+#define SPI_LSB_FIRST 0x20
+#define SPI_MASTER 0x10
+#define SPI_SLAVE 0x00
+#define SPI_CPOL_RISING 0x0
+#define SPI_CPOL_FALLING 0x8
+#define SPI_CPHA_SAMPLE 0x0
+#define SPI_CPHA_SETUP 0x4
+
+enum spi_fosc_t
+{
+    SPI_FOSC_DIV_4,
+    SPI_FOSC_DIV16,
+    SPI_FOSC_DIV64,
+    SPI_FOSC_DIV128,
+    SPI_FOSC_DIV2,
+    SPI_FOSC_DIV8,
+    SPI_FOSC_DIV32
+};
 
 /** Call back use to call the user function on the reception of a data. */
-typedef void (*spi_recv_cb_t) (void *user_data);
+typedef void (*spi_recv_cb_t) (void *user_data, uint8_t data);
 
 struct spi_t
 {
@@ -34,6 +59,8 @@ struct spi_t
     spi_recv_cb_t recv_cb;
     /** user data on data reception. */
     void *recv_user_data;
+    /** interruption status. */
+    int8_t interruption;
 };
 typedef struct spi_t spi_t;
 
@@ -56,7 +83,7 @@ spi_uninit (void);
  * \param  length  the length of the data in bytes.
  */
 void
-spi_send(uint8_t *data, u8 length);
+spi_send(uint8_t *data, uint8_t length);
 
 /** Receive a data from the SPI bus.
  * \return  the data received from the bus.
@@ -69,11 +96,5 @@ spi_recv(void);
  */
 uint8_t
 spi_status(void);
-
-/** Function called by the interruption if an IT is requested.
- *
- */
-void
-spi_catch_it(void);
 
 #endif /* spi_h */

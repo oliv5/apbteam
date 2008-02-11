@@ -22,7 +22,19 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "io.h"
+#include "common.h"
 #include "spi.h"
+
+#define SPI_DIRVER_SIGNAL SIGNAL_SPI
+
+/** For host */
+#ifdef HOST
+static uint8_t SPCR;
+static uint8_t SPDR;
+static uint8_t SPSR;
+static uint8_t SPIF;
+#endif
 
 /** Spi driver context. */
 static spi_t spi_global;
@@ -35,9 +47,10 @@ static spi_t spi_global;
 void
 spi_init(uint8_t sprc, spi_recv_cb_t cb, void *user_data)
 {
-    SPRC = sprc;
-    spi_global.cb = cb;
+    SPCR = sprc;
+    spi_global.recv_cb = cb;
     spi_global.recv_user_data = user_data;
+    spi_global.interruption = sprc >> 7;
 }
 
 /** Send a data to the Slave.
@@ -45,9 +58,11 @@ spi_init(uint8_t sprc, spi_recv_cb_t cb, void *user_data)
  * \param  length  the length of the data in bytes.
  */
 void
-spi_send(uint8_t *data, u8 length)
+spi_send(uint8_t *data, uint8_t length)
 {
-    uint i;
+    uint8_t i;
+    // enables the SPI if not enabled.
+    SPCR |= SPI_ENABLE;
 
     for ( i = 0; i < length; i++)
     {
@@ -55,16 +70,19 @@ spi_send(uint8_t *data, u8 length)
       // automatically.
       SPDR = data[i];
 
-      // Wait the end of the transmission.
-      while(!(SPSR & (1<<SPIF))); 
+      if (!spi_global.interruption)
+	{
+	  // Wait the end of the transmission.
+	  while(!(SPSR & (1<<SPIF))); 
+	}
     }
 }
 
 /** Receive a data from the SPI bus.
  * \return  the data received from the bus.
  */
-uint8_t *
-spi_recv(void);
+uint8_t
+spi_recv(void)
 {
     /* Wait for reception complete */
     while(!(SPSR & (1<<SPIF)));
@@ -82,13 +100,12 @@ spi_status(void)
     return SPSR;
 }
 
-/** Function called by the interruption if an IT is requested.
- *
+/** 
+ * Function called by the interruption if an IT is requested.
  */
-void
-spi_catch_it(void)
+SIGNAL (SIG_SPI)
 {
     // call the call back.
-    (*spi_global.cb) (spi_global.user_data);
+    (*spi_global.recv_cb) (spi_global.recv_user_data, SPDR);
 }
 
