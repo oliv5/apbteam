@@ -77,7 +77,7 @@
 			      0,     0,     0,     0,     0,    0,    1,    0))
 
 // timer interrupts configuration
-#define TIMSK_LR_CFG (regv (OCIE2, TOIE2, TICIE1, OCIE1A, OCIE1B, TOIE0, OCIE0, TOIE0, \
+#define TIMSK_LR_CFG (regv (OCIE2, TOIE2, TICIE1, OCIE1A, OCIE1B, TOIE1, OCIE0, TOIE0, \
 			        1,     1,      0,      0,      0,      0,     1,     1))
 
 // PWM max, min, and offset values
