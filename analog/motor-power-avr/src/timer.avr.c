@@ -25,6 +25,8 @@
 
 /* +AutoDec */
 
+#include "utils.h"
+
 /** Initialise the timer. */
 static inline void
 timer_init (void);
