@@ -25,7 +25,7 @@
 
 /* +AutoDec */
 
-#include "utils.h"
+#include "modules/utils/utils.avr.h"
 
 /** Initialise the timer. */
 static inline void

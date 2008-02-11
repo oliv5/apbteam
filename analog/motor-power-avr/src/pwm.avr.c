@@ -23,7 +23,7 @@
  *
  * }}} */
 
-#include "utils.h"
+#include "modules/utils/utils.avr.h"
 
 /** Define the PWM output used for left motor. */
 #define PWM_LEFT_OCR OCR1C
