@@ -1,7 +1,6 @@
 TOTOlist pour le programe avr de motor-power
 
-- Mettre a jour le module ADC
-- attribuer les fonctions rise et fall aux interruptions TOV et OCR du timer
+- corriger le switch case
 - peuafiner la boucle de mesure automatique de la température et de la batterie
 
 Tester :

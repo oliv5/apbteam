@@ -21,8 +21,8 @@ void init_pwm_L_ (void) {
     pwm_L_ = 0x00;
 }
 
-// rising edge = timer overflow = TOV interrupt (TODO : à programmer)
-void rise (void) {
+// PWM rising edge on timer overflow IT
+ISR(L_OVF_vect) {
     // programs the state which is ordered by the core code
     state_L_ = state_L_cmd;
 
@@ -80,8 +80,8 @@ void rise (void) {
       }
 }
 
-// falling edge = timer crossing OCR : OCn interrupt (TODO : à programmer)
-void fall_L_ (void) {
+// PWM falling edge on timer compare IT
+ISR(L_COMP_vect) {
     //	PC = PC + state_L_; TODO :saut calculé ?
 
     switch (state_L_) 
@@ -122,7 +122,7 @@ void fall_L_ (void) {
 
 
 // overcurrent detected by comparators
-void ovc_L_ (void) {
+ISR(ILIM_L_vect) {
     _L_AL_0;
     _L_AH_0;
     _L_BL_0;

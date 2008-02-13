@@ -90,6 +90,14 @@
 #define OCR_CurLim_L_ OCR1A
 #define OCR_CurLim_R_ OCR1B
 
+// Vectors
+#define ILIM_R_vect INT0_vect
+#define ILIM_L_vect INT1_vect
+#define L_OVF_vect TIMER0_OVF_vect
+#define R_OVF_vect TIMER2_OVF_vect
+#define L_COMP_vect TIMER0_COMP_vect
+#define R_COMP_vect TIMER2_COMP_vect
+
 // functions
 void init_timer_LR_(void);
 void init_curLim (void);
