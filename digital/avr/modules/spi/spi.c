@@ -91,6 +91,18 @@ spi_recv(void)
     return SPDR;
 }
 
+/** Receive a date from the SPI bus from the address provided by parameters.
+  * \param  addr  the address from which the data shall be read
+  * \return  the data at the address requested.
+  */
+uint8_t
+spi_recv_from (uint8_t addr)
+{
+    SPDR = addr;
+
+    return spi_recv();
+}
+
 /** Return the status register from the SPI driver.
  * \return  the status register value
  */

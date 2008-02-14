@@ -91,6 +91,13 @@ spi_send(uint8_t *data, uint8_t length);
 uint8_t 
 spi_recv(void);
 
+/** Receive a date from the SPI bus from the address provided by parameters.
+  * \param addr  the address from which the data shall be read
+  * \return  the data at the address requested.
+  */
+uint8_t
+spi_recv_from (uint8_t addr);
+
 /** Return the status register from the SPI driver.
  * \return  the status register value
  */
