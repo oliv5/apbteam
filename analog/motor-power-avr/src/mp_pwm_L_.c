@@ -9,7 +9,7 @@
 
 // static variables
 static uint8_t state_L_;
-static uint8_t state_L_cmd = 0x03;
+static uint8_t state_L_cmd;
 static uint8_t pwm_L_;
 
 // Le PC, afin de faire le saut calculé
@@ -17,7 +17,7 @@ static uint8_t pwm_L_;
 
 // init
 void init_pwm_L_ (void) {
-    state_L_cmd = 0x40;
+    state_L_cmd = CMD_STATE_HIGH_Z;
     pwm_L_ = 0x00;
 }
 
@@ -33,7 +33,7 @@ ISR(L_OVF_vect) {
 
     switch (state_L_) 
       {
-      case 0x00:
+      case CMD_STATE_DIR_0:
 	// dir 0
 	//rise_L_label0:
 	_L_BH_0;
@@ -41,10 +41,9 @@ ISR(L_OVF_vect) {
 	_L_AL_0;
 	_L_AH_1;
 	sei();	// set back interrupts
-	return;
 	break;
 
-      case 0x01:
+      case CMD_STATE_DIR_1:
 	// dir 1
 	//org rise_L_label0 + 0x10
 	_L_AH_0;
@@ -52,10 +51,9 @@ ISR(L_OVF_vect) {
 	_L_BL_0;
 	_L_BH_1;
 	sei(); 	// set back interrupts
-	return;
 	break;
 
-      case 0x02:
+      case CMD_STATE_BRAKE:
 	// switch to forced low steady state
 	//org rise_L_label0 + 0x20
 	_L_AH_0;
@@ -63,10 +61,10 @@ ISR(L_OVF_vect) {
 	_L_BH_0;
 	_L_BL_1;
 	sei(); 	// set back interrupts
-	return;
 	break;
 
-      case 0x03:
+      case CMD_STATE_HIGH_Z:
+      default:
 	// switch to high impedance steady state
 	//org rise_L_label0 + 0x30
 	_L_AL_0;
@@ -74,7 +72,6 @@ ISR(L_OVF_vect) {
 	_L_BL_0;
 	_L_BH_0;
 	sei(); 	// set back interrupts
-	return;
 	break;
 
       }
@@ -86,36 +83,33 @@ ISR(L_COMP_vect) {
 
     switch (state_L_) 
       {
-      case 0x00:
+      case CMD_STATE_DIR_0:
 	// in the case we are in 0x00 direction
 	//fall_L_label0:
 	_L_AH_0;
 	_L_AL_1;
 	sei(); 	// set back interrupts
-	return;
 	break;
 
-      case 0x01:
+      case CMD_STATE_DIR_1:
 	// in the case we are in 0x10 direction
 	//org fall_L_label0 + 0x10
 	_L_BH_0;
 	_L_BL_1;
 	sei(); 	// set back interrupts
-	return;
 	break;
 
-      case 0x02:
+      case CMD_STATE_BRAKE:
 	// forced low
 	//org fall_L_label0 + 0x20
 	sei(); 	// set back interrupts
-	return;
 	break;
 
-      case 0x03:
+      case CMD_STATE_HIGH_Z:
+      default:
 	// left high Z
 	//org fall_L_label0 + 0x30
 	sei(); 	// set back interrupts
-	return;
 	break;
       }
 }
@@ -129,7 +123,7 @@ ISR(ILIM_L_vect) {
     _L_BH_0;
     sei(); 	// set back interrupts
     // following line orders to keep high Z state when faling edge will arrive
-    state_L_ = 0x30;
+    state_L_ = CMD_STATE_HIGH_Z;
     return;
 }
 
@@ -138,17 +132,17 @@ void start_motor_L_ (uint8_t pwmspeed, uint8_t direction) {
     // checking direction
     if (direction) 
       {
-	state_L_cmd = 0x10;
+	state_L_cmd = CMD_STATE_DIR_1;
       }
     else
       {
-	state_L_cmd = 0x00;
+	state_L_cmd = CMD_STATE_DIR_0;
       }
 
     // setting pwm value
     if (pwmspeed == 0)
       {// brake
-	state_L_cmd = 0x20;
+	state_L_cmd = CMD_STATE_BRAKE;
 	pwm_L_ = 0;
       }
     else
@@ -169,6 +163,6 @@ void start_motor_L_ (uint8_t pwmspeed, uint8_t direction) {
 
 // puts motor in high Z
 void stop_motor_L_ (void) {
-    state_L_ = 0x30;
+    state_L_ = CMD_STATE_HIGH_Z;
 }
 
