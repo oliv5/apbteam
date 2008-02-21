@@ -50,15 +50,8 @@ enum spi_fosc_t
     SPI_FOSC_DIV32
 };
 
-/** Call back use to call the user function on the reception of a data. */
-typedef void (*spi_recv_cb_t) (void *user_data, uint8_t data);
-
 struct spi_t
 {
-    /** Call back function. */
-    spi_recv_cb_t recv_cb;
-    /** user data on data reception. */
-    void *recv_user_data;
     /** interruption status. */
     int8_t interruption;
 };
@@ -70,7 +63,7 @@ typedef struct spi_t spi_t;
  * \param  user_data  the user data to be provieded in the function call back.
  */
 void
-spi_init(uint8_t sprc, spi_recv_cb_t cb, void *user_data);
+spi_init(uint8_t sprc);
 
 /** Uninitialise the SPI module.
  * Unused on the target
@@ -80,23 +73,15 @@ spi_uninit (void);
 
 /** Send a data to the Slave.
  * \param  data  the data to send
- * \param  length  the length of the data in bytes.
  */
 void
-spi_send(uint8_t *data, uint8_t length);
+spi_send(uint8_t data);
 
 /** Receive a data from the SPI bus.
  * \return  the data received from the bus.
  */
 uint8_t 
 spi_recv(void);
-
-/** Receive a date from the SPI bus from the address provided by parameters.
-  * \param addr  the address from which the data shall be read
-  * \return  the data at the address requested.
-  */
-uint8_t
-spi_recv_from (uint8_t addr);
 
 /** Return the status register from the SPI driver.
  * \return  the status register value

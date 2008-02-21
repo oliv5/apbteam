@@ -40,38 +40,38 @@ main (void)
     uint8_t res;
 
     res = SPI_IT_ENABLE;
-    spi_init (res, spi_interruption_function, 0x0);
+    spi_init (res);
     res = SPI_IT_DISABLE;
-    spi_init (res, spi_interruption_function, 0x0);
+    spi_init (res);
     res = SPI_ENABLE;
-    spi_init (res, spi_interruption_function, 0x0);
+    spi_init (res);
     res = SPI_DISABLE;
-    spi_init (res, spi_interruption_function, 0x0);
+    spi_init (res);
     res = SPI_LSB_FIRST;
-    spi_init (res, spi_interruption_function, 0x0);
+    spi_init (res);
     res = SPI_MSB_FIRST;
-    spi_init (res, spi_interruption_function, 0x0);
+    spi_init (res);
     res = SPI_MASTER;
-    spi_init (res, spi_interruption_function, 0x0);
+    spi_init (res);
     res = SPI_SLAVE;
-    spi_init (res, spi_interruption_function, 0x0);
+    spi_init (res);
     res = SPI_CPOL_RISING;
-    spi_init (res, spi_interruption_function, 0x0);
+    spi_init (res);
     res = SPI_CPOL_FALLING;
-    spi_init (res, spi_interruption_function, 0x0);
+    spi_init (res);
     res = SPI_CPHA_SAMPLE;
-    spi_init (res, spi_interruption_function, 0x0);
+    spi_init (res);
     res = SPI_CPHA_SETUP;
-    spi_init (res, spi_interruption_function, 0x0);
+    spi_init (res);
 
     //initialise the spi.
-    spi_init (0x14, spi_interruption_function, 0x0);
+    spi_init (0x14);
 
     test[0] = 0x2;
     test[1] = 0x3;
     test[2] = 0x4;
     
-    spi_send (test, 3);
+    spi_send (3);
 
     res = spi_recv ();
     

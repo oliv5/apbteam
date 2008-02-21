@@ -45,36 +45,27 @@ static spi_t spi_global;
  * \param  user_data  the user data to be provieded in the function call back.
  */
 void
-spi_init(uint8_t sprc, spi_recv_cb_t cb, void *user_data)
+spi_init(uint8_t sprc)
 {
     SPCR = sprc;
-    spi_global.recv_cb = cb;
-    spi_global.recv_user_data = user_data;
     spi_global.interruption = sprc >> 7;
 }
 
 /** Send a data to the Slave.
  * \param  data  the data to send
- * \param  length  the length of the data in bytes.
  */
 void
-spi_send(uint8_t *data, uint8_t length)
+spi_send(uint8_t data)
 {
-    uint8_t i;
     // enables the SPI if not enabled.
     SPCR |= SPI_ENABLE;
 
-    for ( i = 0; i < length; i++)
-    {
-      // Insert the data in the data register, the SPI will begin to send it
-      // automatically.
-      SPDR = data[i];
+    SPDR = data;
 
-      if (!spi_global.interruption)
-	{
-	  // Wait the end of the transmission.
-	  while(!(SPSR & (1<<SPIF))); 
-	}
+    if (!spi_global.interruption)
+    {
+      // Wait the end of the transmission.
+      while(!(SPSR & (1<<SPIF))); 
     }
 }
 
@@ -91,18 +82,6 @@ spi_recv(void)
     return SPDR;
 }
 
-/** Receive a date from the SPI bus from the address provided by parameters.
-  * \param  addr  the address from which the data shall be read
-  * \return  the data at the address requested.
-  */
-uint8_t
-spi_recv_from (uint8_t addr)
-{
-    SPDR = addr;
-
-    return spi_recv();
-}
-
 /** Return the status register from the SPI driver.
  * \return  the status register value
  */
@@ -112,12 +91,4 @@ spi_status(void)
     return SPSR;
 }
 
-/** 
- * Function called by the interruption if an IT is requested.
- */
-SIGNAL (SIG_SPI)
-{
-    // call the call back.
-    (*spi_global.recv_cb) (spi_global.recv_user_data, SPDR);
-}
 
