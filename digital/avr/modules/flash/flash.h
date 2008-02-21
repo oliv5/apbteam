@@ -32,6 +32,11 @@ struct flash_t
 };
 typedef struct flash_t flash_t;
 
+/** Initialise the flsah memory.
+  */
+void
+flash_init (void);
+
 /** Write in the flash byte provided in parameter.
   * \param  addr  the address to store the data.
   * \param  data  the buffer to store the data.
