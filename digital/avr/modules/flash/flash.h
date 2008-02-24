@@ -24,6 +24,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "io.h"
 
 struct flash_t
 {
@@ -89,6 +90,7 @@ flash_read_managed_array (uint8_t offset, uint8_t *buffer);
 /** Write a data with a managed array.
   * \param  data to store in the memory.
   */
+void
 flash_write_managed (uint8_t data);
 
 /** Write an array of data to the flash memory. The length of the array shall

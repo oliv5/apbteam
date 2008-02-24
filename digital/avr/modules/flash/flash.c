@@ -23,7 +23,7 @@
  *
  * }}} */
 #include "flash.h"
-#include "spi.h"
+#include "modules/spi/spi.h"
 
 static flash_t flash_global; 
 
@@ -58,7 +58,7 @@ flash_read (uint8_t addr)
     spi_init (SPI_IT_DISABLE | SPI_ENABLE | SPI_MSB_FIRST | SPI_MASTER |
 	      SPI_CPOL_RISING | SPI_CPHA_SAMPLE | SPI_FOSC_DIV2); 
     spi_send (addr);
-    return spi_recv (data);
+    return spi_recv ();
 }
 
 /** Read a data from the flash memory from the address provided and for a
@@ -84,7 +84,16 @@ flash_write_array (uint8_t addr, uint8_t *data, uint8_t length);
  * \return data  read from the memory.
  */
 uint8_t
-flash_read_managed (uint8_t offset);
+flash_read_managed (uint8_t offset)
+{
+    if ((int8_t) flash_global.addr - (int8_t) offset < 0)
+      {
+	// Shall not happen.
+	// TODO Assert this.
+      }
+
+    return flash_read (flash_global.addr - offset);
+}
 
 /** Read an array of data from the memory starting at the address less the
  * offset provided in parameters. The data read will be stored in the buffer
@@ -99,6 +108,7 @@ flash_read_managed_array (uint8_t offset, uint8_t *buffer);
 /** Write a data with a managed array.
   * \param  data to store in the memory.
   */
+void
 flash_write_managed (uint8_t data);
 
 /** Write an array of data to the flash memory. The length of the array shall
