@@ -24,12 +24,18 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "common.h"
 #include "io.h"
+
+#define FLASH_ERASE_FULL 0x60
+#define FLASH_ERASE_4K 0x20
+#define FLASH_ERASE_32K 0x52
+#define FLASH_ERASE_64K 0xD8
 
 struct flash_t
 {
     /** Current Address in the flash memory. */
-    uint8_t addr;
+    uint32_t addr;
 };
 typedef struct flash_t flash_t;
 
@@ -38,19 +44,34 @@ typedef struct flash_t flash_t;
 void
 flash_init (void);
 
+/** Flash access.
+  * The flash contains an address of 21 bits in a range from 0x0-0x1fffff.
+  * This function shall access the memory directly by the SPI.
+  * \param  addr  the address to provide to the flash memory.
+  */
+void
+flash_address (uint32_t addr);
+
+/** Erase the memory.
+  * \param  erase_type  the erase type..
+  * \param  start_addr  the start address.
+  */
+void
+flash_erase (uint8_t cmd, uint32_t start_addr);
+
 /** Write in the flash byte provided in parameter.
   * \param  addr  the address to store the data.
   * \param  data  the buffer to store the data.
   */
 void
-flash_write (uint8_t addr, uint8_t data);
+flash_write (uint32_t addr, uint8_t data);
 
 /** Read the data at the address provided.
   * \param  addr  the address of the data to read.
   * \return  the data read.
   */
 uint8_t
-flash_read (uint8_t addr);
+flash_read (uint32_t addr);
 
 /** Read a data from the flash memory from the address provided and for a
  * length of the number of bytes provided.
@@ -59,7 +80,7 @@ flash_read (uint8_t addr);
  * \param  length  the length of the data to read.
  */
 void
-flash_read_array (uint8_t addr, uint8_t *buffer, uint8_t length);
+flash_read_array (uint32_t addr, uint8_t *buffer, uint32_t length);
 
 /** Write in the flash byte provided in parameter.
   * \param  addr  the address to store the data.
@@ -67,7 +88,7 @@ flash_read_array (uint8_t addr, uint8_t *buffer, uint8_t length);
   * \param  length  the array length
   */
 void
-flash_write_array (uint8_t addr, uint8_t *data, uint8_t length);
+flash_write_array (uint32_t addr, uint8_t *data, uint32_t length);
 
 /** Read the memory from the address automaticaly managed, the offset of the
  * data shall be provided to get the data.
@@ -75,7 +96,7 @@ flash_write_array (uint8_t addr, uint8_t *data, uint8_t length);
  * \return data  read from the memory.
  */
 uint8_t
-flash_read_managed (uint8_t offset);
+flash_read_managed (uint32_t offset);
 
 /** Read an array of data from the memory starting at the address less the
  * offset provided in parameters. The data read will be stored in the buffer
@@ -85,7 +106,7 @@ flash_read_managed (uint8_t offset);
  * \param  buffer  the buffer to store the data.
  */
 void
-flash_read_managed_array (uint8_t offset, uint8_t *buffer);
+flash_read_managed_array (uint32_t offset, uint8_t *buffer);
 
 /** Write a data with a managed array.
   * \param  data to store in the memory.

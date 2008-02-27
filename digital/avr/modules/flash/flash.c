@@ -23,16 +23,57 @@
  *
  * }}} */
 #include "flash.h"
+#include "modules/proto/proto.h"
 #include "modules/spi/spi.h"
 
 static flash_t flash_global; 
+
+/** Flash access.
+  * The flash contains an address of 21 bits in a range from 0x0-0x1fffff.
+  * This function shall access the memory directly by the SPI.
+  * \param  addr  the address to provide to the flash memory.
+  */
+void
+flash_address (uint32_t addr)
+{
+    /* The address must be sent */
+    spi_send ((addr >> 16) & 0x1f);
+    spi_send (addr >> 8);
+    spi_send (addr);
+}
+
+/** Erase the memory.
+  * \param  erase_type  the erase type..
+  * \param  start_addr  the start address.
+  */
+void
+flash_erase (uint8_t cmd, uint32_t start_addr)
+{
+    /* send the command. */
+    spi_send (cmd);
+
+    /* verify if the cmd is the full erase. */
+    if (cmd != FLASH_ERASE_FULL)
+      {
+	/* Send the start address */
+	flash_address (start_addr);
+      }
+}
 
 /** Initialise the flsah memory.
   */
 void
 flash_init (void)
 {
+    uint8_t rsp;
+
     flash_global.addr = 0x0;
+    /* send the read-ID instruction. */
+    spi_send (0x90);
+    rsp = flash_read (0x0);
+
+    if (rsp == 0xBF)
+	proto_send1b (0x0 ,0x1);
 }
 
 /** Write in the flash byte provided in parameter.
@@ -40,11 +81,14 @@ flash_init (void)
   * \param  data  the buffer to store the data.
   */
 void
-flash_write (uint8_t addr, uint8_t data)
+flash_write (uint32_t addr, uint8_t data)
 {
     spi_init (SPI_IT_DISABLE | SPI_ENABLE | SPI_MSB_FIRST | SPI_MASTER |
 	      SPI_CPOL_RISING | SPI_CPHA_SAMPLE | SPI_FOSC_DIV2); 
-    spi_send (addr);
+
+    /* Write instruction. */
+    spi_send (0x2);
+    flash_address (addr);
     spi_send (data);
 }
 
@@ -53,11 +97,14 @@ flash_write (uint8_t addr, uint8_t data)
   * \return  the data read.
   */
 uint8_t
-flash_read (uint8_t addr)
+flash_read (uint32_t addr)
 {
     spi_init (SPI_IT_DISABLE | SPI_ENABLE | SPI_MSB_FIRST | SPI_MASTER |
 	      SPI_CPOL_RISING | SPI_CPHA_SAMPLE | SPI_FOSC_DIV2); 
-    spi_send (addr);
+
+    /* Send the read instruction. */
+    spi_send (0x3);
+    flash_address (addr);
     return spi_recv ();
 }
 
@@ -68,7 +115,7 @@ flash_read (uint8_t addr)
  * \param  length  the length of the data to read.
  */
 void
-flash_read_array (uint8_t addr, uint8_t *buffer, uint8_t length);
+flash_read_array (uint32_t addr, uint8_t *buffer, uint32_t length);
 
 /** Write in the flash byte provided in parameter.
   * \param  addr  the address to store the data.
@@ -76,7 +123,7 @@ flash_read_array (uint8_t addr, uint8_t *buffer, uint8_t length);
   * \param  length  the array length
   */
 void
-flash_write_array (uint8_t addr, uint8_t *data, uint8_t length);
+flash_write_array (uint32_t addr, uint8_t *data, uint32_t length);
 
 /** Read the memory from the address automaticaly managed, the offset of the
  * data shall be provided to get the data.
@@ -84,9 +131,9 @@ flash_write_array (uint8_t addr, uint8_t *data, uint8_t length);
  * \return data  read from the memory.
  */
 uint8_t
-flash_read_managed (uint8_t offset)
+flash_read_managed (uint32_t offset)
 {
-    if ((int8_t) flash_global.addr - (int8_t) offset < 0)
+    if ((int32_t) flash_global.addr - (int32_t) offset < 0)
       {
 	// Shall not happen.
 	// TODO Assert this.
@@ -103,7 +150,7 @@ flash_read_managed (uint8_t offset)
  * \param  buffer  the buffer to store the data.
  */
 void
-flash_read_managed_array (uint8_t offset, uint8_t *buffer);
+flash_read_managed_array (uint32_t offset, uint8_t *buffer);
 
 /** Write a data with a managed array.
   * \param  data to store in the memory.

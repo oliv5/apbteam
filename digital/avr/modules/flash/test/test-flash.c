@@ -22,8 +22,15 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "common.h"
 #include "io.h"
 #include "../flash.h"
+
+void
+proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
+{
+    //TODO Still don't know what to to
+}
 
 int
 main (void)
