@@ -47,10 +47,10 @@
 
 /* uart - UART module. */
 /** Select hardware uart for primary uart: 0, 1 or -1 to disable. */
-#define AC_UART0_PORT 0
+#define AC_UART0_PORT 1
 /** Baudrate: 2400, 4800, 9600, 14400, 19200, 28800, 38400, 57600, 76800,
  * 115200, 230400, 250000, 500000, 1000000. */
-#define AC_UART0_BAUDRATE 9600
+#define AC_UART0_BAUDRATE 38400
 /** Send mode:
  *  - POLLING: no interrupts.
  *  - RING: interrupts, ring buffer. */

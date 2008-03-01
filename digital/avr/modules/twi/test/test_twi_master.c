@@ -24,70 +24,70 @@
  * }}} */
 
 #include "common.h"
-
-#include "modules/uart/uart.h"
-#include "modules/proto/proto.h"
 #include "modules/twi/twi.h"
+#include "modules/proto/proto.h"
+#include "modules/uart/uart.h"
 #include "modules/utils/utils.h"
 #include "io.h"
 
-void proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
+void
+proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 {
-    uint8_t data[1] = {0x00};
-    int8_t c;
-    switch (cmd)
+#define c(cmd, size) (cmd << 8 | size)
+    switch (c (cmd, size))
       {
-      case 's':
-	if (size == 2)
-	  {
-	    proto_send ('s', 0, 0);
-	    twi_ms_send (args[0], &args[1], 1);
-	    while (!twi_ms_is_finished ())
-		;
-	    proto_send ('f', 0, 0);
-	  }
-	else
-	    proto_send ('e', 0, 0);
+	/* Send one byte to a slave address */
+      case c ('s', 2):
+	/* s destination_addr data */
+	twi_ms_send (args[0], &args[1], 1);
+	while (!twi_ms_is_finished ())
+	    ;
 	break;
-      case 'r':
-	if (size == 2)
+	/* Read one byte from an address slave */
+      case c ('r', 1):
+	/* c slave_address */
 	  {
-	    uart0_putc ('r');
-	    c = twi_ms_read (args[0], data, 1);
-	    if (c != 0)
-		proto_send ('e', 1 , 0);
+	    uint8_t data[1] = {0x00};
+	    int8_t d = twi_ms_read (args[0], data, 1);
+	    if (d != 0)
+		proto_send0 ('e');
 	    else
 	      {
 		while (!twi_ms_is_finished ())
 		    ;
-		proto_send ('f', 1, data);
+		proto_send ('R', 1, data);
 	      }
 	  }
-	else
-	    proto_send ('e', 1, 0);
 	break;
-      case 'z':
+	/* Reset */
+      case c ('z', 0):
 	utils_reset ();
 	break;
+	/* Error */
       default:
-	proto_send ('e', 1, 0);
+	proto_send0 ('?');
+	return;
       }
+    /* Acknowledge what has been done */
+    proto_send (cmd, size, args);
 }
 
 int
 main (void)
 {
-    uint8_t c;
+    /* Enable interruptions */
     sei ();
+    /* Initialize serial port */
     uart0_init ();
+    /* We have successfully boot */
+    proto_send0 ('z');
+    /* Initialize TWI */
     twi_init (0x04);
-    uart0_putc ('m');
-    uart0_putc ('s');
-    uart0_putc ('s');
-    uart0_putc ('\r');
+    /* I am a master */
+    proto_send0 ('M');
     while (42)
       {
-	c = uart0_getc ();
+	uint8_t c = uart0_getc ();
 	proto_accept (c);
       }
     return 0;

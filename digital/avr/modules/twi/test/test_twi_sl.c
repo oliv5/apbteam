@@ -26,26 +26,55 @@
 
 #include "common.h"
 #include "modules/twi/twi.h"
+#include "modules/proto/proto.h"
 #include "modules/uart/uart.h"
+#include "modules/utils/utils.h"
 #include "io.h"
+
+void
+proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
+{
+#define c(cmd, size) (cmd << 8 | size)
+    switch (c (cmd, size))
+      {
+	/* Reset */
+      case 'z':
+	utils_reset ();
+	break;
+	/* Error */
+      default:
+	proto_send0 ('?');
+	return;
+      }
+    /* Acknowledge what has been done */
+    proto_send (cmd, size, args);
+}
 
 int
 main (void)
 {
-    uint8_t data[TWI_SL_RCPT_SIZE];
+    /* Enable interruptions */
     sei ();
+    /* Initialize serial port */
     uart0_init ();
-    uart0_putc ('s');
-    uart0_putc ('s');
-    uart0_putc ('s');
+    /* We have successfully boot */
+    proto_send0 ('z');
+    /* Initialize TWI */
     twi_init (0x02);
-    data[0] = 0;
+    /* I am a slave */
+    proto_send0 ('S');
     while (42)
       {
+	uint8_t data[TWI_SL_RCPT_SIZE];
+	data[0] = 0;
+	/* Check for data */
 	if (twi_sl_poll (data, TWI_SL_RCPT_SIZE))
 	  {
+	    /* Receive and store them */
 	    twi_sl_update (data, TWI_SL_RCPT_SIZE);
 	  }
+	if (uart0_poll ())
+	    proto_accept (uart0_getc ());
       }
     return 0;
 }

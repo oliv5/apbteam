@@ -11,7 +11,7 @@ TEST_CONFIGFILES = avrconfig_master.h
 
 
 # atmega8, atmega8535, atmega128...
-AVR_MCU = atmega8535
+AVR_MCU = atmega128
 # -O2 : speed
 # -Os : size
 OPTIMIZE = -O2
