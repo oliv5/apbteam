@@ -47,8 +47,32 @@ static spi_t spi_global;
 void
 spi_init(uint8_t sprc)
 {
+    /* Master configuration. */
+    if (sprc & _BV(MSTR))
+      {
+	SPI_DDR &= ~_BV(SPI_BIT_MISO);
+	SPI_PORT &= ~_BV(SPI_BIT_MISO);
+	
+	SPI_PORT |= _BV(SPI_BIT_MOSI);
+	SPI_DDR |= _BV(SPI_BIT_MOSI);
+
+	SPI_PORT |= _BV(SPI_BIT_SCK);
+	SPI_DDR |= _BV(SPI_BIT_SCK);
+      }
+    else
+      {
+	SPI_PORT |= _BV(SPI_BIT_MISO);
+	SPI_DDR |= _BV(SPI_BIT_MISO);
+
+	SPI_DDR &= ~_BV(SPI_BIT_MOSI);
+	SPI_PORT &= ~_BV(SPI_BIT_MOSI);
+
+	SPI_DDR &= ~_BV(SPI_BIT_SCK);
+	SPI_PORT &= ~_BV(SPI_BIT_SCK);
+      }
+
     SPCR = sprc;
-    spi_global.interruption = sprc >> 7;
+    spi_global.interruption = SPCR & _BV(SPIE);
 }
 
 /** Send a data to the Slave.
@@ -57,16 +81,10 @@ spi_init(uint8_t sprc)
 void
 spi_send(uint8_t data)
 {
-    // enables the SPI if not enabled.
-    SPCR |= SPI_ENABLE;
+    // Wait the end of the transmission.
+    while(!(SPSR & _BV(SPIF))); 
 
     SPDR = data;
-
-    if (!spi_global.interruption)
-    {
-      // Wait the end of the transmission.
-      while(!(SPSR & (1<<SPIF))); 
-    }
 }
 
 /** Receive a data from the SPI bus.
@@ -76,9 +94,23 @@ uint8_t
 spi_recv(void)
 {
     /* Wait for reception complete */
-    while(!(SPSR & (1<<SPIF)));
+    while(!(SPSR & _BV(SPIF))); 
     
     /* Return data register */
+    return SPDR;
+}
+
+/** Send and receive data.
+  * \param  data  the data to send.
+  * \return  the data received.
+  */
+uint8_t
+spi_send_and_recv (uint8_t data)
+{
+    // Wait the end of the transmission.
+    while(!(SPSR & _BV(SPIF))); 
+
+    SPDR = data;
     return SPDR;
 }
 
@@ -90,5 +122,4 @@ spi_status(void)
 {
     return SPSR;
 }
-
 

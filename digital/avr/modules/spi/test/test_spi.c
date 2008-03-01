@@ -24,6 +24,8 @@
  * }}} */
 #include <stdint.h>
 #include <common.h>
+
+#include "modules/proto/proto.h"
 #include "io.h"
 #include "../spi.h"
 
@@ -33,13 +35,19 @@ spi_interruption_function (void *user_data, uint8_t data)
 {
 }
 
+void
+proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
+{
+    //TODO Still don't know what to to
+}
+
 int
 main (void)
 {
-    uint8_t test [10];
-    uint8_t res;
+    //uint8_t test [10];
+    //uint8_t res;
 
-    res = SPI_IT_ENABLE;
+    /*res = SPI_IT_ENABLE;
     spi_init (res);
     res = SPI_IT_DISABLE;
     spi_init (res);
@@ -63,18 +71,23 @@ main (void)
     spi_init (res);
     res = SPI_CPHA_SETUP;
     spi_init (res);
+    */
 
     //initialise the spi.
     spi_init (0x14);
 
-    test[0] = 0x2;
+    proto_send0 (PORTB);
+    proto_send0 (DDRB);
+
+
+    /*test[0] = 0x2;
     test[1] = 0x3;
     test[2] = 0x4;
     
     spi_send (3);
 
     res = spi_recv ();
-    
+    */
     return 0;
 }
 

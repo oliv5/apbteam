@@ -65,47 +65,72 @@ flash_erase (uint8_t cmd, uint32_t start_addr)
 void
 flash_init (void)
 {
-    uint8_t rsp;
+    uint8_t rsp[3];
 
     flash_global.addr = 0x0;
     /* send the read-ID instruction. */
-    spi_send (0x90);
-    rsp = flash_read (0x0);
+    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
+    AC_FLASH_DDR |= _BV(AC_FLASH_BIT_SS);
 
-    if (rsp == 0xBF)
-	proto_send1b (0x0 ,0x1);
+    spi_init (SPI_IT_DISABLE | SPI_ENABLE | SPI_MASTER | SPI_MSB_FIRST |
+	      SPI_CPOL_FALLING | SPI_CPHA_SETUP | SPI_FOSC_DIV16);
+
+    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
+    spi_send (FLASH_READ_ID); 
+    rsp[0] = spi_recv ();
+    rsp[1] = spi_recv ();
+    rsp[2] = spi_recv ();
+    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
+
+    proto_send3b ('f',rsp[0], rsp[1], rsp[2]);
+
+    /* Search for the next address to start writting. */
+    /*for (flash_global.addr = 0, rsp = 0xFF; rsp != 0xFF; flash_global.addr +=
+	 FLASH_PAGE_SIZE - 1)
+      {
+	rsp = flash_read ();
+      }
+      */
 }
 
 /** Write in the flash byte provided in parameter.
-  * \param  addr  the address to store the data.
   * \param  data  the buffer to store the data.
   */
 void
-flash_write (uint32_t addr, uint8_t data)
+flash_write (uint8_t data)
 {
     spi_init (SPI_IT_DISABLE | SPI_ENABLE | SPI_MSB_FIRST | SPI_MASTER |
 	      SPI_CPOL_RISING | SPI_CPHA_SAMPLE | SPI_FOSC_DIV2); 
 
     /* Write instruction. */
-    spi_send (0x2);
-    flash_address (addr);
+    spi_send (FLASH_WRITE);
+    flash_address (flash_global.addr);
     spi_send (data);
+    /* increment the address and verify if the address is in the range of the
+     * flash memory */
+    FLASH_ADDRESS_INC_MASK(flash_global.addr);
 }
 
 /** Read the data at the address provided.
-  * \param  addr  the address of the data to read.
   * \return  the data read.
   */
 uint8_t
-flash_read (uint32_t addr)
+flash_read (void)
 {
+    uint8_t data;
+
     spi_init (SPI_IT_DISABLE | SPI_ENABLE | SPI_MSB_FIRST | SPI_MASTER |
 	      SPI_CPOL_RISING | SPI_CPHA_SAMPLE | SPI_FOSC_DIV2); 
 
     /* Send the read instruction. */
-    spi_send (0x3);
-    flash_address (addr);
-    return spi_recv ();
+    spi_send (FLASH_READ);
+    flash_address (flash_global.addr);
+    data = spi_recv ();
+
+    /* increment the address and verify if the address is in the range of the
+     * flash memory */
+    FLASH_ADDRESS_INC_MASK(flash_global.addr);
+    return data;
 }
 
 /** Read a data from the flash memory from the address provided and for a
@@ -131,16 +156,7 @@ flash_write_array (uint32_t addr, uint8_t *data, uint32_t length);
  * \return data  read from the memory.
  */
 uint8_t
-flash_read_managed (uint32_t offset)
-{
-    if ((int32_t) flash_global.addr - (int32_t) offset < 0)
-      {
-	// Shall not happen.
-	// TODO Assert this.
-      }
-
-    return flash_read (flash_global.addr - offset);
-}
+flash_read_managed (uint32_t offset);
 
 /** Read an array of data from the memory starting at the address less the
  * offset provided in parameters. The data read will be stored in the buffer

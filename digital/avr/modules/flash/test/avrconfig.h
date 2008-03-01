@@ -32,16 +32,16 @@
 
 /* uart - UART module. */
 /** Select hardware uart for primary uart: 0, 1 or -1 to disable. */
-#define AC_UART0_PORT 0
+#define AC_UART0_PORT 1
 /** Baudrate: 2400, 4800, 9600, 14400, 19200, 28800, 38400, 57600, 76800,
  * 115200, 230400, 250000, 500000, 1000000. */
-#define AC_UART0_BAUDRATE 115200
+#define AC_UART0_BAUDRATE 38400 
 /** Send mode:
  *  - POLLING: no interrupts.
  *  - RING: interrupts, ring buffer. */
-#define AC_UART0_SEND_MODE RING
+#define AC_UART0_SEND_MODE POLLING
 /** Recv mode, same as send mode. */
-#define AC_UART0_RECV_MODE RING
+#define AC_UART0_RECV_MODE POLLING
 /** Character size: 5, 6, 7, 8, 9 (only 8 implemented). */
 #define AC_UART0_CHAR_SIZE 8
 /** Parity : ODD, EVEN, NONE. */
@@ -82,5 +82,14 @@
 #define AC_PROTO_PUTC uart0_putc
 /** Support for quote parameter. */
 #define AC_PROTO_QUOTE 1
+
+/* flash - Flash SPI AVR module. */
+/** Flash PORT used. */
+#define AC_FLASH_PORT PORTD
+/** Flash DDR used. */
+#define AC_FLASH_DDR DDRD
+/** Flash SS pin. */
+#define AC_FLASH_BIT_SS 5
+
 
 #endif /* avrconfig_h */

@@ -1,5 +1,7 @@
-/* test-flash.c */
-/*  {{{
+#ifndef avrconfig_h
+#define avrconfig_h
+/* avrconfig.h */
+/* avr.flash - Flash SPI AVR module. {{{
  *
  * Copyright (C) 2008 Nélio Laranjeiro
  *
@@ -22,23 +24,14 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
-#include "common.h"
-#include "io.h"
-#include "../flash.h"
-#include "modules/proto/proto.h"
 
-void
-proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
-{
-    //TODO Still don't know what to to
-}
+/* flash - Flash SPI AVR module. */
 
-int
-main (void)
-{
-    proto_send0 ('z');
-    flash_init ();
+/** Flash PORT used. */
+#define AC_FLASH_PORT PORTX
+/** Flash DDR used. */
+#define AC_FLASH_DDR DDRX
+/** Flash SS pin. */
+#define AC_FLASH_BIT_SS N
 
-    while (1);
-}
-
+#endif /* avrconfig_h */

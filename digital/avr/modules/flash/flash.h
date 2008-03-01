@@ -27,10 +27,21 @@
 #include "common.h"
 #include "io.h"
 
+#define FLASH_HIGH_ADDRESS 0x1FFFFF
+#define FLASH_ADDRESS_INC_MASK(val) (val = (val+1) & FLASH_HIGH_ADDRESS)
+
+#define FLASH_PAGE_SIZE  0x1000
+#define FLASH_PAGE_MASK (0xFFF)
+#define FLASH_PAGE(val) (val & FLASH_PAGE_MASK)
+
 #define FLASH_ERASE_FULL 0x60
 #define FLASH_ERASE_4K 0x20
 #define FLASH_ERASE_32K 0x52
 #define FLASH_ERASE_64K 0xD8
+
+#define FLASH_READ_ID 0x9F
+#define FLASH_READ 0x03
+#define FLASH_WRITE 0x2
 
 struct flash_t
 {
@@ -52,6 +63,14 @@ flash_init (void);
 void
 flash_address (uint32_t addr);
 
+/** Flash init page.
+  * Initialise the page by write an value different of 0xFF to indicate that
+  * the page is use.
+  * \param addr
+  */
+void
+flash_init_page (uint32_t addr);
+
 /** Erase the memory.
   * \param  erase_type  the erase type..
   * \param  start_addr  the start address.
@@ -60,18 +79,17 @@ void
 flash_erase (uint8_t cmd, uint32_t start_addr);
 
 /** Write in the flash byte provided in parameter.
-  * \param  addr  the address to store the data.
   * \param  data  the buffer to store the data.
   */
 void
-flash_write (uint32_t addr, uint8_t data);
+flash_write (uint8_t data);
 
 /** Read the data at the address provided.
   * \param  addr  the address of the data to read.
   * \return  the data read.
   */
 uint8_t
-flash_read (uint32_t addr);
+flash_read (void);
 
 /** Read a data from the flash memory from the address provided and for a
  * length of the number of bytes provided.

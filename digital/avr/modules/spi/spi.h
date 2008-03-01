@@ -26,22 +26,37 @@
  * }}} */
 #include "io.h"
 
-#define SPI_IT_ENABLE 0x80
+#define SPI_DDR DDRB
+#define SPI_PORT PORTB
+
+#if defined  (__AVR_ATmega128__)
+#define SPI_BIT_SCK 1
+#define SPI_BIT_MOSI 2
+#define SPI_BIT_MISO 3
+#elif defined (__AVR_ATmega16__)
+#define SPI_BIT_SCK 7
+#define SPI_BIT_MOSI 5
+#define SPI_BIT_MISO 6
+#else
+#error "Not implemented"
+#endif
+
+#define SPI_IT_ENABLE _BV(SPIE) 
 #define SPI_IT_DISABLE 0x0
-#define SPI_ENABLE 0x40
+#define SPI_ENABLE _BV(SPE)
 #define SPI_DISABLE 0x0
 #define SPI_MSB_FIRST 0x00
-#define SPI_LSB_FIRST 0x20
-#define SPI_MASTER 0x10
+#define SPI_LSB_FIRST _BV(DORD)
+#define SPI_MASTER _BV(MSTR)
 #define SPI_SLAVE 0x00
 #define SPI_CPOL_RISING 0x0
-#define SPI_CPOL_FALLING 0x8
+#define SPI_CPOL_FALLING _BV(CPOL)
 #define SPI_CPHA_SAMPLE 0x0
-#define SPI_CPHA_SETUP 0x4
+#define SPI_CPHA_SETUP _BV(CPHA)
 
 enum spi_fosc_t
 {
-    SPI_FOSC_DIV_4,
+    SPI_FOSC_DIV4,
     SPI_FOSC_DIV16,
     SPI_FOSC_DIV64,
     SPI_FOSC_DIV128,
@@ -82,6 +97,13 @@ spi_send(uint8_t data);
  */
 uint8_t 
 spi_recv(void);
+
+/** Send and receive data.
+  * \param  data  the data to send.
+  * \return  the data received.
+  */
+uint8_t
+spi_send_and_recv (uint8_t data);
 
 /** Return the status register from the SPI driver.
  * \return  the status register value
