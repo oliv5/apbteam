@@ -42,6 +42,11 @@
 #define FLASH_READ_ID 0x9F
 #define FLASH_READ 0x03
 #define FLASH_WRITE 0x2
+#define FLASH_WRSR 0x1
+#define FLASH_RDSR 0x5
+#define FLASH_WREN 0x6
+#define FLASH_WEDI 0x4
+#define FLASH_EWSR 0x50
 
 struct flash_t
 {
@@ -78,18 +83,24 @@ flash_init_page (uint32_t addr);
 void
 flash_erase (uint8_t cmd, uint32_t start_addr);
 
+/* Send a flash command to the flash memory (only a command).
+ * \param  cmd  the command to send.
+ */
+void
+flash_send_command (uint8_t cmd);
+
 /** Write in the flash byte provided in parameter.
   * \param  data  the buffer to store the data.
   */
 void
-flash_write (uint8_t data);
+flash_write (uint32_t addr, uint8_t data);
 
 /** Read the data at the address provided.
   * \param  addr  the address of the data to read.
   * \return  the data read.
   */
 uint8_t
-flash_read (void);
+flash_read (uint32_t addr);
 
 /** Read a data from the flash memory from the address provided and for a
  * length of the number of bytes provided.

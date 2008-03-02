@@ -50,7 +50,7 @@ void
 flash_erase (uint8_t cmd, uint32_t start_addr)
 {
     /* send the command. */
-    spi_send (cmd);
+    flash_send_command (cmd);
 
     /* verify if the cmd is the full erase. */
     if (cmd != FLASH_ERASE_FULL)
@@ -66,6 +66,7 @@ void
 flash_init (void)
 {
     uint8_t rsp[3];
+    uint32_t addr;
 
     flash_global.addr = 0x0;
     AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
@@ -75,6 +76,7 @@ flash_init (void)
     spi_init (SPI_IT_DISABLE | SPI_ENABLE | SPI_MASTER | SPI_MSB_FIRST
 	      | SPI_MASTER | SPI_CPOL_FALLING | SPI_CPHA_SETUP
 	      | SPI_FOSC_DIV16);
+
     AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
     spi_send (FLASH_READ_ID); 
     rsp[0] = spi_recv ();
@@ -83,54 +85,90 @@ flash_init (void)
     AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
 
     proto_send3b ('f',rsp[0], rsp[1], rsp[2]);
+
+    /* configure the flash to allow the access on all the memory. */
+    flash_send_command (FLASH_WREN);
+    flash_send_command (FLASH_EWSR);
+
+
+    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
+    spi_send (FLASH_WRSR);
+    spi_send (0x2);
+    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
+
+    /* Enables the flash to be writable. */
+    flash_send_command (FLASH_WREN);
+    
+    /* Read the flash status. */
+    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
+    spi_send (FLASH_RDSR);
+    rsp[0] = spi_recv();
+    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
+
+    proto_send1b ('s',rsp[0]);
+
     /* TODO: disable flash usage if no flash is found? */
 
     /* Search for the next address to start writting. */
-    /*for (flash_global.addr = 0, rsp = 0xFF; rsp != 0xFF; flash_global.addr +=
-	 FLASH_PAGE_SIZE - 1)
+    for (addr = 0;
+	 (rsp[0] != 0xFF) && (addr < 0x200000);
+	 addr += FLASH_PAGE_SIZE - 1)
       {
-	rsp = flash_read ();
+	AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
+	spi_send (FLASH_READ);
+	flash_address (flash_global.addr);
+	rsp[0] = spi_recv();
+	AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
+	proto_send1b ('r',rsp[0]);
       }
-      */
+
+    flash_global.addr = addr - FLASH_PAGE_SIZE;
+
+    proto_send3b ('r',((flash_global.addr >> 16) & 0x1f), (flash_global.addr
+							   >> 8),
+		  flash_global.addr);
+}
+
+/* Send a flash command to the flash memory (only a command).
+ * \param  cmd  the command to send.
+ */
+void
+flash_send_command (uint8_t cmd)
+{
+    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
+    spi_send (cmd);
+    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
 }
 
 /** Write in the flash byte provided in parameter.
   * \param  data  the buffer to store the data.
   */
 void
-flash_write (uint8_t data)
+flash_write (uint32_t addr, uint8_t data)
 {
-    spi_init (SPI_IT_DISABLE | SPI_ENABLE | SPI_MSB_FIRST | SPI_MASTER |
-	      SPI_CPOL_RISING | SPI_CPHA_SAMPLE | SPI_FOSC_DIV2); 
-
+    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
     /* Write instruction. */
     spi_send (FLASH_WRITE);
-    flash_address (flash_global.addr);
+    flash_address (addr);
     spi_send (data);
-    /* increment the address and verify if the address is in the range of the
-     * flash memory */
-    FLASH_ADDRESS_INC_MASK(flash_global.addr);
+    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
 }
 
 /** Read the data at the address provided.
   * \return  the data read.
   */
 uint8_t
-flash_read (void)
+flash_read (uint32_t addr)
 {
     uint8_t data;
 
-    spi_init (SPI_IT_DISABLE | SPI_ENABLE | SPI_MSB_FIRST | SPI_MASTER |
-	      SPI_CPOL_RISING | SPI_CPHA_SAMPLE | SPI_FOSC_DIV2); 
-
+    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
     /* Send the read instruction. */
     spi_send (FLASH_READ);
-    flash_address (flash_global.addr);
+    flash_address (addr);
     data = spi_recv ();
+    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
 
-    /* increment the address and verify if the address is in the range of the
-     * flash memory */
-    FLASH_ADDRESS_INC_MASK(flash_global.addr);
     return data;
 }
 
