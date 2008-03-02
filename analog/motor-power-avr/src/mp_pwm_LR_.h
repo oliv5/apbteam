@@ -48,7 +48,6 @@
 #define _L_BL_1 PORTC |= 0x20
 #define _L_BL_0 PORTC &= ~0x20
 
-
 // _R_AH : PORTD6
 #define _R_AH_1 PORTD |= 0x40
 #define _R_AH_0 PORTD &= ~0x40
@@ -61,6 +60,35 @@
 // _R_BL : PORTC3
 #define _R_BL_1 PORTC |= 0x08
 #define _R_BL_0 PORTC &= ~0x08
+
+// _L_LED0 : PORTB0
+#define _L_LED0_1 PORTB |= 0x01
+#define _L_LED0_0 PORTB &= ~0x01
+
+// _L_LED1 : PORTB1
+#define _L_LED1_1 PORTB |= 0x02
+#define _L_LED1_0 PORTB &= ~0x02
+
+// _R_LED0 : PORTB3
+#define _R_LED0_1 PORTB |= 0x04
+#define _R_LED0_0 PORTB &= ~0x04
+
+// _R_LED1 : PORTB4
+#define _R_LED1_1 PORTB |= 0x08
+#define _R_LED1_0 PORTB &= ~0x08
+
+#define _L_ACTIVATE_OUTPUTS \
+    { \
+        DDRC |= 0xf0; /* PWM outputs */ \
+        DDRB |= 0x03; /* LED outputs */ \
+    }
+
+#define _R_ACTIVATE_OUTPUTS \
+    { \
+        DDRC |= 0x0c; /* PWM outputs */ \
+        DDRD |= 0xc0; \
+        DDRB |= 0x0c; /* LED outputs */ \
+    }
 
 // Timer for _L_ and _R_ control
 #define TCNT_L_	TCNT0

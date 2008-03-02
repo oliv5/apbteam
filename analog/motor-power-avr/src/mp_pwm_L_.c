@@ -19,6 +19,19 @@ static uint8_t pwm_L_;
 void init_pwm_L_ (void) {
     state_L_cmd = CMD_STATE_HIGH_Z;
     pwm_L_ = 0x00;
+
+    // Set outputs to 0 (ie HIGH_Z)
+	_L_AL_0;
+	_L_AH_0;
+	_L_BL_0;
+	_L_BH_0;
+
+    // status LEDs
+    _L_LED0_1;
+    _L_LED1_1;
+
+    // Set IOs as outputs
+    _L_ACTIVATE_OUTPUTS;
 }
 
 // PWM rising edge on timer overflow IT
@@ -41,6 +54,11 @@ ISR(L_OVF_vect) {
 	_L_AL_0;
 	_L_AH_1;
 	sei();	// set back interrupts
+
+    // Display CMD_STATE on LEDs
+    _L_LED0_0;
+    _L_LED1_0;
+
 	break;
 
       case CMD_STATE_DIR_1:
@@ -51,6 +69,11 @@ ISR(L_OVF_vect) {
 	_L_BL_0;
 	_L_BH_1;
 	sei(); 	// set back interrupts
+
+    // Display CMD_STATE on LEDs
+    _L_LED0_1;
+    _L_LED1_0;
+
 	break;
 
       case CMD_STATE_BRAKE:
@@ -61,6 +84,11 @@ ISR(L_OVF_vect) {
 	_L_BH_0;
 	_L_BL_1;
 	sei(); 	// set back interrupts
+
+    // Display CMD_STATE on LEDs
+    _L_LED0_0;
+    _L_LED1_1;
+
 	break;
 
       case CMD_STATE_HIGH_Z:
@@ -72,6 +100,11 @@ ISR(L_OVF_vect) {
 	_L_BL_0;
 	_L_BH_0;
 	sei(); 	// set back interrupts
+
+    // Display CMD_STATE on LEDs
+    _L_LED0_1;
+    _L_LED1_1;
+
 	break;
 
       }

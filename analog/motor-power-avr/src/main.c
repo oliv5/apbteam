@@ -82,14 +82,14 @@ int
 main (int argc, char **argv)
 {
     avr_init (argc, argv);
-    DDRD = 0x60;
     /* Pull-ups. */
-    PORTA = 0xff;
-    PORTC = 0xff;
+    //PORTA = 0xff;
+
     init_timer_LR_ ();
     init_curLim ();
-    //uart0_init ();
+    uart0_init ();
     //postrack_init ();
+
     envTest_period = 200;
     proto_send0 ('z');
     sei ();
