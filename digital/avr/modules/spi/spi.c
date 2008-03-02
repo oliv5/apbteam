@@ -26,8 +26,6 @@
 #include "common.h"
 #include "spi.h"
 
-#define SPI_DIRVER_SIGNAL SIGNAL_SPI
-
 /** For host */
 #ifdef HOST
 static uint8_t SPCR;
@@ -50,6 +48,9 @@ spi_init(uint8_t sprc)
     /* Master configuration. */
     if (sprc & _BV(MSTR))
       {
+	SPI_PORT |= _BV(SPI_BIT_SS);
+	SPI_DDR |= _BV(SPI_BIT_SS);
+
 	SPI_DDR &= ~_BV(SPI_BIT_MISO);
 	SPI_PORT &= ~_BV(SPI_BIT_MISO);
 	
@@ -61,6 +62,9 @@ spi_init(uint8_t sprc)
       }
     else
       {
+	SPI_DDR &= ~_BV(SPI_BIT_SS);
+	SPI_PORT |= _BV(SPI_BIT_SS);
+
 	SPI_PORT |= _BV(SPI_BIT_MISO);
 	SPI_DDR |= _BV(SPI_BIT_MISO);
 
@@ -81,10 +85,9 @@ spi_init(uint8_t sprc)
 void
 spi_send(uint8_t data)
 {
+    SPDR = data;
     // Wait the end of the transmission.
     while(!(SPSR & _BV(SPIF))); 
-
-    SPDR = data;
 }
 
 /** Receive a data from the SPI bus.
@@ -93,6 +96,7 @@ spi_send(uint8_t data)
 uint8_t
 spi_recv(void)
 {
+    SPDR = 0;
     /* Wait for reception complete */
     while(!(SPSR & _BV(SPIF))); 
     
@@ -107,10 +111,10 @@ spi_recv(void)
 uint8_t
 spi_send_and_recv (uint8_t data)
 {
+    SPDR = data;
     // Wait the end of the transmission.
     while(!(SPSR & _BV(SPIF))); 
 
-    SPDR = data;
     return SPDR;
 }
 

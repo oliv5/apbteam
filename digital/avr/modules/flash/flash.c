@@ -68,13 +68,13 @@ flash_init (void)
     uint8_t rsp[3];
 
     flash_global.addr = 0x0;
-    /* send the read-ID instruction. */
     AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
     AC_FLASH_DDR |= _BV(AC_FLASH_BIT_SS);
 
-    spi_init (SPI_IT_DISABLE | SPI_ENABLE | SPI_MASTER | SPI_MSB_FIRST |
-	      SPI_CPOL_FALLING | SPI_CPHA_SETUP | SPI_FOSC_DIV16);
-
+    /* send the read-ID instruction. */
+    spi_init (SPI_IT_DISABLE | SPI_ENABLE | SPI_MASTER | SPI_MSB_FIRST
+	      | SPI_MASTER | SPI_CPOL_FALLING | SPI_CPHA_SETUP
+	      | SPI_FOSC_DIV16);
     AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
     spi_send (FLASH_READ_ID); 
     rsp[0] = spi_recv ();
@@ -83,6 +83,7 @@ flash_init (void)
     AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
 
     proto_send3b ('f',rsp[0], rsp[1], rsp[2]);
+    /* TODO: disable flash usage if no flash is found? */
 
     /* Search for the next address to start writting. */
     /*for (flash_global.addr = 0, rsp = 0xFF; rsp != 0xFF; flash_global.addr +=

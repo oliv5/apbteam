@@ -30,10 +30,12 @@
 #define SPI_PORT PORTB
 
 #if defined  (__AVR_ATmega128__)
+#define SPI_BIT_SS 0
 #define SPI_BIT_SCK 1
 #define SPI_BIT_MOSI 2
 #define SPI_BIT_MISO 3
 #elif defined (__AVR_ATmega16__)
+#define SPI_BIT_SS 4
 #define SPI_BIT_SCK 7
 #define SPI_BIT_MOSI 5
 #define SPI_BIT_MISO 6

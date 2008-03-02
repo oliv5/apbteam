@@ -26,19 +26,37 @@
 #include "io.h"
 #include "../flash.h"
 #include "modules/proto/proto.h"
+#include "modules/utils/utils.h"
+#include "modules/uart/uart.h"
 
 void
 proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 {
-    //TODO Still don't know what to to
+#define c(cmd, size) (cmd << 8 | size)
+    switch (c (cmd, size))
+      {
+      case c ('z', 0):
+	/* Reset */
+	utils_reset ();
+	break;
+      default:
+	/* Error */
+	proto_send0 ('?');
+	return;
+      }
+    /* Acknowledge what has been done */
+    proto_send (cmd, size, args);
 }
 
 int
 main (void)
 {
+    uart0_init ();
     proto_send0 ('z');
+    proto_send0 ('c');
     flash_init ();
-
-    while (1);
+    proto_send0 ('f');
+    while (1)
+	proto_accept (uart0_getc ());
 }
 
