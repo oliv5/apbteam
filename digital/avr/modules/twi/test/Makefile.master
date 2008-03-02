@@ -3,7 +3,7 @@ AVR_PROGS = test_twi_master
 test_twi_master_SOURCES = test_twi_master.c
 DOC =
 EXTRACTDOC =
-MODULES = twi uart proto
+MODULES = twi uart proto math/random
 
 
 CONFIGFILE = avrconfig_master.h

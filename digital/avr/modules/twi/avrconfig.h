@@ -25,7 +25,7 @@
  *
  * }}} */
 
-#define TWI_SL_RCPT_SIZE 1
-#define TWI_SL_SEND_SIZE 1
+#define TWI_SL_RCPT_SIZE 16
+#define TWI_SL_SEND_SIZE 16
 
 #endif /* avrconfig_h */
