@@ -1,0 +1,16 @@
+/* IO.avr module. Main  Final State Machine */
+digraph mainFsm 
+{
+	node [color=lightblue2, style=filled];
+	start -> "get samples" [label = "1"];
+	"get samples" -> "get ice" [label = "Samples took"];
+	"get ice" -> "Go to goal" [label = "Ice took"];
+	"Go to goal" -> "get samples" [label = "Samples deposed"];
+
+	"get samples" -> "Go to goal" [label = "Samples took\n and ice distributor empty\n and not enough time"];
+	"Go to goal" -> "get adv ice" [label = "Sample deposed\n and ice distributor empty"];
+	"get adv ice" -> "get samples" [label = "Ice took"];
+	"get samples" -> "get adv ice" [label = "Sample took and\n ice distributor empty\n and enough time"];
+	"get adv ice" -> "Go to goal" [label = "Ice took\nCollector full"];
+	"get samples" -> "Go to goal" [label = "Collector full"];
+}
