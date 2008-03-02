@@ -1,0 +1,64 @@
+===============================
+How to use the development card
+===============================
+:Author: djerem
+
+
+Introduction
+============
+
+The development card is use to power, program and communicate with others
+card. It has two working modes:
+
+  program
+    it is used to program the AVR on the card link to it;
+
+  serial
+    it is used to communicate with the AVR on the card link to it.
+
+
+How to use it?
+==============
+Pre-requires
+------------
+
+You need to install:
+ * avrdude (at least version 5.5);
+
+ * usbprog.
+
+
+The voodoo ceremonial
+---------------------
+
+As ``usbprog`` is quite buggy (no error checks), here is the best working
+procedures we have found:
+
+ #. power up the development card using the external power;
+
+ #. power up your card using the power provided by the development card;
+
+ #. plug the USB cable to your computer. You should see ``atmel`` in the
+    output of ``sudo lsusb``;
+
+ #. plug the dev cable to the card you want to program.
+
+ #. use ``avrdude`` to program your card, with something like:
+    ``avrdude -p m128 -c avrispv2 -P usb -U flash:w:your_program.hex``
+    If it does not work, just remove the serial and USB cable and try again the
+    procedure.
+
+ #. remove the serial cable from the card.
+
+ #. remove the USB cable from your computer and plug it back in.
+
+ #. launch ``usbprog`` to put the development card in serial mode:
+    ``sudo usbprog device 0 upload blinkdemo devices``. It should failed with
+    something like *Unable to find update device (2).* but that's normal. You
+    should see in the kernel message something like:
+    *cdc_acm 2-2:1.0: ttyACM0: USB ACM device*.
+
+ #. plug the dev cable.
+
+ #. launch ``minicom`` in */dev/ttyACM0 8N1* mode.
+
