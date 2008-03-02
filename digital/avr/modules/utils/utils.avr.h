@@ -43,6 +43,13 @@
      | (v3) << 3 | (v2) << 2 | (v1) << 1 | (v0) << 0 \
      : -1024 * 1024)
 
+/** No-operation, one instruction delay. */
+extern inline void
+utils_nop (void)
+{
+    asm volatile ("nop" : :);
+}
+
 /** Delay in seconds.  Do not call this function with a variable parameter.
  * If you want a variable delay, prefer looping over a fixed delay.
  * Maximum is about 4 seconds at 20MHz. */

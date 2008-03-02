@@ -25,6 +25,13 @@
  *
  * }}} */
 
+/** No-operation, one instruction delay. */
+extern inline void
+utils_nop (void)
+{
+    /* Nothing. */
+}
+
 /** Delay in seconds. */
 void
 utils_delay (double s);
