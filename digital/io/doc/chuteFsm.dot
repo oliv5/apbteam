@@ -1,9 +1,9 @@
 /* IO.avr module. Chute Final State Machine */
-digraph chuteFsm 
+digraph StdContenerFsm 
 {
-	"Go to chute" -> "Go to the wall backward" [label = "Near the chute."];
-	"Go to the wall backward" -> "Open chute" [label = "On the wall"];
-	"Open chute" -> "Wait fixed time" [label = "Chute opened"];
-	"Wait fixed time" -> "Close chute" [label = "Time out"];
-	"Close chute" -> End [label = "Chute closed"];
+	"Go to std contener" -> "Go to the wall backward" [label = "Near the std contener."];
+	"Go to the wall backward" -> "Open std contener" [label = "On the wall"];
+	"Open std contener" -> "Wait fixed time" [label = "std contener opened"];
+	"Wait fixed time" -> "Close std contener" [label = "Time out"];
+	"Close std contener" -> End [label = "std contener closed"];
 }

@@ -1,5 +1,11 @@
-fsm : mainFsm.dot chargeBall.dot getSamplesFsm.dot chuteFsm.dot
-	dot -Tpng -o mainFsm.png mainFsm.dot
-	dot -Tpng -o chargeBall.png chargeBall.dot
-	dot -Tpng -o getSamplesFsm.png getSamplesFsm.dot
-	dot -Tpng -o chuteFsm.png chuteFsm.dot
+DOT = mainFsm.dot chargeBall.dot getSamplesFsm.dot chuteFsm.dot
+
+PNG = $(DOT:%.dot=%.png)
+
+all: $(PNG)
+
+%.png: %.dot
+	dot -Tpng -o $@ $<
+
+clean:
+	rm -f $(PNG)
