@@ -1,0 +1,8 @@
+/* IO.avr module. Charge balls Final State Machine */
+digraph chargeBallFsm 
+{
+	node [color=lightblue2, style=filled];
+	"Rotate harm" -> "Go backward" [label = "Harm in position"];
+	"Go backward" -> "Stop harm" [label = "Poisition reached"];
+	"Stop harm" -> End [label = "Harm stopped"];
+}

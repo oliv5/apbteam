@@ -1,0 +1,9 @@
+/* IO.avr module. Chute Final State Machine */
+digraph chuteFsm 
+{
+	"Go to chute" -> "Go to the wall backward" [label = "Near the chute."];
+	"Go to the wall backward" -> "Open chute" [label = "On the wall"];
+	"Open chute" -> "Wait fixed time" [label = "Chute opened"];
+	"Wait fixed time" -> "Close chute" [label = "Time out"];
+	"Close chute" -> End [label = "Chute closed"];
+}
