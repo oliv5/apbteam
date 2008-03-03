@@ -1,4 +1,4 @@
-DOT = mainFsm.dot chargeBall.dot getSamplesFsm.dot chuteFsm.dot
+DOT = mainFsm.dot loadBall.dot getSamplesFsm.dot stdContenerFsm.dot
 
 PNG = $(DOT:%.dot=%.png)
 
