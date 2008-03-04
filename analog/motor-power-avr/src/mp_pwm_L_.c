@@ -147,7 +147,6 @@ ISR(L_COMP_vect) {
       }
 }
 
-
 // overcurrent detected by comparators
 ISR(ILIM_L_vect) {
     _L_AL_0;
@@ -198,4 +197,3 @@ void start_motor_L_ (uint8_t pwmspeed, uint8_t direction) {
 void stop_motor_L_ (void) {
     state_L_ = CMD_STATE_HIGH_Z;
 }
-

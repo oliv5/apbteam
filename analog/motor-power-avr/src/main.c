@@ -72,8 +72,10 @@ uint8_t curLim_stat_cpt, curLim_stat_period;
 /* +AutoDec */
 
 /** Main loop. */
-static void
-main_loop (void);
+void main_loop (void);
+
+/** Just do a short flash on LEDs */
+void led_flash(void);
 
 /* -AutoDec */
 
@@ -82,6 +84,11 @@ int
 main (int argc, char **argv)
 {
     avr_init (argc, argv);
+
+    // Show that starts
+    led_flash();
+
+    DDRB |= 0x0c; //--
     /* Pull-ups. */
     //PORTA = 0xff;
 
@@ -93,22 +100,50 @@ main (int argc, char **argv)
     envTest_period = 200;
     proto_send0 ('z');
     sei ();
+
+    // Background "task"
     while (1)
-	main_loop ();
+	    main_loop ();
+
     return 0;
 }
 
+/** Just do a short flash on LEDs */
+void
+led_flash(void)
+{
+    uint8_t ddrb_backup, portb_backup;
+
+    // Save previous state
+    ddrb_backup  = DDRB;
+    portb_backup = PORTB;
+
+    // Light up LEDs
+    DDRB  = 0x0f;
+    PORTB = 0x0f;
+
+    // Delay 0.5s
+    utils_delay(0.5);
+
+    // Restore previous state
+    PORTB = portb_backup,
+    DDRB  = ddrb_backup;
+
+    return;
+}
+
 /** Main loop. */
-static void
+void
 main_loop (void)
 {
     /* Uart */
     if (uart0_poll ())
-	proto_accept (uart0_getc ());
+	    proto_accept (uart0_getc ());
 
     /* Counter for launching environemental tests */
     if (!(envTest_cpt --)) {
-	envTest_cpt = envTest_period;
+	    envTest_cpt = envTest_period;
+
 	launch_envTest ();
 	curLim_temp = get_curLim_temp (temperature);
 	curLim_bat= get_curLim_bat (battery);
@@ -218,4 +253,14 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 proto_send (cmd, size, args);
 #undef c
 }
+
+/** Defines empty vector for timer 2 until R pwm file exists */
+
+//--
+// To remove when R side file will be generated
+EMPTY_INTERRUPT(R_OVF_vect)
+
+//--
+// To remove when R side file will be generated
+EMPTY_INTERRUPT(R_COMP_vect)
 
