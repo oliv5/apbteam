@@ -27,8 +27,8 @@ void init_pwm_L_ (void) {
 	_L_BH_0;
 
     // status LEDs
-    _L_LED0_1;
-    _L_LED1_1;
+    _L_LED0_0;
+    _L_LED1_0;
 
     // Set IOs as outputs
     _L_ACTIVATE_OUTPUTS;
@@ -56,7 +56,7 @@ ISR(L_OVF_vect) {
 	sei();	// set back interrupts
 
     // Display CMD_STATE on LEDs
-    _L_LED0_0;
+    _L_LED0_1;
     _L_LED1_0;
 
 	break;
@@ -71,8 +71,8 @@ ISR(L_OVF_vect) {
 	sei(); 	// set back interrupts
 
     // Display CMD_STATE on LEDs
-    _L_LED0_1;
-    _L_LED1_0;
+    _L_LED0_0;
+    _L_LED1_1;
 
 	break;
 
@@ -87,7 +87,7 @@ ISR(L_OVF_vect) {
 
     // Display CMD_STATE on LEDs
     _L_LED0_0;
-    _L_LED1_1;
+    _L_LED1_0;
 
 	break;
 
@@ -122,6 +122,11 @@ ISR(L_COMP_vect) {
 	_L_AH_0;
 	_L_AL_1;
 	sei(); 	// set back interrupts
+
+    // Display CMD_STATE on LEDs
+    _L_LED0_0;
+    _L_LED1_0;
+
 	break;
 
       case CMD_STATE_DIR_1:
@@ -130,6 +135,11 @@ ISR(L_COMP_vect) {
 	_L_BH_0;
 	_L_BL_1;
 	sei(); 	// set back interrupts
+
+    // Display CMD_STATE on LEDs
+    _L_LED0_0;
+    _L_LED1_0;
+
 	break;
 
       case CMD_STATE_BRAKE:
