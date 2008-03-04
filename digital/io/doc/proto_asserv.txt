@@ -1,0 +1,165 @@
+=========================================
+Communication between io and asserv cards
+=========================================
+:Author: djerem
+
+
+
+Introduction
+============
+
+At the present time, the TWI module does not support multi-master mode.
+
+The *io* card is the master and the *asserv* and *motor power* cards are the
+slaves ones.
+
+This documents describes the exchange between the *io* and the *asserv* cards.
+
+
+Protocol
+========
+
+From io to asserv
+~~~~~~~~~~~~~~~~~
+
+General description
+-------------------
+
+The *io* card send the *asserv* one a message of instruction to pilot it. This
+message has a variable length. It looks like::
+
+     0     1     2 ...      <-- byte position
+  +- - -+- - -+- - - - - -+
+  | seq | cmd | param ... |
+  +- - -+- - -+- - - - - -+
+
+Here is the complete description of the instruction message:
+
+seq
+    a sequence number of 1 byte length. It is a *unique identifier for each
+    command* (this is not perfectly true as the possibilities are limited to
+    256). It is incremented by one for each new command. When the sequence
+    number reach 255, it is reseted to 1.
+
+cmd
+    an identifier for the command we want the *asserv* card to do. It is 1
+    byte length.
+
+parameter
+    It is an optional list of parameters. It depends on the command we want to
+    send to the *asserv* card. Its length can be 0 or more bytes. This is the
+    variable length part of the message.
+
+
+List of supported commands
+--------------------------
+
+This table describe the list of supported commands by the *asserv* card:
+
++---------+-------+-----------------+-------------------------------------+
+| Command | Class | Parameters list | Description                         |
+| (cmd)   |       | (param)         |                                     |
++=========+=======+=================+=====================================+
+|   'z'   | Other | None            | Reset                               |
++---------+-------+-----------------+-------------------------------------+
+|   'w'   | Other | None            | Stop motor (useful for end match)   |
++---------+-------+-----------------+-------------------------------------+
+|   's'   | Other | None            | Stop                                |
++---------+-------+-----------------+-------------------------------------+
+|   'l'   | Move  | - distance (3w) | Linear move                         |
++---------+-------+-----------------+-------------------------------------+
+|   'a'   | Move  | - angle (2w)    | Angular move (rotation)             |
++---------+-------+-----------------+-------------------------------------+
+|   'f'   | Move  | None            | Go to the wall (backward movement)  |
++---------+-------+-----------------+-------------------------------------+
+|   'F'   | Move  | None            | Go to a gutter (forward movement)   |
++---------+-------+-----------------+-------------------------------------+
+|   'b'   |  Arm  | - position (2w) | Move the arm to a desired position  |
+|         |       | - speed (1w)    | at a specific speed                 |
++---------+-------+-----------------+-------------------------------------+
+|   'p'   |  Arm  | See next table  | Change setting values               |
++---------+-------+-----------------+-------------------------------------+
+
+The *'p'* command take different sub-parameters to configure the settings.
+
++-----+-------------------------------+-------------------------------------+
+| 'X' | X position (3w)               | Set current x position              |
++=====+===============================+=====================================+
+| 'Y' | Y position (3w)               | Set current y position              |
++-----+-------------------------------+-------------------------------------+
+| 'A' | angular position (2w)         | Set current angular position        |
++-----+-------------------------------+-------------------------------------+
+| 's' | - linear high speed (1w)      | Set the speed setting               |
+|     | - angular high speed (1w)     |                                     |
+|     | - linear slow speed (1w)      |                                     |
+|     | - angular slow speed (1w)     |                                     |
++-----+-------------------------------+-------------------------------------+
+
+The classes of the commands are used for the responses of the *asserv* card
+that can only confirm some commands.
+
+
+From asserv to io
+~~~~~~~~~~~~~~~~~
+
+General description
+-------------------
+The *asserv* card maintains a buffer than can be retrieved by the *io* card.
+This buffer contains the status of the last command transmitted by the *io*
+card.
+
+It is used to know if the last command sent by the *io* card is currently
+executed, is finished or has failed (i.e. we are blocked) and also to retreive
+the current position (X, Y, alpha) of the bot and its arm.
+
+The buffer is a static 12 bytes length one::
+
+      0        1      2 .. 4  5 .. 7   8   9     10 11    <-- octal position
+  +--------+--------+- - - -+- - - -+- - - - -+- - - - -+
+  | status |  seq   | X pos | Y pos |  angle  | arm pos |
+  +--------+--------+- - - -+- - - -+- - - - -+- - - - -+
+
+
+Status value
+------------
+
+Status contains flag bit to know the status of movement and arm commands: if
+they have finished with success or with an error (i.e. blocked).
+
+Here is a list of the bits used and their definitions:
+
+ 0. Movement finished with success (MF);
+
+ 1. Movement finished with failure: the bot is blocked (MB);
+
+ 2. Arm movement finished with success (AF);
+
+ 3. Arm movement finished with failure: it should not happen, but we are not
+    sure yet (AB).
+
+The others bytes are unused.
+
+
+
+An example of communication
+===========================
+
+We now have the theory and the details, but to better understand, let's make a
+concrete example.
+
+The *io* card send the command for going to the wall (10, 'f') to the *asserv*
+card and internally stores the sequence number used for the command.
+
+If the *io* card read the buffer from the *asserv*, it can see:
+
+ 1. the sequence number is not the one of the command sent. The *asserv* card
+    has received and started the command yet. Nothing has to be done, we need
+    to wait.
+
+ 2. the sequence number is the one of the command sent but the status bits MF
+    and MB are zero. The command has started to be executed but is not
+    finished yet. We can not sent another command.
+
+ 3. the sequence number is still the one of the command sent and the status
+    bits MF or MB are set to one. The command is now finished and another one
+    can be started. The state machine can evolve.
