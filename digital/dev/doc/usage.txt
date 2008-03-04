@@ -28,29 +28,22 @@ You need to install:
  * usbprog.
 
 
-The voodoo ceremonial
----------------------
+Usage procedure
+---------------
 
-As ``usbprog`` is quite buggy (no error checks), here is the best working
-procedures we have found:
+Voodoo power should not be used any more:
 
  #. power up the development card using the external power;
 
  #. power up your card using the power provided by the development card;
 
- #. plug the USB cable to your computer. You should see ``atmel`` in the
-    output of ``sudo lsusb``;
-
  #. plug the dev cable to the card you want to program.
 
+ #. plug the USB cable to your computer. You should see ``atmel`` in the
+    output of ``sudo lsusb``.
+
  #. use ``avrdude`` to program your card, with something like:
-    ``avrdude -p m128 -c avrispv2 -P usb -U flash:w:your_program.hex``
-    If it does not work, just remove the serial and USB cable and try again the
-    procedure.
-
- #. remove the serial cable from the card.
-
- #. remove the USB cable from your computer and plug it back in.
+    ``avrdude -p m128 -c avrispv2 -P usb -U flash:w:your_program.hex``.
 
  #. launch ``usbprog`` to put the development card in serial mode:
     ``sudo usbprog device 0 upload blinkdemo devices``. It should failed with
@@ -58,7 +51,10 @@ procedures we have found:
     should see in the kernel message something like:
     *cdc_acm 2-2:1.0: ttyACM0: USB ACM device*.
 
- #. plug the dev cable.
-
  #. launch ``minicom`` in */dev/ttyACM0 8N1* mode.
+
+ #. to return to program mode, first free the usb port with:
+    ``modprobe -r cdc_acm``, then put the development card in program mode:
+    ``sudo usbprog device 0 upload blinkdemo devices``, the card is ready to
+    be used for programming.
 
