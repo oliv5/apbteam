@@ -77,14 +77,14 @@ This table describe the list of supported commands by the *asserv* card:
 |   'b'   |  Arm  | - position (2w) | Move the arm to a desired position  |
 |         |       | - speed (1w)    | at a specific speed                 |
 +---------+-------+-----------------+-------------------------------------+
-|   'p'   |  Arm  | See next table  | Change setting values               |
+|   'p'   | Other | See next table  | Change setting values               |
 +---------+-------+-----------------+-------------------------------------+
 
 The *'p'* command take different sub-parameters to configure the settings.
 
 +-----+-------------------------------+-------------------------------------+
 | 'X' | X position (3w)               | Set current x position              |
-+=====+===============================+=====================================+
++-----+-------------------------------+-------------------------------------+
 | 'Y' | Y position (3w)               | Set current y position              |
 +-----+-------------------------------+-------------------------------------+
 | 'A' | angular position (2w)         | Set current angular position        |
@@ -114,7 +114,7 @@ the current position (X, Y, alpha) of the bot and its arm.
 
 The buffer is a static 12 bytes length one::
 
-      0        1      2 .. 4  5 .. 7   8   9     10 11    <-- octal position
+      0        1      2 .. 4  5 .. 7   8   9     10 11    <-- byte position
   +--------+--------+- - - -+- - - -+- - - - -+- - - - -+
   | status |  seq   | X pos | Y pos |  angle  | arm pos |
   +--------+--------+- - - -+- - - -+- - - - -+- - - - -+
@@ -137,7 +137,7 @@ Here is a list of the bits used and their definitions:
  3. Arm movement finished with failure: it should not happen, but we are not
     sure yet (AB).
 
-The others bytes are unused.
+The others bits are unused.
 
 
 
@@ -153,8 +153,8 @@ card and internally stores the sequence number used for the command.
 If the *io* card read the buffer from the *asserv*, it can see:
 
  1. the sequence number is not the one of the command sent. The *asserv* card
-    has received and started the command yet. Nothing has to be done, we need
-    to wait.
+    has not received and started the command yet. Nothing has to be done, we
+    need to wait.
 
  2. the sequence number is the one of the command sent but the status bits MF
     and MB are zero. The command has started to be executed but is not
