@@ -47,6 +47,9 @@
 #define FLASH_WREN 0x6
 #define FLASH_WEDI 0x4
 #define FLASH_EWSR 0x50
+#define FLASH_AAI 0xAD
+
+#define FLASH_TBP_US 10
 
 struct flash_t
 {

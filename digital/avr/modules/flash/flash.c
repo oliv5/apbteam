@@ -25,6 +25,7 @@
 #include "flash.h"
 #include "modules/proto/proto.h"
 #include "modules/spi/spi.h"
+#include "modules/utils/utils.h"
 
 static flash_t flash_global; 
 
@@ -179,7 +180,31 @@ flash_read (uint32_t addr)
  * \param  length  the length of the data to read.
  */
 void
-flash_read_array (uint32_t addr, uint8_t *buffer, uint32_t length);
+flash_read_array (uint32_t addr, uint8_t *buffer, uint32_t length)
+{
+    uint8_t data[16];
+    uint8_t i,j;
+
+    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
+    /* Send the read instruction. */
+    spi_send (FLASH_READ);
+    flash_address (addr);
+
+    while (length)
+      {
+	for (i = 0; i < 16; i++)
+	{
+	    data[i] = spi_recv ();
+	    length --;
+	}
+
+	for (j = 0; j < i; j++)
+	{
+	    proto_send1b('r', data[i]);
+	}
+      }
+    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
+}
 
 /** Write in the flash byte provided in parameter.
   * \param  addr  the address to store the data.
@@ -187,7 +212,29 @@ flash_read_array (uint32_t addr, uint8_t *buffer, uint32_t length);
   * \param  length  the array length
   */
 void
-flash_write_array (uint32_t addr, uint8_t *data, uint32_t length);
+flash_write_array (uint32_t addr, uint8_t *data, uint32_t length)
+{
+    uint32_t i;
+
+    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
+    spi_send (FLASH_AAI);
+    /* send the start address */
+    flash_address (addr);
+    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
+
+    /* Send two bytes */
+    for (i = 0; i < length; i += 2)
+      {
+	AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
+	spi_send (FLASH_AAI);
+	spi_send (data[i]);
+	spi_send (data[i+1]);
+	AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
+
+	/* Wait for the end of the register. */
+	utils_delay_us (FLASH_TBP_US);
+      }
+}
 
 /** Read the memory from the address automaticaly managed, the offset of the
  * data shall be provided to get the data.

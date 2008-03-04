@@ -56,8 +56,9 @@ main (void)
     proto_send0 ('c');
     flash_init ();
     proto_send0 ('f');
-    flash_write (0x1, 0xab);
-    proto_send0 (flash_read(0x1));
+    flash_write (0x10, 'a');
+    utils_delay_us (FLASH_TBP_US);
+    proto_send1b ('o',flash_read(0x10));
     while (1)
 	proto_accept (uart0_getc ());
 }
