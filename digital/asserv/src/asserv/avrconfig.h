@@ -86,5 +86,11 @@
 /* asserv. */
 /** Use external counters. */
 #define AC_ASSERV_COUNTER_EXTERNAL 1
+/** TWI address. */
+#define AV_ASSERV_TWI_ADDRESS 4
+
+#define TWI_SLAVE_ENABLE 1
+#define TWI_SL_RCPT_SIZE 16
+#define TWI_SL_SEND_SIZE 16
 
 #endif /* avrconfig_h */
