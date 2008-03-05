@@ -29,6 +29,8 @@
 #include "modules/utils/utils.h"
 #include "modules/uart/uart.h"
 
+#define TEST_BASE 0x50
+
 void
 proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 {
@@ -51,14 +53,32 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 int
 main (void)
 {
+    uint8_t data[26];
+    uint8_t data_rsp[26];
+    uint8_t i;
+
     uart0_init ();
     proto_send0 ('z');
     proto_send0 ('c');
     flash_init ();
     proto_send0 ('f');
-    flash_write (0x10, 'a');
-    utils_delay_us (FLASH_TBP_US);
-    proto_send1b ('o',flash_read(0x10));
+    /*flash_write (TEST_BASE, 'a');
+    proto_send1b ('o',flash_read(TEST_BASE));
+*/
+    for (i = 0; i < 26; i++)
+      {
+	data[i] = i + 'a';
+      }
+    
+    /* Write a full array. */
+    flash_write_array (TEST_BASE + 1, data, 26);
+
+    /* Read a full array. */
+    flash_read_array (TEST_BASE + 1, data_rsp, 26);
+
+    /* Print the data_rsp to the i2c */
+    proto_send ('g', 26, data_rsp);
+
     while (1)
 	proto_accept (uart0_getc ());
 }

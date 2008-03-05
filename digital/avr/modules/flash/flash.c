@@ -61,6 +61,22 @@ flash_erase (uint8_t cmd, uint32_t start_addr)
       }
 }
 
+/** Poll the busy bit in the Software Status Register of the flash memory.
+  * \return  the busy bit state.
+  */
+uint8_t
+flash_is_busy (void)
+{
+    uint8_t busy;
+
+    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
+    spi_send (FLASH_RDSR);
+    busy = spi_recv() & 0x1;
+    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
+
+    return busy;
+}
+
 /** Initialise the flsah memory.
   */
 void
@@ -153,6 +169,9 @@ flash_write (uint32_t addr, uint8_t data)
     flash_address (addr);
     spi_send (data);
     AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
+
+    /* Wait for the flash until it is busy */
+    while (flash_is_busy());
 }
 
 /** Read the data at the address provided.
@@ -169,7 +188,6 @@ flash_read (uint32_t addr)
     flash_address (addr);
     data = spi_recv ();
     AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
-
     return data;
 }
 
@@ -182,27 +200,16 @@ flash_read (uint32_t addr)
 void
 flash_read_array (uint32_t addr, uint8_t *buffer, uint32_t length)
 {
-    uint8_t data[16];
-    uint8_t i,j;
+    uint8_t i;
 
     AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
     /* Send the read instruction. */
     spi_send (FLASH_READ);
     flash_address (addr);
-
-    while (length)
-      {
-	for (i = 0; i < 16; i++)
-	{
-	    data[i] = spi_recv ();
-	    length --;
-	}
-
-	for (j = 0; j < i; j++)
-	{
-	    proto_send1b('r', data[i]);
-	}
-      }
+    for (i = 0; i < length; i++)
+    {
+	buffer[i] = spi_recv ();
+    }
     AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
 }
 
@@ -210,6 +217,7 @@ flash_read_array (uint32_t addr, uint8_t *buffer, uint32_t length)
   * \param  addr  the address to store the data.
   * \param  data  the array to store.
   * \param  length  the array length
+  * TODO : Fix this function.
   */
 void
 flash_write_array (uint32_t addr, uint8_t *data, uint32_t length)
@@ -231,8 +239,8 @@ flash_write_array (uint32_t addr, uint8_t *data, uint32_t length)
 	spi_send (data[i+1]);
 	AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
 
-	/* Wait for the end of the register. */
-	utils_delay_us (FLASH_TBP_US);
+	/* Wait for the flash until it is busy */
+	while (flash_is_busy());
       }
 }
 

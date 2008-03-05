@@ -92,6 +92,12 @@ flash_erase (uint8_t cmd, uint32_t start_addr);
 void
 flash_send_command (uint8_t cmd);
 
+/** Poll the busy bit in the Software Status Register of the flash memory.
+  * \return  the busy bit state.
+  */
+uint8_t
+flash_is_busy (void);
+
 /** Write in the flash byte provided in parameter.
   * \param  data  the buffer to store the data.
   */
