@@ -33,9 +33,9 @@ extern uint16_t counter_left, counter_right;
 extern int16_t counter_left_diff, counter_right_diff;
 
 /** Define the direction output for left motor. */
-#define PWM_LEFT_DIR 3
+#define PWM_LEFT_DIR 4
 /** Define the direction output for right motor. */
-#define PWM_RIGHT_DIR 2
+#define PWM_RIGHT_DIR 5
 
 /** Define the absolute maximum PWM value. */
 #define PWM_MAX 0x3ff

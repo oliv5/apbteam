@@ -24,13 +24,13 @@
  * }}} */
 
 /** Define the PWM output used for left motor. */
-#define PWM_LEFT_OCR OCR1C
+#define PWM_LEFT_OCR OCR1B
 /** Define the PWM output used for right motor. */
-#define PWM_RIGHT_OCR OCR1B
+#define PWM_RIGHT_OCR OCR1C
 /** Define the direction output for left motor. */
-#define PWM_LEFT_DIR 3
+#define PWM_LEFT_DIR 4
 /** Define the direction output for right motor. */
-#define PWM_RIGHT_DIR 2
+#define PWM_RIGHT_DIR 5
 
 /** Define the absolute maximum PWM value. */
 #define PWM_MAX 0x3ff

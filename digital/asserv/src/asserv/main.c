@@ -108,10 +108,13 @@ int
 main (int argc, char **argv)
 {
     avr_init (argc, argv);
-    DDRD = 0x60;
     /* Pull-ups. */
-    PORTA = 0xff;
     PORTC = 0xff;
+    PORTD = 0xf0;
+    PORTE = 0xff;
+    PORTF = 0xfc;
+    PORTG = 0x18;
+    LED_SETUP;
     eeprom_read_params ();
     pwm_init ();
     timer_init ();

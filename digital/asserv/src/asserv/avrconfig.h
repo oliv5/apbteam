@@ -35,7 +35,7 @@
 #define AC_UART0_PORT 1
 /** Baudrate: 2400, 4800, 9600, 14400, 19200, 28800, 38400, 57600, 76800,
  * 115200, 230400, 250000, 500000, 1000000. */
-#define AC_UART0_BAUDRATE 115200
+#define AC_UART0_BAUDRATE 38400
 /** Send mode:
  *  - POLLING: no interrupts.
  *  - RING: interrupts, ring buffer. */
