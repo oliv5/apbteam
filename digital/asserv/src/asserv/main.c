@@ -203,7 +203,7 @@ main_loop (void)
       }
     if (main_print_pin && !--main_print_pin_cpt)
       {
-	proto_send2b ('I', PINA, PINF & 0xf);
+	proto_send1b ('I', PINC);
 	main_print_pin_cpt = main_print_pin;
       }
     /* Misc. */

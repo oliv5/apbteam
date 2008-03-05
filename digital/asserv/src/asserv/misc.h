@@ -26,18 +26,18 @@
  * }}} */
 
 #define LED_SETUP do { \
-    PORTF &= _BV (1) | _BV (0);
-    DDRF &= _BV (1) | _BV (0);
+    PORTF &= _BV (1) | _BV (0); \
+    DDRF &= _BV (1) | _BV (0); \
 } while (0)
 
 #define LED1(x) do { \
-    if (!(x)) PORTD &= ~_BV (0); \
-    else PORTD |= _BV (0); \
+    if (!(x)) PORTF &= ~_BV (0); \
+    else PORTF |= _BV (0); \
 } while (0)
 
 #define LED2(x) do { \
-    if (!(x)) PORTD &= ~_BV (1); \
-    else PORTD |= _BV (1); \
+    if (!(x)) PORTF &= ~_BV (1); \
+    else PORTF |= _BV (1); \
 } while (0)
 
 #endif /* misc_h */

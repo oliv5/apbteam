@@ -35,17 +35,17 @@ traj_ftw (void)
     int16_t speed;
     speed = speed_theta_slow;
     speed *= 256;
-    if (PINA & _BV (0) && PINA & _BV (7))
+    if (PINC & _BV (0) && PINC & _BV (1))
       {
 	speed_theta_cons = -speed;
 	speed_alpha_cons = 0;
       }
-    else if (PINA & _BV (0))
+    else if (PINC & _BV (0))
       {
 	speed_theta_cons = -speed / 2;
 	speed_alpha_cons = speed / 2;
       }
-    else if (PINA & _BV (7))
+    else if (PINC & _BV (1))
       {
 	speed_theta_cons = -speed / 2;
 	speed_alpha_cons = -speed / 2;

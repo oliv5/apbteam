@@ -24,7 +24,7 @@
  * }}} */
 
 /** Simulate some AVR regs. */
-extern uint8_t DDRD, PORTD, PORTA, PORTC, PINA, PINF;
+extern uint8_t DDRF, PORTC, PORTD, PORTE, PORTF, PORTG, PINC;
 
 /** Overall counter values. */
 extern uint16_t counter_left, counter_right;
