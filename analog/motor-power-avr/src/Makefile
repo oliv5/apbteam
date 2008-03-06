@@ -1,7 +1,7 @@
 BASE = ../../../digital/avr
 PROGS = mp
 HOST_PROGS = test_mp
-mp_SOURCES = main.c mp_pwm_L_.c mp_pwm_LR_.c adc.c
+mp_SOURCES = main.c mp_pwm_L_.c mp_pwm_R_.c mp_pwm_LR_.c adc.c
 MODULES = adc proto uart utils math/fixed
 CONFIGFILE = avrconfig.h
 # atmega8, atmega8535, atmega128...
@@ -12,3 +12,7 @@ OPTIMIZE = -O2
 HOST_LIBS = -lm
 
 include $(BASE)/make/Makefile.gen
+
+src:
+	sed -e 's/_L_/_R_/g' mp_pwm_L_.c > mp_pwm_R_.c
+	sed -e 's/_L_/_R_/g' mp_pwm_L_.h > mp_pwm_R_.h

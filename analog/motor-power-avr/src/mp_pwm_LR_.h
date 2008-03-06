@@ -121,10 +121,10 @@
 // Vectors
 #define ILIM_R_vect INT0_vect
 #define ILIM_L_vect INT1_vect
-#define L_OVF_vect  TIMER0_OVF_vect
-#define R_OVF_vect  TIMER2_OVF_vect
-#define L_COMP_vect TIMER0_COMP_vect
-#define R_COMP_vect TIMER2_COMP_vect
+#define OVF_L_vect  TIMER0_OVF_vect
+#define OVF_R_vect  TIMER2_OVF_vect
+#define COMP_L_vect TIMER0_COMP_vect
+#define COMP_R_vect TIMER2_COMP_vect
 
 // Command states
 #define CMD_STATE_DIR_0   0x00

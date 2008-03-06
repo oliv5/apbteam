@@ -33,7 +33,7 @@
 #include "io.h"
 #include "mp_pwm_LR_.h"
 #include "mp_pwm_L_.h"
-//#include "mp_pwm_R_.h"
+#include "mp_pwm_R_.h"
 
 /* This is implementation include. */
 #ifdef HOST
@@ -88,7 +88,6 @@ main (int argc, char **argv)
     // Show that starts
     led_flash();
 
-    DDRB |= 0x0c; //--
     /* Pull-ups. */
     //PORTA = 0xff;
 
@@ -253,14 +252,3 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 proto_send (cmd, size, args);
 #undef c
 }
-
-/** Defines empty vector for timer 2 until R pwm file exists */
-
-//--
-// To remove when R side file will be generated
-EMPTY_INTERRUPT(R_OVF_vect)
-
-//--
-// To remove when R side file will be generated
-EMPTY_INTERRUPT(R_COMP_vect)
-

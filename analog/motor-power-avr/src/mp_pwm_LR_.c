@@ -1,6 +1,7 @@
 #include "common.h"
 #include "mp_pwm_LR_.h"
 #include "mp_pwm_L_.h"
+#include "mp_pwm_R_.h"
 
 // Variables for current limitation
 static uint8_t curLim_temp;
@@ -14,7 +15,7 @@ static uint8_t curLim_soft;
 
 void init_timer_LR_(void) {
     init_pwm_L_();
-    //init_pwm_R_();
+    init_pwm_R_();
 
     TCNT_L_ = 0x00;
     TCNT_R_ = 0x80;	// 180° phase shifted to TCNT_L
