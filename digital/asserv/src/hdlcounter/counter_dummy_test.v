@@ -1,9 +1,9 @@
-// counter_top.v
+// counter_dummy_test.v - Dummy counter test file.
 // hdlcounter - Incremental encoder counter on programmable logic. {{{
 //
-// Copyright (C) 2007 Nicolas Schodet
+// Copyright (C) 2008 Nicolas Schodet
 //
-// Robot APB Team 2008.
+// APBTeam:
 //        Web: http://apbteam.org/
 //      Email: team AT apbteam DOT org
 //
@@ -24,6 +24,13 @@
 // }}}
 `timescale 1ns / 1ps
 
+// This module produces four addressable counters.  The first one is
+// incremented when the second one overflows, and so on...  This results in the
+// first counter being 256 times slower than the second counter and so on...
+//
+// This comes handy when no encoder is available to test communication with
+// the main processor.
+
 module counter_top(clk, rst, q0, q1, q2, q3, ale, rd, wr, ad);
     parameter size = 8;
     input clk;
@@ -32,21 +39,7 @@ module counter_top(clk, rst, q0, q1, q2, q3, ale, rd, wr, ad);
     input ale, rd, wr;
     inout [size-1:0] ad;
 
-    wire [1:0] qf0, qf1, qf2, qf3;
-    wire [size-1:0] count0, count1, count2, count3;
-
-    // Decode encoders outputs.
-    noise_filter f0[1:0] (clk, rst, q0, qf0);
-    quad_decoder_div4 qd0 (clk, rst, qf0, count0);
-
-    noise_filter f1[1:0] (clk, rst, q1, qf1);
-    quad_decoder_div4 qd1 (clk, rst, qf1, count1);
-
-    input_latch f2[1:0] (clk, rst, q2, qf2);
-    quad_decoder_full qd2 (clk, rst, qf2, count2);
-
-    input_latch f3[1:0] (clk, rst, q3, qf3);
-    quad_decoder_full qd3 (clk, rst, qf3, count3);
+    reg [size-1:0] count0, count1, count2, count3;
 
     reg [size-1:0] lcount;
     
@@ -59,6 +52,25 @@ module counter_top(clk, rst, q0, q1, q2, q3, ale, rd, wr, ad);
 		ad[1:0] == 1 ? count1 :
 		ad[1:0] == 2 ? count2 :
 		count3;
+	end
+    end
+
+    // Increment counters.
+    always @(posedge clk or negedge rst) begin
+	if (!rst) begin
+	    count0 <= 0;
+	    count1 <= 0;
+	    count2 <= 0;
+	    count3 <= 0;
+	end
+	else begin
+	    if (count1 == 8'hff && count2 == 8'hff && count3 == 8'hff)
+		count0 <= count0 + 1;
+	    if (count2 == 8'hff && count3 == 8'hff)
+		count1 <= count1 + 1;
+	    if (count3 == 8'hff)
+		count2 <= count2 + 1;
+	    count3 <= count3 + 1;
 	end
     end
 
