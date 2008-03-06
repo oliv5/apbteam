@@ -80,7 +80,8 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	    while (compt-- != 0)
 	      {
 		/* Maximum number of bytes of the message */
-		static const uint8_t max_byte_number = TWI_SL_SEND_SIZE;
+		static const uint8_t max_byte_number =
+		    AC_TWI_SL_RECV_BUFFER_SIZE;
 		/* Get a random number */
 		uint32_t random = random_u32 ();
 		/* Extract a number under max_byte_number */

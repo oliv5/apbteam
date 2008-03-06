@@ -87,10 +87,17 @@
 /** Use external counters. */
 #define AC_ASSERV_COUNTER_EXTERNAL 1
 /** TWI address. */
-#define AV_ASSERV_TWI_ADDRESS 4
+#define AC_ASSERV_TWI_ADDRESS 4
 
-#define TWI_SLAVE_ENABLE 1
-#define TWI_SL_RCPT_SIZE 16
-#define TWI_SL_SEND_SIZE 16
+/* twi - TWI module. */
+/** Activate master part. */
+#define AC_TWI_MASTER_ENABLE 0
+/** Activate slave part. */
+#define AC_TWI_SLAVE_ENABLE 1
+/** Slave recv buffer size. */
+#define AC_TWI_SL_RECV_BUFFER_SIZE 16
+/** Slave send buffer size. */
+#define AC_TWI_SL_SEND_BUFFER_SIZE 16
+
 
 #endif /* avrconfig_h */

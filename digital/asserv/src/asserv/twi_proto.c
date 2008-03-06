@@ -39,7 +39,7 @@ struct twi_proto_t twi_proto;
 void
 twi_proto_init (void)
 {
-    twi_init (AV_ASSERV_TWI_ADDRESS);
+    twi_init (AC_ASSERV_TWI_ADDRESS);
     twi_proto_update ();
 }
 
@@ -47,7 +47,7 @@ twi_proto_init (void)
 void
 twi_proto_update (void)
 {
-    u8 buf[TWI_SL_RCPT_SIZE];
+    u8 buf[AC_TWI_SL_RECV_BUFFER_SIZE];
     /* Handle incoming command. */
     while (twi_sl_poll (buf, sizeof (buf)))
 	twi_proto_callback (buf, sizeof (buf));

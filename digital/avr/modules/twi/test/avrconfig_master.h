@@ -25,10 +25,20 @@
  *
  * }}} */
 
-#define TWI_SL_RCPT_SIZE 1
-#define TWI_SL_SEND_SIZE 1
+/* global */
+/** AVR Frequency : 1000000, 1843200, 2000000, 3686400, 4000000, 7372800,
+ * 8000000, 11059200, 14745600, 16000000, 18432000, 20000000. */
+#define AC_FREQ 14745600
 
-#define TWI_MASTER_ENABLE 1
+/* twi - TWI module. */
+/** Activate master part. */
+#define AC_TWI_MASTER_ENABLE 1
+/** Activate slave part. */
+#define AC_TWI_SLAVE_ENABLE 0
+/** Slave recv buffer size. */
+#define AC_TWI_SL_RECV_BUFFER_SIZE 1
+/** Slave send buffer size. */
+#define AC_TWI_SL_SEND_BUFFER_SIZE 1
 
 /* proto - Protocol module. */
 /** Maximum argument size. */
@@ -39,11 +49,6 @@
 #define AC_PROTO_PUTC uart0_putc
 /** Support for quote parameter. */
 #define AC_PROTO_QUOTE 1
-
-/* global */
-/** AVR Frequency : 1000000, 1843200, 2000000, 3686400, 4000000, 7372800,
- * 8000000, 11059200, 14745600, 16000000, 18432000, 20000000. */
-#define AC_FREQ 14745600
 
 /* uart - UART module. */
 /** Select hardware uart for primary uart: 0, 1 or -1 to disable. */

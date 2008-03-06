@@ -65,13 +65,13 @@ main (void)
     proto_send0 ('S');
     while (42)
       {
-	uint8_t data[TWI_SL_RCPT_SIZE];
+	uint8_t data[AC_TWI_SL_RECV_BUFFER_SIZE];
 	data[0] = 0;
 	/* Check for data */
-	if (twi_sl_poll (data, TWI_SL_RCPT_SIZE))
+	if (twi_sl_poll (data, AC_TWI_SL_RECV_BUFFER_SIZE))
 	  {
 	    /* Receive and store them */
-	    twi_sl_update (data, TWI_SL_RCPT_SIZE);
+	    twi_sl_update (data, AC_TWI_SL_RECV_BUFFER_SIZE);
 	  }
 	if (uart0_poll ())
 	    proto_accept (uart0_getc ());

@@ -1,1 +1,1 @@
-twi_SOURCES = twi.c
+twi_SOURCES = twi.avr.c twi.host.c

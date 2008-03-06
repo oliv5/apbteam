@@ -1,6 +1,6 @@
 #ifndef avrconfig_h
 #define avrconfig_h
-/* avrconfig.h */
+/* avrconfig.h - TWI module configuration template. */
 /* avr.twi - TWI AVR module. {{{
  *
  * Copyright (C) 2005 Demonchy Clément
@@ -25,7 +25,14 @@
  *
  * }}} */
 
-#define TWI_SL_RCPT_SIZE 16
-#define TWI_SL_SEND_SIZE 16
+/* twi - TWI module. */
+/** Activate master part. */
+#define AC_TWI_MASTER_ENABLE 0
+/** Activate slave part. */
+#define AC_TWI_SLAVE_ENABLE 0
+/** Slave recv buffer size. */
+#define AC_TWI_SL_RECV_BUFFER_SIZE 16
+/** Slave send buffer size. */
+#define AC_TWI_SL_SEND_BUFFER_SIZE 16
 
 #endif /* avrconfig_h */
