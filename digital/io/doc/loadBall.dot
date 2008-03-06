@@ -2,7 +2,7 @@
 digraph loadBallFsm 
 {
 	node [color=lightblue2, style=filled];
-	"Rotate arm" -> "Go backward" [label = "arm in position"];
+	"Rotate arm" -> "Go backward" [label = "desired balls loaded"];
 	"Go backward" -> "Stop arm" [label = "Poisition reached"];
-	"Stop arm" -> End [label = "arm stopped"];
+	"Stop arm" -> End [label = "arm stopped\narm at init position"];
 }

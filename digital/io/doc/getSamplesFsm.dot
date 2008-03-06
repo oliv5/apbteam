@@ -5,9 +5,7 @@ digraph GetSamplesFsm
 	"Go to position" -> "Prepare Arm for ditributor" [label = "Position reached"];
 	"Prepare Arm for ditributor" -> "Forward controled" [label = "Harm prepared"];
 	"Forward controled" -> "Prepare classifier" [label = "Ready to peek samples"];
-	"Prepare classifier" -> "Activate arm" [label = "Classifier prepared"];
-	"Activate arm" -> "Go backward" [label = "Arm activated"];
-	"Go backward" -> "Continue arm rotation" [label = "Position reached"];
-	"Continue arm rotation" -> "Continue classifier" [label = "Arm stopped"];
+	"Prepare classifier" -> "loadballs" [label = "Classifier prepared"];
+	"loadballs" -> "Continue classifier" [label = "balls loaded"];
 	"Continue classifier" -> End [label = "Classification ended"];
 }
