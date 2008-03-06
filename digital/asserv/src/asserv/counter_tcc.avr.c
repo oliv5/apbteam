@@ -30,9 +30,9 @@
  */
 
 /** Define to 1 to reverse the left counter. */
-#define COUNTER_REVERSE_LEFT 0
+#define COUNTER_LEFT_REVERSE 0
 /** Define to 1 to reverse the right counter. */
-#define COUNTER_REVERSE_RIGHT 0
+#define COUNTER_RIGHT_REVERSE 0
 
 /** Forward and reverse counter values. */
 static uint8_t counter_left_frw, counter_left_rev,
@@ -44,22 +44,6 @@ static uint16_t counter_left, counter_right;
 /** Counter differences since last update.
  * Maximum of 9 significant bits, sign included. */
 static int16_t counter_left_diff, counter_right_diff;
-
-/* +AutoDec */
-
-/** Initialize the counters. */
-static inline void
-counter_init (void);
-
-/** Update overall counter values and compute diffs. */
-static inline void
-counter_update (void);
-
-/** Restart counting. */
-static inline void
-counter_restart (void);
-
-/* -AutoDec */
 
 /** Initialize the counters. */
 static inline void
@@ -76,7 +60,12 @@ counter_init (void)
     TCCR3B = regv (ICNC3, ICES3, 5, WGM33, WGM32, CS32, CS31, CS30,
 		       0,     0, 0,	0,     0,    1,    1,    1);
     /* Begin with safe values. */
-    counter_restart ();
+    counter_left_frw = 0;
+    counter_left_rev = 0;
+    counter_left_old = TCNT2;
+    counter_right_frw = 0;
+    counter_right_rev = 0;
+    counter_right_old = TCNT3L;
     /* Interrupts for direction. */
     EICRB = 0x05;
     EIFR = _BV (4) | _BV (5);
@@ -91,12 +80,12 @@ SIGNAL (SIG_INTERRUPT4)
     if (PINE & _BV (4))
       {
 	counter_left_rev += c - counter_left_old;
-	GREEN_LED (!COUNTER_REVERSE_LEFT);
+	LED1 (!COUNTER_LEFT_REVERSE);
       }
     else
       {
 	counter_left_frw += c - counter_left_old;
-	GREEN_LED (COUNTER_REVERSE_LEFT);
+	LED1 (COUNTER_LEFT_REVERSE);
       }
     counter_left_old = c;
 }
@@ -109,12 +98,12 @@ SIGNAL (SIG_INTERRUPT5)
     if (PINE & _BV (5))
       {
 	counter_right_rev += c - counter_right_old;
-	RED_LED (!COUNTER_REVERSE_RIGHT);
+	LED2 (!COUNTER_RIGHT_REVERSE);
       }
     else
       {
 	counter_right_frw += c - counter_right_old;
-	RED_LED (COUNTER_REVERSE_RIGHT);
+	LED2 (COUNTER_RIGHT_REVERSE);
       }
     counter_right_old = c;
 }
@@ -141,7 +130,7 @@ counter_update (void)
 	counter_right_rev += c - counter_right_old;
     counter_right_old = c;
     /* Update counter values and diffs. */
-#if COUNTER_REVERSE_LEFT == 0
+#if COUNTER_LEFT_REVERSE == 0
     counter_left_diff = counter_left_frw;
     counter_left_diff -= counter_left_rev;
 #else
@@ -151,7 +140,7 @@ counter_update (void)
     counter_left_frw = 0;
     counter_left_rev = 0;
     counter_left += counter_left_diff;
-#if COUNTER_REVERSE_RIGHT == 0
+#if COUNTER_RIGHT_REVERSE == 0
     counter_right_diff = counter_right_frw;
     counter_right_diff -= counter_right_rev;
 #else
@@ -163,17 +152,5 @@ counter_update (void)
     counter_right += counter_right_diff;
     /* Enable ints. */
     EIMSK |= _BV (4) | _BV (5);
-}
-
-/** Restart counting. */
-static inline void
-counter_restart (void)
-{
-    counter_left_frw = 0;
-    counter_left_rev = 0;
-    counter_left_old = TCNT2;
-    counter_right_frw = 0;
-    counter_right_rev = 0;
-    counter_right_old = TCNT3L;
 }
 

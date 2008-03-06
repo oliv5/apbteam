@@ -77,10 +77,6 @@ counter_init (void);
 void
 counter_update (void);
 
-/** Restart counting. */
-void
-counter_restart (void);
-
 /** Initialise PWM generator. */
 void
 pwm_init (void);
