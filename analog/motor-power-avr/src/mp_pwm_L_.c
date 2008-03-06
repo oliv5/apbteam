@@ -40,7 +40,7 @@ ISR(L_OVF_vect) {
     state_L_ = state_L_cmd;
 
     // the falling of the other side may have delayed a few our IT
-    OCR_L_ = pwm_L_ + TCNT_L_;	// TODO: OCR_L_value shall be > than x%
+    OCR_L_ = pwm_L_;
 
     //PC = PC + state_L_;	// j'aurais bien aimé faire un calculated jump
 
@@ -173,34 +173,31 @@ ISR(ILIM_L_vect) {
 void start_motor_L_ (uint8_t pwmspeed, uint8_t direction) {
     // checking direction
     if (direction) 
-      {
-	state_L_cmd = CMD_STATE_DIR_1;
-      }
+    {
+        state_L_cmd = CMD_STATE_DIR_1;
+    }
     else
-      {
-	state_L_cmd = CMD_STATE_DIR_0;
-      }
+    {
+        state_L_cmd = CMD_STATE_DIR_0;
+    }
 
     // setting pwm value
     if (pwmspeed == 0)
-      {// brake
-	state_L_cmd = CMD_STATE_BRAKE;
-	pwm_L_ = 0;
-      }
+    {// brake
+        state_L_cmd = CMD_STATE_BRAKE;
+        pwm_L_ = 0;
+    }
     else
-      {
-	// adding offset
-	pwmspeed = pwmspeed + PWM_OFFSET_LR_;
-	
-	if (pwmspeed > PWM_MAX_LR_) 
-	  {// over PWM_MAX_LR_
-	    pwm_L_ = PWM_MAX_LR_;
-	  }
-	else if (pwmspeed < PWM_MIN_LR_) 
-	  {// under PWM_MIN_LR_
-	    pwm_L_ = PWM_MIN_LR_;
-	  }
-      }
+    {
+        // adding offset
+        pwmspeed = pwmspeed + PWM_OFFSET_LR_;
+
+        // clamp the value
+        UTILS_BOUND(pwmspeed, PWM_MIN_LR_, PWM_MAX_LR_);
+
+        // Apply the value
+        pwm_L_ = pwmspeed;
+    }
 }
 
 // puts motor in high Z
