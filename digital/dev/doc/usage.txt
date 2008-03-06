@@ -27,6 +27,8 @@ You need to install:
 
  * usbprog.
 
+Download a usbprog firmware, it will not be used, but is needed to switch de
+the development board mode: ``sudo usbprog download blinkdemo``.
 
 Usage procedure
 ---------------
