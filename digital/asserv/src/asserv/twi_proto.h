@@ -31,10 +31,4 @@ twi_proto_init (void);
 void
 twi_proto_update (void);
 
-void
-twi_proto_callback (u8 *buf, u8 size);
-
-u8
-twi_proto_params (u8 *buf, u8 size);
-
 #endif /* twi_proto_h */

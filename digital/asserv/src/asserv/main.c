@@ -32,6 +32,8 @@
 
 #include "misc.h"
 
+#include "twi_proto.h"
+
 /** Motor command sequence, do not use values above 127, do not use zero. */
 uint8_t main_sequence, main_sequence_ack, main_sequence_finish;
 
@@ -120,6 +122,7 @@ main (int argc, char **argv)
     timer_init ();
     counter_init ();
     uart0_init ();
+    twi_proto_init ();
     postrack_init ();
     proto_send0 ('z');
     sei ();
@@ -209,6 +212,7 @@ main_loop (void)
     /* Misc. */
     while (uart0_poll ())
 	proto_accept (uart0_getc ());
+    twi_proto_update ();
     main_timer[4] = timer_read ();
 }
 

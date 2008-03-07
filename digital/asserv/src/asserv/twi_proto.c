@@ -35,6 +35,12 @@ struct twi_proto_t
 
 struct twi_proto_t twi_proto;
 
+static void
+twi_proto_callback (u8 *buf, u8 size);
+
+static u8
+twi_proto_params (u8 *buf, u8 size);
+
 /** Initialise. */
 void
 twi_proto_init (void)
@@ -69,7 +75,7 @@ twi_proto_update (void)
 }
 
 /** Handle one command. */
-void
+static void
 twi_proto_callback (u8 *buf, u8 size)
 {
 #define c(cmd, size) (cmd)
@@ -118,7 +124,7 @@ twi_proto_callback (u8 *buf, u8 size)
 }
 
 /* Handle a parameter list of change. */
-u8
+static u8
 twi_proto_params (u8 *buf, u8 size)
 {
     u8 eat;
