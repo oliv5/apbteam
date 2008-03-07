@@ -202,5 +202,5 @@ void start_motor_R_ (uint8_t pwmspeed, uint8_t direction) {
 
 // puts motor in high Z
 void stop_motor_R_ (void) {
-    state_R_ = CMD_STATE_HIGH_Z;
+    state_R_cmd = CMD_STATE_HIGH_Z;
 }
