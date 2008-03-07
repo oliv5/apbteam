@@ -66,16 +66,16 @@ This table describe the list of supported commands by the *asserv* card:
 +---------+-------+-----------------+-------------------------------------+
 |   's'   | Other | None            | Stop                                |
 +---------+-------+-----------------+-------------------------------------+
-|   'l'   | Move  | - distance (3w) | Linear move                         |
+|   'l'   | Move  | - distance (3b) | Linear move                         |
 +---------+-------+-----------------+-------------------------------------+
-|   'a'   | Move  | - angle (2w)    | Angular move (rotation)             |
+|   'a'   | Move  | - angle (2b)    | Angular move (rotation)             |
 +---------+-------+-----------------+-------------------------------------+
 |   'f'   | Move  | None            | Go to the wall (backward movement)  |
 +---------+-------+-----------------+-------------------------------------+
 |   'F'   | Move  | None            | Go to a gutter (forward movement)   |
 +---------+-------+-----------------+-------------------------------------+
-|   'b'   |  Arm  | - position (2w) | Move the arm to a desired position  |
-|         |       | - speed (1w)    | at a specific speed                 |
+|   'b'   |  Arm  | - position (2b) | Move the arm to a desired position  |
+|         |       | - speed (1b)    | at a specific speed                 |
 +---------+-------+-----------------+-------------------------------------+
 |   'p'   | Other | See next table  | Change setting values               |
 +---------+-------+-----------------+-------------------------------------+
@@ -83,16 +83,16 @@ This table describe the list of supported commands by the *asserv* card:
 The *'p'* command take different sub-parameters to configure the settings.
 
 +-----+-------------------------------+-------------------------------------+
-| 'X' | X position (3w)               | Set current x position              |
+| 'X' | X position (3b)               | Set current x position              |
 +-----+-------------------------------+-------------------------------------+
-| 'Y' | Y position (3w)               | Set current y position              |
+| 'Y' | Y position (3b)               | Set current y position              |
 +-----+-------------------------------+-------------------------------------+
-| 'A' | angular position (2w)         | Set current angular position        |
+| 'A' | angular position (2b)         | Set current angular position        |
 +-----+-------------------------------+-------------------------------------+
-| 's' | - linear high speed (1w)      | Set the speed setting               |
-|     | - angular high speed (1w)     |                                     |
-|     | - linear slow speed (1w)      |                                     |
-|     | - angular slow speed (1w)     |                                     |
+| 's' | - linear high speed (1b)      | Set the speed setting               |
+|     | - angular high speed (1b)     |                                     |
+|     | - linear slow speed (1b)      |                                     |
+|     | - angular slow speed (1b)     |                                     |
 +-----+-------------------------------+-------------------------------------+
 
 The classes of the commands are used for the responses of the *asserv* card
