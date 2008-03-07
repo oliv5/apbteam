@@ -154,10 +154,10 @@ main_loop (void)
 void
 proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 {
-#define c(cmd, size) (cmd << 8 | size)
+#define c(cmd, size) ((uint16_t)cmd << 8 | size)
     switch (c (cmd, size))
       {
-      case c ('z', 0):
+  case c ('z', 0):
 	/* Reset. */
 	stop_motor_L_ ();
 	//stop_motor_R_ ();
@@ -170,12 +170,12 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	stop_motor_R_ ();
 	break;
 	*/
-      case c ('L', 0):
+  case c ('L', 0):
 	/* Set high Z state for channel L */
 	stop_motor_L_ ();
 	break;
 
-      case c ('l', 1):
+  case c ('l', 1):
 	/* Set pwm value for _L_ side.
 	 * - 0x80: -max on duty cycle (direction = 0)
 	 * - 0x00: 0% on duty cycle (brake state)
@@ -191,14 +191,26 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	  }
 	break;
 
-	//case c ('r', 1):
+  case c ('R', 0):
+	/* Set high Z state for channel R */
+	stop_motor_R_ ();
+	break;
+
+  case c ('r', 1):
 	/* Set pwm value for _R_ side.
 	 * - 0x80: -max on duty cycle (direction = 0)
 	 * - 0x00: 0% on duty cycle (brake state)
-	 * TODO : recopier ce qui est fait pour le cote _L_
-	 }
-	 */
-	//break;
+	 * - 0xFF: max on duty cylcle (direction = 1) */
+	cmd_R_ = (int8_t) args[0];
+	if (cmd_R_ >= 0)
+	  {
+	    start_motor_R_(cmd_R_ , 0);
+	  }
+	else
+	  {
+	    start_motor_R_ (-cmd_R_ , 1);
+	  }
+	break;
 
   case c ('e', 0):
 	/* Get environnemental test results */
@@ -242,6 +254,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	 * Can be set to 0 for no automatic stat send */
 	curLim_stat_cpt = curLim_stat_period = args[0];
 	break;
+
 	/*#ifdef HOST
 	  case c ('Y', 1):
 	// Simulation data.
