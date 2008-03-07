@@ -27,10 +27,18 @@
 #include "modules/utils/utils.h"
 #include "modules/utils/byte.h"
 #include "modules/twi/twi.h"
+#include "io.h"
+
+#include "misc.h"
 
 struct twi_proto_t
 {
     u8 seq;
+    /* Temporary test values. */
+    u32 tmp_l;
+    u32 tmp_x;
+    u8 tmp_l_active;
+    u8 tmp_f;
 };
 
 struct twi_proto_t twi_proto;
@@ -57,13 +65,27 @@ twi_proto_update (void)
     /* Handle incoming command. */
     while (twi_sl_poll (buf, sizeof (buf)))
 	twi_proto_callback (buf, sizeof (buf));
+    /* Temporary test code. */
+    if (twi_proto.tmp_l_active)
+      {
+	if (twi_proto.tmp_l)
+	  {
+	    twi_proto.tmp_x += 256;
+	    twi_proto.tmp_l -= 256;
+	  }
+	else
+	  {
+	    LED1 (0);
+	    twi_proto.tmp_f = 1;
+	  }
+      }
     /* Update status. */
     u8 status[12];
-    status[0] = 0;
+    status[0] = twi_proto.tmp_f;
     status[1] = twi_proto.seq;
-    status[2] = v32_to_v8 (0, 3);
-    status[3] = v32_to_v8 (0, 2);
-    status[4] = v32_to_v8 (0, 1);
+    status[2] = v32_to_v8 (twi_proto.tmp_x, 3);
+    status[3] = v32_to_v8 (twi_proto.tmp_x, 2);
+    status[4] = v32_to_v8 (twi_proto.tmp_x, 1);
     status[5] = v32_to_v8 (0, 3);
     status[6] = v32_to_v8 (0, 2);
     status[7] = v32_to_v8 (0, 1);
@@ -94,6 +116,10 @@ twi_proto_callback (u8 *buf, u8 size)
       case c ('l', 3):
 	/* Set linear speed controlled position consign.
 	 * - 3b: theta consign offset. */
+	twi_proto.tmp_l = v8_to_v32 (buf[2], buf[3], buf[4], 0);
+	twi_proto.tmp_l_active = 1;
+	LED1 (1);
+	twi_proto.tmp_f = 0;
 	break;
       case c ('a', 2):
 	/* Set linear speed controlled position consign.
