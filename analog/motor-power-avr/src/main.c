@@ -160,16 +160,10 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
   case c ('z', 0):
 	/* Reset. */
 	stop_motor_L_ ();
-	//stop_motor_R_ ();
+	stop_motor_R_ ();
 	utils_reset ();
 	break;
-	/* Commands. */
-	/*
-	   case c ('R', 0):
-	// Set high Z state for channel R 
-	stop_motor_R_ ();
-	break;
-	*/
+
   case c ('L', 0):
 	/* Set high Z state for channel L */
 	stop_motor_L_ ();
