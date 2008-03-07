@@ -42,7 +42,7 @@
 
 /* proto - Protocol module. */
 /** Maximum argument size. */
-#define AC_PROTO_ARGS_MAX_SIZE 8
+#define AC_PROTO_ARGS_MAX_SIZE 16
 /** Callback function name. */
 #define AC_PROTO_CALLBACK proto_callback
 /** Putchar function name. */

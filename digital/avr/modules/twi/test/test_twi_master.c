@@ -65,6 +65,25 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	      }
 	  }
 	break;
+      case c ('r', 2):
+	/* Read n bytes from an address slave
+	 * 2 parameter:
+	 *   - slave address.
+	 *   - nb of bytes.
+	 */
+	  {
+	    uint8_t data[16];
+	    int8_t d = twi_ms_read (args[0], data, args[1]);
+	    if (d != 0)
+		proto_send0 ('e');
+	    else
+	      {
+		while (!twi_ms_is_finished ())
+		    ;
+		proto_send ('R', args[1], data);
+	      }
+	  }
+	break;
       case c ('t', 2):
 	/* Test for sending and receiving multiple data.
 	 * It sends a random number of bytes to the slave and then read back
@@ -141,8 +160,21 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	utils_reset ();
 	break;
       default:
-	/* Error */
-	proto_send0 ('?');
+	/* Variable number of arguments. */
+	if (cmd == 's')
+	  {
+	    /* Send n bytes to a slave address.
+	     * 1+n parameters:
+	     *   - slave address;
+	     *   - n x data.
+	     */
+	    twi_ms_send (args[0], &args[1], size - 1);
+	    while (!twi_ms_is_finished ())
+		;
+	  }
+	else
+	    /* Error */
+	    proto_send0 ('?');
 	return;
       }
     /* Acknowledge what has been done */
