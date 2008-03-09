@@ -1,5 +1,5 @@
-/* test-flash.c */
-/*  {{{
+/* test-erase.c */
+/* avr.flash - AVR Flash SPI use. {{{
  *
  * Copyright (C) 2008 Nélio Laranjeiro
  *
@@ -53,32 +53,21 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 int
 main (void)
 {
-    uint8_t data[26];
-    uint8_t data_rsp[26];
-    uint8_t i;
-
     uart0_init ();
     proto_send0 ('z');
     proto_send0 ('c');
     flash_init ();
     proto_send0 ('f');
-    /*flash_write (TEST_BASE, 'a');
-    proto_send1b ('o',flash_read(TEST_BASE));
-*/
-    for (i = 0; i < 26; i++)
+
+    flash_erase (FLASH_ERASE_FULL, 0);
+
+    while (flash_is_busy ())
       {
-	data[i] = i + 'a';
+	utils_delay_ms (10);
+	proto_send0 ('o');
       }
+    proto_send0 ('e');
     
-    /* Write a full array. */
-    flash_write_array (TEST_BASE + 1, data, 26);
-
-    /* Read a full array. */
-    flash_read_array (TEST_BASE + 1, data_rsp, 26);
-
-    /* Print the data_rsp to the i2c */
-    proto_send ('g', 26, data_rsp);
-
     while (1)
 	proto_accept (uart0_getc ());
 }

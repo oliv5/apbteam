@@ -1,6 +1,11 @@
 BASE = ../../..
-AVR_PROGS = test_flash
-test_flash_SOURCES = test-flash.c 
+AVR_PROGS = test-write-onbyte test-erase test-write-anarray test-init
+
+test-write-onbyte_SOURCES = test-write-onebyte.c
+test-erase_SOURCES = test-erase.c
+test-write-anarray_SOURCES = test-write-anarray.c
+test-init_SOURCES = test-init.c
+
 MODULES = utils spi flash proto uart
 CONFIGFILE = avrconfig.h
 # atmega8, atmega8535, atmega128...

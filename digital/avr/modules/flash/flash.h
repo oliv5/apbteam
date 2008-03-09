@@ -59,8 +59,9 @@ struct flash_t
 typedef struct flash_t flash_t;
 
 /** Initialise the flsah memory.
+  * \return the flash context usefull to access to the addr for debug.
   */
-void
+flash_t *
 flash_init (void);
 
 /** Flash access.
