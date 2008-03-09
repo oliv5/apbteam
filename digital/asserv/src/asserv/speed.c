@@ -22,6 +22,14 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "common.h"
+#include "speed.h"
+
+#include "modules/utils/utils.h"
+#include "modules/math/fixed/fixed.h"
+
+#include "pos.h"
+#include "state.h"
 
 /**
  * This file is responsible for speed control.  It changes the current shafts
@@ -39,14 +47,11 @@ int8_t speed_theta_max, speed_alpha_max;
 int8_t speed_theta_slow, speed_alpha_slow;
 /** Consign position. */
 uint32_t speed_theta_pos_cons, speed_alpha_pos_cons;
-/** Weither to use the consign position (1) or not (0). */
+/** Whether to use the consign position (1) or not (0). */
 uint8_t speed_pos;
 
 /** Acceleration, uf8.8. */
 int16_t speed_theta_acc, speed_alpha_acc;
-
-/* +AutoDec */
-/* -AutoDec */
 
 /** Update shaft position consign according to a speed consign. */
 static void
@@ -104,11 +109,11 @@ speed_update_by_position (void)
 	speed_alpha_cur = speed_compute_max_speed (alpha_d, speed_alpha_cur,
 		speed_alpha_acc, speed_alpha_max);
     if (speed_theta_cur == 0 && speed_alpha_cur == 0)
-	main_sequence_finish = main_sequence;
+	state_finish (&state_main);
 }
 
 /** Update shaft position consign according to consign. */
-static void
+void
 speed_update (void)
 {
     /* Update speed. */

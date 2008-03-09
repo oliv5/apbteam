@@ -1,15 +1,19 @@
-#ifndef simu_host_h
-#define simu_host_h
-/* simu.host.h */
+#ifndef pwm_h
+#define pwm_h
+/* pwm.h */
 /* asserv - Position & speed motor control on AVR. {{{
  *
- * Copyright (C) 2006 Nicolas Schodet
+ * Copyright (C) 2008 Nicolas Schodet
+ *
+ * APBTeam:
+ *        Web: http://apbteam.org/
+ *      Email: team AT apbteam DOT org
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -19,21 +23,21 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * Contact :
- *        Web: http://perso.efrei.fr/~schodet/
  * }}} */
 
-extern uint8_t DDRF, PORTC, PORTD, PORTE, PORTF, PORTG, PINC;
+/** Define the absolute maximum PWM value. */
+#define PWM_MAX 0x3ff
 
-extern double simu_pos_x, simu_pos_y, simu_pos_a;
+extern int16_t pwm_left, pwm_right;
+extern uint8_t pwm_dir;
 
 void
-timer_init (void);
+pwm_init (void);
 
 void
-timer_wait (void);
+pwm_update (void);
 
-uint8_t
-timer_read (void);
+void
+pwm_reverse (uint8_t left, uint8_t right);
 
-#endif /* simu_host_h */
+#endif /* pwm_h */

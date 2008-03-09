@@ -24,6 +24,7 @@
  * }}} */
 #include "common.h"
 #include "twi_proto.h"
+
 #include "modules/utils/utils.h"
 #include "modules/utils/byte.h"
 #include "modules/twi/twi.h"

@@ -24,6 +24,7 @@
  * }}} */
 #include "common.h"
 #include "counter.h"
+
 #include "modules/utils/utils.h"
 #include "io.h"
 

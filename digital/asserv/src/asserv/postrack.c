@@ -1,4 +1,4 @@
-/* postrack.c */
+/* postrack.c - Compute current position from counters. */
 /* asserv - Position & speed motor control on AVR. {{{
  *
  * Copyright (C) 2006 Nicolas Schodet
@@ -22,6 +22,12 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "common.h"
+#include "postrack.h"
+
+#include "modules/math/fixed/fixed.h"
+
+#include "counter.h"
 
 /** Current position, f24.8. */
 int32_t postrack_x, postrack_y;
@@ -39,26 +45,10 @@ uint16_t postrack_footing;
  *  a angle in f8.24 format.
  *  - this factor is in f8.24 format, therefore, 1 is writen (1L << 24).
  *  - there is a two factor because of the sum done in the motor control. */
-uint32_t postrack_footing_factor;
-
-/* +AutoDec */
+static uint32_t postrack_footing_factor;
 
 /** Initialise the position tracker. */
-static inline void
-postrack_init (void);
-
-/** Update the current position. */
-static inline void
-postrack_update (void);
-
-/** Change the footing value. */
-static inline void
-postrack_set_footing (uint16_t footing);
-
-/* -AutoDec */
-
-/** Initialise the position tracker. */
-static inline void
+void
 postrack_init (void)
 {
     /* Prevent division by 0 by providing a default large value. */
@@ -68,7 +58,7 @@ postrack_init (void)
 #define M_PI		3.14159265358979323846	/* pi */
 
 /** Update the current position. */
-static inline void
+void
 postrack_update (void)
 {
     int32_t d, dd, da, na, dsc;
@@ -107,10 +97,11 @@ postrack_update (void)
 #define M_1_PI		0.31830988618379067154	/* 1/pi */
 
 /** Change the footing value. */
-static inline void
+void
 postrack_set_footing (uint16_t footing)
 {
     postrack_footing = footing;
     postrack_footing_factor =
 	(uint32_t) (M_1_PI * (1L << 8) * (1L << 24)) / footing;
 }
+

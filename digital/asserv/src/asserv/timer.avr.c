@@ -22,25 +22,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "common.h"
 
-/* +AutoDec */
-
-/** Initialise the timer. */
-static inline void
-timer_init (void);
-
-/** Wait for timer overflow. */
-static inline void
-timer_wait (void);
-
-/** Read timer value. Used for performance analysis. */
-static inline uint8_t
-timer_read (void);
-
-/* -AutoDec */
+#include "modules/utils/utils.h"
+#include "io.h"
 
 /** Initialise the timer. */
-static inline void
+void
 timer_init (void)
 {
     TCCR0 = regv (FOC0, WGM00, COM01, COM0, WGM01, CS02, CS01, CS00,
@@ -52,19 +40,12 @@ timer_init (void)
 }
 
 /** Wait for timer overflow. */
-static inline void
+void
 timer_wait (void)
 {
     while (!(TIFR & _BV (TOV0)))
 	;
     /* Write 1 to clear. */
     TIFR = _BV (TOV0);
-}
-
-/** Read timer value. Used for performance analysis. */
-static inline uint8_t
-timer_read (void)
-{
-    return TCNT0;
 }
 

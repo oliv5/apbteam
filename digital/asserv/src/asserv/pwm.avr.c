@@ -22,6 +22,11 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "common.h"
+#include "pwm.h"
+
+#include "modules/utils/utils.h"
+#include "io.h"
 
 /** Define the PWM output used for left motor. */
 #define PWM_LEFT_OCR OCR1B
@@ -32,9 +37,6 @@
 /** Define the direction output for right motor. */
 #define PWM_RIGHT_DIR 5
 
-/** Define the absolute maximum PWM value. */
-#define PWM_MAX 0x3ff
-
 /** PWM values, this is an error if absolute value is greater than the
  * maximum. */
 int16_t pwm_left, pwm_right;
@@ -42,20 +44,8 @@ int16_t pwm_left, pwm_right;
  * on port B. */
 uint8_t pwm_dir = _BV (PWM_LEFT_DIR);
 
-/* +AutoDec */
-
 /** Initialise PWM generator. */
-static inline void
-pwm_init (void);
-
-/** Update the hardware PWM values. */
-static inline void
-pwm_update (void);
-
-/* -AutoDec */
-
-/** Initialise PWM generator. */
-static inline void
+void
 pwm_init (void)
 {
     /* Fast PWM, TOP = 0x3ff, OC1B & OC1C with positive logic.
@@ -71,7 +61,7 @@ pwm_init (void)
 }
 
 /** Update the hardware PWM values. */
-static inline void
+void
 pwm_update (void)
 {
     uint16_t left, right;
@@ -121,5 +111,13 @@ pwm_update (void)
     PORTB = dir;
     PWM_LEFT_OCR = left;
     PWM_RIGHT_OCR = right;
+}
+
+void
+pwm_reverse (uint8_t left, uint8_t right)
+{
+    pwm_dir = 0;
+    if (left) pwm_dir |= _BV (PWM_LEFT_DIR);
+    if (right) pwm_dir |= _BV (PWM_RIGHT_DIR);
 }
 

@@ -22,6 +22,19 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "common.h"
+#include "traj.h"
+
+#include "io.h"
+
+#include "speed.h"
+#include "state.h"
+
+#ifdef HOST
+# include "simu.host.h"
+#endif
+
+/* This file provides high level trajectories commands. */
 
 /** Traj mode:
  * 10, 11: go to the wall.
@@ -29,7 +42,7 @@
 uint8_t traj_mode;
 
 /** Go to the wall mode. */
-void
+static void
 traj_ftw (void)
 {
     int16_t speed;
@@ -56,13 +69,13 @@ traj_ftw (void)
 	speed_alpha_cons = 0;
 	speed_theta_cur = 0;
 	speed_alpha_cur = 0;
-	main_sequence_finish = main_sequence;
+	state_finish (&state_main);
 	traj_mode = 11;
       }
 }
 
 /* Compute new speed according the defined trajectory. */
-static void
+void
 traj_update (void)
 {
     switch (traj_mode)

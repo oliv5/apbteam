@@ -22,6 +22,15 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "common.h"
+#include "pos.h"
+
+#include "modules/utils/utils.h"
+#include "modules/math/fixed/fixed.h"
+
+#include "counter.h"
+#include "pwm.h"
+#include "state.h"
 
 /**
  * This file is responsible for position motor control.  The consign is a
@@ -54,11 +63,6 @@ int32_t pos_blocked = 15000L;
 int32_t pos_theta_int, pos_alpha_int;
 /** Last error values. */
 int32_t pos_theta_e_old, pos_alpha_e_old;
-/** One if blocked. */
-uint8_t pos_blocked_state;
-
-/* +AutoDec */
-/* -AutoDec */
 
 /** Compute a PID.
  * How to compute maximum numbers size:
@@ -95,7 +99,7 @@ pos_compute_pid (int32_t e, int32_t *i, int32_t *e_old,
 }
 
 /** Update PWM according to consign. */
-static void
+void
 pos_update (void)
 {
     int16_t pid_theta, pid_alpha;
@@ -106,15 +110,14 @@ pos_update (void)
     /* Compute PID. */
     diff_theta = pos_theta_cons - pos_theta_cur;
     diff_alpha = pos_alpha_cons - pos_alpha_cur;
-    if (pos_blocked_state
+    if (state_main.blocked
 	|| diff_theta < -pos_blocked || pos_blocked < diff_theta
 	|| diff_alpha < -pos_blocked || pos_blocked < diff_alpha)
       {
 	/* Blocked. */
 	pwm_left = 0;
 	pwm_right = 0;
-	pos_blocked_state = 1;
-	main_sequence_finish = main_sequence | 0x80;
+	state_blocked (&state_main);
       }
     else
       {
@@ -132,13 +135,14 @@ pos_update (void)
       }
 }
 
-/** Reset position control internal state. */
-static void
+/** Reset position control internal state.  To be called when the position
+ * control is deactivated. */
+void
 pos_reset (void)
 {
     pos_theta_int = pos_alpha_int = 0;
     pos_theta_cur = pos_alpha_cur = 0;
     pos_theta_cons = pos_alpha_cons = 0;
     pos_theta_e_old = pos_alpha_e_old = 0;
-    pos_blocked_state = 0;
 }
+

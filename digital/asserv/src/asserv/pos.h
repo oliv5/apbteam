@@ -1,15 +1,19 @@
-#ifndef simu_host_h
-#define simu_host_h
-/* simu.host.h */
+#ifndef pos_h
+#define pos_h
+/* pos.h */
 /* asserv - Position & speed motor control on AVR. {{{
  *
- * Copyright (C) 2006 Nicolas Schodet
+ * Copyright (C) 2008 Nicolas Schodet
+ *
+ * APBTeam:
+ *        Web: http://apbteam.org/
+ *      Email: team AT apbteam DOT org
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -19,21 +23,25 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * Contact :
- *        Web: http://perso.efrei.fr/~schodet/
  * }}} */
 
-extern uint8_t DDRF, PORTC, PORTD, PORTE, PORTF, PORTG, PINC;
+extern uint32_t pos_theta_cur, pos_alpha_cur;
+extern uint32_t pos_theta_cons, pos_alpha_cons;
 
-extern double simu_pos_x, simu_pos_y, simu_pos_a;
+extern int32_t pos_e_sat;
+extern int32_t pos_int_sat;
+extern uint16_t pos_theta_kp, pos_alpha_kp;
+extern uint16_t pos_theta_ki, pos_alpha_ki;
+extern uint16_t pos_theta_kd, pos_alpha_kd;
+extern int32_t pos_blocked;
+
+extern int32_t pos_theta_int, pos_alpha_int;
+extern int32_t pos_theta_e_old, pos_alpha_e_old;
 
 void
-timer_init (void);
+pos_update (void);
 
 void
-timer_wait (void);
+pos_reset (void);
 
-uint8_t
-timer_read (void);
-
-#endif /* simu_host_h */
+#endif /* pos_h */

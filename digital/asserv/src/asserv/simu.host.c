@@ -21,15 +21,19 @@
  *        Web: http://perso.efrei.fr/~schodet/
  * }}} */
 #include "common.h"
+#include "simu.host.h"
+
 #include "modules/host/host.h"
 #include "modules/utils/utils.h"
-#include "simu.host.h"
-#include "motor_model.host.h"
-#include "models.host.h"
 
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+
+#include "pwm.h"
+
+#include "motor_model.host.h"
+#include "models.host.h"
 
 /** Simulate some AVR regs. */
 uint8_t DDRF, PORTC, PORTD, PORTE, PORTF, PORTG, PINC;
@@ -174,6 +178,26 @@ pwm_init (void)
 /** Update the hardware PWM values. */
 void
 pwm_update (void)
+{
+}
+
+void
+eeprom_read_params (void)
+{
+}
+
+void
+eeprom_write_params (void)
+{
+}
+
+void
+eeprom_clear_params (void)
+{
+}
+
+void
+pwm_reverse (uint8_t left, uint8_t right)
 {
 }
 

@@ -23,6 +23,7 @@
  *
  * }}} */
 #include "common.h"
+
 #include "modules/uart/uart.h"
 #include "modules/proto/proto.h"
 #include "modules/utils/utils.h"
@@ -31,36 +32,25 @@
 #include "io.h"
 
 #include "misc.h"
+#include "state.h"
 
 #include "counter.h"
+#include "pwm.h"
+#include "pos.h"
+#include "speed.h"
+#include "postrack.h"
+#include "traj.h"
+
 #include "twi_proto.h"
+#include "eeprom.h"
 
-/** Motor command sequence, do not use values above 127, do not use zero. */
-uint8_t main_sequence, main_sequence_ack, main_sequence_finish;
-
-/* This is implementation include. */
 #ifndef HOST
-# include "timer.avr.c"
-# include "pwm.avr.c"
+# include "timer.h"
 #else
 # include "simu.host.h"
 #endif
-#include "pos.c"
-#include "speed.c"
-#include "postrack.c"
-#include "traj.c"
-#ifndef HOST
-# include "eeprom.avr.c"
-#endif
 
-/** Motor control mode:
- * 0: pwm setup.
- * 1: shaft position control.
- * 2: speed control.
- * 3: trajectory control. */
-int8_t main_mode;
-
-/** Report trajectory end. */
+/** Report command completion. */
 uint8_t main_sequence_ack_cpt = 2;
 
 /** Report of counters. */
@@ -93,13 +83,8 @@ uint8_t main_simu, main_simu_cpt;
  * analisys. */
 uint8_t main_timer[6];
 
-/* +AutoDec */
-
-/** Main loop. */
 static void
 main_loop (void);
-
-/* -AutoDec */
 
 /** Entry point. */
 int
@@ -136,8 +121,8 @@ main_loop (void)
     /* Counter update. */
     counter_update ();
     main_timer[0] = timer_read ();
-    /* Postion control. */
-    if (main_mode >= 1)
+    /* Position control. */
+    if (state_main.mode >= MODE_POS)
 	pos_update ();
     main_timer[1] = timer_read ();
     /* Pwm setup. */
@@ -146,16 +131,17 @@ main_loop (void)
     /* Compute absolute position. */
     postrack_update ();
     /* Compute trajectory. */
-    if (main_mode >= 3)
+    if (state_main.mode >= MODE_TRAJ)
 	traj_update ();
     /* Speed control. */
-    if (main_mode >= 2)
+    if (state_main.mode >= MODE_SPEED)
 	speed_update ();
     main_timer[3] = timer_read ();
     /* Stats. */
-    if (main_sequence_ack != main_sequence_finish && !--main_sequence_ack_cpt)
+    if (state_main.sequence_ack != state_main.sequence_finish
+	&& !--main_sequence_ack_cpt)
       {
-	proto_send1b ('A', main_sequence_finish);
+	proto_send1b ('A', state_main.sequence_finish);
 	main_sequence_ack_cpt = 4;
       }
     if (main_stat_counter && !--main_stat_counter_cpt)
@@ -227,7 +213,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
       case c ('w', 0):
 	/* Set zero pwm. */
 	pos_reset ();
-	main_mode = 0;
+	state_main.mode = MODE_PWM;
 	pwm_left = 0;
 	pwm_right = 0;
 	break;
@@ -236,7 +222,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	 * - w: left pwm.
 	 * - w: right pwm. */
 	pos_reset ();
-	main_mode = 0;
+	state_main.mode = MODE_PWM;
 	pwm_left = v8_to_v16 (args[0], args[1]);
 	UTILS_BOUND (pwm_left, -PWM_MAX, PWM_MAX);
 	pwm_right = v8_to_v16 (args[2], args[3]);
@@ -246,13 +232,13 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	/* Add to position consign.
 	 * - w: theta consign offset.
 	 * - w: alpha consign offset. */
-	main_mode = 1;
+	state_main.mode = MODE_POS;
 	pos_theta_cons += v8_to_v16 (args[0], args[1]);
 	pos_alpha_cons += v8_to_v16 (args[2], args[3]);
 	break;
       case c ('s', 0):
 	/* Stop (set zero speed). */
-	main_mode = 2;
+	state_main.mode = MODE_SPEED;
 	speed_pos = 0;
 	speed_theta_cons = 0;
 	speed_alpha_cons = 0;
@@ -261,7 +247,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	/* Set speed.
 	 * - b: theta speed.
 	 * - b: alpha speed. */
-	main_mode = 2;
+	state_main.mode = MODE_SPEED;
 	speed_pos = 0;
 	speed_theta_cons = args[0] << 8;
 	speed_alpha_cons = args[1] << 8;
@@ -271,32 +257,32 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	 * - d: theta consign offset.
 	 * - d: alpha consign offset.
 	 * - b: sequence number. */
-	if (args[8] == main_sequence)
+	if (args[8] == state_main.sequence)
 	    break;
-	main_mode = 2;
+	state_main.mode = MODE_SPEED;
 	speed_pos = 1;
 	speed_theta_pos_cons = pos_theta_cons;
 	speed_theta_pos_cons += v8_to_v32 (args[0], args[1], args[2], args[3]);
 	speed_alpha_pos_cons = pos_alpha_cons;
 	speed_alpha_pos_cons += v8_to_v32 (args[4], args[5], args[6], args[7]);
-	main_sequence = args[8];
+	state_start (&state_main, args[8]);
 	break;
       case c ('f', 1):
 	/* Go to the wall.
 	 * - b: sequence number. */
-	if (args[0] == main_sequence)
+	if (args[0] == state_main.sequence)
 	    break;
-	main_mode = 3;
+	state_main.mode = MODE_TRAJ;
 	speed_pos = 0;
 	traj_mode = 10;
-	main_sequence = args[0];
+	state_start (&state_main, args[0]);
 	break;
       case c ('a', 1):
 	/* Set acknoledge.
 	 * - b: ack sequence number. */
-	main_sequence_ack = args[0];
-	if (pos_blocked_state)
+	if (state_main.blocked)
 	    pos_reset ();
+	state_acknowledge (&state_main, args[0]);
 	break;
     /* Stats.
      * - b: interval between stats. */
@@ -418,9 +404,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		/* Set PWM direction.
 		 * - b: inverse left direction.
 		 * - b: inverse right direction. */
-		pwm_dir = 0;
-		if (args[1]) pwm_dir |= _BV (PWM_LEFT_DIR);
-		if (args[2]) pwm_dir |= _BV (PWM_RIGHT_DIR);
+		pwm_reverse (args[1], args[2]);
 		break;
 	      case c ('E', 2):
 		/* Write to eeprom.

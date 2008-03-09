@@ -1,4 +1,4 @@
-/* eeprom.c */
+/* eeprom.avr.c - Save parameters to internal EEPROM. */
 /* asserv - Position & speed motor control on AVR. {{{
  *
  * Copyright (C) 2005 Nicolas Schodet
@@ -22,17 +22,20 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "common.h"
+#include "eeprom.h"
+
 #include <avr/eeprom.h>
 
-/* Change the eeprom key each time you change eeprom format. */
-#define EEPROM_KEY 0x45
-#define EEPROM_START 256
+#include "pwm.h"
+#include "pos.h"
+#include "speed.h"
+#include "postrack.h"
 
-/* +AutoDec */
-/* -AutoDec */
+#define EEPROM_START 0
 
 /* Read parameters from eeprom. */
-static void
+void
 eeprom_read_params (void)
 {
     uint8_t *p8 = (uint8_t *) EEPROM_START;
@@ -60,7 +63,7 @@ eeprom_read_params (void)
 }
 
 /* Write parameters to eeprom. */
-static void
+void
 eeprom_write_params (void)
 {
     uint8_t *p8 = (uint8_t *) EEPROM_START;
@@ -87,7 +90,7 @@ eeprom_write_params (void)
 }
 
 /* Clear eeprom parameters. */
-static void
+void
 eeprom_clear_params (void)
 {
     uint8_t *p = (uint8_t *) EEPROM_START;
