@@ -22,6 +22,12 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "common.h"
+#include "counter.h"
+#include "modules/utils/utils.h"
+#include "io.h"
+
+#include "misc.h"
 
 /**
  * This file add support for an AVR internal counter.  This uses one TCC
@@ -40,13 +46,13 @@ static uint8_t counter_left_frw, counter_left_rev,
 /** Last TCNT values. */
 static uint8_t counter_left_old, counter_right_old;
 /** Overall counter values. */
-static uint16_t counter_left, counter_right;
+uint16_t counter_left, counter_right;
 /** Counter differences since last update.
  * Maximum of 9 significant bits, sign included. */
-static int16_t counter_left_diff, counter_right_diff;
+int16_t counter_left_diff, counter_right_diff;
 
 /** Initialize the counters. */
-static inline void
+void
 counter_init (void)
 {
     /* Left counter. */
@@ -109,7 +115,7 @@ SIGNAL (SIG_INTERRUPT5)
 }
 
 /** Update overall counter values and compute diffs. */
-static inline void
+void
 counter_update (void)
 {
     uint8_t c;

@@ -22,6 +22,9 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "common.h"
+#include "counter.h"
+#include "io.h"
 
 /**
  * This file add support for an external counter like the hdlcounter or
@@ -50,10 +53,10 @@
 /** Last values. */
 static uint8_t counter_left_old, counter_right_old, counter_aux0_old;
 /** Overall counter values. */
-static uint16_t counter_left, counter_right, counter_aux0;
+uint16_t counter_left, counter_right, counter_aux0;
 /** Counter differences since last update.
  * Maximum of 7 significant bits, sign included. */
-static int16_t counter_left_diff, counter_right_diff, counter_aux0_diff;
+int16_t counter_left_diff, counter_right_diff, counter_aux0_diff;
 
 #if !COUNTER_USE_XMEM
 # define COUNTER_ALE _BV (2)
@@ -86,7 +89,7 @@ counter_read (uint8_t n)
 }
 
 /** Initialize the counters. */
-static inline void
+void
 counter_init (void)
 {
 #if COUNTER_USE_XMEM
@@ -109,7 +112,7 @@ counter_init (void)
 }
 
 /** Update overall counter values and compute diffs. */
-static inline void
+void
 counter_update (void)
 {
     uint8_t left, right, aux0;
