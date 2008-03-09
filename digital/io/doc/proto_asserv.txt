@@ -91,8 +91,8 @@ The *'p'* command take different sub-parameters to configure the settings.
 +-----+-------------------------------+-------------------------------------+
 | 's' | - linear high speed (1b)      | Set the speed setting               |
 |     | - angular high speed (1b)     |                                     |
-|     | - linear slow speed (1b)      |                                     |
-|     | - angular slow speed (1b)     |                                     |
+|     | - linear low speed (1b)       |                                     |
+|     | - angular low speed (1b)      |                                     |
 +-----+-------------------------------+-------------------------------------+
 
 The classes of the commands are used for the responses of the *asserv* card
