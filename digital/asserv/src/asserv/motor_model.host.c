@@ -37,7 +37,7 @@
  *  - là : http://iai.eivd.ch/users/mee/Regulation_automatique_anal.htm
  *
  * Voici ce qui en résulte, des belles équations différentielles :
- * u(t) = R i(t) + L di(t)/dt + Ke o(t)
+ * u(t) = R i(t) + L di(t)/dt + 1/Ke o(t)
  * J do(t)/dt = Kt i(t) - Rf o(t)
  * dth(t)/dt = o(t)
  *
