@@ -100,7 +100,7 @@ asserv_go_to_gutter (void);
 
 /**
  * Move the arm.
- * A complete rotation correspond to 5000 step.
+ * A complete rotation correspond to 5000 steps.
  * Arm class command.
  * @param position desired goal position (in step).
  * @param speed speed of the movement.

@@ -62,7 +62,7 @@ This table describe the list of supported commands by the *asserv* card:
 +=========+=======+=================+=====================================+
 |   'z'   | Other | None            | Reset                               |
 +---------+-------+-----------------+-------------------------------------+
-|   'w'   | Other | None            | Stop motor (useful for end match)   |
+|   'w'   | Other | None            | Free motor (useful for end match)   |
 +---------+-------+-----------------+-------------------------------------+
 |   's'   | Other | None            | Stop                                |
 +---------+-------+-----------------+-------------------------------------+
