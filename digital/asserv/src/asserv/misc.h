@@ -25,6 +25,8 @@
  *
  * }}} */
 
+#ifndef HOST
+
 #define LED_SETUP do { \
     PORTF &= _BV (1) | _BV (0); \
     DDRF &= _BV (1) | _BV (0); \
@@ -39,5 +41,13 @@
     if (!(x)) PORTF &= ~_BV (1); \
     else PORTF |= _BV (1); \
 } while (0)
+
+#else
+
+#define LED_SETUP
+#define LED1(x)
+#define LED2(x)
+
+#endif
 
 #endif /* misc_h */
