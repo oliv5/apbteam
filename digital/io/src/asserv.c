@@ -27,17 +27,19 @@
 
 #include "modules/twi/twi.h"	/* twi_* */
 #include "modules/utils/byte.h"	/* v*_to_v* */
+#include "io.h"
+
+/**
+ * @defgroup AsservPrivate Asserv module private variables and functions
+ * declarations and definitions
+ * @{
+ */
 
 /**
  * Sequence number.
- * It is used for the acknowledge of the command send to the asserv.
+ * It is used for the acknowledge of the command sent to the asserv.
  */
 static uint8_t asserv_twi_seq;
-
-/**
- * Flag to know if last command has been proceed by the asserv board.
- */
-static uint8_t asserv_twi_seq_ack;
 
 /**
  * Shared buffer used to send commands to the asserv.
@@ -48,6 +50,26 @@ static uint8_t asserv_twi_buffer[7];
  * Pointer to access the buffer to put the parameters list.
  */
 static uint8_t *asserv_twi_buffer_param = &asserv_twi_buffer[2];
+
+/**
+ * Status structure maintains by the update command.
+ */
+typedef struct asserv_struct_s
+{
+    /** Status flags. */
+    uint8_t status;
+    /** Sequence number. */
+    uint8_t seq;
+    /** Bot position. */
+    asserv_position_t position;
+    /** Arm position. */
+    uint16_t arm_position;
+} asserv_struct_s;
+
+/**
+ * Status variable.
+ */
+asserv_struct_s asserv_status;
 
 /**
  * Update TWI module until request (send or receive) is finished.
@@ -70,17 +92,6 @@ asserv_twi_update (void);
 static inline uint8_t
 asserv_twi_send_command (uint8_t command, uint8_t length);
 
-
-/* Initialize the asserv control module. */
-void
-asserv_init (void)
-{
-    /* Initialize TWI with my (io) address */
-    twi_init (AC_IO_TWI_ADDRESS);
-    /* We are at first command */
-    asserv_twi_seq = asserv_twi_seq_ack = 0;
-}
-
 /* Update TWI module until request (send or receive) is finished. */
 static inline void
 asserv_twi_update (void)
@@ -94,7 +105,7 @@ static inline uint8_t
 asserv_twi_send_command (uint8_t command, uint8_t length)
 {
     /* Check we are not doing a command ? */
-    if (asserv_twi_seq != asserv_twi_seq_ack)
+    if (!asserv_last_cmd_ack ())
 	return 1;
 
     /* Put the command into the buffer */
@@ -109,6 +120,93 @@ asserv_twi_send_command (uint8_t command, uint8_t length)
     /* Update until the command is sent */
     asserv_twi_update ();
     return 0;
+}
+/** @} */
+
+/* Initialize the asserv control module. */
+void
+asserv_init (void)
+{
+    /* Initialize TWI with my (io) address */
+    twi_init (AC_IO_TWI_ADDRESS);
+    /* We are at first command */
+    asserv_twi_seq = asserv_status.seq = 0;
+}
+
+/* Update the status of the asserv board seen from the io program. */
+void
+asserv_update_status (void)
+{
+    /* Status buffer used to receive data from the asserv */
+    static uint8_t status_buffer[AC_ASSERV_STATUS_LENGTH];
+    /* Read data from the asserv card */
+    twi_ms_read (AC_ASSERV_TWI_ADDRESS, status_buffer , AC_ASSERV_STATUS_LENGTH);
+    /* Update until done */
+    asserv_twi_update ();
+    /* Parse received data and store them */
+    asserv_status.status = status_buffer[0];
+    asserv_status.seq = status_buffer[1];
+    asserv_status.position.x = v8_to_v32 (status_buffer[2], status_buffer[3],
+				     status_buffer[4], 0);
+    asserv_status.position.y = v8_to_v32 (status_buffer[5], status_buffer[6],
+				     status_buffer[7], 0);
+    asserv_status.position.a = v8_to_v16 (status_buffer[8], status_buffer[9]);
+    asserv_status.arm_position = v8_to_v16 (status_buffer[10], status_buffer[11]);
+}
+
+/* Is last command sent to the asserv board is being executed? */
+uint8_t
+asserv_last_cmd_ack (void)
+{
+    /* Compare last command sequence number and the one acknowledge by the
+     * asserv */
+    return (asserv_status.seq == asserv_twi_seq);
+}
+
+/* Is last move class command has successfully ended? */
+asserv_status_e
+asserv_move_cmd_status (void)
+{
+    /* Check Motor Finished flag */
+    if (asserv_status.status & _BV (0))
+	return success;
+    /* Check Motor Blocked flag */
+    else if (asserv_status.status & _BV (1))
+	return failure;
+    /* Otherwise, not finished nor failure */
+    return none;
+}
+
+/* Is last arm class command has successfully ended? */
+asserv_status_e
+asserv_arm_cmd_status (void)
+{
+    /* Check Arm Finished flag */
+    if (asserv_status.status & _BV (2))
+	return success;
+    /* Check Arm Blocked flag */
+    else if (asserv_status.status & _BV (3))
+	return failure;
+    /* Otherwise, not finished nor failure */
+    return none;
+}
+
+/* Get the current position of the bot. */
+void
+asserv_get_position (asserv_position_t current_position)
+{
+    /* Copy last received status buffer information to current position */
+    current_position.x = asserv_status.position.x;
+    current_position.y = asserv_status.position.y;
+    current_position.a = asserv_status.position.a;
+}
+
+/* Get the arm position. */
+uint16_t
+asserv_get_arm_position (void)
+{
+    /* Return the position of the arm of the current status buffer */
+    return asserv_status.arm_position;
 }
 
 /* Reset the asserv board. */
