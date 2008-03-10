@@ -1,0 +1,72 @@
+** Description de l'algo2 pour a génération de PWM
+
+* Deux OCR du timer 16 bits sont utilisés :
+
+OCR1 qui déclenche l'IT1
+OCR2 qui déclenche l'IT2
+
+En fonction des durées respectives des PWM L et R, la variable d'état
+pwm_state peut prendre 7 valeurs différentes :
+
+Si une PWM est à 0 ou bien en high Z, elle est condidérée comme étant égale à
+0%
+
+STATE_NORMAL     : pwm_L_ + pwm_R_ différent de [95%, 105%]
+STATE_EQUAL      : pwm_L_ + pwm_R_ = 100%
+STATE_EQUALSUP   : pwm_L_ + pwm_R_ appartient à ]100%, 105%]
+STATE_EQUALINF   : pwm_L_ + pwm_R_ appartient à [95%, 100%[
+STATE_SMALL_L_   : pwm_L_ <= 4%
+STATE_SMALL_R_   : pwm_R_ <= 4%
+STATE_SMALL_BOTH : pwm_R_ <= 4% et pwm_L_ <= 4%
+
+* En mode STATE_NORMAL, les IT sont afectées de la manière suivante :
+- OCR1 = pwm_L_
+- OCR2 = 100% - pwm_R_
+- IT_OVF  : rise_edge_L_ ; fall_edge_R_
+- IT_OCR1 : fall_edge_L_
+- IT_OCR2 : rise_edge_R_
+
+* En mode STATE_EQUAL, les IT sont affectées de la manière suivante :
+- OCR1 = pwm_L_ (accessoirement, dans ce mode, c'est aussi égal à 100% - pwm_R_)
+- OCR2 = 0
+- IT_OVF  : rise_edge_L_ ; fall_edge_R_
+- IT_OCR1 : fall_edge_L_ ; rise_edge_R_
+- IT OCR2 désactivée
+
+* En mode STATE_EQUALSUP, les IT sont affectées de la manière suivante :
+- OCR1 = 100% - pwm_R_
+- OCR2 = 0
+- IT_OVF  : rise_edge_L_ ; fall_edge_R_
+- IT_OCR1 : rise_edge_R_ ; attente de (pwm_L_ + pwm_R - 100%) ; fall_edge_L_
+- IT OCR2 désactivée
+
+* En mode STATE_EQUALINF, les IT sont affectées de la manière suivante :
+- OCR1 = pwm_L_
+- OCR2 = 0
+- IT_OVF  : rise_edge_L_ ; fall_edge_R_
+- IT_OCR1 : fall_edge_R_ ; attente de (100% - (pwm_L_ + pwm_R)) ; fall_edge_L_
+- IT OCR2 désactivée
+
+* En mode STATE_SMALL_R_, les IT sont affectées de la manière suivante :
+- OCR1 = pwm_L_
+- OCR2 = 0
+- IT_OVF  : rise_edge_L_
+- IT_OCR1 : fall_edge_L_ ; rise_edge_R_ ; attente de "pwm_R_" ; fall_edge_R_
+- IT OCR2 désactivée
+
+* En mode STATE_SMALL_L_, les IT sont affectées de la manière suivante :
+- OCR1 = 100% - pwm_R_ - pwm_L_
+- OCR2 = 0
+- IT_OVF  : fall_edge_R_
+- IT_OCR1 : rise_edge_L_ ; attente de "pwm_L_" ; fall_edge_L_ ; rise_edge_R_
+- IT OCR2 désactivée
+
+* En mode STATE_SMALL_BOTH, les IT sont affectées de la manière suivante :
+- OCR1 = 0
+- OCR2 = 0
+- IT_OVF : rise_edge_L_ ; attente de "pwm_L_" ; fall_edge_L_ ; rise_edge_R_ ;
+  attente de "pwm_R_" ; fall_edge_R_
+- IT OCR1 désactivée
+- IT OCR2 désactivée
+
+
