@@ -171,8 +171,9 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 
   case c ('l', 1):
 	/* Set pwm value for _L_ side.
-	 * - 0x7F: -max on duty cycle (direction = 0)
 	 * - 0x00: 0% on duty cycle (brake state)
+	 * - 0x7F: max on duty cycle (direction = 0)
+	 * - 0x80: 0% on duty cycle (brake state)
 	 * - 0xFF: max on duty cylcle (direction = 1) */
 	cmd_L_ = (int8_t) args[0];
 	if (cmd_L_ >= 0)
@@ -181,7 +182,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	  }
 	else
 	  {
-	    start_motor_L_ (((-cmd_L_) << 1), 1);
+	    start_motor_L_ ((cmd_L_ << 1), 1);
 	  }
 	break;
 
@@ -192,8 +193,9 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 
   case c ('r', 1):
 	/* Set pwm value for _R_ side.
-	 * - 0x7F: -max on duty cycle (direction = 0)
 	 * - 0x00: 0% on duty cycle (brake state)
+	 * - 0x7F: max on duty cycle (direction = 0)
+	 * - 0x80: 0% on duty cycle (brake state)
 	 * - 0xFF: max on duty cylcle (direction = 1) */
 	cmd_R_ = (int8_t) args[0];
 	if (cmd_R_ >= 0)
@@ -202,7 +204,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	  }
 	else
 	  {
-	    start_motor_R_ (((-cmd_R_) << 1), 1);
+	    start_motor_R_ ((cmd_R_ << 1), 1);
 	  }
 	break;
 
