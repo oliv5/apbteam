@@ -71,17 +71,6 @@ static inline uint8_t
 asserv_twi_send_command (uint8_t command, uint8_t length);
 
 
-/**
- * Settings list of the asserv program.
- */
-enum asserv_setting_e
-{
-    POSITION_X,
-    POSITION_Y,
-    POSITION_ANGULAR,
-    SPEED
-};
-
 /* Initialize the asserv control module. */
 void
 asserv_init (void)
