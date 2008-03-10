@@ -51,7 +51,7 @@
 #endif
 
 /** Report command completion. */
-uint8_t main_sequence_ack_cpt = 2;
+uint8_t main_sequence_ack = 4, main_sequence_ack_cpt;
 
 /** Report of counters. */
 uint8_t main_stat_counter, main_stat_counter_cpt;
@@ -138,11 +138,12 @@ main_loop (void)
 	speed_update ();
     main_timer[3] = timer_read ();
     /* Stats. */
-    if (state_main.sequence_ack != state_main.sequence_finish
+    if (main_sequence_ack
+	&& state_main.sequence_ack != state_main.sequence_finish
 	&& !--main_sequence_ack_cpt)
       {
 	proto_send1b ('A', state_main.sequence_finish);
-	main_sequence_ack_cpt = 4;
+	main_sequence_ack_cpt = main_sequence_ack;
       }
     if (main_stat_counter && !--main_stat_counter_cpt)
       {
@@ -286,6 +287,10 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	break;
     /* Stats.
      * - b: interval between stats. */
+      case c ('A', 1):
+	/* Command completion report. */
+	main_sequence_ack_cpt = main_sequence_ack = args[0];
+	break;
       case c ('C', 1):
 	/* Counter stats. */
 	main_stat_counter_cpt = main_stat_counter = args[0];
