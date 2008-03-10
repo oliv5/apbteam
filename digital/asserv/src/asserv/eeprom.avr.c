@@ -46,7 +46,7 @@ eeprom_read_params (void)
     speed_alpha_max = eeprom_read_byte (p8++);
     speed_theta_slow = eeprom_read_byte (p8++);
     speed_alpha_slow = eeprom_read_byte (p8++);
-    pwm_dir = eeprom_read_byte (p8++);
+    pwm_set_reverse (eeprom_read_byte (p8++));
     p16 = (uint16_t *) p8;
     postrack_set_footing (eeprom_read_word (p16++));
     speed_theta_acc = eeprom_read_word (p16++);
@@ -73,7 +73,7 @@ eeprom_write_params (void)
     eeprom_write_byte (p8++, speed_alpha_max);
     eeprom_write_byte (p8++, speed_theta_slow);
     eeprom_write_byte (p8++, speed_alpha_slow);
-    eeprom_write_byte (p8++, pwm_dir);
+    eeprom_write_byte (p8++, pwm_reverse);
     p16 = (uint16_t *) p8;
     eeprom_write_word (p16++, postrack_footing);
     eeprom_write_word (p16++, speed_theta_acc);

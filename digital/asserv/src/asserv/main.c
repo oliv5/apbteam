@@ -142,7 +142,8 @@ main_loop (void)
 	&& state_main.sequence_ack != state_main.sequence_finish
 	&& !--main_sequence_ack_cpt)
       {
-	proto_send1b ('A', state_main.sequence_finish);
+	proto_send2b ('A', state_main.sequence_finish,
+		      state_aux0.sequence_finish);
 	main_sequence_ack_cpt = main_sequence_ack;
       }
     if (main_stat_counter && !--main_stat_counter_cpt)
@@ -178,7 +179,7 @@ main_loop (void)
 #endif /* HOST */
     if (main_stat_pwm && !--main_stat_pwm_cpt)
       {
-	proto_send2w ('W', pwm_left, pwm_right);
+	proto_send3w ('W', pwm_left, pwm_right, pwm_aux0);
 	main_stat_pwm_cpt = main_stat_pwm;
       }
     if (main_stat_timer && !--main_stat_timer_cpt)
@@ -228,6 +229,14 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	UTILS_BOUND (pwm_left, -PWM_MAX, PWM_MAX);
 	pwm_right = v8_to_v16 (args[2], args[3]);
 	UTILS_BOUND (pwm_right, -PWM_MAX, PWM_MAX);
+	break;
+      case c ('w', 2):
+	/* Set auxiliary pwm.
+	 * - w: pwm. */
+	pos_reset (); // TODO
+	state_aux0.mode = MODE_PWM;
+	pwm_aux0 = v8_to_v16 (args[0], args[1]);
+	UTILS_BOUND (pwm_aux0, -PWM_MAX, PWM_MAX);
 	break;
       case c ('c', 4):
 	/* Add to position consign.
@@ -405,11 +414,10 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	      case c ('b', 3):
 		pos_blocked = v8_to_v16 (args[1], args[2]);
 		break;
-	      case c ('w', 3):
+	      case c ('w', 2):
 		/* Set PWM direction.
-		 * - b: inverse left direction.
-		 * - b: inverse right direction. */
-		pwm_reverse (args[1], args[2]);
+		 * - b: bits: 0000[aux0][right][left]. */
+		pwm_set_reverse (args[1]);
 		break;
 	      case c ('E', 2):
 		/* Write to eeprom.
@@ -430,7 +438,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		proto_send2w ('d', pos_theta_kd, pos_alpha_kd);
 		proto_send1w ('E', pos_e_sat);
 		proto_send1w ('I', pos_int_sat);
-		proto_send1b ('w', pwm_dir);
+		proto_send1b ('w', pwm_reverse);
 		break;
 	      default:
 		proto_send0 ('?');

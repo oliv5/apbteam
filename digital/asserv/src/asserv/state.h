@@ -74,6 +74,9 @@ struct state_t
 /** Main motors state. */
 struct state_t state_main;
 
+/** First auxiliary motor state. */
+struct state_t state_aux0;
+
 /** Start a new command execution. */
 static inline void
 state_start (struct state_t *motor, uint8_t sequence)

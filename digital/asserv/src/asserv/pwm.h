@@ -28,8 +28,8 @@
 /** Define the absolute maximum PWM value. */
 #define PWM_MAX 0x3ff
 
-extern int16_t pwm_left, pwm_right;
-extern uint8_t pwm_dir;
+extern int16_t pwm_left, pwm_right, pwm_aux0;
+extern uint8_t pwm_reverse;
 
 void
 pwm_init (void);
@@ -38,6 +38,6 @@ void
 pwm_update (void);
 
 void
-pwm_reverse (uint8_t left, uint8_t right);
+pwm_set_reverse (uint8_t reverse);
 
 #endif /* pwm_h */

@@ -48,10 +48,9 @@ int16_t counter_left_diff, counter_right_diff;
 
 /** PWM values, this is an error if absolute value is greater than the
  * maximum. */
-int16_t pwm_left, pwm_right;
-/** PWM reverse direction, only set pwm dir bits or you will get weird results
- * on port B. */
-uint8_t pwm_dir;
+int16_t pwm_left, pwm_right, pwm_aux0;
+/** PWM reverse directions. */
+uint8_t pwm_reverse;
 
 struct motor_t simu_left_model, simu_right_model;
 
@@ -199,7 +198,8 @@ eeprom_clear_params (void)
 }
 
 void
-pwm_reverse (uint8_t left, uint8_t right)
+pwm_set_reverse (uint8_t reverse)
 {
+    pwm_reverse = reverse;
 }
 
