@@ -104,7 +104,7 @@ asserv_twi_send_command (uint8_t command, uint8_t length)
 
     /* Send command to the asserv */
     if (twi_ms_send (AC_ASSERV_TWI_ADDRESS, asserv_twi_buffer, length + 2) != 0)
-	return -1;
+	return 1;
 
     /* Update until the command is sent */
     asserv_twi_update ();
@@ -140,9 +140,9 @@ void
 asserv_move_linearly (int32_t distance)
 {
     /* Put distance as parameter */
-    asserv_twi_buffer_param[0] = v32_to_v8 (distance, 3);
-    asserv_twi_buffer_param[1] = v32_to_v8 (distance, 2);
-    asserv_twi_buffer_param[2] = v32_to_v8 (distance, 1);
+    asserv_twi_buffer_param[0] = v32_to_v8 (distance, 2);
+    asserv_twi_buffer_param[1] = v32_to_v8 (distance, 1);
+    asserv_twi_buffer_param[2] = v32_to_v8 (distance, 0);
     /* Send the linear move command to the asserv board */
     asserv_twi_send_command ('l', 3);
 }
@@ -193,9 +193,9 @@ asserv_set_x_position (int32_t x)
     /* 'X' subcommand */
     asserv_twi_buffer_param[0] = 'X';
     /* Put x position as parameter */
-    asserv_twi_buffer_param[1] = v32_to_v8 (x, 3);
-    asserv_twi_buffer_param[2] = v32_to_v8 (x, 2);
-    asserv_twi_buffer_param[3] = v32_to_v8 (x, 1);
+    asserv_twi_buffer_param[1] = v32_to_v8 (x, 2);
+    asserv_twi_buffer_param[2] = v32_to_v8 (x, 1);
+    asserv_twi_buffer_param[3] = v32_to_v8 (x, 0);
     /* Send the set X position command to the asserv board */
     asserv_twi_send_command ('p', 4);
 }
@@ -207,9 +207,9 @@ asserv_set_y_position (int32_t y)
     /* 'Y' subcommand */
     asserv_twi_buffer_param[0] = 'Y';
     /* Put y position as parameter */
-    asserv_twi_buffer_param[1] = v32_to_v8 (y, 3);
-    asserv_twi_buffer_param[2] = v32_to_v8 (y, 2);
-    asserv_twi_buffer_param[3] = v32_to_v8 (y, 1);
+    asserv_twi_buffer_param[1] = v32_to_v8 (y, 2);
+    asserv_twi_buffer_param[2] = v32_to_v8 (y, 1);
+    asserv_twi_buffer_param[3] = v32_to_v8 (y, 0);
     /* Send the set Y position command to the asserv board */
     asserv_twi_send_command ('p', 4);
 }

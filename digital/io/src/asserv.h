@@ -31,10 +31,11 @@
  * board using a protocol over TWI communication.
  * @see trunk/digital/io/doc/proto_asserv.txt
  * @todo
- *  - protect code from sending a command when the previous one is not
- *  finished yet.
- *  - a consequence of previous item is that commands can failed. Maybe all
- *  return values should be 'uint8_t'.
+ *  - the function to send a new command to the asserv board is protected from
+ *  sending one when the previous is not finished yet. But the information is
+ *  not raised to the upper layer (io). It can be a bad idea to give this
+ *  information to the upper layer because it can be mis-interpreted or
+ *  ignored.
  */
 
 #include "common.h"
