@@ -1,10 +1,34 @@
 TOTOlist pour le programe avr de motor-power
 
-- corriger le switch case
-- peuafiner la boucle de mesure automatique de la tempÃ©rature et de la batterie
+- peaufiner la boucle de mesure automatique de la tempÃ©rature et de la batterie
+- souder le deuxième pont
+- implémenter la limitation en courant
+- implémenter la mesure de température et l'abaissement automatique de la
+limitation en courant
+- implémenter la mesure de tension de batterie et l'abaissement automatique
+de la limitation en courant
+- implémenter un mécanisme pour gérer les petites valeurs de PWM
+- implémenter une fonction de contrôle permettant de vérifier le déphasage
+entre les PWM des deux ponts
 
 Tester :
-- la gÃ©nÃ©ration de la PWM des moteurs
 - la gÃ©nÃ©ration de la PWM de la limitation de courant
 - le protocole
-
+- mesurer la linéarité, les valeurs PWM min et max, la période
+- tester la limitation en courant. Attention : la carte actuelle ne
+supportera pas plus de 10A. Pour celà, mettre la PWM à une valeur entre 50%
+et 90% sur une charge qui débite environt 3 à 8A (oui... il faut trouver la
+charge, d'autant plus qu'il faut une charge selfique. A mon avis, un gros
+moteur bloqué supportant bien les surcharges ferait l'affaire). Visualiser
+la PWM à l'oscillo (dans l'idéal, visualiser le courant par une pince
+ampèremétrique). Abaisser progressivement la limitation : le rapport
+cyclique doit diminuer, le courant moyen aussi, et le courant pic ne doit
+jamais dépasser la limite fixée par soft.
+- tester l'absence de perturbation d'un pont par l'autre. Pour celà : on
+fixe un pont à une valeur de PWM, et on fait varier la PWM de l'autre pont
+de 0% à PWM_MAX. La PWM du premier pont ne doit jamais varier.
+- tester la limitation en température. Faire comme pour le test de
+limitation de courant, mais en approchant un fer à souder des capteurs de
+température
+- tester la limitation en tension de batterie. Faire comme pour le test de
+limitation de courant, mais en baissant la tension d'alim.
