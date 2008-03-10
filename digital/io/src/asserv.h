@@ -48,6 +48,87 @@ void
 asserv_init (void);
 
 /**
+ * Update the status of the asserv board seen from the io program.
+ * This command asks the status buffer of the asserv, receive it and do some
+ * internal updates.
+ * You need to call this command regularly in order to be able to send new
+ * commands (this module will not let you send new command if the previous one
+ * has not been yet received).
+ */
+void
+asserv_update_status (void);
+
+/**
+ * Is last command sent to the asserv board is being executed?
+ * This function is used to know if the last command sent to the asserv board
+ * has been received and is currently executing.
+ * @return
+ *  - 0 if the command has not started to be executed.
+ *  - 1 if the command is currently been executed.
+ */
+uint8_t
+asserv_last_cmd_ack (void);
+
+/**
+ * Status of a move or arm class command.
+ * It is return by status functions.
+ */
+typedef enum asserv_status_e
+{
+    /** No status is available. The command is not finished yet. */
+    none,
+    /** The command has succeed. */
+    success,
+    /** The command has failed. The bot or the arm is blocked */
+    failure
+} asserv_status_e;
+
+/**
+ * Is last move class command has successfully ended?
+ * This function is used to know the status of the last move command. It looks
+ * at the status register.
+ * @return the status of the last move class command.
+ */
+asserv_status_e
+asserv_move_cmd_status (void);
+
+/**
+ * Is last arm class command has successfully ended?
+ * This function is used to know the status of the last arm command. It looks
+ * at the status register.
+ * @return the status of the last move class command.
+ */
+asserv_status_e
+asserv_arm_cmd_status (void);
+
+/**
+ * Structure for storing a position for the bot.
+ */
+typedef struct asserv_position_t
+{
+    /** X position. */
+    uint32_t x;
+    /** Y position. */
+    uint32_t y;
+    /** Angle. */
+    uint16_t a;
+} asserv_position_t;
+
+/**
+ * Get the current position of the bot.
+ * @param current_position the current position to update.
+ */
+void
+asserv_get_position (asserv_position_t current_position);
+
+/**
+ * Get the arm position.
+ * @return the position of the arm (in steps).
+ */
+uint16_t
+asserv_get_arm_position (void);
+
+/**
  * Reset the asserv board.
  * Other class command.
  */
