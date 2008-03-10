@@ -59,7 +59,7 @@
 /** In HOST compilation:
  *  - STDIO: use stdin/out.
  *  - PTS: use pseudo terminal. */
-#define AC_UART0_HOST_DRIVER PTS
+#define AC_UART0_HOST_DRIVER STDIO
 /** Same thing for secondary port. */
 #define AC_UART1_PORT -1
 #define AC_UART1_BAUDRATE 115200

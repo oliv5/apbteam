@@ -148,7 +148,7 @@ main_loop (void)
       }
     if (main_stat_counter && !--main_stat_counter_cpt)
       {
-	proto_send2w ('C', counter_left, counter_right);
+	proto_send3w ('C', counter_left, counter_right, counter_aux0);
 	main_stat_counter_cpt = main_stat_counter;
       }
     if (main_stat_postrack && !--main_stat_postrack_cpt)

@@ -58,6 +58,7 @@ static const struct motor_t gloubi_model =
 static const struct robot_t gloubi_robot =
 {
     &gloubi_model,
+    NULL,
     26.0,		/* Distance between the wheels (m). */
 };
 
@@ -91,6 +92,7 @@ static const struct motor_t taz_model =
 static const struct robot_t taz_robot =
 {
     &taz_model,
+    NULL,
     30.0,		/* Distance between the wheels (m). */
 };
 
@@ -124,6 +126,41 @@ static const struct motor_t tazg_model =
 static const struct robot_t tazg_robot =
 {
     &tazg_model,
+    NULL,
+    30.0,		/* Distance between the wheels (m). */
+};
+
+/* Gerard arm model, with a RE25CLL and a 1:10 ratio gearbox. */
+static const struct motor_t gerard_arm_model =
+{
+    /* Motor caracteristics. */
+    407 * (2*M_PI) / 60,/* Speed constant ((rad/s)/V). */
+    23.4 / 1000,	/* Torque constant (N.m/A). */
+    0,			/* Bearing friction (N.m/(rad/s)). */
+    2.18,		/* Terminal resistance (Ohm). */
+    0.24 / 1000,	/* Terminal inductance (H). */
+    /* Gearbox caracteristics. */
+    10,			/* Gearbox ratio. */
+    0.75,		/* Gearbox efficiency. */
+    /* Load caracteristics. */
+    0.200 * 0.1 * 0.1,	/* Load (kg.m^2). */
+    /* Wheel caracteristics. */
+    0,			/* Wheel radius (m). */
+    /* Simulation parameters. */
+    4.444444 / 1000,	/* Simulation time step (s). */
+    1000,		/* Simulation time step division. */
+    /* Simulation current state. */
+    0,			/* Current time (not realy used) (s). */
+    0,			/* Current input voltage (V). */
+    0,			/* Current current (A). */
+    0,			/* Current angular speed (o for omega) (rad/s). */
+    0			/* Current theta (th for theta) (rad). */
+};
+
+static const struct robot_t gerard_robot =
+{
+    &tazg_model,
+    &gerard_arm_model,
     30.0,		/* Distance between the wheels (m). */
 };
 
@@ -136,6 +173,7 @@ static const struct
       { "gloubi", &gloubi_robot },
       { "taz", &taz_robot },
       { "tazg", &tazg_robot },
+      { "gerard", &gerard_robot },
       { 0, 0 }
 };
 

@@ -41,10 +41,10 @@
 uint8_t DDRF, PORTC, PORTD, PORTE, PORTF, PORTG, PINC;
 
 /** Overall counter values. */
-uint16_t counter_left, counter_right;
+uint16_t counter_left, counter_right, counter_aux0;
 /** Counter differences since last update.
- * Maximum of 9 significant bits, sign included. */
-int16_t counter_left_diff, counter_right_diff;
+ * Maximum of 7 significant bits, sign included. */
+int16_t counter_left_diff, counter_right_diff, counter_aux0_diff;
 
 /** PWM values, this is an error if absolute value is greater than the
  * maximum. */
@@ -52,7 +52,11 @@ int16_t pwm_left, pwm_right, pwm_aux0;
 /** PWM reverse directions. */
 uint8_t pwm_reverse;
 
-struct motor_t simu_left_model, simu_right_model;
+/** Motor models. */
+struct motor_t simu_left_model, simu_right_model, simu_aux0_model;
+
+/** Is there an auxiliary motor? */
+int simu_aux0;
 
 /** Computed simulated position (mm). */
 double simu_pos_x, simu_pos_y, simu_pos_a;
@@ -81,8 +85,11 @@ simu_init (void)
       }
     simu_left_model = *m->motor;
     simu_right_model = *m->motor;
+    simu_aux0 = !!m->aux0;
+    if (simu_aux0)
+	simu_aux0_model = *m->aux0;
     simu_footing = m->footing;
-    simu_pos_x = simu_pos_y = 0;
+    simu_pos_x = simu_pos_y = simu_pos_a = 0;
 }
 
 /** Update simulation position. */
@@ -112,17 +119,22 @@ simu_pos_update (double dl, double dr)
 static void
 simu_step (void)
 {
-    double old_left_th, old_right_th;
+    double old_left_th, old_right_th, old_aux0_th;
     /* Convert pwm value into voltage. */
     assert (pwm_left >= -PWM_MAX && pwm_left <= PWM_MAX);
     assert (pwm_right >= -PWM_MAX && pwm_right <= PWM_MAX);
+    assert (pwm_aux0 >= -PWM_MAX && pwm_aux0 <= PWM_MAX);
     simu_left_model.u = (double) (pwm_left + 1) / (PWM_MAX + 1);
     simu_right_model.u = (double) (pwm_right + 1) / (PWM_MAX + 1);
+    simu_aux0_model.u = (double) (pwm_aux0 + 1) / (PWM_MAX + 1);
     /* Make one step. */
     old_left_th = simu_left_model.th;
     old_right_th = simu_right_model.th;
+    old_aux0_th = simu_aux0_model.th;
     motor_model_step (&simu_left_model);
     motor_model_step (&simu_right_model);
+    if (simu_aux0)
+	motor_model_step (&simu_aux0_model);
     /* Modify counters. */
     counter_left_diff = (simu_left_model.th - old_left_th) / (2*M_PI)
         * 500 * simu_left_model.i_G;
@@ -130,6 +142,12 @@ simu_step (void)
     counter_right_diff = (simu_right_model.th - old_right_th) / (2*M_PI)
         * 500 * simu_right_model.i_G;
     counter_right += counter_right_diff;
+    if (simu_aux0)
+      {
+	counter_aux0_diff = (simu_aux0_model.th - old_aux0_th) / (2*M_PI)
+	    * 500 * simu_aux0_model.i_G;
+	counter_aux0 += counter_aux0_diff;
+      }
     /* Update position */
     simu_pos_update ((simu_left_model.th - old_left_th)
 		     * simu_left_model.i_G * simu_left_model.w_r * 1000,

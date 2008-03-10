@@ -28,6 +28,7 @@
 struct robot_t
 {
     const struct motor_t *motor;
+    const struct motor_t *aux0;
     double footing;	/* Distance between the wheels (m). */
 };
 
