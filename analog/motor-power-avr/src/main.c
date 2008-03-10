@@ -198,12 +198,26 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	cmd_R_ = (int8_t) args[0];
 	if (cmd_R_ >= 0)
 	  {
-	    start_motor_L_ ((cmd_L_ << 1) , 0);
+	    start_motor_R_ ((cmd_R_ << 1) , 0);
 	  }
 	else
 	  {
-	    start_motor_L_ (((-cmd_L_) << 1), 1);
+	    start_motor_R_ (((-cmd_R_) << 1), 1);
 	  }
+	break;
+
+  case c ('w', 0):
+	/* Set zero pwm. */
+    start_motor_L_ ( 0, 0);
+    start_motor_R_ ( 0, 0);
+	break;
+
+  case c ('w', 4):
+	/* Set pwm.
+	 * - w: left pwm.
+	 * - w: right pwm. */
+    start_motor_L_ ( v8_to_v16 (args[0], args[1]) >> 7, (int8_t)args[0] < 0);
+    start_motor_R_ ( v8_to_v16 (args[2], args[3]) >> 7, (int8_t)args[2] < 0);
 	break;
 
   case c ('e', 0):
