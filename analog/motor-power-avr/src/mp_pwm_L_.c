@@ -10,7 +10,6 @@
 // static variables
 static uint8_t state_L_;
 static uint8_t state_L_cmd;
-static uint8_t pwm_L_;
 
 // Le PC, afin de faire le saut calculé
 //#define PC PC_REG
@@ -18,7 +17,7 @@ static uint8_t pwm_L_;
 // init
 void init_pwm_L_ (void) {
     state_L_cmd = CMD_STATE_HIGH_Z;
-    pwm_L_ = 0x00;
+    OCR_L_ = 0x00;
 
     // Set outputs to 0 (ie HIGH_Z)
 	_L_AL_0;
@@ -38,11 +37,6 @@ void init_pwm_L_ (void) {
 ISR(OVF_L_vect) {
     // programs the state which is ordered by the core code
     state_L_ = state_L_cmd;
-
-    // the falling of the other side may have delayed a few our IT
-    OCR_L_ = pwm_L_;
-
-    //PC = PC + state_L_;	// j'aurais bien aimé faire un calculated jump
 
     switch (state_L_) 
       {
@@ -112,7 +106,6 @@ ISR(OVF_L_vect) {
 
 // PWM falling edge on timer compare IT
 ISR(COMP_L_vect) {
-    //	PC = PC + state_L_; TODO :saut calculé ?
 
     switch (state_L_) 
       {
@@ -185,7 +178,7 @@ void start_motor_L_ (uint8_t pwmspeed, uint8_t direction) {
     if (pwmspeed == 0)
     {// brake
         state_L_cmd = CMD_STATE_BRAKE;
-        pwm_L_ = 0;
+        OCR_L_ = 0;
     }
     else
     {
@@ -196,7 +189,7 @@ void start_motor_L_ (uint8_t pwmspeed, uint8_t direction) {
         UTILS_BOUND(pwmspeed, PWM_MIN_LR_, PWM_MAX_LR_);
 
         // Apply the value
-        pwm_L_ = pwmspeed;
+        OCR_L_ = pwmspeed;
     }
 }
 
