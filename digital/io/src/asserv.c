@@ -193,12 +193,15 @@ asserv_arm_cmd_status (void)
 
 /* Get the current position of the bot. */
 void
-asserv_get_position (asserv_position_t current_position)
+asserv_get_position (asserv_position_t *current_position)
 {
-    /* Copy last received status buffer information to current position */
-    current_position.x = asserv_status.position.x;
-    current_position.y = asserv_status.position.y;
-    current_position.a = asserv_status.position.a;
+    if (current_position)
+      {
+	/* Copy last received status buffer information to current position */
+	current_position->x = asserv_status.position.x;
+	current_position->y = asserv_status.position.y;
+	current_position->a = asserv_status.position.a;
+      }
 }
 
 /* Get the arm position. */

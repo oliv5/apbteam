@@ -120,7 +120,7 @@ typedef struct asserv_position_t
  * @param current_position the current position to update.
  */
 void
-asserv_get_position (asserv_position_t current_position);
+asserv_get_position (asserv_position_t *current_position);
 
 /**
  * Get the arm position.
