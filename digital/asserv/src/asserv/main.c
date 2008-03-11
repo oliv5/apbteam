@@ -432,12 +432,14 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		proto_send1b ('E', EEPROM_KEY);
 		proto_send1w ('f', postrack_footing);
 		proto_send2w ('a', speed_theta_acc, speed_alpha_acc);
-		proto_send2b ('s', speed_theta_max, speed_alpha_max);
+		proto_send4b ('s', speed_theta_max, speed_alpha_max,
+			      speed_theta_slow, speed_alpha_slow);
 		proto_send2w ('p', pos_theta_kp, pos_alpha_kp);
 		proto_send2w ('i', pos_theta_ki, pos_alpha_ki);
 		proto_send2w ('d', pos_theta_kd, pos_alpha_kd);
 		proto_send1w ('E', pos_e_sat);
 		proto_send1w ('I', pos_int_sat);
+		proto_send1w ('b', pos_blocked);
 		proto_send1b ('w', pwm_reverse);
 		break;
 	      default:
