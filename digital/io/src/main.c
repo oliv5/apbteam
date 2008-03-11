@@ -35,6 +35,7 @@
 #endif /* HOST */
 
 #include "asserv.h"	/* Functions to control the asserv board */
+#include "switch.h"	/* Manage switches (jack, color selector) */
 
 /**
  * Initialize the main and all its subsystems.
