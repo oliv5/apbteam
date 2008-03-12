@@ -94,10 +94,28 @@ void
 flash_send_command (uint8_t cmd);
 
 /** Poll the busy bit in the Software Status Register of the flash memory.
-  * \return  the busy bit state.
+  * \return  the status register.
   */
 uint8_t
-flash_is_busy (void);
+flash_read_status (void);
+
+/** Poll the busy bit in the Software Status Register of the flash memory.
+  * \return  the busy bit state.
+  */
+extern inline uint8_t
+flash_is_busy (void)
+{
+    return flash_read_status () & 0x1;
+}
+
+/** Return the AAI status flag of the register.
+  * \return  the AAI status.
+  */
+extern inline uint8_t
+flash_status_aai (void)
+{
+    return flash_read_status () >> 6;
+}
 
 /** Write in the flash byte provided in parameter.
   * \param  data  the buffer to store the data.

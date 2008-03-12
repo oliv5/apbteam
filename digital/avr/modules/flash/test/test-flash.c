@@ -1,4 +1,4 @@
-/* test-write-onebyte.c */
+/* test-erase.c */
 /* avr.flash - AVR Flash SPI use. {{{
  *
  * Copyright (C) 2008 Nélio Laranjeiro
@@ -29,7 +29,7 @@
 #include "modules/utils/utils.h"
 #include "modules/uart/uart.h"
 
-#define TEST_BASE 0x224
+#define TEST_BASE 0x300
 
 void
 proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
@@ -69,19 +69,6 @@ main (void)
     flash_init ();
     proto_send0 ('f');
 
-    flash_send_command (FLASH_WREN);
-    proto_send1b ('s', flash_read_status ());
-
-    flash_write (TEST_BASE, 'a');
-    proto_send2b ('o', flash_read_status (), flash_read(TEST_BASE));
-
-    flash_write (TEST_BASE + 1, 'a');
-    proto_send2b ('o', flash_read_status (), flash_read(TEST_BASE + 1));
-
-    /* read */
-    proto_send1b ('r', flash_read (TEST_BASE));
-    proto_send1b ('r', flash_read (TEST_BASE + 1));
-    
     while (1)
 	proto_accept (uart0_getc ());
 }

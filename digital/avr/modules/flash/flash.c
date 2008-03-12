@@ -66,19 +66,19 @@ flash_erase (uint8_t cmd, uint32_t start_addr)
 }
 
 /** Poll the busy bit in the Software Status Register of the flash memory.
-  * \return  the busy bit state.
+  * \return  the status register.
   */
 uint8_t
-flash_is_busy (void)
+flash_read_status (void)
 {
-    uint8_t busy;
+    uint8_t res;
 
     AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
     spi_send (FLASH_RDSR);
-    busy = spi_recv() & 0x1;
+    res = spi_recv();
     AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
 
-    return busy;
+    return res;
 }
 
 /** Initialise the flsah memory.
@@ -107,27 +107,18 @@ flash_init (void)
     AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
 
     proto_send3b ('f',rsp[0], rsp[1], rsp[2]);
+    proto_send1b ('s', flash_read_status());
 
-    /* configure the flash to allow the access on all the memory. */
-    flash_send_command (FLASH_WREN);
-    flash_send_command (FLASH_EWSR);
-
-
-    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
-    spi_send (FLASH_WRSR);
-    spi_send (0x2);
-    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
+    if (flash_status_aai())
+      {
+	flash_send_command (FLASH_WEDI);
+      }
 
     /* Enables the flash to be writable. */
     flash_send_command (FLASH_WREN);
     
     /* Read the flash status. */
-    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
-    spi_send (FLASH_RDSR);
-    rsp[0] = spi_recv();
-    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
-
-    proto_send1b ('s',rsp[0]);
+    proto_send1b ('s', flash_read_status());
 
     /* TODO: disable flash usage if no flash is found? */
 
@@ -142,7 +133,6 @@ flash_init (void)
 	flash_address (addr);
 	rsp[0] = spi_recv();
 	AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
-	proto_send1b ('r',rsp[0]);
       }
 
     flash_global.addr = addr - FLASH_PAGE_SIZE + 1;
@@ -167,6 +157,9 @@ flash_send_command (uint8_t cmd)
 void
 flash_write (uint32_t addr, uint8_t data)
 {
+    flash_send_command (FLASH_WREN);
+    while (flash_is_busy ());
+
     AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
     /* Write instruction. */
     spi_send (FLASH_WRITE);
@@ -206,17 +199,23 @@ flash_read_array (uint32_t addr, uint8_t *buffer, uint32_t length)
 {
     uint8_t i;
 
-    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
-    /* Send the read instruction. */
+/*    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
     spi_send (FLASH_READ);
     flash_address (addr);
     for (i = 0; i < length; i++)
     {
 	buffer[i] = spi_recv ();
-	/* Wait for the flash until it is busy */
 	while (flash_is_busy());
+	proto_send1b ('r', buffer[i]);
     }
     AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
+    */
+
+    for (i = 0; i < length; i++)
+      {
+	buffer[i] = flash_read (addr + i);
+	while (flash_is_busy());
+      }
 }
 
 /** Write in the flash byte provided in parameter.
@@ -230,33 +229,10 @@ flash_write_array (uint32_t addr, uint8_t *data, uint32_t length)
 {
     uint32_t i;
 
-    if (length < 2)
-	return;
-
-    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
-    spi_send (FLASH_AAI);
-    /* send the start address */
-    flash_address (addr);
-    spi_send (data[0]);
-    spi_send (data[1]);
-    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
-    proto_send2b ('j', data[i], data[i+1]);
-    
-    /* Wait for the flash until it is busy */
-    while (flash_is_busy());
-
-    /* Send two bytes */
-    for (i = 2; i < length; i += 2)
+    for (i = 0; i < length; i++)
       {
-	AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
-	spi_send (FLASH_AAI);
-	spi_send (data[i]);
-	spi_send (data[i+1]);
-	AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
-
-	/* Wait for the flash until it is busy */
-	while (flash_is_busy());
-	proto_send2b ('j', data[i], data[i+1]);
+	flash_write (addr + i, data[i]);
+	proto_send2b ('w', data[i], flash_read (addr + i));
       }
 }
 

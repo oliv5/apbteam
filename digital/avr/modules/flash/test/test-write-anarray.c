@@ -29,7 +29,7 @@
 #include "modules/utils/utils.h"
 #include "modules/uart/uart.h"
 
-#define TEST_BASE 0x38
+uint32_t addr = 0;
 
 void
 proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
@@ -41,6 +41,20 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	/* Reset */
 	utils_reset ();
 	break;
+      case c ('e', 0):
+	/* Erase full */
+	flash_erase (FLASH_ERASE_FULL, 0);
+	break;
+      case c ('s', 0):
+	/* print flash status */
+	proto_send1b ('s', flash_read_status());
+      case c ('w', 0):
+	/* Send the write enable flash command. */
+	flash_send_command (FLASH_WREN);
+      case c ('a', 3):
+	/* get the addr */
+	addr = ((uint32_t) (args[0] & 0x1F) << 16) | ((uint32_t) args[1] << 8)
+	| args[2];
       default:
 	/* Error */
 	proto_send0 ('?');
@@ -53,8 +67,8 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 int
 main (void)
 {
-    uint8_t data[26];
-    uint8_t data_rsp[26];
+    uint8_t data[5];
+    uint8_t data_rsp[5];
     uint8_t i;
 
     uart0_init ();
@@ -62,20 +76,26 @@ main (void)
     proto_send0 ('c');
     flash_init ();
     proto_send0 ('f');
+
+    proto_send1b ('s', flash_read_status ());
     
-    for (i = 0; i < 26; i++)
+    for (i = 0; i < 5; i++)
       {
 	data[i] = i + 'a';
       }
     
     /* Write a full array. */
-    flash_write_array (TEST_BASE , data, 26);
+    flash_write_array (addr, data, 5);
+
+    proto_send1b ('p', flash_read_status());
 
     /* Read a full array. */
-    flash_read_array (TEST_BASE , data_rsp, 26);
+    flash_read_array (addr , data_rsp, 5);
 
     /* Print the data_rsp to the i2c */
-    proto_send ('g', 26, data_rsp);
+    proto_send ('g', 5, data_rsp);
+
+    addr += 5;
 
     while (1)
 	proto_accept (uart0_getc ());

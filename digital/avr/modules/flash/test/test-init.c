@@ -29,8 +29,6 @@
 #include "modules/utils/utils.h"
 #include "modules/uart/uart.h"
 
-#define FLASH_DEBUG 1 
-
 void
 proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 {
@@ -61,6 +59,7 @@ main (void)
     flash = flash_init ();
     proto_send0 ('f');
 
+    proto_send1b ('s', flash_read_status());
     proto_send3b ('e', (flash->addr >> 16) & 0x1f, (flash->addr >> 8), flash->addr);
     
     while (1)
