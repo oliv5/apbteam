@@ -24,13 +24,16 @@
 // }}}
 `timescale 1ns / 1ps
 
-module counter_top(clk, rst, q0, q1, q2, q3, ale, rd, wr, ad);
+module counter_top(clk, rst, q0, q1, q2, q3, ale, rd, wr, ad, i0, i1, ioa,
+	ioc);
     parameter size = 8;
     input clk;
     input rst;
     input [1:0] q0, q1, q2, q3;
     input ale, rd, wr;
     inout [size-1:0] ad;
+    input i0, i1;
+    input [3:0] ioa, ioc;
 
     wire [1:0] qf0, qf1, qf2, qf3;
     wire [size-1:0] count0, count1, count2, count3;

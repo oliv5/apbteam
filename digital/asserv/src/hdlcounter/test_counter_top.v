@@ -34,6 +34,8 @@ module test_counter_top();
     reg [1:0] sel;
     wire [7:0] ad;
     wire wr = 1;
+    wire i0 = 0, i1 = 0;
+    wire [3:0] ioa = 0, ioc = 0;
 
     `include "common.v"
 
@@ -53,7 +55,8 @@ module test_counter_top();
 
     // Instantiation.
     assign ad = aord ? { 6'b0, sel } : 8'bz;
-    counter_top uut (clk, rst, q[0], q[1], q[2], q[3], ale, rd, wr, ad);
+    counter_top uut (clk, rst, q[0], q[1], q[2], q[3], ale, rd, wr, ad, i0,
+	i1, ioa, ioc);
 
     // The count variable is the true encoder position, multiplied by 32,
     // which is more than one encoder minimum period with a noise filter of
