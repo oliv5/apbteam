@@ -128,6 +128,7 @@ counter_update (void)
 #else
     counter_left_diff = (int8_t) (counter_left_old - left);
 #endif
+    counter_left_old = left;
     counter_left += counter_left_diff;
     /* Right counter. */
 #if !COUNTER_RIGHT_REVERSE
@@ -135,6 +136,7 @@ counter_update (void)
 #else
     counter_right_diff = (int8_t) (counter_right_old - right);
 #endif
+    counter_right_old = right;
     counter_right += counter_right_diff;
     /* First auxiliary counter. */
 #if !COUNTER_AUX0_REVERSE
@@ -142,6 +144,7 @@ counter_update (void)
 #else
     counter_aux0_diff = (int8_t) (counter_aux0_old - aux0);
 #endif
+    counter_aux0_old = aux0;
     counter_aux0 += counter_aux0_diff;
 }
 
