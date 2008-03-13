@@ -38,6 +38,9 @@ void init_curLim (void) {
     curLim_bat  = CURLIM_MAX;
     curLim_temp = CURLIM_MAX;
 
+    // Enable outputs
+    DDRD |= 0x30;
+
     // Configure and run current limit PWM
     TCCR1A = TCCRA_LR_CFG;
     TCCR1B = TCCRB_LR_CFG;

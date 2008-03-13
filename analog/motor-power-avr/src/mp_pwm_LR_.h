@@ -111,7 +111,7 @@
 /** Defines timer control register for current limitation PWM (both side)
  * toggle OC1x on compare, fast 8bit PWM mode, no prescaling */
 #define TCCRA_LR_CFG (regv (COM1A1, COM1A0, COM1B1, COM1B0, FOC1A, FOC1B, WGM11, WGM10, \
-                                0,      1,      0,      1,     0,     0,     0,     1))
+                                 1,      0,      1,      0,     0,     0,     0,     1))
 #define TCCRB_LR_CFG (regv (ICNC1, ICES1,  5, WGM13, WGM12, CS12, CS11, CS10, \
                                 0,     0,  0,     0,     1,    0,    0,    1))
                 
