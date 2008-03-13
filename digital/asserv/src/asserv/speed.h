@@ -25,14 +25,26 @@
  *
  * }}} */
 
-extern int16_t speed_theta_cur, speed_alpha_cur;
-extern int16_t speed_theta_cons, speed_alpha_cons;
-extern int8_t speed_theta_max, speed_alpha_max;
-extern int8_t speed_theta_slow, speed_alpha_slow;
-extern uint32_t speed_theta_pos_cons, speed_alpha_pos_cons;
-extern uint8_t speed_pos;
+/** Speed control state. */
+struct speed_t
+{
+    /** Current speed, f8.8. */
+    int16_t cur;
+    /** Consign speed, f8.8. */
+    int16_t cons;
+    /** Maximum speed for position consign, u8. */
+    int8_t max;
+    /** Slow speed for position consign, u8. */
+    int8_t slow;
+    /** Acceleration, f8.8. */
+    int16_t acc;
+    /** Consign position. */
+    uint32_t pos_cons;
+    /** Whether to use the consign position (1) or not (0). */
+    uint8_t use_pos;
+};
 
-extern int16_t speed_theta_acc, speed_alpha_acc;
+extern struct speed_t speed_theta, speed_alpha;
 
 void
 speed_update (void);

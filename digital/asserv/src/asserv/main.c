@@ -158,7 +158,7 @@ main_loop (void)
       }
     if (main_stat_speed && !--main_stat_speed_cpt)
       {
-	proto_send2b ('S', speed_theta_cur >> 8, speed_alpha_cur >> 8);
+	proto_send2b ('S', speed_theta.cur >> 8, speed_alpha.cur >> 8);
 	main_stat_speed_cpt = main_stat_speed;
       }
     if (main_stat_pos && !--main_stat_pos_cpt)
@@ -251,18 +251,18 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
       case c ('s', 0):
 	/* Stop (set zero speed). */
 	state_main.mode = MODE_SPEED;
-	speed_pos = 0;
-	speed_theta_cons = 0;
-	speed_alpha_cons = 0;
+	speed_theta.use_pos = speed_alpha.use_pos = 0;
+	speed_theta.cons = 0;
+	speed_alpha.cons = 0;
 	break;
       case c ('s', 2):
 	/* Set speed.
 	 * - b: theta speed.
 	 * - b: alpha speed. */
 	state_main.mode = MODE_SPEED;
-	speed_pos = 0;
-	speed_theta_cons = args[0] << 8;
-	speed_alpha_cons = args[1] << 8;
+	speed_theta.use_pos = speed_alpha.use_pos = 0;
+	speed_theta.cons = args[0] << 8;
+	speed_alpha.cons = args[1] << 8;
 	break;
       case c ('s', 9):
 	/* Set speed controlled position consign.
@@ -272,11 +272,11 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	if (args[8] == state_main.sequence)
 	    break;
 	state_main.mode = MODE_SPEED;
-	speed_pos = 1;
-	speed_theta_pos_cons = pos_theta.cons;
-	speed_theta_pos_cons += v8_to_v32 (args[0], args[1], args[2], args[3]);
-	speed_alpha_pos_cons = pos_alpha.cons;
-	speed_alpha_pos_cons += v8_to_v32 (args[4], args[5], args[6], args[7]);
+	speed_theta.use_pos = speed_alpha.use_pos = 1;
+	speed_theta.pos_cons = pos_theta.cons;
+	speed_theta.pos_cons += v8_to_v32 (args[0], args[1], args[2], args[3]);
+	speed_alpha.pos_cons = pos_alpha.cons;
+	speed_alpha.pos_cons += v8_to_v32 (args[4], args[5], args[6], args[7]);
 	state_start (&state_main, args[8]);
 	break;
       case c ('f', 1):
@@ -285,7 +285,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	if (args[0] == state_main.sequence)
 	    break;
 	state_main.mode = MODE_TRAJ;
-	speed_pos = 0;
+	speed_theta.use_pos = speed_alpha.use_pos = 0;
 	traj_mode = 10;
 	state_start (&state_main, args[0]);
 	break;
@@ -375,8 +375,8 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		/* Set acceleration.
 		 * - w: theta.
 		 * - w: alpha. */
-		speed_theta_acc = v8_to_v16 (args[1], args[2]);
-		speed_alpha_acc = v8_to_v16 (args[3], args[4]);
+		speed_theta.acc = v8_to_v16 (args[1], args[2]);
+		speed_alpha.acc = v8_to_v16 (args[3], args[4]);
 		break;
 	      case c ('s', 5):
 		/* Set maximum and slow speed.
@@ -384,10 +384,10 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		 * - b: alpha max.
 		 * - b: theta slow.
 		 * - b: alpha slow. */
-		speed_theta_max = args[1];
-		speed_alpha_max = args[2];
-		speed_theta_slow = args[3];
-		speed_alpha_slow = args[4];
+		speed_theta.max = args[1];
+		speed_alpha.max = args[2];
+		speed_theta.slow = args[3];
+		speed_alpha.slow = args[4];
 		break;
 	      case c ('p', 3):
 		pos_theta.kp = pos_alpha.kp = v8_to_v16 (args[1], args[2]);
@@ -436,9 +436,9 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		/* Print current settings. */
 		proto_send1b ('E', EEPROM_KEY);
 		proto_send1w ('f', postrack_footing);
-		proto_send2w ('a', speed_theta_acc, speed_alpha_acc);
-		proto_send4b ('s', speed_theta_max, speed_alpha_max,
-			      speed_theta_slow, speed_alpha_slow);
+		proto_send2w ('a', speed_theta.acc, speed_alpha.acc);
+		proto_send4b ('s', speed_theta.max, speed_alpha.max,
+			      speed_theta.slow, speed_alpha.slow);
 		proto_send2w ('p', pos_theta.kp, pos_alpha.kp);
 		proto_send2w ('i', pos_theta.ki, pos_alpha.ki);
 		proto_send2w ('d', pos_theta.kd, pos_alpha.kd);

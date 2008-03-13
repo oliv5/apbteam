@@ -37,39 +37,20 @@
  * shaft position.
  */
 
-/** Current speed, f8.8. */
-int16_t speed_theta_cur, speed_alpha_cur;
-/** Consign speed, f8.8. */
-int16_t speed_theta_cons, speed_alpha_cons;
-/** Maximum speed for position consign, u8. */
-int8_t speed_theta_max, speed_alpha_max;
-/** Slow speed for position consign, u8. */
-int8_t speed_theta_slow, speed_alpha_slow;
-/** Consign position. */
-uint32_t speed_theta_pos_cons, speed_alpha_pos_cons;
-/** Whether to use the consign position (1) or not (0). */
-uint8_t speed_pos;
-
-/** Acceleration, uf8.8. */
-int16_t speed_theta_acc, speed_alpha_acc;
+/** Theta/alpha speed control states. */
+struct speed_t speed_theta, speed_alpha;
 
 /** Update shaft position consign according to a speed consign. */
 static void
-speed_update_by_speed (void)
+speed_update_by_speed (struct speed_t *speed)
 {
     /* Update current speed. */
-    if (UTILS_ABS (speed_theta_cons - speed_theta_cur) < speed_theta_acc)
-	speed_theta_cur = speed_theta_cons;
-    else if (speed_theta_cons > speed_theta_cur)
-	speed_theta_cur += speed_theta_acc;
+    if (UTILS_ABS (speed->cons - speed->cur) < speed->acc)
+	speed->cur = speed->cons;
+    else if (speed->cons > speed->cur)
+	speed->cur += speed->acc;
     else
-	speed_theta_cur -= speed_theta_acc;
-    if (UTILS_ABS (speed_alpha_cons - speed_alpha_cur) < speed_alpha_acc)
-	speed_alpha_cur = speed_alpha_cons;
-    else if (speed_alpha_cons > speed_alpha_cur)
-	speed_alpha_cur += speed_alpha_acc;
-    else
-	speed_alpha_cur -= speed_alpha_acc;
+	speed->cur -= speed->acc;
 }
 
 /** Compute maximum allowed speed according to: distance left, maximum speed,
@@ -94,22 +75,26 @@ speed_compute_max_speed (int32_t d, int16_t cur, int16_t acc, int8_t max)
 
 /** Update shaft position consign according to a position consign. */
 static void
-speed_update_by_position (void)
+speed_update_by_position (struct speed_t *speed, struct pos_t *pos)
 {
-    int32_t theta_d = speed_theta_pos_cons - pos_theta.cons;
-    int32_t alpha_d = speed_alpha_pos_cons - pos_alpha.cons;
-    if (theta_d >= -speed_theta_max && theta_d <= speed_theta_max)
-	speed_theta_cur = theta_d << 8;
+    int32_t diff = speed->pos_cons - pos->cons;
+    if (diff >= -speed->max && diff <= speed->max)
+	speed->cur = diff << 8;
     else
-	speed_theta_cur = speed_compute_max_speed (theta_d, speed_theta_cur,
-		speed_theta_acc, speed_theta_max);
-    if (alpha_d >= -speed_alpha_max && alpha_d <= speed_alpha_max)
-	speed_alpha_cur = alpha_d << 8;
+	speed->cur = speed_compute_max_speed (diff, speed->cur, speed->acc,
+					      speed->max);
+}
+
+/** Update shaft position consign according to its consign type. */
+static void
+speed_update_by (struct speed_t *speed, struct pos_t *pos)
+{
+    if (speed->use_pos)
+	speed_update_by_position (speed, pos);
     else
-	speed_alpha_cur = speed_compute_max_speed (alpha_d, speed_alpha_cur,
-		speed_alpha_acc, speed_alpha_max);
-    if (speed_theta_cur == 0 && speed_alpha_cur == 0)
-	state_finish (&state_main);
+	speed_update_by_speed (speed);
+    /* Update shaft position. */
+    pos->cons += speed->cur >> 8;
 }
 
 /** Update shaft position consign according to consign. */
@@ -117,12 +102,14 @@ void
 speed_update (void)
 {
     /* Update speed. */
-    if (speed_pos)
-	speed_update_by_position ();
-    else
-	speed_update_by_speed ();
-    /* Update shaft position. */
-    pos_theta.cons += speed_theta_cur >> 8;
-    pos_alpha.cons += speed_alpha_cur >> 8;
+    speed_update_by (&speed_theta, &pos_theta);
+    speed_update_by (&speed_alpha, &pos_alpha);
+    /* Check for completion. */
+    if ((speed_theta.use_pos || speed_alpha.use_pos)
+	&& (!speed_theta.use_pos || speed_theta.cur == 0)
+	&& (!speed_alpha.use_pos || speed_alpha.cur == 0))
+      {
+	state_finish (&state_main);
+      }
 }
 

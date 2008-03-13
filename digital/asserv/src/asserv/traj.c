@@ -46,29 +46,29 @@ static void
 traj_ftw (void)
 {
     int16_t speed;
-    speed = speed_theta_slow;
+    speed = speed_theta.slow;
     speed *= 256;
     if (PINC & _BV (0) && PINC & _BV (1))
       {
-	speed_theta_cons = -speed;
-	speed_alpha_cons = 0;
+	speed_theta.cons = -speed;
+	speed_alpha.cons = 0;
       }
     else if (PINC & _BV (0))
       {
-	speed_theta_cons = -speed / 2;
-	speed_alpha_cons = speed / 2;
+	speed_theta.cons = -speed / 2;
+	speed_alpha.cons = speed / 2;
       }
     else if (PINC & _BV (1))
       {
-	speed_theta_cons = -speed / 2;
-	speed_alpha_cons = -speed / 2;
+	speed_theta.cons = -speed / 2;
+	speed_alpha.cons = -speed / 2;
       }
     else
       {
-	speed_theta_cons = 0;
-	speed_alpha_cons = 0;
-	speed_theta_cur = 0;
-	speed_alpha_cur = 0;
+	speed_theta.cons = 0;
+	speed_alpha.cons = 0;
+	speed_theta.cur = 0;
+	speed_alpha.cur = 0;
 	state_finish (&state_main);
 	traj_mode = 11;
       }
