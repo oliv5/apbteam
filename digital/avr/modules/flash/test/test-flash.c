@@ -27,13 +27,15 @@
 #include "../flash.h"
 #include "modules/proto/proto.h"
 #include "modules/utils/utils.h"
+#include "modules/utils/byte.h"
 #include "modules/uart/uart.h"
-
-#define TEST_BASE 0x300
 
 void
 proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 {
+    /* May be unused. */
+    uint32_t addr = v8_to_v32 (0, args[0], args[1], args[2]);
+    uint8_t buf[16];
 #define c(cmd, size) (cmd << 8 | size)
     switch (c (cmd, size))
       {
@@ -45,16 +47,60 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	/* Erase full */
 	flash_erase (FLASH_ERASE_FULL, 0);
 	break;
+      case c ('e', 3):
+	/* Erase 4k:
+	 *  - 3b: address. */
+	flash_erase (FLASH_ERASE_4K, addr);
+	break;
       case c ('s', 0):
 	/* print flash status */
 	proto_send1b ('s', flash_read_status());
+	break;
       case c ('w', 0):
 	/* Send the write enable flash command. */
 	flash_send_command (FLASH_WREN);
+	break;
+      case c ('r', 3):
+	/* Read one byte:
+	 *  - 3b: address. */
+	proto_send1b ('r', flash_read (addr));
+	break;
+      case c ('r', 4):
+	/* Read several bytes:
+	 *  - 3b: address.
+	 *  - 1b: number of bytes. */
+	if (args[3] > sizeof (buf))
+	  {
+	    proto_send0 ('?');
+	    return;
+	  }
+	else
+	  {
+	    flash_read_array (addr, buf, args[3]);
+	    proto_send ('r', args[3], buf);
+	  }
+	break;
+      case c ('w', 4):
+	/* Write one byte:
+	 *  - 3b: address.
+	 *  - 1b: byte. */
+	flash_write (addr, args[3]);
+	break;
       default:
-	/* Error */
-	proto_send0 ('?');
-	return;
+	if (cmd == 'w' && size > 4)
+	  {
+	    /* Write several bytes:
+	     *  - 3b: address.
+	     *  - nb: bytes. */
+	    flash_write_array (addr, args + 3, size - 3);
+	  }
+	else
+	  {
+	    /* Error */
+	    proto_send0 ('?');
+	    return;
+	  }
+	  break;
       }
     /* Acknowledge what has been done */
     proto_send (cmd, size, args);

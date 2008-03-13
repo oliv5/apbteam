@@ -50,8 +50,11 @@ flash_address (uint32_t addr)
 void
 flash_erase (uint8_t cmd, uint32_t start_addr)
 {
+    flash_send_command (FLASH_WREN);
+
+    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
     /* send the command. */
-    flash_send_command (cmd);
+    spi_send (cmd);
 
     /* verify if the cmd is the full erase. */
     if (cmd != FLASH_ERASE_FULL)
@@ -63,6 +66,9 @@ flash_erase (uint8_t cmd, uint32_t start_addr)
       {
 	flash_global.addr = 0x0;
       }
+    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
+
+    while (flash_is_busy());
 }
 
 /** Poll the busy bit in the Software Status Register of the flash memory.
@@ -116,6 +122,11 @@ flash_init (void)
 
     /* Enables the flash to be writable. */
     flash_send_command (FLASH_WREN);
+
+    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
+    spi_send (FLASH_WRSR);
+    spi_send (0);
+    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
     
     /* Read the flash status. */
     proto_send1b ('s', flash_read_status());
