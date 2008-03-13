@@ -13,6 +13,7 @@ static uint8_t curLim_soft;
 // state_L_ : x - Inhib - changeDir - Dir - x - x - x - x
 // Timer_L_ : timer dedicated to Left side
 
+/** Initialize timers for left and right side PWM generation */
 void init_timer_LR_(void) {
     init_pwm_L_();
     init_pwm_R_();
@@ -31,11 +32,22 @@ void init_timer_LR_(void) {
     TCCR_R_ = TCCR_LR_CFG;
 }
 
+/** Initialize the timer for left and right current limitation */
 void init_curLim (void) {
-    // TODO : set interrupts
-    curLim_soft = 0x80;
-    curLim_bat = 0x00;
-    curLim_temp = 0x00;
+    curLim_soft = CURLIM_MAX;
+    curLim_bat  = CURLIM_MAX;
+    curLim_temp = CURLIM_MAX;
+
+    // Configure and run current limit PWM
+    TCCR1A = TCCRA_LR_CFG;
+    TCCR1B = TCCRB_LR_CFG;
+
+    // Configure and enable INT0 and INT1
+    MCUCR |= MCUCR_LR_CFG;
+    GICR  |= GICR_LR_CFG;
+
+    // Apply the current limitation
+    update_curLim();
 }
 
 uint8_t get_curLim_temp (uint8_t temperature) {
@@ -46,13 +58,15 @@ uint8_t get_curLim_bat (uint8_t battery) {
     return (battery - 40) >> 2;		// TODO : ajuster la fonction de transfert
 }
 
-// this function shall be called after each adjustment of any current limit
-void update_curLim(void) {
+/** Update the current limitation PWM
+ * this function shall be called after each adjustment of any current limit */
+inline void update_curLim(void) {
     uint8_t curLim_tmp;
 
     // search for MIN(curLim_soft, curLim_temp, curLim_bat)
     curLim_tmp = curLim_soft;
 
+    /* TODO: implement curLim_temp and curLim_bat
     if (curLim_tmp > curLim_temp)
       {
         curLim_tmp = curLim_temp;
@@ -62,6 +76,7 @@ void update_curLim(void) {
       {
         curLim_tmp = curLim_bat;
       }
+      */
 
     if (curLim_tmp > CURLIM_MAX) 
       {
@@ -83,7 +98,7 @@ void launch_envTest(void) {
     update_curLim();
 }
 
-// set the software-programmed current limit
+/* Set the software-programmed current limitation */
 void setCurLim_soft(uint8_t curLim) {
     curLim_soft = curLim;
     update_curLim();

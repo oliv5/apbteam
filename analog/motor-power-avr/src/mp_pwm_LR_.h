@@ -98,15 +98,31 @@
 #define TCCR_L_	TCCR0
 #define TCCR_R_	TCCR2
 
-// timer configuration
-// for 57.21kHz : prescaler = 0 : CSx2:0 = 0x01
-// for 7.68kHz  : prescaler = 8 : CSx2:0 = 0x02
+/** Timer configuration for left and right side
+ * for 57.21kHz : prescaler = 0 : CSx2:0 = 0x01
+ * for 7.68kHz  : prescaler = 8 : CSx2:0 = 0x02 */
 #define TCCR_LR_CFG (regv (FOC0, WGM00, COM01, COM00, WGM01, CS02, CS01, CS00, \
                               0,     1,     0,     0,     1,    0,    1,    0))
 
-// timer interrupts configuration
+/** Set timer interrupts configuration */
 #define TIMSK_LR_CFG (regv (OCIE2, TOIE2, TICIE1, OCIE1A, OCIE1B, TOIE1, OCIE0, TOIE0, \
                                 1,     1,      0,      0,      0,     0,     1,     1))
+
+/** Defines timer control register for current limitation PWM (both side)
+ * toggle OC1x on compare, fast 8bit PWM mode, no prescaling */
+#define TCCRA_LR_CFG (regv (COM1A1, COM1A0, COM1B1, COM1B0, FOC1A, FOC1B, WGM11, WGM10, \
+                                0,      1,      0,      1,     0,     0,     0,     1))
+#define TCCRB_LR_CFG (regv (ICNC1, ICES1,  5, WGM13, WGM12, CS12, CS11, CS10, \
+                                0,     0,  0,     0,     1,    0,    0,    1))
+                
+/** Defines external interrupts level configuration : 
+ *  low level of INT0 and INT1 generates an interrup request */
+#define MCUCR_LR_CFG (regv (SM2, SE, SM1, SM0, ISC11, ISC10, ISC01, ISC00, \
+                              0,  0,   0,   0,     0,     0,     0,     0))
+
+/** Enable external interrupts INT1 and INT0 fir current limitation */
+#define GICR_LR_CFG (regv (INT1, INT0, INT2,  4,  3,  2, IVSEL, IVCE, \
+                              1,    1,    0,  0,  0,  0,     0,    0))
 
 // PWM max, min, and offset values
 #define PWM_MIN_LR_ 0x10
@@ -137,7 +153,7 @@ void init_timer_LR_(void);
 void init_curLim (void);
 uint8_t get_curLim_temp (uint8_t temperature);
 uint8_t get_curLim_bat (uint8_t battery);
-void update_curLim(void);
+inline void update_curLim(void);
 void launch_envTest(void);
 void setCurLim_soft(uint8_t curLim);
 

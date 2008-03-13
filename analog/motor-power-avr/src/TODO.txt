@@ -2,7 +2,6 @@ TOTOlist pour le programe avr de motor-power
 
 - peaufiner la boucle de mesure automatique de la tempÃ©rature et de la batterie
 - souder le deuxième pont
-- implémenter la limitation en courant
 - implémenter la mesure de température et l'abaissement automatique de la
 limitation en courant
 - implémenter la mesure de tension de batterie et l'abaissement automatique
@@ -13,8 +12,8 @@ entre les PWM des deux ponts
 
 Tester :
 - la gÃ©nÃ©ration de la PWM de la limitation de courant
-- le protocole
-- mesurer la linéarité, les valeurs PWM min et max, la période
+- le protocole (commandes 'l', 'r', 'L', 'R', et 'w' testées OK)
+- mesurer la linéarité du PWM
 - tester la limitation en courant. Attention : la carte actuelle ne
 supportera pas plus de 10A. Pour celà, mettre la PWM à une valeur entre 50%
 et 90% sur une charge qui débite environt 3 à 8A (oui... il faut trouver la

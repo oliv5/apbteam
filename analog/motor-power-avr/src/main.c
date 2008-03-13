@@ -91,9 +91,9 @@ main (int argc, char **argv)
     /* Pull-ups. */
     //PORTA = 0xff;
 
+    uart0_init ();
     init_timer_LR_ ();
     init_curLim ();
-    uart0_init ();
     //postrack_init ();
 
     envTest_period = 200;
@@ -137,16 +137,16 @@ main_loop (void)
 {
     /* Uart */
     if (uart0_poll ())
-	    proto_accept (uart0_getc ());
+      proto_accept (uart0_getc ());
 
     /* Counter for launching environemental tests */
     if (!(envTest_cpt --)) {
-	    envTest_cpt = envTest_period;
+      envTest_cpt = envTest_period;
 
-	launch_envTest ();
-	curLim_temp = get_curLim_temp (temperature);
-	curLim_bat= get_curLim_bat (battery);
-	update_curLim ();
+      launch_envTest ();
+      curLim_temp = get_curLim_temp (temperature);
+      curLim_bat= get_curLim_bat (battery);
+      update_curLim ();
     }
 }
 
