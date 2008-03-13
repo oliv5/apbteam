@@ -96,8 +96,8 @@ speed_compute_max_speed (int32_t d, int16_t cur, int16_t acc, int8_t max)
 static void
 speed_update_by_position (void)
 {
-    int32_t theta_d = speed_theta_pos_cons - pos_theta_cons;
-    int32_t alpha_d = speed_alpha_pos_cons - pos_alpha_cons;
+    int32_t theta_d = speed_theta_pos_cons - pos_theta.cons;
+    int32_t alpha_d = speed_alpha_pos_cons - pos_alpha.cons;
     if (theta_d >= -speed_theta_max && theta_d <= speed_theta_max)
 	speed_theta_cur = theta_d << 8;
     else
@@ -122,7 +122,7 @@ speed_update (void)
     else
 	speed_update_by_speed ();
     /* Update shaft position. */
-    pos_theta_cons += speed_theta_cur >> 8;
-    pos_alpha_cons += speed_alpha_cur >> 8;
+    pos_theta.cons += speed_theta_cur >> 8;
+    pos_alpha.cons += speed_alpha_cur >> 8;
 }
 

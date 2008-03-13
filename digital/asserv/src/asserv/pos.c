@@ -40,29 +40,16 @@
  * 16 bits are enough as long as there is no long blocking (see 2005 cup!).
  */
 
-/** Current theta/alpha. */
-uint32_t pos_theta_cur, pos_alpha_cur;
-/** Consign theta/alpha. */
-uint32_t pos_theta_cons, pos_alpha_cons;
+/** Theta/alpha control states. */
+struct pos_t pos_theta, pos_alpha;
 
 /** Error saturation. */
 int32_t pos_e_sat = 1023;
 /** Integral saturation. */
 int32_t pos_int_sat = 1023;
-/** P coefficients. */
-uint16_t pos_theta_kp, pos_alpha_kp;
-/** I coefficients. */
-uint16_t pos_theta_ki, pos_alpha_ki;
-/** D coefficients. */
-uint16_t pos_theta_kd, pos_alpha_kd;
 /** Blocked value.  If error is greater than this value, stop the robot and
  * report blocked state. */
 int32_t pos_blocked = 15000L;
-
-/** Current integral values. */
-int32_t pos_theta_int, pos_alpha_int;
-/** Last error values. */
-int32_t pos_theta_e_old, pos_alpha_e_old;
 
 /** Compute a PID.
  * How to compute maximum numbers size:
@@ -80,21 +67,20 @@ int32_t pos_theta_e_old, pos_alpha_e_old;
  *  - bound the value returned.
  *  - lower e & int saturation. */
 static inline int16_t
-pos_compute_pid (int32_t e, int32_t *i, int32_t *e_old,
-		 uint16_t kp, uint16_t ki, uint16_t kd)
+pos_compute_pid (int32_t e, struct pos_t *pos)
 {
     int32_t diff, pid;
     /* Saturate error. */
     UTILS_BOUND (e, -pos_e_sat, pos_e_sat);
     /* Integral update. */
-    *i += e;
-    UTILS_BOUND (*i, -pos_int_sat, pos_int_sat);
+    pos->i += e;
+    UTILS_BOUND (pos->i, -pos_int_sat, pos_int_sat);
     /* Differential value. */
-    diff = e - *e_old;
+    diff = e - pos->e_old;
     /* Compute PID. */
-    pid = e * kp + *i * ki + diff * kd;
+    pid = e * pos->kp + pos->i * pos->ki + diff * pos->kd;
     /* Save result. */
-    *e_old = e;
+    pos->e_old = e;
     return pid >> 8;
 }
 
@@ -105,11 +91,11 @@ pos_update (void)
     int16_t pid_theta, pid_alpha;
     int32_t diff_theta, diff_alpha;
     /* Update current shaft positions. */
-    pos_theta_cur += counter_left_diff + counter_right_diff;
-    pos_alpha_cur += counter_right_diff - counter_left_diff;
+    pos_theta.cur += counter_left_diff + counter_right_diff;
+    pos_alpha.cur += counter_right_diff - counter_left_diff;
     /* Compute PID. */
-    diff_theta = pos_theta_cons - pos_theta_cur;
-    diff_alpha = pos_alpha_cons - pos_alpha_cur;
+    diff_theta = pos_theta.cons - pos_theta.cur;
+    diff_alpha = pos_alpha.cons - pos_alpha.cur;
     if (state_main.blocked
 	|| diff_theta < -pos_blocked || pos_blocked < diff_theta
 	|| diff_alpha < -pos_blocked || pos_blocked < diff_alpha)
@@ -121,12 +107,8 @@ pos_update (void)
       }
     else
       {
-	pid_theta = pos_compute_pid (diff_theta, &pos_theta_int,
-				     &pos_theta_e_old, pos_theta_kp,
-				     pos_theta_ki, pos_theta_kd);
-	pid_alpha = pos_compute_pid (diff_alpha, &pos_alpha_int,
-				     &pos_alpha_e_old, pos_alpha_kp,
-				     pos_alpha_ki, pos_alpha_kd);
+	pid_theta = pos_compute_pid (diff_theta, &pos_theta);
+	pid_alpha = pos_compute_pid (diff_alpha, &pos_alpha);
 	/* Update PWM. */
 	pwm_left = pid_theta - pid_alpha;
 	UTILS_BOUND (pwm_left, -PWM_MAX, PWM_MAX);
@@ -135,14 +117,14 @@ pos_update (void)
       }
 }
 
-/** Reset position control internal state.  To be called when the position
- * control is deactivated. */
+/** Reset position control state.  To be called when the position control is
+ * deactivated. */
 void
-pos_reset (void)
+pos_reset (struct pos_t *pos)
 {
-    pos_theta_int = pos_alpha_int = 0;
-    pos_theta_cur = pos_alpha_cur = 0;
-    pos_theta_cons = pos_alpha_cons = 0;
-    pos_theta_e_old = pos_alpha_e_old = 0;
+    pos->i = 0;
+    pos->cur = 0;
+    pos->cons = 0;
+    pos->e_old = 0;
 }
 

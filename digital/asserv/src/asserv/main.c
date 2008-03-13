@@ -163,8 +163,8 @@ main_loop (void)
       }
     if (main_stat_pos && !--main_stat_pos_cpt)
       {
-	proto_send4w ('P', pos_theta_e_old, pos_theta_int,
-		      pos_alpha_e_old, pos_alpha_int);
+	proto_send4w ('P', pos_theta.e_old, pos_theta.i,
+		      pos_alpha.e_old, pos_alpha.i);
 	main_stat_pos_cpt = main_stat_pos;
       }
 #ifdef HOST
@@ -214,7 +214,8 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
     /* Commands. */
       case c ('w', 0):
 	/* Set zero pwm. */
-	pos_reset ();
+	pos_reset (&pos_theta);
+	pos_reset (&pos_alpha);
 	state_main.mode = MODE_PWM;
 	pwm_left = 0;
 	pwm_right = 0;
@@ -223,7 +224,8 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	/* Set pwm.
 	 * - w: left pwm.
 	 * - w: right pwm. */
-	pos_reset ();
+	pos_reset (&pos_theta);
+	pos_reset (&pos_alpha);
 	state_main.mode = MODE_PWM;
 	pwm_left = v8_to_v16 (args[0], args[1]);
 	UTILS_BOUND (pwm_left, -PWM_MAX, PWM_MAX);
@@ -233,7 +235,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
       case c ('w', 2):
 	/* Set auxiliary pwm.
 	 * - w: pwm. */
-	pos_reset (); // TODO
+	//pos_reset (); // TODO
 	state_aux0.mode = MODE_PWM;
 	pwm_aux0 = v8_to_v16 (args[0], args[1]);
 	UTILS_BOUND (pwm_aux0, -PWM_MAX, PWM_MAX);
@@ -243,8 +245,8 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	 * - w: theta consign offset.
 	 * - w: alpha consign offset. */
 	state_main.mode = MODE_POS;
-	pos_theta_cons += v8_to_v16 (args[0], args[1]);
-	pos_alpha_cons += v8_to_v16 (args[2], args[3]);
+	pos_theta.cons += v8_to_v16 (args[0], args[1]);
+	pos_alpha.cons += v8_to_v16 (args[2], args[3]);
 	break;
       case c ('s', 0):
 	/* Stop (set zero speed). */
@@ -271,9 +273,9 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	    break;
 	state_main.mode = MODE_SPEED;
 	speed_pos = 1;
-	speed_theta_pos_cons = pos_theta_cons;
+	speed_theta_pos_cons = pos_theta.cons;
 	speed_theta_pos_cons += v8_to_v32 (args[0], args[1], args[2], args[3]);
-	speed_alpha_pos_cons = pos_alpha_cons;
+	speed_alpha_pos_cons = pos_alpha.cons;
 	speed_alpha_pos_cons += v8_to_v32 (args[4], args[5], args[6], args[7]);
 	state_start (&state_main, args[8]);
 	break;
@@ -291,7 +293,10 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	/* Set acknoledge.
 	 * - b: ack sequence number. */
 	if (state_main.blocked)
-	    pos_reset ();
+	  {
+	    pos_reset (&pos_theta);
+	    pos_reset (&pos_alpha);
+	  }
 	state_acknowledge (&state_main, args[0]);
 	break;
     /* Stats.
@@ -385,25 +390,25 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		speed_alpha_slow = args[4];
 		break;
 	      case c ('p', 3):
-		pos_theta_kp = pos_alpha_kp = v8_to_v16 (args[1], args[2]);
+		pos_theta.kp = pos_alpha.kp = v8_to_v16 (args[1], args[2]);
 		break;
 	      case c ('p', 5):
-		pos_theta_kp = v8_to_v16 (args[1], args[2]);
-		pos_alpha_kp = v8_to_v16 (args[3], args[4]);
+		pos_theta.kp = v8_to_v16 (args[1], args[2]);
+		pos_alpha.kp = v8_to_v16 (args[3], args[4]);
 		break;
 	      case c ('i', 3):
-		pos_theta_ki = pos_alpha_ki = v8_to_v16 (args[1], args[2]);
+		pos_theta.ki = pos_alpha.ki = v8_to_v16 (args[1], args[2]);
 		break;
 	      case c ('i', 5):
-		pos_theta_ki = v8_to_v16 (args[1], args[2]);
-		pos_alpha_ki = v8_to_v16 (args[3], args[4]);
+		pos_theta.ki = v8_to_v16 (args[1], args[2]);
+		pos_alpha.ki = v8_to_v16 (args[3], args[4]);
 		break;
 	      case c ('d', 3):
-		pos_theta_kd = pos_alpha_kd = v8_to_v16 (args[1], args[2]);
+		pos_theta.kd = pos_alpha.kd = v8_to_v16 (args[1], args[2]);
 		break;
 	      case c ('d', 5):
-		pos_theta_kd = v8_to_v16 (args[1], args[2]);
-		pos_alpha_kd = v8_to_v16 (args[3], args[4]);
+		pos_theta.kd = v8_to_v16 (args[1], args[2]);
+		pos_alpha.kd = v8_to_v16 (args[3], args[4]);
 		break;
 	      case c ('E', 3):
 		pos_e_sat = v8_to_v16 (args[1], args[2]);
@@ -434,9 +439,9 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		proto_send2w ('a', speed_theta_acc, speed_alpha_acc);
 		proto_send4b ('s', speed_theta_max, speed_alpha_max,
 			      speed_theta_slow, speed_alpha_slow);
-		proto_send2w ('p', pos_theta_kp, pos_alpha_kp);
-		proto_send2w ('i', pos_theta_ki, pos_alpha_ki);
-		proto_send2w ('d', pos_theta_kd, pos_alpha_kd);
+		proto_send2w ('p', pos_theta.kp, pos_alpha.kp);
+		proto_send2w ('i', pos_theta.ki, pos_alpha.ki);
+		proto_send2w ('d', pos_theta.kd, pos_alpha.kd);
 		proto_send1w ('E', pos_e_sat);
 		proto_send1w ('I', pos_int_sat);
 		proto_send1w ('b', pos_blocked);

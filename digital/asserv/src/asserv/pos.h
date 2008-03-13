@@ -25,23 +25,31 @@
  *
  * }}} */
 
-extern uint32_t pos_theta_cur, pos_alpha_cur;
-extern uint32_t pos_theta_cons, pos_alpha_cons;
+/** Position control state. */
+struct pos_t
+{
+    /** Current position. */
+    uint32_t cur;
+    /** Consign position. */
+    uint32_t cons;
+    /** PID coefficients (f8.8, maximum depends on saturation values). */
+    uint16_t kp, ki, kd;
+    /** Current integral value. */
+    int32_t i;
+    /** Last error value. */
+    int32_t e_old;
+};
+
+extern struct pos_t pos_theta, pos_alpha;
 
 extern int32_t pos_e_sat;
 extern int32_t pos_int_sat;
-extern uint16_t pos_theta_kp, pos_alpha_kp;
-extern uint16_t pos_theta_ki, pos_alpha_ki;
-extern uint16_t pos_theta_kd, pos_alpha_kd;
 extern int32_t pos_blocked;
-
-extern int32_t pos_theta_int, pos_alpha_int;
-extern int32_t pos_theta_e_old, pos_alpha_e_old;
 
 void
 pos_update (void);
 
 void
-pos_reset (void);
+pos_reset (struct pos_t *pos);
 
 #endif /* pos_h */
