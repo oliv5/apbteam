@@ -34,6 +34,11 @@
 
 #define EEPROM_START 0
 
+/* WARNING:
+ * If you change EEPROM format, be sure to change the EEPROM_KEY in header if
+ * your new format is not compatible with the old one or you will load
+ * garbages in parameters. */
+
 /* Read parameters from eeprom. */
 void
 eeprom_read_params (void)
@@ -44,19 +49,25 @@ eeprom_read_params (void)
 	return;
     speed_theta.max = eeprom_read_byte (p8++);
     speed_alpha.max = eeprom_read_byte (p8++);
+    speed_aux0.max = eeprom_read_byte (p8++);
     speed_theta.slow = eeprom_read_byte (p8++);
     speed_alpha.slow = eeprom_read_byte (p8++);
+    speed_aux0.slow = eeprom_read_byte (p8++);
     pwm_set_reverse (eeprom_read_byte (p8++));
     p16 = (uint16_t *) p8;
     postrack_set_footing (eeprom_read_word (p16++));
     speed_theta.acc = eeprom_read_word (p16++);
     speed_alpha.acc = eeprom_read_word (p16++);
+    speed_aux0.acc = eeprom_read_word (p16++);
     pos_theta.kp = eeprom_read_word (p16++);
     pos_alpha.kp = eeprom_read_word (p16++);
+    pos_aux0.kp = eeprom_read_word (p16++);
     pos_theta.ki = eeprom_read_word (p16++);
     pos_alpha.ki = eeprom_read_word (p16++);
+    pos_aux0.ki = eeprom_read_word (p16++);
     pos_theta.kd = eeprom_read_word (p16++);
     pos_alpha.kd = eeprom_read_word (p16++);
+    pos_aux0.kd = eeprom_read_word (p16++);
     pos_e_sat = eeprom_read_word (p16++);
     pos_int_sat = eeprom_read_word (p16++);
     pos_blocked = eeprom_read_word (p16++);
@@ -71,19 +82,25 @@ eeprom_write_params (void)
     eeprom_write_byte (p8++, EEPROM_KEY);
     eeprom_write_byte (p8++, speed_theta.max);
     eeprom_write_byte (p8++, speed_alpha.max);
+    eeprom_write_byte (p8++, speed_aux0.max);
     eeprom_write_byte (p8++, speed_theta.slow);
     eeprom_write_byte (p8++, speed_alpha.slow);
+    eeprom_write_byte (p8++, speed_aux0.slow);
     eeprom_write_byte (p8++, pwm_reverse);
     p16 = (uint16_t *) p8;
     eeprom_write_word (p16++, postrack_footing);
     eeprom_write_word (p16++, speed_theta.acc);
     eeprom_write_word (p16++, speed_alpha.acc);
+    eeprom_write_word (p16++, speed_aux0.acc);
     eeprom_write_word (p16++, pos_theta.kp);
     eeprom_write_word (p16++, pos_alpha.kp);
+    eeprom_write_word (p16++, pos_aux0.kp);
     eeprom_write_word (p16++, pos_theta.ki);
     eeprom_write_word (p16++, pos_alpha.ki);
+    eeprom_write_word (p16++, pos_aux0.ki);
     eeprom_write_word (p16++, pos_theta.kd);
     eeprom_write_word (p16++, pos_alpha.kd);
+    eeprom_write_word (p16++, pos_aux0.kd);
     eeprom_write_word (p16++, pos_e_sat);
     eeprom_write_word (p16++, pos_int_sat);
     eeprom_write_word (p16++, pos_blocked);

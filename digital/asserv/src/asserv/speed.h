@@ -45,6 +45,7 @@ struct speed_t
 };
 
 extern struct speed_t speed_theta, speed_alpha;
+extern struct speed_t speed_aux0;
 
 void
 speed_update (void);

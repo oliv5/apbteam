@@ -40,6 +40,9 @@
 /** Theta/alpha speed control states. */
 struct speed_t speed_theta, speed_alpha;
 
+/** Auxiliaries speed control states. */
+struct speed_t speed_aux0;
+
 /** Update shaft position consign according to a speed consign. */
 static void
 speed_update_by_speed (struct speed_t *speed)
@@ -101,15 +104,26 @@ speed_update_by (struct speed_t *speed, struct pos_t *pos)
 void
 speed_update (void)
 {
-    /* Update speed. */
-    speed_update_by (&speed_theta, &pos_theta);
-    speed_update_by (&speed_alpha, &pos_alpha);
-    /* Check for completion. */
-    if ((speed_theta.use_pos || speed_alpha.use_pos)
-	&& (!speed_theta.use_pos || speed_theta.cur == 0)
-	&& (!speed_alpha.use_pos || speed_alpha.cur == 0))
+    if (state_main.mode >= MODE_SPEED)
       {
-	state_finish (&state_main);
+	/* Update speed. */
+	speed_update_by (&speed_theta, &pos_theta);
+	speed_update_by (&speed_alpha, &pos_alpha);
+	/* Check for completion. */
+	if ((speed_theta.use_pos || speed_alpha.use_pos)
+	    && (!speed_theta.use_pos || speed_theta.cur == 0)
+	    && (!speed_alpha.use_pos || speed_alpha.cur == 0))
+	  {
+	    state_finish (&state_main);
+	  }
+      }
+    if (state_aux0.mode >= MODE_SPEED)
+      {
+	/* Update speed. */
+	speed_update_by (&speed_aux0, &pos_aux0);
+	/* Check for completion. */
+	if (speed_aux0.use_pos && speed_aux0.cur == 0)
+	    state_finish (&state_aux0);
       }
 }
 

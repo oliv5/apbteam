@@ -59,6 +59,9 @@ uint8_t main_stat_counter, main_stat_counter_cpt;
 /** Report of position. */
 uint8_t main_stat_postrack, main_stat_postrack_cpt;
 
+/** Report of auxiliary position. */
+uint8_t main_stat_aux_pos, main_stat_aux_pos_cpt;
+
 /** Statistics about speed control. */
 uint8_t main_stat_speed, main_stat_speed_cpt;
 
@@ -122,8 +125,7 @@ main_loop (void)
     counter_update ();
     main_timer[0] = timer_read ();
     /* Position control. */
-    if (state_main.mode >= MODE_POS)
-	pos_update ();
+    pos_update ();
     main_timer[1] = timer_read ();
     /* Pwm setup. */
     pwm_update ();
@@ -134,8 +136,7 @@ main_loop (void)
     if (state_main.mode >= MODE_TRAJ)
 	traj_update ();
     /* Speed control. */
-    if (state_main.mode >= MODE_SPEED)
-	speed_update ();
+    speed_update ();
     main_timer[3] = timer_read ();
     /* Stats. */
     if (main_sequence_ack
@@ -156,15 +157,22 @@ main_loop (void)
 	proto_send3d ('X', postrack_x, postrack_y, postrack_a);
 	main_stat_postrack_cpt = main_stat_postrack;
       }
+    if (main_stat_aux_pos && !--main_stat_aux_pos_cpt)
+      {
+	proto_send1w ('Z', pos_aux0.cur);
+	main_stat_aux_pos_cpt = main_stat_aux_pos;
+      }
     if (main_stat_speed && !--main_stat_speed_cpt)
       {
-	proto_send2b ('S', speed_theta.cur >> 8, speed_alpha.cur >> 8);
+	proto_send3b ('S', speed_theta.cur >> 8, speed_alpha.cur >> 8,
+		      speed_aux0.cur >> 8);
 	main_stat_speed_cpt = main_stat_speed;
       }
     if (main_stat_pos && !--main_stat_pos_cpt)
       {
-	proto_send4w ('P', pos_theta.e_old, pos_theta.i,
-		      pos_alpha.e_old, pos_alpha.i);
+	proto_send6w ('P', pos_theta.e_old, pos_theta.i,
+		      pos_alpha.e_old, pos_alpha.i,
+		      pos_aux0.e_old, pos_aux0.i);
 	main_stat_pos_cpt = main_stat_pos;
       }
 #ifdef HOST
@@ -235,7 +243,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
       case c ('w', 2):
 	/* Set auxiliary pwm.
 	 * - w: pwm. */
-	//pos_reset (); // TODO
+	pos_reset (&pos_aux0);
 	state_aux0.mode = MODE_PWM;
 	pwm_aux0 = v8_to_v16 (args[0], args[1]);
 	UTILS_BOUND (pwm_aux0, -PWM_MAX, PWM_MAX);
@@ -247,6 +255,12 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	state_main.mode = MODE_POS;
 	pos_theta.cons += v8_to_v16 (args[0], args[1]);
 	pos_alpha.cons += v8_to_v16 (args[2], args[3]);
+	break;
+      case c ('c', 2):
+	/* Add to auxiliary position consign.
+	 * - w: consign offset. */
+	state_aux0.mode = MODE_POS;
+	pos_aux0.cons += v8_to_v16 (args[0], args[1]);
 	break;
       case c ('s', 0):
 	/* Stop (set zero speed). */
@@ -264,6 +278,13 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	speed_theta.cons = args[0] << 8;
 	speed_alpha.cons = args[1] << 8;
 	break;
+      case c ('s', 1):
+	/* Set auxiliary speed.
+	 * - b: speed. */
+	state_aux0.mode = MODE_SPEED;
+	speed_aux0.use_pos = 0;
+	speed_aux0.cons = args[0] << 8;
+	break;
       case c ('s', 9):
 	/* Set speed controlled position consign.
 	 * - d: theta consign offset.
@@ -279,6 +300,18 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	speed_alpha.pos_cons += v8_to_v32 (args[4], args[5], args[6], args[7]);
 	state_start (&state_main, args[8]);
 	break;
+      case c ('s', 5):
+	/* Set auxiliary speed controlled position consign.
+	 * - d: consign offset.
+	 * - b: sequence number. */
+	if (args[4] == state_aux0.sequence)
+	    break;
+	state_aux0.mode = MODE_SPEED;
+	speed_aux0.use_pos = 1;
+	speed_aux0.pos_cons = pos_aux0.cons;
+	speed_aux0.pos_cons += v8_to_v32 (args[0], args[1], args[2], args[3]);
+	state_start (&state_aux0, args[4]);
+	break;
       case c ('f', 1):
 	/* Go to the wall.
 	 * - b: sequence number. */
@@ -289,10 +322,18 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	traj_mode = 10;
 	state_start (&state_main, args[0]);
 	break;
+      case c ('a', 2):
+	/* Set both acknoledge.
+	 * - b: main ack sequence number.
+	 * - b: auxiliary ack sequence number. */
+	if (state_aux0.blocked && args[1] == state_aux0.finished)
+	    pos_reset (&pos_aux0);
+	state_acknowledge (&state_aux0, args[1]);
+	/* no break; */
       case c ('a', 1):
-	/* Set acknoledge.
-	 * - b: ack sequence number. */
-	if (state_main.blocked)
+	/* Set main acknoledge.
+	 * - b: main ack sequence number. */
+	if (state_main.blocked && args[0] == state_main.finished)
 	  {
 	    pos_reset (&pos_theta);
 	    pos_reset (&pos_alpha);
@@ -312,6 +353,10 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
       case c ('X', 1):
 	/* Position stats. */
 	main_stat_postrack_cpt = main_stat_postrack = args[0];
+	break;
+      case c ('Z', 1):
+	/* Auxiliary position stats. */
+	main_stat_aux_pos_cpt = main_stat_aux_pos = args[0];
 	break;
       case c ('S', 1):
 	/* Motor speed control stats. */
@@ -372,14 +417,19 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		postrack_set_footing (v8_to_v16 (args[1], args[2]));
 		break;
 	      case c ('a', 5):
-		/* Set acceleration.
+		/* Set main acceleration.
 		 * - w: theta.
 		 * - w: alpha. */
 		speed_theta.acc = v8_to_v16 (args[1], args[2]);
 		speed_alpha.acc = v8_to_v16 (args[3], args[4]);
 		break;
+	      case c ('a', 3):
+		/* Set auxiliary acceleration.
+		 * - w: acceleration. */
+		speed_aux0.acc = v8_to_v16 (args[1], args[2]);
+		break;
 	      case c ('s', 5):
-		/* Set maximum and slow speed.
+		/* Set main maximum and slow speed.
 		 * - b: theta max.
 		 * - b: alpha max.
 		 * - b: theta slow.
@@ -389,22 +439,29 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		speed_theta.slow = args[3];
 		speed_alpha.slow = args[4];
 		break;
+	      case c ('s', 3):
+		/* Set auxiliary maximum and slow speed.
+		 * - b: speed max.
+		 * - b: speed slow. */
+		speed_aux0.max = args[1];
+		speed_aux0.slow = args[2];
+		break;
 	      case c ('p', 3):
-		pos_theta.kp = pos_alpha.kp = v8_to_v16 (args[1], args[2]);
+		pos_aux0.kp = v8_to_v16 (args[1], args[2]);
 		break;
 	      case c ('p', 5):
 		pos_theta.kp = v8_to_v16 (args[1], args[2]);
 		pos_alpha.kp = v8_to_v16 (args[3], args[4]);
 		break;
 	      case c ('i', 3):
-		pos_theta.ki = pos_alpha.ki = v8_to_v16 (args[1], args[2]);
+		pos_aux0.ki = v8_to_v16 (args[1], args[2]);
 		break;
 	      case c ('i', 5):
 		pos_theta.ki = v8_to_v16 (args[1], args[2]);
 		pos_alpha.ki = v8_to_v16 (args[3], args[4]);
 		break;
 	      case c ('d', 3):
-		pos_theta.kd = pos_alpha.kd = v8_to_v16 (args[1], args[2]);
+		pos_aux0.kd = v8_to_v16 (args[1], args[2]);
 		break;
 	      case c ('d', 5):
 		pos_theta.kd = v8_to_v16 (args[1], args[2]);
@@ -442,6 +499,11 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		proto_send2w ('p', pos_theta.kp, pos_alpha.kp);
 		proto_send2w ('i', pos_theta.ki, pos_alpha.ki);
 		proto_send2w ('d', pos_theta.kd, pos_alpha.kd);
+		proto_send1w ('a', speed_aux0.acc);
+		proto_send2b ('s', speed_aux0.max, speed_aux0.slow);
+		proto_send1w ('p', pos_aux0.kp);
+		proto_send1w ('i', pos_aux0.ki);
+		proto_send1w ('d', pos_aux0.kd);
 		proto_send1w ('E', pos_e_sat);
 		proto_send1w ('I', pos_int_sat);
 		proto_send1w ('b', pos_blocked);

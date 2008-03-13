@@ -43,6 +43,9 @@
 /** Theta/alpha control states. */
 struct pos_t pos_theta, pos_alpha;
 
+/** Auxiliaries control states. */
+struct pos_t pos_aux0;
+
 /** Error saturation. */
 int32_t pos_e_sat = 1023;
 /** Integral saturation. */
@@ -88,32 +91,58 @@ pos_compute_pid (int32_t e, struct pos_t *pos)
 void
 pos_update (void)
 {
-    int16_t pid_theta, pid_alpha;
-    int32_t diff_theta, diff_alpha;
-    /* Update current shaft positions. */
-    pos_theta.cur += counter_left_diff + counter_right_diff;
-    pos_alpha.cur += counter_right_diff - counter_left_diff;
-    /* Compute PID. */
-    diff_theta = pos_theta.cons - pos_theta.cur;
-    diff_alpha = pos_alpha.cons - pos_alpha.cur;
-    if (state_main.blocked
-	|| diff_theta < -pos_blocked || pos_blocked < diff_theta
-	|| diff_alpha < -pos_blocked || pos_blocked < diff_alpha)
+    if (state_main.mode >= MODE_POS)
       {
-	/* Blocked. */
-	pwm_left = 0;
-	pwm_right = 0;
-	state_blocked (&state_main);
+	int16_t pid_theta, pid_alpha;
+	int32_t diff_theta, diff_alpha;
+	/* Update current shaft positions. */
+	pos_theta.cur += counter_left_diff + counter_right_diff;
+	pos_alpha.cur += counter_right_diff - counter_left_diff;
+	/* Compute PID. */
+	diff_theta = pos_theta.cons - pos_theta.cur;
+	diff_alpha = pos_alpha.cons - pos_alpha.cur;
+	if (state_main.blocked
+	    || diff_theta < -pos_blocked || pos_blocked < diff_theta
+	    || diff_alpha < -pos_blocked || pos_blocked < diff_alpha)
+	  {
+	    /* Blocked. */
+	    pwm_left = 0;
+	    pwm_right = 0;
+	    state_blocked (&state_main);
+	  }
+	else
+	  {
+	    pid_theta = pos_compute_pid (diff_theta, &pos_theta);
+	    pid_alpha = pos_compute_pid (diff_alpha, &pos_alpha);
+	    /* Update PWM. */
+	    pwm_left = pid_theta - pid_alpha;
+	    UTILS_BOUND (pwm_left, -PWM_MAX, PWM_MAX);
+	    pwm_right = pid_theta + pid_alpha;
+	    UTILS_BOUND (pwm_right, -PWM_MAX, PWM_MAX);
+	  }
       }
-    else
+    if (state_aux0.mode >= MODE_POS)
       {
-	pid_theta = pos_compute_pid (diff_theta, &pos_theta);
-	pid_alpha = pos_compute_pid (diff_alpha, &pos_alpha);
-	/* Update PWM. */
-	pwm_left = pid_theta - pid_alpha;
-	UTILS_BOUND (pwm_left, -PWM_MAX, PWM_MAX);
-	pwm_right = pid_theta + pid_alpha;
-	UTILS_BOUND (pwm_right, -PWM_MAX, PWM_MAX);
+	int16_t pid;
+	int32_t diff;
+	/* Update current shaft position. */
+	pos_aux0.cur += counter_aux0_diff;
+	/* Compute PID. */
+	diff = pos_aux0.cons - pos_aux0.cur;
+	if (state_aux0.blocked
+	    || diff < -pos_blocked || pos_blocked < diff)
+	  {
+	    /* Blocked. */
+	    pwm_aux0 = 0;
+	    state_blocked (&state_aux0);
+	  }
+	else
+	  {
+	    pid = pos_compute_pid (diff, &pos_aux0);
+	    /* Update PWM. */
+	    pwm_aux0 = pid;
+	    UTILS_BOUND (pwm_aux0, -PWM_MAX, PWM_MAX);
+	  }
       }
 }
 
