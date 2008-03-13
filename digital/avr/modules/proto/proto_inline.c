@@ -265,6 +265,28 @@ proto_send6b (uint8_t cmd, uint8_t arg0, uint8_t arg1, uint8_t arg2,
     AC_PROTO_PUTC ('\r');
 }
 
+/** Send a command with 6 words arguments. */
+extern inline void
+proto_send6w (uint8_t cmd, uint16_t arg0, uint16_t arg1, uint16_t arg2,
+	      uint16_t arg3, uint16_t arg4, uint16_t arg5)
+{
+    AC_PROTO_PUTC ('!');
+    AC_PROTO_PUTC (cmd);
+    proto_arg (v16_to_v8 (arg0, 1));
+    proto_arg (v16_to_v8 (arg0, 0));
+    proto_arg (v16_to_v8 (arg1, 1));
+    proto_arg (v16_to_v8 (arg1, 0));
+    proto_arg (v16_to_v8 (arg2, 1));
+    proto_arg (v16_to_v8 (arg2, 0));
+    proto_arg (v16_to_v8 (arg3, 1));
+    proto_arg (v16_to_v8 (arg3, 0));
+    proto_arg (v16_to_v8 (arg4, 1));
+    proto_arg (v16_to_v8 (arg4, 0));
+    proto_arg (v16_to_v8 (arg5, 1));
+    proto_arg (v16_to_v8 (arg5, 0));
+    AC_PROTO_PUTC ('\r');
+}
+
 /** Send a command with 7 bytes arguments. */
 extern inline void
 proto_send7b (uint8_t cmd, uint8_t arg0, uint8_t arg1, uint8_t arg2,
