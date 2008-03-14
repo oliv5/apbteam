@@ -33,6 +33,16 @@ plotterm ("re25g");
 sys_plot (2);
 
 global sys;
+sys.motor = amax32ghp;
+sys.gear = gear16x;
+sys.load = robot10w80;
+sys.load.J /= 2; % Two motors.
+sys.control.func = "control";
+
+plotterm ("amax32ghp");
+sys_plot (2);
+
+global sys;
 sys.motor = re25cll;
 sys.gear = gear10x;
 sys.load = robot10w80;

@@ -18,6 +18,15 @@ re25g.R = 2.32;			% Terminal resistance (Ohm).
 re25g.L = 0.24 / 1000;		% Terminal inductance (H).
 re25g.J = 10.3 / 1000 / 10000;	% Rotor moment of inertia (kg.m^2).
 
+% Maxon AMAX32GHP 18W 24V
+amax32ghp.u = 24;		% Nominal voltage (V).
+amax32ghp.Kw = 269 * 2*pi / 60;	% Speed constant ((rad/s)/V).
+amax32ghp.Km = 25.44 / 1000;	% Torque constant (N.m/A).
+amax32ghp.Rf = 0;		% Bearing friction (N.m/(rad/s)).
+amax32ghp.R = 3.99;		% Terminal resistance (Ohm).
+amax32ghp.L = 0.24 / 1000;	% ? Terminal inductance (H).
+amax32ghp.J = 10.3 / 1000 / 10000; % ? Rotor moment of inertia (kg.m^2).
+
 % Maxon RE25CLL 10W 12V 118743
 re25cll.u = 12;			% Nominal voltage (V).
 re25cll.Kw = 407 * 2*pi / 60;	% Speed constant ((rad/s)/V).
@@ -34,6 +43,10 @@ gear4x.ro = 0.75;		% Efficiency.
 % x20.25 epicycloid gear box.
 gear20x.i = 20.25;		% Ratio.
 gear20x.ro = 0.75;		% Efficiency.
+
+% x16 epicycloid gear box.
+gear16x.i = 16;			% Ratio.
+gear16x.ro = 0.75;		% Efficiency.
 
 % x10 orthogonal gear box.
 gear10x.i = 10;			% Ratio.
