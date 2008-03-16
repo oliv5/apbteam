@@ -25,15 +25,43 @@
  *
  * }}} */
 
+#define ECHANT_PERIOD (1.0 / (14745600.0 / 256 / 256))
+
+/** Define a robot and its peripherals.
+ * Encoder characteristics are defined at gearbox output. */
 struct robot_t
 {
-    const struct motor_t *motor;
-    const struct motor_t *aux0;
-    double footing;	/* Distance between the wheels (m). */
+    /** Main motors. */
+    const struct motor_def_t *main_motor;
+    /** Number of steps on the main motors encoders. */
+    int main_encoder_steps;
+    /** Wheel radius (m). */
+    double wheel_r;
+    /** Distance between the wheels (m). */
+    double footing;
+    /** Weight of the robot (kg). */
+    double weight;
+    /** Distance of the gravity center from the center of motors axis (m). */
+    double gravity_center_distance;
+    /** Whether the encoder is mounted on the main motor (false) or not (true). */
+    int encoder_separated;
+    /** Encoder wheel radius (m). */
+    double encoder_wheel_r;
+    /** Distance between the encoders wheels (m). */
+    double encoder_footing;
+    /** First auxiliary motor or NULL if none. */
+    const struct motor_def_t *aux0_motor;
+    /** Number of steps on the first auxiliary motor encoder. */
+    int aux0_encoder_steps;
 };
 
 /** Get a pointer to a model by name, or return 0. */
 const struct robot_t *
 models_get (const char *name);
+
+/** Initialise simulation models. */
+void
+models_init (const struct robot_t *robot, struct motor_t *main_motor_left,
+	     struct motor_t *main_motor_right, struct motor_t *aux0_motor);
 
 #endif /* models_host_h */

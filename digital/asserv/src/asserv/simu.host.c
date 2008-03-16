@@ -52,17 +52,18 @@ int16_t pwm_left, pwm_right, pwm_aux0;
 /** PWM reverse directions. */
 uint8_t pwm_reverse;
 
+/* Robot model. */
+const struct robot_t *simu_robot;
+
 /** Motor models. */
 struct motor_t simu_left_model, simu_right_model, simu_aux0_model;
 
-/** Is there an auxiliary motor? */
-int simu_aux0;
-
-/** Computed simulated position (mm). */
+/** Computed simulated position (mm, rad). */
 double simu_pos_x, simu_pos_y, simu_pos_a;
 
-/** Distance between wheels. */
-double simu_footing;
+/** Full counter values. */
+uint32_t simu_counter_left, simu_counter_right, simu_counter_aux0;
+double simu_counter_left_th, simu_counter_right_th;
 
 /** Initialise simulation. */
 static void
@@ -70,34 +71,29 @@ simu_init (void)
 {
     int argc;
     char **argv;
-    const struct robot_t *m;
     host_get_program_arguments (&argc, &argv);
     if (argc != 1)
       {
 	fprintf (stderr, "need model name as first argument\n");
 	exit (1);
       }
-    m = models_get (argv[0]);
-    if (!m)
+    simu_robot = models_get (argv[0]);
+    if (!simu_robot)
       {
 	fprintf (stderr, "unknown model name: %s\n", argv[0]);
 	exit (1);
       }
-    simu_left_model = *m->motor;
-    simu_right_model = *m->motor;
-    simu_aux0 = !!m->aux0;
-    if (simu_aux0)
-	simu_aux0_model = *m->aux0;
-    simu_footing = m->footing;
+    models_init (simu_robot, &simu_left_model, &simu_right_model,
+		 &simu_aux0_model);
     simu_pos_x = simu_pos_y = simu_pos_a = 0;
 }
 
 /** Update simulation position. */
 static void
-simu_pos_update (double dl, double dr)
+simu_pos_update (double dl, double dr, double footing)
 {
     double d = 0.5 * (dl + dr);
-    double da = (dr - dl) / simu_footing;
+    double da = (dr - dl) / footing;
     double na = simu_pos_a + da;
     if (da < 0.0001 && da > -0.0001)
       {
@@ -124,35 +120,71 @@ simu_step (void)
     assert (pwm_left >= -PWM_MAX && pwm_left <= PWM_MAX);
     assert (pwm_right >= -PWM_MAX && pwm_right <= PWM_MAX);
     assert (pwm_aux0 >= -PWM_MAX && pwm_aux0 <= PWM_MAX);
-    simu_left_model.u = (double) (pwm_left + 1) / (PWM_MAX + 1);
-    simu_right_model.u = (double) (pwm_right + 1) / (PWM_MAX + 1);
-    simu_aux0_model.u = (double) (pwm_aux0 + 1) / (PWM_MAX + 1);
+    simu_left_model.u = simu_left_model.m.u_max
+	* ((double) pwm_left / (PWM_MAX + 1));
+    simu_right_model.u = simu_right_model.m.u_max
+	* ((double) pwm_right / (PWM_MAX + 1));
+    simu_aux0_model.u = simu_aux0_model.m.u_max
+	* ((double) pwm_aux0 / (PWM_MAX + 1));
     /* Make one step. */
     old_left_th = simu_left_model.th;
     old_right_th = simu_right_model.th;
     old_aux0_th = simu_aux0_model.th;
     motor_model_step (&simu_left_model);
     motor_model_step (&simu_right_model);
-    if (simu_aux0)
+    if (simu_robot->aux0_motor)
 	motor_model_step (&simu_aux0_model);
     /* Modify counters. */
-    counter_left_diff = (simu_left_model.th - old_left_th) / (2*M_PI)
-        * 500 * simu_left_model.i_G;
-    counter_left += counter_left_diff;
-    counter_right_diff = (simu_right_model.th - old_right_th) / (2*M_PI)
-        * 500 * simu_right_model.i_G;
-    counter_right += counter_right_diff;
-    if (simu_aux0)
+    uint32_t counter_left_new;
+    uint32_t counter_right_new;
+    if (!simu_robot->encoder_separated)
       {
-	counter_aux0_diff = (simu_aux0_model.th - old_aux0_th) / (2*M_PI)
-	    * 500 * simu_aux0_model.i_G;
+	counter_left_new = simu_left_model.th / (2*M_PI)
+	    * simu_robot->main_encoder_steps;
+	counter_right_new = simu_right_model.th / (2*M_PI)
+	    * simu_robot->main_encoder_steps;
+      }
+    else
+      {
+	/* Thanks Thales. */
+	double left_diff = (simu_left_model.th - old_left_th)
+	    / simu_left_model.m.i_G * simu_robot->wheel_r;
+	double right_diff = (simu_right_model.th - old_right_th)
+	    / simu_right_model.m.i_G * simu_robot->wheel_r;
+	double sum = left_diff + right_diff;
+	double diff = (left_diff - right_diff)
+	    * (simu_robot->encoder_footing / simu_robot->footing);
+	double left_enc_diff = 0.5 * (sum + diff);
+	double right_enc_diff = 0.5 * (sum - diff);
+	simu_counter_left_th += left_enc_diff / simu_robot->encoder_wheel_r;
+	simu_counter_right_th += right_enc_diff / simu_robot->encoder_wheel_r;
+	counter_left_new = simu_counter_left_th / (2*M_PI)
+	    * simu_robot->main_encoder_steps;
+	counter_right_new = simu_counter_right_th / (2*M_PI)
+	    * simu_robot->main_encoder_steps;
+      }
+    /* Update an integer counter. */
+    counter_left_diff = counter_left_new - simu_counter_left;
+    counter_left += counter_left_diff;
+    simu_counter_left = counter_left_new;
+    counter_right_diff = counter_right_new - simu_counter_right;
+    counter_right += counter_right_diff;
+    simu_counter_right = counter_right_new;
+    /* Update auxiliary counter. */
+    if (simu_robot->aux0_motor)
+      {
+	uint32_t counter_aux0_new = simu_aux0_model.th / (2*M_PI)
+	    * simu_robot->aux0_encoder_steps;
+	counter_aux0_diff = counter_aux0_new - simu_counter_aux0;
 	counter_aux0 += counter_aux0_diff;
+	simu_counter_aux0 = counter_aux0_new;
       }
     /* Update position */
     simu_pos_update ((simu_left_model.th - old_left_th)
-		     * simu_left_model.i_G * simu_left_model.w_r * 1000,
+		     / simu_left_model.m.i_G * simu_robot->wheel_r * 1000,
 		     (simu_right_model.th - old_right_th)
-		     * simu_right_model.i_G * simu_right_model.w_r * 1000);
+		     / simu_right_model.m.i_G * simu_robot->wheel_r * 1000,
+		     simu_robot->footing * 1000);
 }
 
 /** Initialise the timer. */

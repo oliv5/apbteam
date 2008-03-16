@@ -25,27 +25,34 @@
  *
  * }}} */
 
-/** Motor and load caracteristics and current data. */
-struct motor_t
+/** Motor and load characteristics. */
+struct motor_def_t
 {
-    /* Motor caracteristics. */
+    /* Motor characteristics. */
     double Ke;	/* Speed constant ((rad/s)/V). */
     double Kt;	/* Torque constant (N.m/A). */
     double Rf;	/* Bearing friction (N.m/(rad/s)). */
     double R;	/* Terminal resistance (Ohm). */
     double L;	/* Terminal inductance (H). */
-    /* Gearbox caracteristics. */
+    double u_max;/* Maximum voltage (V). */
+    /* Gearbox characteristics. */
     double i_G;	/* Gearbox ratio. */
     double ro_G;/* Gearbox efficiency. */
-    /* Load caracteristics. */
-    double J;	/* Load (kg.m^2). */
-    /* Wheel caracteristics. */
-    double w_r;	/* Wheel radius (m). */
+    /* Load characteristics. */
+    double J;	/* Load at gearbox output (kg.m^2). */
+};
+
+/** Motor and load characteristics and current data.  Angular speed and theta
+ * are at motor output, not gearbox output. */
+struct motor_t
+{
+    /* Motor and load characteristics. */
+    struct motor_def_t m;
     /* Simulation parameters. */
     double h;	/* Simulation time step (s). */
     int d;	/* Simulation time step division. */
     /* Simulation current state. */
-    double t;	/* Current time (not realy used) (s). */
+    double t;	/* Current time (not really used) (s). */
     double u;	/* Current input voltage (V). */
     double i;	/* Current current (A). */
     double o;	/* Current angular speed (o for omega) (rad/s). */

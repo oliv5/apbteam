@@ -26,7 +26,7 @@
 #include "motor_model.host.h"
 
 /**
- * Switching to french for all thoses non english speaking people.
+ * Switching to french for all those non english speaking people.
  *
  * Ce fichier permet de modéliser un moteur à courant continue. Il y a deux
  * parties, la modélisation électrique et la modélisation mécanique.
@@ -68,14 +68,14 @@ void motor_model_step (struct motor_t *m)
     /* Make several small steps to increase precision. */
     for (; d; d--)
       {
-	/* Ah, the mistical power of computation. */
+	/* Ah, the mystical power of computation. */
 	i_ = m->i
-	    + h * (1.0 / m->L * m->u
-		   - m->R / m->L * m->i
-		   - 1.0 / m->Ke / m->L * m->o);
+	    + h * (1.0 / m->m.L * m->u
+		   - m->m.R / m->m.L * m->i
+		   - 1.0 / m->m.Ke / m->m.L * m->o);
 	o_ = m->o
-	    + h * m->i_G * m->i_G * m->ro_G / m->J
-	    * (m->Kt * m->i - m->Rf * m->o);
+	    + h * m->m.i_G * m->m.i_G * m->m.ro_G / m->m.J
+	    * (m->m.Kt * m->i - m->m.Rf * m->o);
 	th_ = m->th + h * m->o;
 	/* Ok, now store this step. */
 	m->i = i_;

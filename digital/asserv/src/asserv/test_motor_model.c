@@ -57,11 +57,11 @@ main (int argc, char **argv)
 	fprintf (stderr, "model unknown\n");
 	return 1;
       }
-    ms = *mr->motor;
+    models_init (mr, &ms, NULL, NULL);
     m = &ms;
     /* Make a step response simulation. */
     printf ("# %10s %12s %12s %12s %12s\n", "t", "u", "i", "omega", "theta");
-    m->u = 3.0;
+    m->u = m->m.u_max;
     printf ("%12f %12f %12f %12f %12f\n", m->t, m->u, m->i, m->o, m->th);
     simu (m, 1.0);
     m->u = 0.0;

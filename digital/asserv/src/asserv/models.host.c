@@ -28,140 +28,159 @@
 #include <math.h>
 #include <string.h>
 
-/* Gloubi model. */
-static const struct motor_t gloubi_model =
+/* RE25CLL with 1:10 gearbox model. */
+static const struct motor_def_t re25cll_model =
 {
-    /* Motor caracteristics. */
+    /* Motor characteristics. */
     407 * (2*M_PI) / 60,/* Speed constant ((rad/s)/V). */
     23.4 / 1000,	/* Torque constant (N.m/A). */
     0,			/* Bearing friction (N.m/(rad/s)). */
     2.18,		/* Terminal resistance (Ohm). */
     0.24 / 1000,	/* Terminal inductance (H). */
-    /* Gearbox caracteristics. */
+    12.0,		/* Maximum voltage (V). */
+    /* Gearbox characteristics. */
     10,			/* Gearbox ratio. */
     0.75,		/* Gearbox efficiency. */
-    /* Load caracteristics. */
-    4 * 0.02 * 0.02,	/* Load (kg.m^2). */
-    /* Wheel caracteristics. */
-    0.02,		/* Wheel radius (m). */
-    /* Simulation parameters. */
-    4.444444 / 1000,	/* Simulation time step (s). */
-    1000,		/* Simulation time step division. */
-    /* Simulation current state. */
-    0,			/* Current time (not realy used) (s). */
-    0,			/* Current input voltage (V). */
-    0,			/* Current current (A). */
-    0,			/* Current angular speed (o for omega) (rad/s). */
-    0			/* Current theta (th for theta) (rad). */
+    /* Load characteristics. */
+    0.0,		/* Load (kg.m^2). */
 };
 
-static const struct robot_t gloubi_robot =
+/* RE25G with 1:20.25 gearbox model. */
+static const struct motor_def_t re25g_model =
 {
-    &gloubi_model,
-    NULL,
-    26.0,		/* Distance between the wheels (m). */
-};
-
-/* Taz model. */
-static const struct motor_t taz_model =
-{
-    /* Motor caracteristics. */
+    /* Motor characteristics. */
     407 * (2*M_PI) / 60,/* Speed constant ((rad/s)/V). */
     23.4 / 1000,	/* Torque constant (N.m/A). */
-    0,			/* Bearing friction (N.m/(rad/s)). */
-    2.18,		/* Terminal resistance (Ohm). */
-    0.24 / 1000,	/* Terminal inductance (H). */
-    /* Gearbox caracteristics. */
-    10,			/* Gearbox ratio. */
-    0.75,		/* Gearbox efficiency. */
-    /* Load caracteristics. */
-    10 * 0.04 * 0.04,	/* Load (kg.m^2). */
-    /* Wheel caracteristics. */
-    0.04,		/* Wheel radius (m). */
-    /* Simulation parameters. */
-    4.444444 / 1000,	/* Simulation time step (s). */
-    1000,		/* Simulation time step division. */
-    /* Simulation current state. */
-    0,			/* Current time (not realy used) (s). */
-    0,			/* Current input voltage (V). */
-    0,			/* Current current (A). */
-    0,			/* Current angular speed (o for omega) (rad/s). */
-    0			/* Current theta (th for theta) (rad). */
-};
-
-static const struct robot_t taz_robot =
-{
-    &taz_model,
-    NULL,
-    30.0,		/* Distance between the wheels (m). */
-};
-
-/* Taz model, with a RE25G and a 1:20.25 ratio gearbox. */
-static const struct motor_t tazg_model =
-{
-    /* Motor caracteristics. */
-    407 * (2*M_PI) / 60,/* Speed constant ((rad/s)/V). */
-    40.2 / 1000,	/* Torque constant (N.m/A). */
     0,			/* Bearing friction (N.m/(rad/s)). */
     2.32,		/* Terminal resistance (Ohm). */
     0.24 / 1000,	/* Terminal inductance (H). */
-    /* Gearbox caracteristics. */
+    24.0,		/* Maximum voltage (V). */
+    /* Gearbox characteristics. */
     20.25,		/* Gearbox ratio. */
     0.75,		/* Gearbox efficiency. */
-    /* Load caracteristics. */
-    10 * 0.04 * 0.04,	/* Load (kg.m^2). */
-    /* Wheel caracteristics. */
-    0.04,		/* Wheel radius (m). */
-    /* Simulation parameters. */
-    4.444444 / 1000,	/* Simulation time step (s). */
-    1000,		/* Simulation time step division. */
-    /* Simulation current state. */
-    0,			/* Current time (not realy used) (s). */
-    0,			/* Current input voltage (V). */
-    0,			/* Current current (A). */
-    0,			/* Current angular speed (o for omega) (rad/s). */
-    0			/* Current theta (th for theta) (rad). */
+    /* Load characteristics. */
+    0.0,		/* Load (kg.m^2). */
 };
 
+/* AMAX32GHP with 1:16 gearbox model. */
+static const struct motor_def_t amax32ghp_model =
+{
+    /* Motor characteristics. */
+    269 * (2*M_PI) / 60,/* Speed constant ((rad/s)/V). */
+    25.44 / 1000,	/* Torque constant (N.m/A). */
+    0,			/* Bearing friction (N.m/(rad/s)). */
+    3.99,		/* Terminal resistance (Ohm). */
+    0.24 / 1000,	/* Terminal inductance (H). */
+    24.0,		/* Maximum voltage (V). */
+    /* Gearbox characteristics. */
+    16,			/* Gearbox ratio. */
+    0.75,		/* Gearbox efficiency. */
+    /* Load characteristics. */
+    0.0,		/* Load (kg.m^2). */
+};
+
+/* Gloubi, Efrei 2006. */
+static const struct robot_t gloubi_robot =
+{
+    /* Main motors. */
+    &re25cll_model,
+    /* Number of steps on the main motors encoders. */
+    500,
+    /* Wheel radius (m). */
+    0.02,
+    /* Distance between the wheels (m). */
+    0.26,
+    /* Weight of the robot (kg). */
+    4.0,
+    /* Distance of the gravity center from the center of motors axis (m). */
+    13.0, // approx
+    /* Whether the encoder is mounted on the main motor (false) or not (true). */
+    0,
+    0.0, 0.0, NULL, 0
+};
+
+/* Taz, APBTeam/Efrei 2005. */
+static const struct robot_t taz_robot =
+{
+    /* Main motors. */
+    &re25cll_model,
+    /* Number of steps on the main motors encoders. */
+    500,
+    /* Wheel radius (m). */
+    0.04,
+    /* Distance between the wheels (m). */
+    0.30,
+    /* Weight of the robot (kg). */
+    10.0,
+    /* Distance of the gravity center from the center of motors axis (m). */
+    0.0,
+    /* Whether the encoder is mounted on the main motor (false) or not (true). */
+    0,
+    0.0, 0.0, NULL, 0
+};
+
+/* TazG, Taz with RE25G motors. */
 static const struct robot_t tazg_robot =
 {
-    &tazg_model,
-    NULL,
-    30.0,		/* Distance between the wheels (m). */
+    /* Main motors. */
+    &re25g_model,
+    /* Number of steps on the main motors encoders. */
+    500,
+    /* Wheel radius (m). */
+    0.04,
+    /* Distance between the wheels (m). */
+    0.30,
+    /* Weight of the robot (kg). */
+    10.0,
+    /* Distance of the gravity center from the center of motors axis (m). */
+    0.0,
+    /* Whether the encoder is mounted on the main motor (false) or not (true). */
+    0,
+    0.0, 0.0, NULL, 0
 };
 
 /* Gerard arm model, with a RE25CLL and a 1:10 ratio gearbox. */
-static const struct motor_t gerard_arm_model =
+static const struct motor_def_t gerard_arm_model =
 {
-    /* Motor caracteristics. */
+    /* Motor characteristics. */
     407 * (2*M_PI) / 60,/* Speed constant ((rad/s)/V). */
     23.4 / 1000,	/* Torque constant (N.m/A). */
     0,			/* Bearing friction (N.m/(rad/s)). */
     2.18,		/* Terminal resistance (Ohm). */
     0.24 / 1000,	/* Terminal inductance (H). */
-    /* Gearbox caracteristics. */
+    12.0,		/* Maximum voltage (V). */
+    /* Gearbox characteristics. */
     10,			/* Gearbox ratio. */
     0.75,		/* Gearbox efficiency. */
-    /* Load caracteristics. */
+    /* Load characteristics. */
     0.200 * 0.1 * 0.1,	/* Load (kg.m^2). */
-    /* Wheel caracteristics. */
-    0,			/* Wheel radius (m). */
-    /* Simulation parameters. */
-    4.444444 / 1000,	/* Simulation time step (s). */
-    1000,		/* Simulation time step division. */
-    /* Simulation current state. */
-    0,			/* Current time (not realy used) (s). */
-    0,			/* Current input voltage (V). */
-    0,			/* Current current (A). */
-    0,			/* Current angular speed (o for omega) (rad/s). */
-    0			/* Current theta (th for theta) (rad). */
 };
 
+/* Gerard, find it a name! */
 static const struct robot_t gerard_robot =
 {
-    &tazg_model,
+    /* Main motors. */
+    &amax32ghp_model,
+    /* Number of steps on the main motors encoders. */
+    5000,
+    /* Wheel radius (m). */
+    0.065 / 2,
+    /* Distance between the wheels (m). */
+    0.16,
+    /* Weight of the robot (kg). */
+    10.0,
+    /* Distance of the gravity center from the center of motors axis (m). */
+    0.10,
+    /* Whether the encoder is mounted on the main motor (false) or not (true). */
+    1,
+    /** Encoder wheel radius (m). */
+    0.063 / 2,
+    /** Distance between the encoders wheels (m). */
+    0.28,
+    /** First auxiliary motor or NULL if none. */
     &gerard_arm_model,
-    30.0,		/* Distance between the wheels (m). */
+    /** Number of steps on the first auxiliary motor encoder. */
+    500,
 };
 
 /* Table of models. */
@@ -188,5 +207,34 @@ models_get (const char *name)
 	    return models[i].robot;
       }
     return 0;
+}
+
+/** Initialise simulation models. */
+void
+models_init (const struct robot_t *robot, struct motor_t *main_motor_left,
+	     struct motor_t *main_motor_right, struct motor_t *aux0_motor)
+{
+    if (main_motor_left)
+      {
+	main_motor_left->m = *robot->main_motor;
+	main_motor_left->m.J = robot->weight * robot->wheel_r
+	    * robot->wheel_r / 2;
+	main_motor_left->h = ECHANT_PERIOD;
+	main_motor_left->d = 1000;
+      }
+    if (main_motor_right)
+      {
+	main_motor_right->m = *robot->main_motor;
+	main_motor_right->m.J = robot->weight * robot->wheel_r
+	    * robot->wheel_r / 2;
+	main_motor_right->h = ECHANT_PERIOD;
+	main_motor_right->d = 1000;
+      }
+    if (aux0_motor && robot->aux0_motor)
+      {
+	aux0_motor->m = *robot->aux0_motor;
+	aux0_motor->h = ECHANT_PERIOD;
+	aux0_motor->d = 1000;
+      }
 }
 
