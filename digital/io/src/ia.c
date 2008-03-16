@@ -1,7 +1,5 @@
-#ifndef ia_h
-#define ia_h
-/* ia.h */
-/*  {{{
+/* ia.c */
+/* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
  *
  * Copyright (C) 2008 Nélio Laranjeiro
  *
@@ -24,44 +22,20 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "ia.h"
 #include "asserv.h"
+#include "modules/proto/proto.h"
 
-#define TABLE_MAX_Y 3000
-#define TABLE_MAX_X 2100
-
-#define DISTRIBUTOR_SAMPLES_Y 2100
-
-#define DISTRIBUTOR_SAMPLES_BLUE_X 700
-#define DISTRIBUTOR_SAMPLES_RED_X 2300
-
-#define DISTRIBUTOR_ICE_Y 1350
-
-#define ASSERV_ARM_ROTATION_INIT 0
-#define ASSERV_ARM_ROTATION_FULL 5000
-#define ASSERV_ARM_ROTATION_THIRD (ASSERV_ARM_ROTATION_FULL / 3)
-
-#define ASSERV_ARM_SPEED_FULL 100
-#define ASSERV_ARM_SPEED_HALF (ASSERV_ARM_SPEED_FULL / 2)
-
-struct ia_t
-{
-    /* Bool status of the previous sequence loaded. 
-     * If the previous was the sequence ISISI the next one shall be SISIS (S =
-     * sample, I = ice).
-     * false = ISISI.
-     * true = SISIS.
-     */
-    bool sequence;
-
-    /* Bool status indicating our ice distributor status. */
-    bool ice_status_our;
-};
-
+static ia_t ia_global;
 
 /** Initialize the IA.
   */
 void
-ia_init (void);
+ia_init (void)
+{
+    ia_global.sequence = false;
+    ia_global.ice_status_our = false;
+}
 
 /** Load balls procedure from a distributor.
   * 
@@ -77,7 +51,22 @@ ia_init (void);
   * \param  balls_nb  the quantity of ball to load.
   */
 void
-ia_load_samples (uint8_t balls_nb);
+ia_load_samples (uint8_t balls_nb)
+{
+    /* Start the rotation of the arm */
+    asserv_move_arm (ASSERV_ARM_ROTATION_FULL , ASSERV_ARM_SPEED_HALF);
+
+    /* Activate the classifier. */
+    // TODO write the code to use the classifier. How to know when the
+    // quantity of desired samples are loaded ?
+
+    /* At this moment the samples shall be loaded. */
+    /* Go backaward */
+    asserv_move_linearly (-10);
+
+    /* Set the arm to the initial position. */
+    asserv_move_arm (ASSERV_ARM_ROTATION_INIT, ASSERV_ARM_SPEED_FULL);
+}
 
 /** Get samples procedure. Request the robot to go and get some sample of the
  * team color or ice samples.
@@ -95,17 +84,65 @@ ia_load_samples (uint8_t balls_nb);
  * \param  blue  the team color true if the robot is in the blue team.
  */
 void
-ia_get_samples (bool blue);
+ia_get_samples (bool blue, bool ice)
+{
+    /* Set the ARM to the init position to avoid the robot to take samples on
+     * the distributor path. */
+    asserv_move_arm (ASSERV_ARM_ROTATION_INIT, ASSERV_ARM_ROTATION_FULL);
+
+    /* Go to the distributor. */
+
+    if (ice)
+      {
+	//TODO this will only work when the robot is in the red team, the need to
+	//know at which position the robot starts is necessary.
+	if (blue)
+	    asserv_set_x_position (DISTRIBUTOR_SAMPLES_BLUE_X);
+	else
+	    asserv_set_x_position (DISTRIBUTOR_SAMPLES_RED_X);
+
+	asserv_set_y_position (DISTRIBUTRO_SAMPLES_Y - 100);
+      }
+    else
+      {
+	/* Go to the ice distributor. */
+	if (ia_global.ice_status_our)
+	    asserv_set_x_position (0);
+	else
+	    asserv_set_x_position (TABLE_MAX_X);
+	
+	asser_set_y_position (DISTRIBUTOR_ICE_Y);
+      }
+
+
+    /* Set the classifier to the correct position. */
+    /* TODO fill this part */
+
+    /* Poll for the position. */
+    /* TODO A function for that ?? */
+
+    ia_load_samples (3 /* TODO change this value to the correct one.*/);
+}
 
 /** Get ice.
   */
 void
-ia_get_ice (void);
+ia_get_ice (void)
+{
+    load_samples (true, true);
+}
+
 
 /** Depose the samples in the gutter.
   */
 void
-ia_depose_samples (void);
+ia_depose_samples (void)
+{
+    asserv_go_to_gutter();
 
+    /*TODO open the collector. */
 
-#endif /* ia_h */
+    utils_delay_ms (4);
+
+    /* TODO close the collector. */
+}
