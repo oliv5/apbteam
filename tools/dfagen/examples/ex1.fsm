@@ -1,0 +1,21 @@
+# First FSM example.
+Example 1
+  A door which can be open or closed.
+
+States:
+ OPEN
+  The door is open
+ CLOSED
+  The door is clossed
+
+Events:
+ open
+ close
+
+OPEN:
+ close -> CLOSED
+  Close the door
+
+CLOSED:
+ open -> OPEN
+  Open the door

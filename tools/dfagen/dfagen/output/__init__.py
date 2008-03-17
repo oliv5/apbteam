@@ -1,0 +1,24 @@
+from ConfigParser import ConfigParser
+
+class UserConfig:
+    def __init__ (self, file):
+	if file:
+	    f = open (file, 'r')
+	    cp = ConfigParser ()
+	    cp.readfp (f)
+	    f.close ()
+	    self.dict = dict (cp.items ('user'))
+
+    def __getitem__ (self, key):
+	return self.dict[key]
+
+import c
+import dot
+
+outputs = dict (
+	c = c,
+	dot = dot,
+	)
+
+def get_output (name):
+    return outputs[name];

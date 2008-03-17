@@ -1,0 +1,67 @@
+--- ex2_cb_skel.c	2008-01-06 18:02:50.000000000 +0100
++++ ex2_cb.c	2008-01-06 18:02:50.000000000 +0100
+@@ -6,6 +6,9 @@
+  * A barman robot.
+  */
+ #include "ex2_cb.h"
++#include "ex2_robot.h"
++
++#include <stdio.h>
+ 
+ /*
+  * FILLING_GLASS =command=>
+@@ -37,6 +40,7 @@
+ ex2_branch_t
+ ex2__FILLING_GLASS__glass_filled (robot_t *user)
+ {
++    puts ("stop filling");
+     return ex2_next (FILLING_GLASS, glass_filled);
+ }
+ 
+@@ -48,6 +52,8 @@
+ ex2_branch_t
+ ex2__IDLE__replace_bottle (robot_t *user)
+ {
++    puts ("reset glass counter");
++    user->bottle = 3;
+     return ex2_next (IDLE, replace_bottle);
+ }
+ 
+@@ -63,9 +69,25 @@
+ ex2_branch_t
+ ex2__IDLE__command (robot_t *user)
+ {
+-    return ex2_next_branch (IDLE, command, empty_bottle);
+-    return ex2_next_branch (IDLE, command, without_ice);
+-    return ex2_next_branch (IDLE, command, with_ice);
++    if (user->bottle)
++      {
++	user->bottle--;
++	if (user->ice)
++	  {
++	    puts ("open the ice door");
++	    return ex2_next_branch (IDLE, command, with_ice);
++	  }
++	else
++	  {
++	    puts ("start filling");
++	    return ex2_next_branch (IDLE, command, without_ice);
++	  }
++      }
++    else
++      {
++	puts ("empty bottle, please replace it");
++	return ex2_next_branch (IDLE, command, empty_bottle);
++      }
+ }
+ 
+ /*
+@@ -99,6 +121,8 @@
+ ex2_branch_t
+ ex2__DROPPING_ICE__ice_dropped (robot_t *user)
+ {
++    puts ("close the ice door");
++    puts ("start filling");
+     return ex2_next (DROPPING_ICE, ice_dropped);
+ }
+ 

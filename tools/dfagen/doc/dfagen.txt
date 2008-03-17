@@ -1,0 +1,181 @@
+====================================================
+dfagen - The Deterministic Finite Automata Generator
+====================================================
+
+Theory of operations
+====================
+
+Some solutions are easier to describe using an automaton.  An automaton is
+composed of a set of states and transitions triggered by events.  The
+transition is a condition to switch from one state to another.
+
+You can find many automata information on the web.  Automata are also known
+as Finite State Machines.
+
+The dfagen program will read an automaton description and according to the
+selected output, can generate a different representation of this automaton or
+a program to implement it.
+
+C program output
+----------------
+
+With this output, dfagen will generate a program where code is executed on
+each transition.
+
+Graphviz output
+---------------
+
+This output is suitable to be read by Graphviz.  This can be used to generate
+a graphic representation of the automaton.
+
+Automaton description
+=====================
+
+Comments are entered with a dash (``#``) on the first character of the line.
+They are completely ignored by dfagen.
+
+The file is divided into sections.  The first one is the automaton name and
+text description, the second one is the list of states, the third one is the
+list of events, and all the followings are states descriptions.  Sections must
+start on the first character of the line and text descriptions are always
+preceded by two spaces.
+
+Let us examine an example.
+
+Here is the first section::
+
+    # Second FSM example.
+    Example 2
+      A barman robot.
+
+The first line is completely ignored, the second line is the automaton name,
+and the third one is its text description and start with two spaces.
+
+Here is the state list section::
+
+    States:
+     IDLE
+      waiting for a command
+     DROPPING_ICE
+     FILLING_GLASS
+
+States are listed, starting with one space at the start of the line.  Each
+state can have an associated text description.
+
+Here is the event list section::
+
+    Events:
+     command
+     ice dropped
+     glass filled
+     replace bottle
+
+It use the same syntax as the states list.
+
+Here is a state section::
+
+    DROPPING_ICE:
+     ice dropped -> FILLING_GLASS
+      close the ice door
+      start filling
+
+The first line gives the described state name. It can include several states,
+separated with comma, if they share the same description.
+
+The second line says: when the ``ice dropped`` event occurs, switch to the
+``FILLING_GLASS`` state.
+
+The other lines are text descriptions, they can be used by the programmer as a
+guideline to know what to implement on this transition.
+
+Sometimes, an event can trigger a different state, according to information
+which may be contained in the received event.  In dfagen, this is called
+branches.  To describe branches, use a colon::
+
+    IDLE:
+     command: with ice -> DROPPING_ICE
+      open the ice door
+     command: without ice -> FILLING_GLASS
+      start filling
+
+In this example, when a ``command`` event occurs, the ice switch may influence
+the target state.
+
+Sometimes, an event is handled, but the automaton does not change state.  You
+can use a dot instead of the state name to describe this.  This is useful to
+describe several states which behave the same way::
+
+    IDLE:
+     replace bottle -> .
+      reset glass counter
+
+    DROPPING_ICE, FILLING_GLASS:
+     command -> .
+      ignored
+
+Invoking dfagen
+===============
+
+Run the following command::
+
+    python dfagen.py -o c -d my_automaton.fsm -c my_output.conf -p my_prefix
+
+The ``-o`` option chooses the output method, the ``-d`` option gives your
+automaton description, the ``-c`` option gives the output configuration file,
+and the ``-p`` is the prefix, which is used to name output files.
+
+..warning: This is subject to change.
+
+Outputs
+=======
+
+C program
+---------
+
+Output name: ``c``
+
+Here is an example output configuration file::
+
+    [user]
+    type = robot_t
+    type-forward-decl = typedef struct robot_t robot_t;
+    type-decl = #include "ex2_robot.h"
+    field = fsm
+
+The ``type`` item is the C type containing the automaton and which must be
+passed to automaton functions.  The ``field`` item is the name of the
+automaton member inside the previous type.  For example::
+
+    struct robot_t
+    {
+	ex2_state_t fsm;
+	int bottle;
+    };
+
+The ``type-decl`` item is the C code used to declare the type, and the
+``type-forward-decl`` item is used in the generated C header to forward
+declare the type.
+
+When dfagen is run, it generates four different files:
+
+- ``prefix.h``, the header to declare the automaton and its associated symbols
+  and functions,
+- ``prefix.c``, the source file containing the transitions table and logic,
+- ``prefix_cb.h``, the header to declare the transition callbacks,
+- ``prefix_cb_skel.c``, the source file to be customised by the user.
+
+The first time you run dfagen, copy ``prefix_cb_skel.c`` to ``prefix_cb.c``
+and edit the copy.  Next time, you will merge new elements to your version
+(using a merge program like vimdiff or meld is a good idea).
+
+The ``prefix.c`` file contains a function to be called each time en event
+occurs.  This function will run the corresponding transition callback and will
+check its return value.
+
+Graphviz output
+---------------
+
+Output name: ``dot``
+
+There is currently no output configuration file.  Run ``dot`` (from the
+Graphviz distribution to get a graphic output of the automaton.

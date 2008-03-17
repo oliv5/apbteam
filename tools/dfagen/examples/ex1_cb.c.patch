@@ -1,0 +1,41 @@
+--- ex1_cb_skel.c	2008-01-06 18:00:55.000000000 +0100
++++ ex1_cb.c	2008-01-06 18:02:10.000000000 +0100
+@@ -7,6 +7,10 @@
+  */
+ #include "ex1_cb.h"
+ 
++#include <stdio.h>
++
++struct door_t { ex1_state_t fsm; };
++ 
+ /*
+  * OPEN =close=>
+  *  => CLOSED
+@@ -15,6 +19,7 @@
+ ex1_branch_t
+ ex1__OPEN__close (door_t *user)
+ {
++    printf ("close the door\n");
+     return ex1_next (OPEN, close);
+ }
+ 
+@@ -26,7 +31,18 @@
+ ex1_branch_t
+ ex1__CLOSED__open (door_t *user)
+ {
++    printf ("open the door\n");
+     return ex1_next (CLOSED, open);
+ }
+ 
+-
++int
++main (void)
++{
++    door_t door;
++    ex1_init (&door);
++    ex1_handle_event (&door, EX1_EVENT_close);
++    ex1_handle_event (&door, EX1_EVENT_open);
++    printf ("now, will crash:\n");
++    ex1_handle_event (&door, EX1_EVENT_open);
++    return 0;
++}

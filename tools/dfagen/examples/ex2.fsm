@@ -1,0 +1,40 @@
+# Second FSM example.
+Example 2
+  A barman robot.
+
+States:
+ IDLE
+  waiting for a command
+ DROPPING_ICE
+ FILLING_GLASS
+
+Events:
+ command
+ ice dropped
+ glass filled
+ replace bottle
+
+IDLE:
+ command: with ice -> DROPPING_ICE
+  open the ice door
+ command: without ice -> FILLING_GLASS
+  start filling
+ command: empty bottle -> .
+  display "empty bottle, please replace it"
+ replace bottle -> .
+  reset glass counter
+
+DROPPING_ICE:
+ ice dropped -> FILLING_GLASS
+  close the ice door
+  start filling
+
+FILLING_GLASS:
+ glass filled -> IDLE
+  stop filling
+
+DROPPING_ICE, FILLING_GLASS:
+ command -> .
+  ignored
+ replace bottle -> .
+  ignored
