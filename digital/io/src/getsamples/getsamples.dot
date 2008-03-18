@@ -1,0 +1,11 @@
+digraph getsamples { PREPARE_ARM
+ PREPARE_ARM -> PREPARE_CLASSIFIER [ label = "arm_prepared" ];
+ LOAD_SAMPLES
+ FORWARD_CONTROL
+ FORWARD_CONTROL -> PREPARE_ARM [ label = "move_finished" ];
+ GO_TO_POSITION
+ GO_TO_POSITION -> GO_TO_POSITION [ label = "move_blocked" ];
+ GO_TO_POSITION -> FORWARD_CONTROL [ label = "move_finished" ];
+ PREPARE_CLASSIFIER
+ PREPARE_CLASSIFIER -> LOAD_SAMPLES [ label = "classifer_prepared" ];
+}

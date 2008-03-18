@@ -1,0 +1,34 @@
+#FSM get samples
+get_samples
+
+States:
+ GO_TO_POSITION
+ PREPARE_ARM
+ FORWARD_CONTROL
+ PREPARE_CLASSIFIER
+ LOAD_SAMPLES
+
+Events:
+ move_finished
+ move_blocked
+ arm_prepared
+ ready_to_load
+ classifer_prepared
+ sample_loaded
+
+GO_TO_POSITION:
+ move_finished -> FORWARD_CONTROL
+  Go to the position desired, it is very near the position of the distributor in case it is a ice distributor or sample distributor.
+ move_blocked -> .
+
+FORWARD_CONTROL:
+ move_finished -> PREPARE_ARM
+  The position is reached the arm shall be seted to the position disired.
+
+PREPARE_ARM:
+ arm_prepared -> PREPARE_CLASSIFIER
+  Prepare the arm to load the samples.
+
+PREPARE_CLASSIFIER:
+ classifer_prepared -> LOAD_SAMPLES
+  Load some samples.
