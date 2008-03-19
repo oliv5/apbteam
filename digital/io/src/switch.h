@@ -71,6 +71,7 @@ switch_init (void)
 #define set_bit(port, bit) (port |= _BV(bit))
    set_bit (SWITCH_COLOR_PORT, SWITCH_COLOR_PIN);
    set_bit (SWITCH_JACK_PORT, SWITCH_JACK_PIN);
+#undef set_bit
 }
 
 /**
