@@ -1,6 +1,6 @@
 BASE = ../../avr
 AVR_PROGS = io
-io_SOURCES = main.c asserv.c servo.c
+io_SOURCES = main.c asserv.c servo.c eeprom.c trap.c
 MODULES = proto uart twi
 CONFIGFILE = avrconfig.h
 # atmega8, atmega8535, atmega128...

@@ -36,6 +36,7 @@
 
 #include "asserv.h"	/* Functions to control the asserv board */
 #include "switch.h"	/* Manage switches (jack, color selector) */
+#include "eeprom.h"	/* Parameters loaded/stored in the EEPROM */
 
 /**
  * Initialize the main and all its subsystems.
@@ -57,6 +58,8 @@ main_init (void)
     uart0_init ();
     /* Main timer */
     main_timer_init ();
+    /* Load parameters */
+    eeprom_load_param ();
     /* Asserv communication */
     asserv_init ();
 
