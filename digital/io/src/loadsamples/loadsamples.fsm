@@ -1,0 +1,24 @@
+#The loadsamples state.
+loadsamples
+
+States:
+ ROTATE_ARM
+ GO_BACKWARD
+ ARM_INIT
+
+Events:
+ arm_stopped
+ move_finished
+ move_blocked
+
+ROTATE_ARM:
+ arm_stopped -> GO_BACKWARD
+  Request the robot to go backward.
+
+GO_BACKWARD:
+ move_finished -> ARM_INIT
+  When the move is finished the ARM shall be reset to its init position.
+
+ARM_INIT:
+ move_finished -> .
+  This procedure is finish.
