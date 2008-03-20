@@ -135,8 +135,8 @@
 #define OCR_CurLim_R_ OCR1B
 
 // Vectors
-#define ILIM_R_vect INT0_vect
-#define ILIM_L_vect INT1_vect
+#define ILIM_R_vect INT1_vect
+#define ILIM_L_vect INT0_vect
 #define OVF_L_vect  TIMER0_OVF_vect
 #define OVF_R_vect  TIMER2_OVF_vect
 #define COMP_L_vect TIMER0_COMP_vect
