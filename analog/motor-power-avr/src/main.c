@@ -121,8 +121,15 @@ led_flash(void)
     DDRB  = 0x0f;
     PORTB = 0x0f;
 
-    // Delay 0.5s
-    utils_delay(0.5);
+    // Delay 0.25s
+    utils_delay(0.25);
+
+    // Shut down LEDs
+    DDRB  = 0x00;
+    PORTB = 0x00;
+
+    // Delay 0.25s
+    utils_delay(0.25);
 
     // Restore previous state
     PORTB = portb_backup,
@@ -255,7 +262,6 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 
   case c ('c', 1):
 	/* Set current limit software value */
-	//TODO 
 	setCurLim_soft (args[0]);
 	break;
 
