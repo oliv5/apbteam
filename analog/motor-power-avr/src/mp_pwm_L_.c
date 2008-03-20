@@ -161,11 +161,9 @@ ISR(ILIM_L_vect) {
     // following line orders to keep high Z state when faling edge will arrive
     state_L_ = CMD_STATE_HIGH_Z;
 
-    sei(); 	// set back interrupts
-
     // Update LEDs
-    _L_LED0_0;
-    _L_LED1_0;
+    _L_LED0_1;
+    _L_LED1_1;
 
     return;
 }
