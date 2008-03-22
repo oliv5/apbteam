@@ -6,7 +6,6 @@ States:
  PREPARE_ARM
  FORWARD_CONTROL
  TAKE_SAMPLES
- CLASSIFY
  BACKWARD
  END
 
@@ -32,9 +31,9 @@ FORWARD_CONTROL:
   End the position to the distributor.
 
 TAKE_SAMPLES:
- sample_took: nb_samples < quantity -> .
+ sample_took: more -> .
   Continue to take samples and classify the next sample.
- sample_took: nb_samples == quantity -> BACKWARD
+ sample_took: no_more -> BACKWARD
   If the quantity of samples are tooked, then go backeward and conitnue classifying the samples.
 
 BACKWARD:

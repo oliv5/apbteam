@@ -12,11 +12,12 @@ getsamples.h getsamples_cb_skel.c getsamples_cb.h: getsamples.c
 getsamples.o: getsamples_cb.h getsamples.h
 getsamples_cb.o: getsamples_cb.h getsamples.h
 
-%.dot: %.fsm
-	python ../../../../tools/dfagen/dfagen.py -o dot -d $< -p $(@:%.dot=%)
+dot: getSamplesFsm.fsm
+	python ../../../../tools/dfagen/dfagen.py -o dot -d getSamplesFsm.fsm -p getsamples
 
-%.png: %.dot
-	dot -Tpng $< -o $@
+png: getSamplesFsm.fsm 
+	make dot
+	dot -Tpng getsamples.dot -o getsamples.png
 
 clean:
 	rm -f getsamples getsamples.o getsamples_cb.o getsamples.c getsamples.h getsamples_cb_skel.c getsamples_cb.h getsamples_cb.c
