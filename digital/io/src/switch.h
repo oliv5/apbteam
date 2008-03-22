@@ -30,6 +30,7 @@
  */
 
 #include "io.h"
+#include "modules/utils/utils.h"	/* set_bit */
 
 /**
  * @defgroup SwitchConfiguration Configuration of the switch module.
@@ -68,10 +69,8 @@ switch_init (void)
 {
     /* By default, all pins are in input direction */
     /* Enable the pull-ups */
-#define set_bit(port, bit) (port |= _BV(bit))
    set_bit (SWITCH_COLOR_PORT, SWITCH_COLOR_PIN);
    set_bit (SWITCH_JACK_PORT, SWITCH_JACK_PIN);
-#undef set_bit
 }
 
 /**

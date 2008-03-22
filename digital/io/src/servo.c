@@ -26,7 +26,7 @@
 #include "servo.h"
 
 #include "io.h"				/* General defines of registers */
-#include "modules/utils/utils.h"	/* regv */
+#include "modules/utils/utils.h"	/* regv, set_bit */
 #include "modules/utils/byte.h"		/* v16_to_v8 */
 
 /**
@@ -86,7 +86,6 @@ SIGNAL (SIG_OVERFLOW2);
 void
 servo_init (void)
 {
-#define set_bit(port, bit) (port |= _BV(bit))
     /* Set-up all the pins of the servo to out direction */
     set_bit (SERVO_PORT, 0);
     set_bit (SERVO_PORT, 1);
@@ -104,7 +103,7 @@ servo_init (void)
     servo_updating_id_ = 0;
 
     /* Enable overflow interrupt */
-    TIMSK |= _BV (TOIE2);
+    set_bit (TIMSK, TOIE2);
 }
 
 /* Set the high time of the input signal of a servo (and its position). */
@@ -152,7 +151,7 @@ SIGNAL (SIG_OVERFLOW2)
 	if (servo_updating_id_ != 0)
 	    SERVO_PORT &= ~_BV (servo_updating_id_ - 1);
 	/* Set to high state the current servo motor pin */
-	SERVO_PORT |= _BV (servo_updating_id_);
+	set_bit (SERVO_PORT, servo_updating_id_);
 	/* Plan next timer overflow to the TOP minus the current configuration
 	 * of the servo motor */
 	TCNT2 = SERVO_TCNT_TOP - servo_high_time_[servo_updating_id_];
