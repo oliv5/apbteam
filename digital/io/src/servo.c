@@ -51,9 +51,10 @@
  * whole cycle to last.
  * The formula used is:
  * time_of_a_cycle * AVR_frequency / timer_counter_prescaler
- * We want a time of 20ms.
+ * We want a time of 20ms (20/1000).
+ * See @a servo_init to know the prescaler value of the timer/counter.
  */
-#define SERVO_TIC_CYCLE 1152
+static const uint16_t servo_tic_cyle_ = ((20/1000) * AC_FREQ / 256);
 
 /** @} */
 
@@ -134,7 +135,7 @@ SIGNAL (SIG_OVERFLOW2)
        overflow */
     static int8_t servo_overflow_count = -1;
     /* Time spent by each servo motor at high state during a whole cycle */
-    static uint16_t servo_high_time_cycle = SERVO_TIC_CYCLE;
+    static uint16_t servo_high_time_cycle = servo_tic_cyle_;
 
     /* State machine actions */
     switch (servo_updating_id_)
@@ -190,7 +191,7 @@ SIGNAL (SIG_OVERFLOW2)
 		servo_updating_id_ = 0;
 		/* Re-initialize the counter of time spent by each servo motor
 		 * at high state */
-		servo_high_time_cycle = SERVO_TIC_CYCLE;
+		servo_high_time_cycle = servo_tic_cyle_;
 	      }
 	  }
 	break;
