@@ -96,4 +96,13 @@ typedef enum trap_box_id_e
 void
 trap_setup_path_to_box (trap_box_id_e box);
 
+/**
+ * Set high time value for horizontal and vertical position of a trap.
+ * @param servo_id the servo identification number.
+ * @param horizontal the horizontal high time value.
+ * @param vertical the vertical high time value.
+ */
+void
+trap_set_high_time (uint8_t servo_id, uint8_t horizontal, uint8_t vertical);
+
 #endif /* trap_h */
