@@ -41,7 +41,7 @@
 #define EEPROM_PARAM_START 0
 
 /**
- * Actual version of the parameters organization.
+ * Current version of the parameters organization.
  */
 #define EEPROM_PARAM_KEY 0x01
 

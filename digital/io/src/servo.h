@@ -51,7 +51,7 @@
 
 /**
  * Number of servos motor managed by this module.
- * If you change it, you _must_ to update the key of the eeprom module!
+ * If you change it, you _must_ update the key of the eeprom module!
  */
 #define SERVO_NUMBER 5
 
