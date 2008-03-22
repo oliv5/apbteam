@@ -136,6 +136,18 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	 *   - 1b: pwm high time value (position).
 	 */
 	servo_set_high_time (args[0], args[1]);
+
+	/* EEPROM command */
+      case c ('e', 1):
+	/* Save/clear config
+	 *  - 1b:
+	 *    - 00: clear config
+	 *    - other values: save config
+	 */
+	if (args[0] == 0)
+	    eeprom_clear_param ();
+	else
+	    eeprom_save_param ();
 	break;
 
       default:
