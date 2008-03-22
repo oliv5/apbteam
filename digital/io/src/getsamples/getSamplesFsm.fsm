@@ -5,30 +5,38 @@ States:
  GO_TO_POSITION
  PREPARE_ARM
  FORWARD_CONTROL
- PREPARE_CLASSIFIER
- LOAD_SAMPLES
+ TAKE_SAMPLES
+ CLASSIFY
+ BACKWARD
+ END
 
 Events:
- move_finished
- move_blocked
- arm_prepared
- ready_to_load
- classifer_prepared
- sample_loaded
+ position_reached
+ position_failed
+ arm_moved
+ sample_took
+ classifier_ready
 
 GO_TO_POSITION:
- move_finished -> FORWARD_CONTROL
+ position_reached -> PREPARE_ARM
   Go to the position desired, it is very near the position of the distributor in case it is a ice distributor or sample distributor.
- move_blocked -> .
-
-FORWARD_CONTROL:
- move_finished -> PREPARE_ARM
-  The position is reached the arm shall be seted to the position disired.
+ position_failed -> GO_TO_POSITION
+  Go to another point before trying to go to this one again.
 
 PREPARE_ARM:
- arm_prepared -> PREPARE_CLASSIFIER
-  Prepare the arm to load the samples.
+ arm_moved -> FORWARD_CONTROL
+  Prepare the arm to the correct position.
 
-PREPARE_CLASSIFIER:
- classifer_prepared -> LOAD_SAMPLES
-  Load some samples.
+FORWARD_CONTROL:
+ position_reached -> TAKE_SAMPLES
+  End the position to the distributor.
+
+TAKE_SAMPLES:
+ sample_took: nb_samples < quantity -> .
+  Continue to take samples and classify the next sample.
+ sample_took: nb_samples == quantity -> BACKWARD
+  If the quantity of samples are tooked, then go backeward and conitnue classifying the samples.
+
+BACKWARD:
+ position_reached -> END
+  Ending this state machine.
