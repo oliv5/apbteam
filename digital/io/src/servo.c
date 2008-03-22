@@ -38,6 +38,7 @@
  * All servos are connected to the PORTA.
  */
 #define SERVO_PORT PORTA
+#define SERVO_DDR DDRA
 
 /**
  * TOP of the timer/counter.
@@ -88,11 +89,11 @@ void
 servo_init (void)
 {
     /* Set-up all the pins of the servo to out direction */
-    set_bit (SERVO_PORT, 0);
-    set_bit (SERVO_PORT, 1);
-    set_bit (SERVO_PORT, 2);
-    set_bit (SERVO_PORT, 3);
-    set_bit (SERVO_PORT, 4);
+    set_bit (SERVO_DDR, 0);
+    set_bit (SERVO_DDR, 1);
+    set_bit (SERVO_DDR, 2);
+    set_bit (SERVO_DDR, 3);
+    set_bit (SERVO_DDR, 4);
     /* All pins are at low state by default */
 
     /* Set-up the timer/counter 2:
