@@ -37,6 +37,7 @@
 #include "asserv.h"	/* Functions to control the asserv board */
 #include "switch.h"	/* Manage switches (jack, color selector) */
 #include "eeprom.h"	/* Parameters loaded/stored in the EEPROM */
+#include "trap.h"	/* Trap module (trap_* functions) */
 
 /**
  * Initialize the main and all its subsystems.
@@ -62,6 +63,8 @@ main_init (void)
     eeprom_load_param ();
     /* Asserv communication */
     asserv_init ();
+    /* Trap module */
+    trap_init ();
 
     /* Enable interrupts */
     sei ();
@@ -107,6 +110,32 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
       case c ('z', 0):
 	/* Reset */
 	utils_reset ();
+	break;
+
+	/* Servo/trap commands */
+      case c ('t', 3):
+	/* Set the high time values of a servo for the vertical and horizontal
+	 * positions using trapdoor module.
+	 *   - 1b: servo id number;
+	 *   - 1b: high time value (horizontal);
+	 *   - 1b: high time value (vertical).
+	 */
+	trap_set_high_time (args[0], args[1], args[2]);
+	break;
+
+      case c ('T', 1):
+	/* Setup traps to open a path to a destination box.
+	 *   - 1b: box identification
+	 */
+	trap_setup_path_to_box (args[0]);
+	break;
+
+      case c ('s', 2):
+	/* Set servo motor to a desired position using the servo module.
+	 *   - 1b: servo id number;
+	 *   - 1b: pwm high time value (position).
+	 */
+	servo_set_high_time (args[0], args[1]);
 	break;
 
       default:
