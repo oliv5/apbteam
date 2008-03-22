@@ -43,6 +43,9 @@
      | (v3) << 3 | (v2) << 2 | (v1) << 1 | (v0) << 0 \
      : -1024 * 1024)
 
+/** Helper macro to set a bit to 1 in a byte. */
+#define set_bit(port, bit) (port |= _BV(bit))
+
 /** No-operation, one instruction delay. */
 extern inline void
 utils_nop (void)
