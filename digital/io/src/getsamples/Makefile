@@ -1,10 +1,6 @@
 CFLAGS = -O2 -Wall
 
-all: getSamplesFsm.fsm getSamplesFsm.conf
-	make prgm
-	make exe
-	make dot
-	make png
+all: prgm exe dot png 
 
 prgm: getSamplesFsm.fsm getSamplesFsm.conf
 	python ../../../../tools/dfagen/dfagen.py -o c -d $< -c getSamplesFsm.conf -p getsamples 
@@ -20,4 +16,9 @@ png: getsamples.dot
 	dot -Tpng -o getsamples.png getsamples.dot
 
 clean:
-	rm -f getsamples*
+	rm -f getsamples.h
+	rm -f getsamples_cb.c
+	rm -f getsamples_cb.h
+	rm -f getsamples.dot
+	rm -f getsamples.png
+	rm -f getsamples.c

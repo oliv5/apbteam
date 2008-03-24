@@ -1,5 +1,7 @@
-/* ia.c */
-/* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
+#ifndef getsamples_robo_h
+#define getsamples_robo_h
+/* getsamples_robo.h */
+/*  {{{
  *
  * Copyright (C) 2008 Nélio Laranjeiro
  *
@@ -22,19 +24,10 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
-#include "ia.h"
-#include "asserv.h"
-#include "modules/proto/proto.h"
 
-static ia_t ia_global;
-
-/** Initialize the IA.
-  */
-void
-ia_init (void)
+struct getsamples_t
 {
-    ia_global.sequence = false;
-    ia_global.ice_status_our = false;
-    ia_global.team_color = TEAM_COLOR_RED;
-}
+    getsamples_state_t fsm;
+};
 
+#endif /* getsamples_robo_h */

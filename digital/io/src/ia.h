@@ -43,6 +43,12 @@
 #define ASSERV_ARM_SPEED_FULL 100
 #define ASSERV_ARM_SPEED_HALF (ASSERV_ARM_SPEED_FULL / 2)
 
+enum ia_team_e
+{
+    TEAM_COLOR_RED,
+    TEAM_COLOR_BLUE
+};
+
 struct ia_t
 {
     /* Bool status of the previous sequence loaded. 
@@ -55,6 +61,9 @@ struct ia_t
 
     /* Bool status indicating our ice distributor status. */
     bool ice_status_our;
+
+    /* Team color */
+    bool team_color;
 };
 
 
@@ -62,50 +71,5 @@ struct ia_t
   */
 void
 ia_init (void);
-
-/** Load balls procedure from a distributor.
-  * 
-  * 1. Rotate the arm to the desired position to allow the robot to load x
-  * balls.
-  * 2. Go backward, this will allow the robot to continue rotating the arm and
-  * load the balls.
-  * 3. Stop the arm and put it to its initial position to disallow the robot
-  * to take undesired balls.
-  *
-  * See trunk/digital/io/doc/loadballs.png (use the make command before)
-  * 
-  * \param  balls_nb  the quantity of ball to load.
-  */
-void
-ia_load_samples (uint8_t balls_nb);
-
-/** Get samples procedure. Request the robot to go and get some sample of the
- * team color or ice samples.
- *
- * 1. Go to the position in front of the distributor.
- * 2. Prepare the arm to get samples.
- * 3. Go forward with a controled speed to get the samples.
- * 4. Prepare the classifier to classify the samples.
- * 5. loadballs with the quantity of samples desired.
- * 6. Continue classifier
- *
- * See trunk/digital/io/doc/getSamples.png and
- * trunk/digital/io/doc/loadballs.png (use make to get the png files).
- *
- * \param  blue  the team color true if the robot is in the blue team.
- */
-void
-ia_get_samples (bool blue);
-
-/** Get ice.
-  */
-void
-ia_get_ice (void);
-
-/** Depose the samples in the gutter.
-  */
-void
-ia_depose_samples (void);
-
 
 #endif /* ia_h */
