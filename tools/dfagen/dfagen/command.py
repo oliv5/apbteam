@@ -1,4 +1,10 @@
-import dfagen.parser, dfagen.output
+import dfagen.output
+try:
+    import dfagen.parser
+except ImportError:
+    print "--> You should run yapps on parser.g!"
+    raise
+
 from optparse import OptionParser
 
 def run ():

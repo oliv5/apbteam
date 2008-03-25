@@ -15,5 +15,5 @@ def write (prefix, automaton, user):
 			    to = (br.to and br.to.name or s.name),
 			    )
 			)
-    o.write ('}')
+    o.write ('}\n')
     o.close ()

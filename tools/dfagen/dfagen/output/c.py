@@ -141,14 +141,19 @@ class Writer:
 	o.close ()
 
     def write (self):
-	self.write_template ('template.h', self.data.prefix + '.h')
-	self.write_template ('template.c', self.data.prefix + '.c')
-	self.write_template ('template_cb.h', self.data.prefix + '_cb.h')
-	self.write_template ('template_cb_skel.c',
-		self.data.prefix + '_cb_skel.c')
+	templates = self.data.user.templates
+	if not templates:
+	    templates = {
+		    'template.h': '%.h',
+		    'template.c': '%.c',
+		    'template_cb.h': '%_cb.h',
+		    'template_cb_skel.c': '%_cb_skel.c',
+		    }
+	for (t, f) in templates.iteritems ():
+	    self.write_template (t, f.replace ('%', self.data.prefix))
 
 def write (prefix, automaton, user):
-    w = Writer (WriterData (prefix, automaton, user),
-	    os.path.splitext (__file__)[0])
+    w = Writer (WriterData (prefix, automaton, user), 'template-dir' in user
+	    and user['template-dir'] or os.path.splitext (__file__)[0])
     w.write ()
 

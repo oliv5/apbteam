@@ -124,7 +124,7 @@ The ``-o`` option chooses the output method, the ``-d`` option gives your
 automaton description, the ``-c`` option gives the output configuration file,
 and the ``-p`` is the prefix, which is used to name output files.
 
-..warning: This is subject to change.
+.. warning:: This is subject to change.
 
 Outputs
 =======
@@ -170,7 +170,13 @@ and edit the copy.  Next time, you will merge new elements to your version
 
 The ``prefix.c`` file contains a function to be called each time en event
 occurs.  This function will run the corresponding transition callback and will
-check its return value.
+check its return value.  Its return value should indicate the next state.
+
+Changing templates
+~~~~~~~~~~~~~~~~~~
+
+If the default output does not fit your needs, you can define your own
+templates.  See ``ex2_tpl`` example.
 
 Graphviz output
 ---------------
@@ -178,4 +184,4 @@ Graphviz output
 Output name: ``dot``
 
 There is currently no output configuration file.  Run ``dot`` (from the
-Graphviz distribution to get a graphic output of the automaton.
+Graphviz distribution) to get a graphic output of the automaton.
