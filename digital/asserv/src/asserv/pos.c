@@ -101,14 +101,15 @@ pos_update (void)
 	/* Compute PID. */
 	diff_theta = pos_theta.cons - pos_theta.cur;
 	diff_alpha = pos_alpha.cons - pos_alpha.cur;
-	if (state_main.blocked
-	    || diff_theta < -pos_blocked || pos_blocked < diff_theta
+	if (diff_theta < -pos_blocked || pos_blocked < diff_theta
 	    || diff_alpha < -pos_blocked || pos_blocked < diff_alpha)
 	  {
 	    /* Blocked. */
+	    pos_reset (&pos_theta);
+	    pos_reset (&pos_alpha);
+	    state_blocked (&state_main);
 	    pwm_left = 0;
 	    pwm_right = 0;
-	    state_blocked (&state_main);
 	  }
 	else
 	  {
@@ -129,12 +130,12 @@ pos_update (void)
 	pos_aux0.cur += counter_aux0_diff;
 	/* Compute PID. */
 	diff = pos_aux0.cons - pos_aux0.cur;
-	if (state_aux0.blocked
-	    || diff < -pos_blocked || pos_blocked < diff)
+	if (diff < -pos_blocked || pos_blocked < diff)
 	  {
 	    /* Blocked. */
-	    pwm_aux0 = 0;
+	    pos_reset (&pos_aux0);
 	    state_blocked (&state_aux0);
+	    pwm_aux0 = 0;
 	  }
 	else
 	  {

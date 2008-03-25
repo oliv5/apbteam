@@ -326,18 +326,11 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	/* Set both acknoledge.
 	 * - b: main ack sequence number.
 	 * - b: auxiliary ack sequence number. */
-	if (state_aux0.blocked && args[1] == state_aux0.finished)
-	    pos_reset (&pos_aux0);
 	state_acknowledge (&state_aux0, args[1]);
 	/* no break; */
       case c ('a', 1):
 	/* Set main acknoledge.
 	 * - b: main ack sequence number. */
-	if (state_main.blocked && args[0] == state_main.finished)
-	  {
-	    pos_reset (&pos_theta);
-	    pos_reset (&pos_alpha);
-	  }
 	state_acknowledge (&state_main, args[0]);
 	break;
     /* Stats.

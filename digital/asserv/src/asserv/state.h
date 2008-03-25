@@ -83,6 +83,7 @@ state_start (struct state_t *motor, uint8_t sequence)
 {
     motor->sequence = sequence;
     motor->finished = 0;
+    motor->blocked = 0;
 }
 
 /** Signal the current command completion. */
@@ -93,21 +94,26 @@ state_finish (struct state_t *motor)
     motor->finished = 1;
 }
 
-/** Signal the current command completion. */
+/** Signal the current command is blocked, disable motor control until a new
+ * command is given. */
 static inline void
 state_blocked (struct state_t *motor)
 {
     motor->sequence_finish = motor->sequence | 0x80;
     motor->blocked = 1;
+    motor->mode = MODE_PWM;
 }
 
-/** Acknowledge a command completion. */
+/** Acknowledge a command completion and blocked state. */
 static inline void
 state_acknowledge (struct state_t *motor, uint8_t sequence)
 {
     motor->sequence_ack = sequence;
     if (sequence == motor->sequence_finish)
+      {
+	motor->finished = 0;
 	motor->blocked = 0;
+      }
 }
 
 #endif /* state_h */
