@@ -18,8 +18,7 @@ class WriterData:
 		events = self.list_events,
 		branches = self.list_branches,
 		transition_table = self.transition_table,
-		cb_impl = self.cb_impl,
-		cb_decl = self.cb_decl,
+		states_template = self.states_template,
 		)
 
     def list_states (self):
@@ -97,14 +96,11 @@ class WriterData:
 		exp += tt % d
 	return exp
 
-    def cb_impl (self):
-	return self.states_template ('template_cb_impl.c')
-
-    def cb_decl (self):
-	return self.states_template ('template_cb_decl.h')
-
     def __getitem__ (self, key):
 	preproc = lambda v: v
+	args = []
+	key = key.split (',')
+	key, args = key[0], key[1:]
 	if key.startswith ('*'):
 	    key = key[1:]
 	    preproc = lambda v: ' * ' + v.replace ('\n', '\n * ') + '\n'
@@ -114,7 +110,7 @@ class WriterData:
 	val = None
 	if key in self.dict:
 	    try:
-		val = self.dict[key] ()
+		val = self.dict[key] (*args)
 	    except TypeError:
 		val = self.dict[key]
 	elif key.startswith ('user.'):

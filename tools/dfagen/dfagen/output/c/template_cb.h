@@ -9,4 +9,4 @@
 
 #include "%(prefix)s.h"
 
-%(cb_decl)s#endif /* %(prefix)s_cb_h */
+%(states_template,template_cb_decl.h)s#endif /* %(prefix)s_cb_h */

@@ -6,4 +6,4 @@
 %(*comments)s */
 #include "%(prefix)s_cb.h"
 
-%(cb_impl)s
+%(states_template,template_cb_impl.c)s
