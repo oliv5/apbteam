@@ -116,9 +116,9 @@
                                 0,     0,  0,     0,     1,    0,    0,    1))
                 
 /** Defines external interrupts level configuration : 
- *  low level of INT0 and INT1 generates an interrup request */
+ *  falling edge of INT0 and INT1 generates an interrup request */
 #define MCUCR_LR_CFG (regv (SM2, SE, SM1, SM0, ISC11, ISC10, ISC01, ISC00, \
-                              0,  0,   0,   0,     0,     0,     0,     0))
+                              0,  0,   0,   0,     1,     0,     1,     0))
 
 /** Enable external interrupts INT1 and INT0 fir current limitation */
 #define GICR_LR_CFG (regv (INT1, INT0, INT2,  4,  3,  2, IVSEL, IVCE, \
@@ -133,6 +133,8 @@
 #define CURLIM_MAX 0x80
 #define OCR_CurLim_L_ OCR1A
 #define OCR_CurLim_R_ OCR1B
+#define ILIM_R_io (PIND & (1 << 3))
+#define ILIM_L_io (PIND & (1 << 2))
 
 // Vectors
 #define ILIM_R_vect INT1_vect

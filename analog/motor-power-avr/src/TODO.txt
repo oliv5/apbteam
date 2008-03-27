@@ -11,21 +11,8 @@ de la limitation en courant
 entre les PWM des deux ponts
 
 Tester :
-- la gÃ©nÃ©ration de la PWM de la limitation de courant
-- le protocole (commandes 'l', 'r', 'L', 'R', et 'w' testées OK)
+- le protocole (commandes 'l', 'r', 'L', 'R', 'w', 'c' testées OK)
 - mesurer la linéarité du PWM
-- tester la limitation en courant. Attention : la carte actuelle ne
-supportera pas plus de 10A. Pour celà, mettre la PWM à une valeur entre 50%
-et 90% sur une charge qui débite environt 3 à 8A (oui... il faut trouver la
-charge, d'autant plus qu'il faut une charge selfique. A mon avis, un gros
-moteur bloqué supportant bien les surcharges ferait l'affaire). Visualiser
-la PWM à l'oscillo (dans l'idéal, visualiser le courant par une pince
-ampèremétrique). Abaisser progressivement la limitation : le rapport
-cyclique doit diminuer, le courant moyen aussi, et le courant pic ne doit
-jamais dépasser la limite fixée par soft.
-- tester l'absence de perturbation d'un pont par l'autre. Pour celà : on
-fixe un pont à une valeur de PWM, et on fait varier la PWM de l'autre pont
-de 0% à PWM_MAX. La PWM du premier pont ne doit jamais varier.
 - tester la limitation en température. Faire comme pour le test de
 limitation de courant, mais en approchant un fer à souder des capteurs de
 température

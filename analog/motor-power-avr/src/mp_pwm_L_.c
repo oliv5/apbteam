@@ -35,8 +35,12 @@ void init_pwm_L_ (void) {
 
 // PWM rising edge on timer overflow IT
 ISR(OVF_L_vect) {
-    // programs the state which is ordered by the core code
-    state_L_ = state_L_cmd;
+    if(!ILIM_L_io)
+        // stay in High-Z if current limitation still active
+        state_L_ = CMD_STATE_HIGH_Z;
+    else
+        // programs the state which is ordered by the core code
+        state_L_ = state_L_cmd;
 
     switch (state_L_) 
       {
