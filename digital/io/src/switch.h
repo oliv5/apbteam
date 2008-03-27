@@ -44,9 +44,14 @@
 #define SWITCH_COLOR_PORT PORTC
 
 /**
+ * Color selector read register port.
+ */
+#define SWITCH_COLOR_PIN PINC
+
+/**
  * Color selector switch pin number of the port.
  */
-#define SWITCH_COLOR_PIN 0
+#define SWITCH_COLOR_PIN_NUMBER 0
 
 /**
  * Jack switch port.
@@ -54,9 +59,14 @@
 #define SWITCH_JACK_PORT PORTC
 
 /**
+ * Jack switch read register port.
+ */
+#define SWITCH_JACK_PIN PINC
+
+/**
  * Jack switch pin number of the port.
  */
-#define SWITCH_JACK_PIN 1
+#define SWITCH_JACK_PIN_NUMBER 1
 
 /** @} */
 
@@ -69,8 +79,8 @@ switch_init (void)
 {
     /* By default, all pins are in input direction */
     /* Enable the pull-ups */
-   set_bit (SWITCH_COLOR_PORT, SWITCH_COLOR_PIN);
-   set_bit (SWITCH_JACK_PORT, SWITCH_JACK_PIN);
+   set_bit (SWITCH_COLOR_PORT, SWITCH_COLOR_PIN_NUMBER);
+   set_bit (SWITCH_JACK_PORT, SWITCH_JACK_PIN_NUMBER);
 }
 
 /**
@@ -79,7 +89,7 @@ switch_init (void)
 inline uint8_t
 switch_get_color (void)
 {
-    return bit_is_set (SWITCH_COLOR_PORT, SWITCH_COLOR_PIN);
+    return bit_is_set (SWITCH_COLOR_PIN, SWITCH_COLOR_PIN_NUMBER);
 }
 
 /**
@@ -88,7 +98,7 @@ switch_get_color (void)
 inline uint8_t
 switch_get_jack (void)
 {
-    return bit_is_set (SWITCH_JACK_PORT, SWITCH_JACK_PIN);
+    return bit_is_set (SWITCH_JACK_PIN, SWITCH_JACK_PIN_NUMBER);
 }
 
 #endif /* switch_h */
