@@ -26,7 +26,7 @@
 #include "common.h"
 /* Different name on ATmega8535. */
 
-#if defined (__AVR_ATmega8535__) || (__AVR_ATmega16__)
+#if defined (__AVR_ATmega8535__) || defined (__AVR_ATmega16__)
 #define ADCSR ADCSRA
 #endif
 
