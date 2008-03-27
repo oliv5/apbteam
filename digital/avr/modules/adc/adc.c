@@ -35,14 +35,21 @@
 # warning "adc: not tested on this chip."
 #endif
 
+#if defined (__AVR_ATmega128__)
+#else
+/* If the ADCSRB register is not set, auto-trigger is equivalent to
+ * free-running mode. */
+# define ADFR ADATE
+#endif
+
 /* ADC configuration. */
 /* REFS = 01: AVCC with external capacitor at AREF pin.
  *        11: Internal 2.56V Voltage Reference with external capacitor
  *        at AREF pin. */
 #define ADMUX_CFG (regv (REFS1, REFS0, ADLAR, MUX4, MUX3, MUX2, MUX1, MUX0, \
 			     1,     1,     0,    0,    0,    0,    0,    0))
-#define ADCSR_CFG (regv (ADEN, ADSC, ADATE, ADIF, ADIE, ADPS2, ADPS1, ADPS0, \
-			    1,    0,     0,    1,    0,     0,     0,     0))
+#define ADCSR_CFG (regv (ADEN, ADSC, ADFR, ADIF, ADIE, ADPS2, ADPS1, ADPS0, \
+			    1,    0,    0,    1,    0,     0,     0,     0))
 #define ADCSR_CFG_115200 7
 
 /* +AutoDec */
