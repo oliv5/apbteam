@@ -42,22 +42,22 @@
 /**
  * Front left sharp.
  */
-#define SHARP_FRONT_LEFT _BV(0)
+#define SHARP_FRONT_LEFT 0
 
 /**
  * Front right sharp.
  */
-#define SHARP_FRONT_RIGHT _BV(1)
+#define SHARP_FRONT_RIGHT 1
 
 /**
  * Back left sharp.
  */
-#define SHARP_BACK_LEFT _BV(2)
+#define SHARP_BACK_LEFT 2
 
 /**
  * Back right sharp.
  */
-#define SHARP_BACK_RIGHT _BV(3)
+#define SHARP_BACK_RIGHT 3
 
 /**
  * Low (0 index) and high (1 index) thresholds for interpreted sharp values.

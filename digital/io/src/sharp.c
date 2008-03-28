@@ -40,14 +40,14 @@ uint16_t sharp_values_[SHARP_NUMBER];
 uint16_t sharp_threshold[SHARP_NUMBER][2];
 
 /**
- * Hysteresis.
+ * Filter counter for each sharp.
  */
-uint8_t sharp_hysteresis_[SHARP_NUMBER];
+uint8_t sharp_filter_[SHARP_NUMBER];
 
 /**
- * Hysteresis threshold.
+ * Filter number value before changing state.
  */
-#define SHARP_HYSTERESIS_THRESHOLD 3
+#define SHARP_FILTER_NUMBER 3
 
 /**
  * Previous sharp interpreted values.
@@ -133,24 +133,24 @@ sharp_get_interpreted (uint8_t sharp_id)
 	    /* Return the previous value */
 	    return sharp_previous_values_[sharp_id];
 
-	/* Manage the hysteresis */
+	/* Filter the value */
 	/* Check if previous value is the current state */
 	if (sharp_previous_values_[sharp_id] == current_state)
 	  {
-	    /* Reset hysteresis */
-	    sharp_hysteresis_[sharp_id] = SHARP_HYSTERESIS_THRESHOLD;
+	    /* Reset filter counter */
+	    sharp_filter_[sharp_id] = SHARP_FILTER_NUMBER;
 	    /* Return current state */
 	    return current_state;
 	  }
 	/* Otherwise, check if this sharp value has been the same
-	 * SHARP_HYSTERESIS_THRESHOLD times */
-	else if (sharp_hysteresis_[sharp_id]-- == 0)
+	 * SHARP_FILTER_NUMBER times */
+	else if (sharp_filter_[sharp_id]-- == 0)
 	  {
-	    /* Current value change (for SHARP_HYSTERESIS_THRESHOLD times)! */
+	    /* Current value change (for SHARP_FILTER_NUMBER times)! */
 	    /* Update previous value */
 	    sharp_previous_values_[sharp_id] = current_state;
-	    /* Reset hysteresis */
-	    sharp_hysteresis_[sharp_id] = SHARP_HYSTERESIS_THRESHOLD;
+	    /* Reset filter counter */
+	    sharp_filter_[sharp_id] = SHARP_FILTER_NUMBER;
 	    /* Return current state */
 	    return current_state;
 	  }
