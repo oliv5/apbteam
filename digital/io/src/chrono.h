@@ -39,6 +39,16 @@
 #include "io.h"				/* Registers for timer/counter 1 */
 
 /**
+ * Number of overflow of the timer/counter 1 before doing the last one.
+ */
+#define CHRONO_OVERFLOW_MAX 70
+
+/**
+ * Number of TIC to restart from for the last overflow.
+ */
+#define CHRONO_RESTART_TIC 58982
+
+/**
  * Match is finished.
  * This variable will be set to 0 when the match is over.
  */
@@ -47,7 +57,7 @@ static uint8_t chrono_match_over;
 /**
  * Overflow counter.
  */
-static uint8_t chrono_ov_count_;
+static volatile uint8_t chrono_ov_count_;
 
 /**
  * Initialize the chrono timer/counter 1.
@@ -67,11 +77,11 @@ SIGNAL (SIG_OVERFLOW1)
 {
     switch (++chrono_ov_count_)
       {
-      case 70:
+      case CHRONO_OVERFLOW_MAX:
 	/* Last but not complete overflow */
-	TCNT1 = 58982;
+	TCNT1 = CHRONO_RESTART_TIC;
 	break;
-      case 71:
+      case CHRONO_OVERFLOW_MAX + 1:
 	/* End of match! */
 	chrono_match_over = 1;
 	break;
