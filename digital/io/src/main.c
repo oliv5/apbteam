@@ -24,7 +24,6 @@
  * }}} */
 
 #include "common.h"
-#include "io.h"
 #include "modules/uart/uart.h"
 #include "modules/proto/proto.h"
 #include "modules/utils/utils.h"

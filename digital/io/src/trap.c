@@ -23,9 +23,8 @@
  *
  * }}} */
 
+#include "common.h"
 #include "trap.h"
-
-#include "servo.h"	/* servo_* */
 
 /**
  * @todo

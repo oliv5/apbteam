@@ -23,10 +23,12 @@
  *
  * }}} */
 
+#include "common.h"
 #include "eeprom.h"
 
 #include "servo.h"		/* SERVO_NUMBER */
 #include "trap.h"		/* trap_high_time_pos */
+
 #include <avr/eeprom.h>		/* eeprom_{read,write}_byte */
 
 /**

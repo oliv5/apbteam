@@ -23,6 +23,7 @@
  *
  * }}} */
 
+#include "common.h"
 #include "asserv.h"
 
 #include "modules/twi/twi.h"	/* twi_* */

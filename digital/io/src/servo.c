@@ -23,11 +23,12 @@
  *
  * }}} */
 
+#include "common.h"
 #include "servo.h"
 
-#include "io.h"				/* General defines of registers */
 #include "modules/utils/utils.h"	/* regv, set_bit */
 #include "modules/utils/byte.h"		/* v16_to_v8 */
+#include "io.h"				/* General defines of registers */
 
 /**
  * @defgroup ServoConfig Servo module configuration variables and defines.

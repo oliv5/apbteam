@@ -34,8 +34,6 @@
  * it when calling the correct function.
  */
 
-#include "common.h"	/* uint*_t */
-
 /**
  * Number of sharps.
  */

@@ -29,7 +29,7 @@
  * @file Module to manage 'switchs'. For example, colors selector and jack.
  */
 
-#include "io.h"
+#include "io.h"				/* PORT/PIN, bit_is_set */
 #include "modules/utils/utils.h"	/* set_bit */
 
 /**

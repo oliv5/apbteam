@@ -38,8 +38,6 @@
  *  ignored.
  */
 
-#include "common.h"
-
 /**
  * Initialize the asserv control module.
  * This functions does not initialize the asserv board, but the underling

@@ -52,7 +52,6 @@
  */
 
 #include "servo.h"	/* SERVO_NUMBER */
-#include "common.h"	/* uint8_t */
 
 /**
  * Trap high time values for the different positions (horizontal and

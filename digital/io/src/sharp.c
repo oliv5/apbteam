@@ -23,6 +23,7 @@
  *
  * }}} */
 
+#include "common.h"
 #include "sharp.h"
 
 #include "modules/adc/adc.h"	/* ADC functions */
