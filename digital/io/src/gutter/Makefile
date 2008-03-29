@@ -7,7 +7,6 @@ prgm: gutter.fsm gutter.conf
 
 exe: gutter.fsm gutter.conf
 	make prgm
-	if [ -f gutter_cb.c ]; then patch gutter_cb.c gutter_cb_skel.c; else mv gutter_cb_skel.c gutter_cb.c; fi;
 
 dot: gutter.fsm gutter.conf
 	python ../../../../tools/dfagen/dfagen.py -o dot -d $< -c gutter.conf -p gutter
@@ -17,7 +16,6 @@ png: gutter.dot
 
 clean:
 	rm -f gutter.h
-	rm -f gutter_cb.c
 	rm -f gutter_cb.h
 	rm -f gutter.dot
 	rm -f gutter.png

@@ -2,16 +2,22 @@
 get_samples
 
 States:
+ START
  GO_TO_GUTTER
  OPEN_COLLECTOR
  CLOSE_COLLECTOR
  END
 
 Events:
+ ok
  position_reached
  position_failed
  collector_opened
  collector_closed
+
+START:
+ ok -> GO_TO_GUTTER
+  Go to the gutter.
 
 GO_TO_GUTTER:
  position_reached -> OPEN_COLLECTOR
