@@ -27,7 +27,14 @@
 
 struct getsamples_t
 {
+    /* The FSM. */
     getsamples_state_t fsm;
+    /* Distributor x position to get samples. */
+    uint32_t distributor_x;
+    /* Distributor y position to get samples. */
+    uint32_t distributor_y;
+    /* Samples to take. */
+    uint8_t samples;
 };
 
 #endif /* getsamples_robo_h */

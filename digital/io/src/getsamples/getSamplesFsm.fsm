@@ -2,6 +2,7 @@
 get_samples
 
 States:
+ START
  GO_TO_POSITION
  PREPARE_ARM
  FORWARD_CONTROL
@@ -10,11 +11,16 @@ States:
  END
 
 Events:
+ ok
  position_reached
  position_failed
  arm_moved
  sample_took
  classifier_ready
+
+START:
+ ok -> GO_TO_POSITION
+  Go to the distributor. The distributor to reach shall be setted in the fsm structure.
 
 GO_TO_POSITION:
  position_reached -> PREPARE_ARM
