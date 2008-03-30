@@ -104,4 +104,16 @@ trap_setup_path_to_box (trap_box_id_e box);
 void
 trap_set_high_time (uint8_t servo_id, uint8_t horizontal, uint8_t vertical);
 
+/**
+ * Open the rear pannel to eject the balls.
+ */
+void
+trap_open_rear_panel (void);
+
+/**
+ * Close the rear pannel to eject the balls.
+ */
+void
+trap_close_rear_panel (void);
+
 #endif /* trap_h */
