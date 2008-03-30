@@ -3,13 +3,12 @@ CFLAGS = -O2 -Wall
 all: prgm exe dot png 
 
 prgm: gutter.fsm gutter.conf
-	python ../../../../tools/dfagen/dfagen.py -o c -d $< -c gutter.conf -p gutter 
+	python ../../../tools/dfagen/dfagen.py -o c -d $< -c gutter.conf -p gutter 
 
-exe: gutter.fsm gutter.conf
-	make prgm
+exe: prgm
 
 dot: gutter.fsm gutter.conf
-	python ../../../../tools/dfagen/dfagen.py -o dot -d $< -c gutter.conf -p gutter
+	python ../../../tools/dfagen/dfagen.py -o dot -d $< -c gutter.conf -p gutter
 
 png: gutter.dot
 	dot -Tpng -o gutter.png gutter.dot
