@@ -25,6 +25,8 @@
  *
  * }}} */
 
+#include "common.h"
+
 struct getsamples_t
 {
     /* The FSM. */

@@ -22,33 +22,31 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
-#define uint32_t (unsigned int)
-#define uint16_t (unsigned short)
-#define uint8_t (unsigned char)
+#include "common.h"
 
+#include "modules/proto/proto.h"
+#include "modules/utils/utils.h"
 
-#include "../getsamples.h"
-#include "../getsamples_robo.h"
-
-#include <stdio.h>
+#include "../../getsamples.h"
+#include "../../getsamples_robo.h"
 
 void
 getsamples_print_test (getsamples_t *getsamples)
 {
-    printf ("Machine state ");
-
+    printf ("STATE ");
     switch (getsamples->fsm)
       {
       case GETSAMPLES_STATE_START:
 	printf ("START");
+	break;
       case GETSAMPLES_STATE_PREPARE_ARM:
-	printf ("PREPARE_ARM");
+	printf ("PREPEARE_ARM");
 	break;
       case GETSAMPLES_STATE_END:
 	printf ("END");
 	break;
       case GETSAMPLES_STATE_FORWARD_CONTROL:
-	printf ("FORWARD CONTROL");
+	printf ("FORWARD_CONTROL");
 	break;
       case GETSAMPLES_STATE_TAKE_SAMPLES:
 	printf ("TAKE_SAMPLES");
@@ -57,10 +55,10 @@ getsamples_print_test (getsamples_t *getsamples)
 	printf ("BACKWARD");
 	break;
       case GETSAMPLES_STATE_GO_TO_POSITION:
-	printf ("GO TO POSITION");
+	printf ("GO_TO_POSITION");
 	break;
       case GETSAMPLES_STATE_NB:
-	printf ("NB");
+	printf ("STATE_NB");
       }
     printf ("\n");
 }
@@ -71,6 +69,15 @@ main (void)
     getsamples_t getsamples_fsm;
 
     getsamples_init (&getsamples_fsm);
+    getsamples_print_test (&getsamples_fsm);
+
+    getsamples_fsm.distributor_x = 700;
+    getsamples_fsm.distributor_y = 2100;
+    getsamples_fsm.samples = 3;
+
+    getsamples_handle_event (&getsamples_fsm,
+			     GETSAMPLES_EVENT_ok);
+
     getsamples_print_test (&getsamples_fsm);
 
     getsamples_handle_event (&getsamples_fsm,
@@ -84,5 +91,52 @@ main (void)
 
     getsamples_print_test (&getsamples_fsm);
 
+    getsamples_handle_event (&getsamples_fsm,
+			     GETSAMPLES_EVENT_arm_moved);
+
+
+    getsamples_print_test (&getsamples_fsm);
+
+    getsamples_handle_event (&getsamples_fsm,
+			 GETSAMPLES_EVENT_position_reached);
+
+    getsamples_print_test (&getsamples_fsm);
+
+    for (getsamples_fsm.samples--; getsamples_fsm.samples; getsamples_fsm.samples --)
+      {
+	getsamples_handle_event (&getsamples_fsm,
+			 GETSAMPLES_EVENT_sample_took);
+
+	getsamples_print_test (&getsamples_fsm);
+      }
+
+    getsamples_handle_event (&getsamples_fsm,
+		     GETSAMPLES_EVENT_sample_took);
+
+    getsamples_print_test (&getsamples_fsm);
+
+    getsamples_handle_event (&getsamples_fsm,
+		     GETSAMPLES_EVENT_position_reached);
+
+    getsamples_print_test (&getsamples_fsm);
+
     return 0;
+}
+
+void
+asserv_set_x_position (uint32_t position)
+{
+    printf ("X position : %d\n", position);
+}
+
+void
+asserv_move_arm (uint16_t position, uint8_t speed)
+{
+    printf ("Move arm, position : %d, speed : %d\n", position, speed);
+}
+
+void
+asserv_set_y_position (int32_t y)
+{
+    printf ("Y position : %d\n", y);
 }

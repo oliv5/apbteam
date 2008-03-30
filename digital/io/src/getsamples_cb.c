@@ -6,6 +6,8 @@
  * 
  */
 #include "getsamples_cb.h"
+#include "getsamples_robo.h"
+#include "asserv.h"
 
 /*
  * PREPARE_ARM =arm_moved=>
@@ -66,7 +68,6 @@ getsamples__TAKE_SAMPLES__sample_took (getsamples_t *user)
       }
     else
       {
-	asserv_move_arm (5000, 100);
 	// Try to end the position to the distributor.
 	asserv_set_x_position (user->distributor_x - 20);
 	// Go to the color distributor.
@@ -84,6 +85,7 @@ getsamples__TAKE_SAMPLES__sample_took (getsamples_t *user)
 getsamples_branch_t
 getsamples__BACKWARD__position_reached (getsamples_t *user)
 {
+    asserv_move_arm (5000, 100);
     return getsamples_next (BACKWARD, position_reached);
 }
 
