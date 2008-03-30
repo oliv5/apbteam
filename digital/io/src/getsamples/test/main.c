@@ -22,6 +22,11 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#define uint32_t (unsigned int)
+#define uint16_t (unsigned short)
+#define uint8_t (unsigned char)
+
+
 #include "../getsamples.h"
 #include "../getsamples_robo.h"
 
@@ -34,6 +39,8 @@ getsamples_print_test (getsamples_t *getsamples)
 
     switch (getsamples->fsm)
       {
+      case GETSAMPLES_STATE_START:
+	printf ("START");
       case GETSAMPLES_STATE_PREPARE_ARM:
 	printf ("PREPARE_ARM");
 	break;
