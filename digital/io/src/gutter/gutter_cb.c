@@ -28,6 +28,7 @@ gutter_branch_t
 gutter__CLOSE_COLLECTOR__collector_closed (gutter_t *user)
 {
     //Close the collector.
+    trap_close_rear_panel();
     return gutter_next (CLOSE_COLLECTOR, collector_closed);
 }
 
@@ -51,6 +52,7 @@ gutter_branch_t
 gutter__GO_TO_GUTTER__position_reached (gutter_t *user)
 {
     // Open the collector.
+    trap_open_rear_panel();
     return gutter_next (GO_TO_GUTTER, position_reached);
 }
 
@@ -65,5 +67,4 @@ gutter__OPEN_COLLECTOR__collector_opened (gutter_t *user)
     utils_delay_ms(4.4);
     return gutter_next (OPEN_COLLECTOR, collector_opened);
 }
-
 
