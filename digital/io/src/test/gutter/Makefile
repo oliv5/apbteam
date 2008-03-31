@@ -3,7 +3,7 @@ HOST_PROGS = fsm
 IOBASE = ../..
 fsm_SOURCES = main.c $(IOBASE)/fsm.c \
 	      $(IOBASE)/gutter_cb.c $(IOBASE)/gutter_fsm.c
-MODULES =
+MODULES = utils
 CONFIGFILE =
 # -O2 : speed
 # -Os : size

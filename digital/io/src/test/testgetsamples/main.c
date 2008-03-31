@@ -130,3 +130,16 @@ asserv_set_y_position (int32_t y)
 {
     printf ("Y position : %d\n", y);
 }
+
+void
+trap_open_rear_panel(void)
+{
+    printf ("Open rear panel\n");
+}
+
+void
+trap_close_rear_panel (void)
+{
+    printf ("Close rear panel\n");
+}
+

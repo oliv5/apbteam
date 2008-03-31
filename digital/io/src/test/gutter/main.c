@@ -23,7 +23,6 @@
  *
  * }}} */
 #include "common.h"
-
 #include "../../fsm.h"
 
 #include <stdio.h>
@@ -79,4 +78,40 @@ main (void)
     gutter_print_test (&gutter_fsm);
 
     return 0;
+}
+
+void
+asserv_set_x_position (uint32_t position)
+{
+    printf ("X position : %d\n", position);
+}
+
+void
+asserv_move_arm (uint16_t position, uint8_t speed)
+{
+    printf ("Move arm, position : %d, speed : %d\n", position, speed);
+}
+
+void
+asserv_set_y_position (int32_t y)
+{
+    printf ("Y position : %d\n", y);
+}
+
+void
+trap_open_rear_panel (void)
+{
+    printf ("Open rear panel\n");
+}
+
+void
+trap_close_rear_panel(void)
+{
+    printf ("Close rear panel\n");
+}
+
+void
+asserv_go_to_gutter (void)
+{
+    printf ("Go to gutter\n");
 }
