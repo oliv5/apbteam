@@ -18,6 +18,17 @@ include $(BASE)/make/Makefile.gen
 # The %_cb.c file can not be auto-generated.  When the %_cb_skel.c is changed,
 # user should check if they still are synchronised using a merge program, like
 # vimdiff.
+#
+# To help user, the user can define the CB variable to request a particular
+# behaviour.
+#
+# If CB=touch, ignore the auto-generation and touch the %_cb.c file.
+#
+# If CB=vimdiff, use vimdiff to merge differences.
+#
+# If CB=merge, try to merge automatically.  In this case, it uses a old copy
+# of %_cb_skel.c to merge.  This will fail the first time if no old copy is
+# available.
 
 # If templates are modified, files should be rebuilt.
 FSM_TEMPLATES := template_cb.h template_cb_decl.h template_cb_impl.c \
@@ -39,9 +50,34 @@ DFAGEN = python $(BASE)/../../tools/dfagen/dfagen.py
 %_fsm.h %_fsm.c %_cb.h %_cb_skel.c: %.fsm fsm.conf $(FSM_TEMPLATES)
 	$(DFAGEN) -o c -d $< -c fsm.conf -p $(<:%.fsm=%)
 
+ifndef CB
 %_cb.c: %_cb_skel.c
-	echo "Please update $@"
-	false
+	@echo "Please update $@"
+	@false
+else ifeq ($(CB),touch)
+%_cb.c: %_cb_skel.c
+	@echo "Updating $@ blindly"
+	cp $< .$<.old
+	touch $@
+else ifeq ($(CB),merge)
+%_cb.c: %_cb_skel.c
+	@echo "Try to merge $@..."
+	@if [ -r .$<.old ]; then \
+		merge $@ .$<.old $<; \
+		RET=$$?; \
+	else \
+		echo "No history, cannot merge"; \
+		RET=1; \
+	fi; \
+	cp $< .$<.old; \
+	exit $$RET
+else
+%_cb.c: %_cb_skel.c
+	@echo "Using $(CB) to update $@"
+	cp $< .$<.old
+	$(CB) $@ $<
+endif
+
 
 png: getsamples.png gutter.png
 
