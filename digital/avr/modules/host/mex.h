@@ -81,6 +81,10 @@ mex_msg_pop_buffer (mex_msg_t *msg);
 int
 mex_msg_len (mex_msg_t *msg);
 
+/** Get message type. */
+u8
+mex_msg_mtype (mex_msg_t *msg);
+
 /** Connect to the mex Hub. */
 void
 mex_node_connect (void);
@@ -101,15 +105,15 @@ mex_node_wait_date (u32 date);
 u32
 mex_node_date (void);
 
-/** Send a message. */
+/** Send a message, msg is released. */
 void
 mex_node_send (mex_msg_t *msg);
 
-/** Send a request and return response. */
+/** Send a request and return response, msg is released. */
 mex_msg_t *
 mex_node_request (mex_msg_t *msg);
 
-/** Send a response to the currently serviced request. */
+/** Send a response to the currently serviced request, msg is released. */
 void
 mex_node_response (mex_msg_t *msg);
 
