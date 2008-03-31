@@ -36,9 +36,9 @@
 /** Activate slave part. */
 #define AC_TWI_SLAVE_ENABLE 0
 /** Slave recv buffer size. */
-#define AC_TWI_SL_RECV_BUFFER_SIZE 1
+#define AC_TWI_SL_RECV_BUFFER_SIZE 16
 /** Slave send buffer size. */
-#define AC_TWI_SL_SEND_BUFFER_SIZE 1
+#define AC_TWI_SL_SEND_BUFFER_SIZE 16
 
 /* proto - Protocol module. */
 /** Maximum argument size. */

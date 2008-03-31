@@ -31,6 +31,10 @@
 #include "modules/math/random/random.h"
 #include "io.h"
 
+#ifdef HOST
+# include "modules/host/mex.h"
+#endif
+
 void
 proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 {
@@ -121,6 +125,10 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		twi_ms_send (args[0], random_bytes, byte_number);
 		while (!twi_ms_is_finished ())
 		    ;
+#ifdef HOST
+		/* Give time to slave to copy data. */
+		mex_node_wait_date (mex_node_date () + 2);
+#endif
 
 		/* Received buffer */
 		uint8_t received_buffer[max_byte_number];
@@ -182,8 +190,12 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 }
 
 int
-main (void)
+main (int argc, char **argv)
 {
+    avr_init (argc, argv);
+#ifdef HOST
+    mex_node_connect ();
+#endif
     /* Enable interruptions */
     sei ();
     /* Initialize serial port */
@@ -196,8 +208,13 @@ main (void)
     proto_send0 ('M');
     while (42)
       {
-	uint8_t c = uart0_getc ();
-	proto_accept (c);
+#ifdef HOST
+	mex_node_wait_date (mex_node_date () + 1);
+	while (uart0_poll ())
+	    proto_accept (uart0_getc ());
+#else
+	proto_accept (uart0_getc ());
+#endif
       }
     return 0;
 }

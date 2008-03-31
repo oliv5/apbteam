@@ -1,9 +1,9 @@
 BASE = ../../..
-AVR_PROGS = test_twi_sl
+PROGS = test_twi_sl
 test_twi_sl_SOURCES = test_twi_sl.c
 DOC =
 EXTRACTDOC =
-MODULES = twi uart proto
+MODULES = twi uart proto utils
 
 
 CONFIGFILE = avrconfig_slave.h

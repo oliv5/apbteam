@@ -23,13 +23,16 @@
  *
  * }}} */
 
-
 #include "common.h"
 #include "modules/twi/twi.h"
 #include "modules/proto/proto.h"
 #include "modules/uart/uart.h"
 #include "modules/utils/utils.h"
 #include "io.h"
+
+#ifdef HOST
+# include "modules/host/mex.h"
+#endif
 
 void
 proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
@@ -51,8 +54,12 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 }
 
 int
-main (void)
+main (int argc, char **argv)
 {
+    avr_init (argc, argv);
+#ifdef HOST
+    mex_node_connect ();
+#endif
     /* Enable interruptions */
     sei ();
     /* Initialize serial port */
@@ -65,6 +72,9 @@ main (void)
     proto_send0 ('S');
     while (42)
       {
+#ifdef HOST
+	mex_node_wait_date (mex_node_date () + 1);
+#endif
 	uint8_t data[AC_TWI_SL_RECV_BUFFER_SIZE];
 	data[0] = 0;
 	/* Check for data */
@@ -73,7 +83,7 @@ main (void)
 	    /* Receive and store them */
 	    twi_sl_update (data, AC_TWI_SL_RECV_BUFFER_SIZE);
 	  }
-	if (uart0_poll ())
+	while (uart0_poll ())
 	    proto_accept (uart0_getc ());
       }
     return 0;

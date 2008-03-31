@@ -24,13 +24,53 @@
  * }}} */
 #include "common.h"
 #include "twi.h"
+#include "modules/host/mex.h"
 
-/* Empty for the moment. */
+#include <string.h>
+
+/** This implementation should cover all usual cases, and assert in other
+ * cases. */
+
+/** Read messages are sent as request.
+ * In request, first byte is address, second byte is length.
+ * In response, whole payload is data. */
+#define TWI_READ 0x90
+/** Write messages are sent directly.
+ * First byte is address, rest of payload is data. */
+#define TWI_WRITE 0x91
+
+/** TWI address. */
+static uint8_t twi_address;
+
+#if AC_TWI_SLAVE_ENABLE
+
+/** Received data. */
+static uint8_t rcpt_buf_sl[AC_TWI_SL_RECV_BUFFER_SIZE];
+/** Whether new received data are ready. */
+static uint8_t data_ready_sl;
+/** Data sent on master request. */
+static uint8_t send_buf_sl[AC_TWI_SL_SEND_BUFFER_SIZE];
+
+/** Handle READ requests from master. */
+static void
+twi_handle_READ (void *user, mex_msg_t *msg);
+
+/** Handle WRITE requests from master. */
+static void
+twi_handle_WRITE (void *user, mex_msg_t *msg);
+
+#endif /* AC_TWI_SLAVE_ENABLE */
 
 /** Initialise twi. */
 void
 twi_init (uint8_t addr)
 {
+    twi_address = addr;
+#if AC_TWI_SLAVE_ENABLE
+    data_ready_sl = 0;
+    mex_node_register (TWI_READ, twi_handle_READ, NULL);
+    mex_node_register (TWI_WRITE, twi_handle_WRITE, NULL);
+#endif /* AC_TWI_SLAVE_ENABLE */
 }
 
 #if AC_TWI_SLAVE_ENABLE
@@ -39,13 +79,53 @@ twi_init (uint8_t addr)
 uint8_t 
 twi_sl_poll (uint8_t *buffer, uint8_t size)
 {
-    return 0;
+    if (data_ready_sl)
+      {
+	data_ready_sl = 0;
+	while (size--)
+	    buffer[size] = rcpt_buf_sl[size];
+	return 1;
+      }
+    else
+	return 0;
 }
 
 /** Met à jour le buffer de donnée à envoyer */
 void 
 twi_sl_update (uint8_t *buffer, uint8_t size)
 {
+    while (size--)
+	send_buf_sl[size] = buffer[size];
+}
+
+/** Handle READ requests from master. */
+static void
+twi_handle_READ (void *user, mex_msg_t *msg)
+{
+    u8 addr, size;
+    mex_msg_pop (msg, "BB", &addr, &size);
+    if (addr == twi_address)
+      {
+	assert (size <= AC_TWI_SL_SEND_BUFFER_SIZE);
+	mex_msg_t *m = mex_msg_new (TWI_READ);
+	mex_msg_push_buffer (m, send_buf_sl, size);
+	mex_node_response (m);
+      }
+}
+
+/** Handle WRITE requests from master. */
+static void
+twi_handle_WRITE (void *user, mex_msg_t *msg)
+{
+    u8 addr, size;
+    mex_msg_pop (msg, "B", &addr);
+    if (addr == twi_address)
+      {
+	size = mex_msg_len (msg);
+	assert (size <= AC_TWI_SL_RECV_BUFFER_SIZE);
+	memcpy (rcpt_buf_sl, mex_msg_pop_buffer (msg), size);
+	data_ready_sl = 1;
+      }
 }
 
 #endif /* AC_TWI_SLAVE_ENABLE */
@@ -56,21 +136,30 @@ twi_sl_update (uint8_t *buffer, uint8_t size)
 int8_t 
 twi_ms_is_finished (void)
 {
-    return 0;
+    return 1;
 }
 
 /** Send len bytes of data to address */
 int8_t
 twi_ms_send (uint8_t address, uint8_t *data, uint8_t len)
 {
-    return -1;
+    mex_msg_t *m = mex_msg_new (TWI_WRITE);
+    mex_msg_push (m, "B", address);
+    mex_msg_push_buffer (m, data, len);
+    mex_node_send (m);
+    return 0;
 }
 
 /** Read len bytes at addresse en put them in data */
 int8_t
 twi_ms_read (uint8_t address, uint8_t *data, uint8_t len)
 {
-    return -1;
+    mex_msg_t *m = mex_msg_new (TWI_READ);
+    mex_msg_push (m, "BB", address, len);
+    m = mex_node_request (m);
+    assert (mex_msg_len (m) == len);
+    memcpy (data, mex_msg_pop_buffer (m), len);
+    return 0;
 }
 
 #endif /* AC_TWI_MASTER_ENABLE */

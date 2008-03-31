@@ -1,9 +1,9 @@
 BASE = ../../..
-AVR_PROGS = test_twi_master
+PROGS = test_twi_master
 test_twi_master_SOURCES = test_twi_master.c
 DOC =
 EXTRACTDOC =
-MODULES = twi uart proto math/random
+MODULES = twi uart proto math/random utils
 
 
 CONFIGFILE = avrconfig_master.h
