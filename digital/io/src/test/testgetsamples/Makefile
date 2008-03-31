@@ -1,7 +1,12 @@
-BASE= ../..
+BASE= ../../../../avr
+HOST_PROGS = fsm
+IOBASE = ../..
+fsm_SOURCES = main.c $(IOBASE)/fsm.c $(IOBASE)/getsamples.c \
+	      $(IOBASE)/getsamples_cb.c $(IOBASE)/getsamples_fsm.c
+MODULES =
+CONFIGFILE =
+# -O2 : speed
+# -Os : size
+OPTIMIZE = -O2
 
-all: main.c $(BASE)/getsamples.c $(BASE)/getsamples_cb.c
-	gcc -g -O2 -Wall main.c $(BASE)/getsamples.c $(BASE)/getsamples_cb.c -o fsm
-
-clean: fsm 
-	rm -f fsm
+include $(BASE)/make/Makefile.gen

@@ -1,5 +1,5 @@
-#FSM get samples
-get_samples
+#FSM gutter
+gutter
 
 States:
  START

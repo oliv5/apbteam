@@ -1,7 +1,5 @@
-#ifndef gutter_robo_h
-#define gutter_robo_h
-/* gutter_robo.h */
-/*  {{{
+/* getsamples.c */
+/* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
  *
  * Copyright (C) 2008 Nélio Laranjeiro
  *
@@ -24,12 +22,23 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "common.h"
+#include "getsamples.h"
+#include "fsm.h"
 
-#include "gutter.h"
+struct getsamples_data_t getsamples_data;
 
-struct gutter_t
+/** Start a getsamples FSM. */
+void
+getsamples_start (uint32_t distributor_x, uint32_t distributor_y,
+		  uint8_t samples)
 {
-    gutter_state_t fsm;
-};
+    /* Set parameters. */
+    getsamples_data.distributor_x = distributor_x;
+    getsamples_data.distributor_y = distributor_y;
+    getsamples_data.samples = samples;
+    /* Start FSM. */
+    fsm_init (&getsamples_fsm);
+    fsm_handle_event (&getsamples_fsm, GETSAMPLES_EVENT_ok);
+}
 
-#endif /* gutter_robo_h */

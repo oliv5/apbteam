@@ -22,17 +22,18 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
-#include "../gutter.h"
-#include "../gutter_robo.h"
+#include "common.h"
+
+#include "../../fsm.h"
 
 #include <stdio.h>
 
 void
-gutter_print_test (gutter_t *gutter)
+gutter_print_test (fsm_t *gutter)
 {
     printf ("Machine state ");
 
-    switch (gutter->fsm)
+    switch (gutter->state_current)
       {
 	case GUTTER_STATE_END:
 	  printf ("END");
@@ -55,28 +56,25 @@ gutter_print_test (gutter_t *gutter)
 int
 main (void)
 {
-    gutter_t gutter_fsm;
+    fsm_init (&gutter_fsm);
 
-    gutter_init (&gutter_fsm);
+    fsm_handle_event (&gutter_fsm, GUTTER_EVENT_ok);
+
     gutter_print_test (&gutter_fsm);
 
-    gutter_handle_event (&gutter_fsm,
-			     GUTTER_EVENT_position_failed);
+    fsm_handle_event (&gutter_fsm, GUTTER_EVENT_position_failed);
 
     gutter_print_test (&gutter_fsm);
     
-    gutter_handle_event (&gutter_fsm,
-			     GUTTER_EVENT_position_reached);
+    fsm_handle_event (&gutter_fsm, GUTTER_EVENT_position_reached);
 
     gutter_print_test (&gutter_fsm);
 
-    gutter_handle_event (&gutter_fsm,
-			     GUTTER_EVENT_collector_opened);
+    fsm_handle_event (&gutter_fsm, GUTTER_EVENT_collector_opened);
 
     gutter_print_test (&gutter_fsm);
 
-    gutter_handle_event (&gutter_fsm,
-			     GUTTER_EVENT_collector_closed);
+    fsm_handle_event (&gutter_fsm, GUTTER_EVENT_collector_closed);
 
     gutter_print_test (&gutter_fsm);
 

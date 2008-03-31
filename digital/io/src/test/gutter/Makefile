@@ -1,7 +1,12 @@
-BASE= ..
+BASE= ../../../../avr
+HOST_PROGS = fsm
+IOBASE = ../..
+fsm_SOURCES = main.c $(IOBASE)/fsm.c \
+	      $(IOBASE)/gutter_cb.c $(IOBASE)/gutter_fsm.c
+MODULES =
+CONFIGFILE =
+# -O2 : speed
+# -Os : size
+OPTIMIZE = -O2
 
-all: main.c $(BASE)/gutter.c $(BASE)/gutter_cb.c
-	gcc -g -O2 -Wall main.c $(BASE)/gutter.c $(BASE)/gutter_cb.c -o fsm
-
-clean: fsm 
-	rm -f fsm
+include $(BASE)/make/Makefile.gen

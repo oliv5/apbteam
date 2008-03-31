@@ -24,17 +24,16 @@
  * }}} */
 #include "common.h"
 
-#include "modules/proto/proto.h"
-#include "modules/utils/utils.h"
-
+#include "../../fsm.h"
 #include "../../getsamples.h"
-#include "../../getsamples_robo.h"
+
+#include <stdio.h>
 
 void
-getsamples_print_test (getsamples_t *getsamples)
+getsamples_print_test (fsm_t *getsamples)
 {
     printf ("STATE ");
-    switch (getsamples->fsm)
+    switch (getsamples->state_current)
       {
       case GETSAMPLES_STATE_START:
 	printf ("START");
@@ -66,57 +65,48 @@ getsamples_print_test (getsamples_t *getsamples)
 int
 main (void)
 {
-    getsamples_t getsamples_fsm;
-
-    getsamples_init (&getsamples_fsm);
+    fsm_init (&getsamples_fsm);
     getsamples_print_test (&getsamples_fsm);
 
-    getsamples_fsm.distributor_x = 700;
-    getsamples_fsm.distributor_y = 2100;
-    getsamples_fsm.samples = 3;
+    getsamples_start (700, 2100, 3);
 
-    getsamples_handle_event (&getsamples_fsm,
-			     GETSAMPLES_EVENT_ok);
+    /* Implicit:
+       fsm_handle_event (&getsamples_fsm, GETSAMPLES_EVENT_ok); */
 
     getsamples_print_test (&getsamples_fsm);
 
-    getsamples_handle_event (&getsamples_fsm,
-			     GETSAMPLES_EVENT_position_failed);
+    fsm_handle_event (&getsamples_fsm, GETSAMPLES_EVENT_position_failed);
 
     getsamples_print_test (&getsamples_fsm);
     
-    getsamples_handle_event (&getsamples_fsm,
-			     GETSAMPLES_EVENT_position_reached);
+    fsm_handle_event (&getsamples_fsm, GETSAMPLES_EVENT_position_reached);
 
 
     getsamples_print_test (&getsamples_fsm);
 
-    getsamples_handle_event (&getsamples_fsm,
-			     GETSAMPLES_EVENT_arm_moved);
+    fsm_handle_event (&getsamples_fsm, GETSAMPLES_EVENT_arm_moved);
 
 
     getsamples_print_test (&getsamples_fsm);
 
-    getsamples_handle_event (&getsamples_fsm,
-			 GETSAMPLES_EVENT_position_reached);
+    fsm_handle_event (&getsamples_fsm, GETSAMPLES_EVENT_position_reached);
 
     getsamples_print_test (&getsamples_fsm);
 
-    for (getsamples_fsm.samples--; getsamples_fsm.samples; getsamples_fsm.samples --)
+    //TODO: samples should be decremented by the FSM transitions.
+    for (getsamples_data.samples--; getsamples_data.samples;
+	 getsamples_data.samples--)
       {
-	getsamples_handle_event (&getsamples_fsm,
-			 GETSAMPLES_EVENT_sample_took);
+	fsm_handle_event (&getsamples_fsm, GETSAMPLES_EVENT_sample_took);
 
 	getsamples_print_test (&getsamples_fsm);
       }
 
-    getsamples_handle_event (&getsamples_fsm,
-		     GETSAMPLES_EVENT_sample_took);
+    fsm_handle_event (&getsamples_fsm, GETSAMPLES_EVENT_sample_took);
 
     getsamples_print_test (&getsamples_fsm);
 
-    getsamples_handle_event (&getsamples_fsm,
-		     GETSAMPLES_EVENT_position_reached);
+    fsm_handle_event (&getsamples_fsm, GETSAMPLES_EVENT_position_reached);
 
     getsamples_print_test (&getsamples_fsm);
 

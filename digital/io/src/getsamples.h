@@ -1,6 +1,6 @@
-#ifndef getsamples_robo_h
-#define getsamples_robo_h
-/* getsamples_robo.h */
+#ifndef getsamples_h
+#define getsamples_h
+/* getsamples.h */
 /*  {{{
  *
  * Copyright (C) 2008 Nélio Laranjeiro
@@ -25,12 +25,9 @@
  *
  * }}} */
 
-#include "common.h"
-
-struct getsamples_t
+/** getsamples FSM associated data. */
+struct getsamples_data_t
 {
-    /* The FSM. */
-    getsamples_state_t fsm;
     /* Distributor x position to get samples. */
     uint32_t distributor_x;
     /* Distributor y position to get samples. */
@@ -39,4 +36,12 @@ struct getsamples_t
     uint8_t samples;
 };
 
-#endif /* getsamples_robo_h */
+/** getsamples global. */
+extern struct getsamples_data_t getsamples_data;
+
+/** Start a getsamples FSM. */
+void
+getsamples_start (uint32_t distributor_x, uint32_t distributor_y,
+		  uint8_t samples);
+
+#endif /* getsamples_h */

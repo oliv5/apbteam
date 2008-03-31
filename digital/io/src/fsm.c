@@ -1,9 +1,7 @@
-#ifndef avrconfig_h
-#define avrconfig_h
-/* avrconfig.h */
+/* fsm.c - Finite State Machine code. */
 /* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
  *
- * Copyright (C) 2008 Nélio Laranjeiro
+ * Copyright (C) 2008 Nicolas Schodet
  *
  * APBTeam:
  *        Web: http://apbteam.org/
@@ -24,10 +22,39 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "common.h"
+#include "fsm.h"
 
-/* global */
-/** AVR Frequency : 1000000, 1843200, 2000000, 3686400, 4000000, 7372800,
- * 8000000, 11059200, 14745600, 16000000, 18432000, 20000000. */
-#define AC_FREQ 14745600
+/** Reset a FSM. */
+void
+fsm_init (fsm_t *fsm)
+{
+    assert (fsm);
+    fsm->state_current = fsm->state_init;
+}
 
-#endif /* avrconfig_h */
+/** Handle an event on the given FSM. */
+void
+fsm_handle_event (fsm_t *fsm, u8 event)
+{
+    assert (fsm);
+    assert (event < fsm->events_nb);
+    /* Lookup transition. */
+    fsm_transition_t tr = fsm->transition_table[
+	fsm->state_current * fsm->events_nb + event];
+    /* Ignore unhandled events. */
+    if (tr)
+      {
+	/* Execute transition. */
+	fsm_branch_t br = tr ();
+	/* Change state. */
+#ifdef HOST
+	assert (((br >> 16) & 0xff) == fsm->state_current);
+	assert (((br >> 8) & 0xff) == event);
+	fsm->state_current = br & 0xff;
+#else
+	fsm->state_current = br;
+#endif
+      }
+}
+
