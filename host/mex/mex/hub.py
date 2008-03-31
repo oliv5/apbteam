@@ -143,6 +143,10 @@ class Hub:
 			assert self.wait_date >= self.hub.date
 		    else:
 			self.wait_date = None
+	    elif m.mtype == mex.DATE:
+		date = Msg (mex.DATE)
+		date.push ('L', self.hub.date)
+		self.send (date)
 	    elif m.mtype == mex.REQ:
 		m.pop ('B')
 		mr = Msg (mex.REQ)

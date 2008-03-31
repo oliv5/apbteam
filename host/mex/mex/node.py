@@ -44,6 +44,11 @@ class Node:
 	self.handlers = { }
 	self.register (mex.DATE, lambda msg: self.handle_DATE (msg))
 	self.register (mex.REQ, lambda msg: self.handle_REQ (msg))
+	# Synchronise.
+	rsp = None
+	while rsp == None or rsp.mtype != mex.DATE:
+	    rsp = self.recv ()
+	    self.dispatch (rsp)
 
     def wait (self, date = None):
 	"""Wait forever or until a date is reached."""
