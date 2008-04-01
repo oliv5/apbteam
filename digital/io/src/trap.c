@@ -126,3 +126,17 @@ trap_set_high_time (uint8_t servo_id, uint8_t horizontal, uint8_t vertical)
 	trap_high_time_pos[vertical][servo_id] = vertical;
       }
 }
+
+/* Open the rear pannel to eject the balls. */
+void
+trap_open_rear_panel (void)
+{
+    servo_set_high_time (5, trap_high_time_pos[horizontal][5]);
+}
+
+/* Close the rear pannel to eject the balls. */
+void
+trap_close_rear_panel (void)
+{
+    servo_set_high_time (5, trap_high_time_pos[vertical][5]);
+}

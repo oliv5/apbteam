@@ -46,7 +46,7 @@
 /**
  * Current version of the parameters organization.
  */
-#define EEPROM_PARAM_KEY 0x02
+#define EEPROM_PARAM_KEY 0x03
 
 /** @} */
 

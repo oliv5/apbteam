@@ -49,6 +49,8 @@
  * vertical.
  * To go to the garbage, trap 3 must be vertical and traps 0, 1 and 2 must be
  * horizontal.
+ * There is also a sixth trap to eject all the balls. It is used to put the
+ * balls contained in the boxes into the gutter (unlike the garbage).
  */
 
 #include "servo.h"	/* SERVO_NUMBER */
@@ -105,13 +107,13 @@ void
 trap_set_high_time (uint8_t servo_id, uint8_t horizontal, uint8_t vertical);
 
 /**
- * Open the rear pannel to eject the balls.
+ * Open the rear panel to eject the balls.
  */
 void
 trap_open_rear_panel (void);
 
 /**
- * Close the rear pannel to eject the balls.
+ * Close the rear panel to eject the balls.
  */
 void
 trap_close_rear_panel (void);
