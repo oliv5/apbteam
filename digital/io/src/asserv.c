@@ -272,7 +272,7 @@ asserv_go_to_the_wall (void)
 void
 asserv_go_to_distributor (void)
 {
-    /* Send the go the gutter command to the asserv board */
+    /* Send the go the distributor command to the asserv board */
     asserv_twi_send_command ('F', 0);
 }
 
