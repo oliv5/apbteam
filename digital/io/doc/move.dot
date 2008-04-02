@@ -1,0 +1,20 @@
+# Try to reach a position, this digram shall provide an start of solution when
+# the robot is blocked or a when the robot has a obstacle in front of it.
+
+digraph move
+{
+	start -> "go_to_position" [label ="ok"];
+	"go_to_position" -> end [label = "reached"];
+
+	"go_to_position" -> "failed \n or \n blocked";
+	"failed \n or \n blocked" -> "move_on_left" [label = "Far from left boarder"];
+	"failed \n or \n blocked" -> "move_on_right" [label = "Far from right boarder"];
+
+	"move_on_right" -> "go_to_position" [label = "reached"]
+	"move_on_right" -> "failed \n or \n blocked";
+	"move_on_right" -> "move_on_left" [label = "fail || block  \n&&\n near border"];
+
+	"move_on_left" -> "go_to_position" [label = "reached"]
+	"move_on_left" -> "failed \n or \n blocked";
+	"move_on_left" -> "move_on_right" [label = "fail || block \n&&\n near border"];
+}
