@@ -143,3 +143,9 @@ trap_close_rear_panel (void)
     printf ("Close rear panel\n");
 }
 
+void
+asserv_go_to_distributor (void)
+{
+    printf ("Go to distributor\n");
+}
+

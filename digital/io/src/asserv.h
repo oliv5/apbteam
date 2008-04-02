@@ -172,11 +172,11 @@ void
 asserv_go_to_the_wall (void);
 
 /**
- * Move forward to approach a gutter.
+ * Move forward to approach a distributor.
  * Move class command.
  */
 void
-asserv_go_to_gutter (void);
+asserv_go_to_distributor (void);
 
 /**
  * Move the arm.

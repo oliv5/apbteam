@@ -268,9 +268,9 @@ asserv_go_to_the_wall (void)
     asserv_twi_send_command ('f', 0);
 }
 
-/* Move forward to approach a gutter. */
+/* Move forward to approach a ditributor. */
 void
-asserv_go_to_gutter (void)
+asserv_go_to_distributor (void)
 {
     /* Send the go the gutter command to the asserv board */
     asserv_twi_send_command ('F', 0);

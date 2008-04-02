@@ -36,10 +36,8 @@
 fsm_branch_t
 getsamples__PREPARE_ARM__arm_moved (void)
 {
-    // Try to end the position to the distributor.
-    asserv_set_x_position (getsamples_data.distributor_x);
-    // Go to the color distributor.
-    asserv_set_y_position (getsamples_data.distributor_y);
+    // final 
+    asserv_go_to_distributor (); 
     return getsamples_next (PREPARE_ARM, arm_moved);
 }
 
@@ -64,8 +62,8 @@ getsamples__FORWARD_CONTROL__position_reached (void)
 fsm_branch_t
 getsamples__START__ok (void)
 {
-    asserv_set_x_position (getsamples_data.distributor_x - 20);
-    asserv_set_y_position (getsamples_data.distributor_y - 20);
+    asserv_set_x_position (getsamples_data.distributor_x - 100);
+    asserv_set_y_position (getsamples_data.distributor_y - 100);
     return getsamples_next (START, ok);
 }
 
