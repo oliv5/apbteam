@@ -5,7 +5,7 @@ import Tkinter
 __all__ = ('Drawable', 'DrawableCanvas')
 
 class Drawable:
-    """Define a drawable area with embeded transformations."""
+    """Define a drawable area with embedded transformations."""
 
     def __init__ (self, onto):
 	"""Initialise the drawable."""
@@ -80,28 +80,60 @@ class Drawable:
 
 
 class DrawableCanvas(Tkinter.Canvas):
-    """Extend a Tkinter.Canvas to use Drawable on it."""
+    """Extend a Tkinter.Canvas to use Drawable on it.  User should implement
+    the draw method."""
+
+    def __init__ (self, width, height, xorigin, yorigin, master = None, **kw):
+	"""Initialise a DrawableCanvas.  The width and height parameters
+	define the requested drawable area virtual size.  The xorigin and
+	yorigin parameters define origin of the virtual coordinates relative
+	to the drawable center."""
+	Tkinter.Canvas.__init__ (self, master, **kw)
+	self.__width = width
+	self.__height = height
+	self.__xorigin = xorigin
+	self.__yorigin = yorigin
+	self.bind ('<Configure>', self.__resize)
+
+    def __resize (self, ev):
+	# Compute new scale.
+	w, h = float (ev.width), float (ev.height)
+	self.__scale = min (w / self.__width, h / self.__height)
+	self.__xoffset = w / 2 + self.__xorigin * self.__scale
+	self.__yoffset = h / 2 - self.__yorigin * self.__scale
+	# Redraw.
+	self.draw ()
 
     def _Drawable__draw_line (self, *p, **kw):
+	p = self.__coord (*p)
 	return self.create_line (*p, **kw)
 
     def _Drawable__draw_polygon (self, *p, **kw):
+	p = self.__coord (*p)
 	return self.create_polygon (*p, **kw)
 
     def _Drawable__draw_circle (self, p, r, **kw):
+	p, = self.__coord (p)
+	r = r * self.__scale
 	p1 = (p[0] - r, p[1] - r)
 	p2 = (p[0] + r, p[1] + r)
 	return self.create_oval (p1, p2, **kw)
 
     def _Drawable__draw_arc (self, p, r, **kw):
+	p, = self.__coord (p)
+	r = r * self.__scale
 	p1 = (p[0] - r, p[1] - r)
 	p2 = (p[0] + r, p[1] + r)
 	for k in ('start', 'extent'):
 	    if k in kw:
 		kw = kw.copy ()
-		# Tk is working upside down.
-		kw[k] = -degrees (kw[k])
+		kw[k] = degrees (kw[k])
 	return self.create_arc (p1, p2, **kw)
 
     def _Drawable__delete (self, *list):
 	self.delete (*list)
+
+    def __coord (self, *args):
+	return [ (i[0] * self.__scale + self.__xoffset,
+	    -i[1] * self.__scale + self.__yoffset) for i in args ]
+
