@@ -1,26 +1,14 @@
 from Tkinter import *
+from drawable import *
 
 
-class Table (Canvas):
+class Table (Drawable):
+    """The table and its elements."""
 
-    WIDTH = 3000 + 2 * 22 + 2 * 80 + 2 * 250 + 2 * 10
-    HEIGHT = 2100 + 2 * 22 + 2 * 80 + 2 * 10
-    XOFFSET = 250 + 80 + 22 + 10
-    YOFFSET = 80 + 22 + 2100 + 10
-
-    def __init__ (self, master):
-	Canvas.__init__ (self, master, borderwidth = 1, relief = 'sunken', background = 'white')
-	self.bind ('<Configure>', self.resize)
-
-    def resize (self, ev):
-	# Compute new scale.
-	w, h = float (ev.width), float (ev.height)
-	self.__scale = min (w / self.WIDTH, h / self.HEIGHT)
-	self.__xoffset = (w / self.__scale - (self.WIDTH - self.XOFFSET * 2)) / 2 * self.__scale
-	self.__yoffset = (h / self.__scale - (self.HEIGHT - self.YOFFSET * 2)) / 2 * self.__scale
-	#print '%dx%d %f+%d+%d' % (ev.width, ev.height, self.__scale, self.__xoffset, self.__yoffset)
+    def draw (self):
 	# Redraw.
-	self.delete (*self.find_all ())
+	self.reset ()
+	# Table.
 	self.draw_rectangle ((-22, -22 - 80), (3000 / 2, 2100 + 22), fill = '#ff1f1f')
 	self.draw_rectangle ((3000 / 2, -22 - 80), (3000 + 22, 2100 + 22), fill = '#201fff')
 	self.draw_rectangle ((0, 0), (3000, 2100), fill = '#a49d8b')
@@ -43,13 +31,13 @@ class Table (Canvas):
 	self.draw_rectangle ((3000 + 22 + 80 + 250, 0), (3000 + 22 + 80, 500), fill = '#6d6dad', stipple = 'gray75')
 	# Vertical dispensers.
 	self.draw_rectangle ((-22, 2100 - 750 - 85 / 2), (0, 2100 - 750 + 85 / 2), fill = '#5b5b5b')
-	self.draw_oval ((0, 2100 - 750 - 80 / 2), (80, 2100 - 750 + 80 / 2))
+	self.draw_circle ((40, 2100 - 750), 40)
 	self.draw_rectangle ((750 - 85 / 2, 2100), (750 + 85 / 2, 2100 + 22), fill = '#5b5b5b')
-	self.draw_oval ((750 - 80 / 2, 2100 - 80), (750 + 80 / 2, 2100))
+	self.draw_circle ((750, 2100 - 40), 40)
 	self.draw_rectangle ((3000 + 22, 2100 - 750 - 85 / 2), (3000, 2100 - 750 + 85 / 2), fill = '#5b5b5b')
-	self.draw_oval ((3000, 2100 - 750 - 80 / 2), (3000 - 80, 2100 - 750 + 80 / 2))
+	self.draw_circle ((3000 - 40, 2100 - 750), 40)
 	self.draw_rectangle ((3000 - 750 + 85 / 2, 2100), (3000 - 750 - 85 / 2, 2100 + 22), fill = '#5b5b5b')
-	self.draw_oval ((3000 - 750 + 80 / 2, 2100 - 80), (3000 - 750 - 80 / 2, 2100))
+	self.draw_circle ((3000 - 750, 2100 - 40), 40)
 	# Horizontal dispenser.
 	self.draw_rectangle ((3000 / 2 - 924 / 2, 2100 + 22), (3000 / 2 + 924 / 2, 2100 + 22 + 80 + 22), fill = '#5b5b5b')
 	self.draw_rectangle ((3000 / 2 - 924 / 2 + 22, 2100 + 22), (3000 / 2 + 924 / 2 - 22, 2100 + 22 + 80), fill = '#5b5b5b')
@@ -72,31 +60,32 @@ class Table (Canvas):
 		'b': { 'outline': '#4241bf' }, 'B': { 'fill': '#4241bf' },
 		'w': { 'outline': '#bfbfbf' }, 'W': { 'fill': '#bfbfbf' } }
 	for b in balls:
-	    self.draw_oval ((3000 - b[0] - 72 / 2, 2100 - b[1] - 72 / 2),
-		    (3000 - b[0] + 72 / 2, 2100 - b[1] + 72 / 2),
+	    self.draw_circle ((3000 - b[0], 2100 - b[1]), 72 / 2,
 		    **balls_config[b[2][0]])
 	    if len (b[2]) > 1:
-		self.draw_oval ((b[0] - 72 / 2, 2100 - b[1] - 72 / 2),
-			(b[0] + 72 / 2, 2100 - b[1] + 72 / 2),
+		self.draw_circle ((b[0], 2100 - b[1]), 72 / 2,
 			**balls_config[b[2][1]])
 
-    def draw_rectangle (self, p1, p2, **kw):
-	p1p, p2p = self.coord (p1, p2)
-	return self.create_rectangle (p1p, p2p, **kw)
+class TableView (DrawableCanvas):
+    """This class handle the view of the table and every items inside it."""
 
-    def draw_line (self, *p, **kw):
-	pp = self.coord (*p)
-	return self.create_line (*pp, **kw)
+    WIDTH = 3000 + 2 * 22 + 2 * 80 + 2 * 250 + 2 * 10
+    HEIGHT = 2100 + 2 * 22 + 2 * 80 + 2 * 10
+    XORIGIN = -3000 / 2
+    YORIGIN = -2100 / 2
 
-    def draw_oval (self, *p, **kw):
-	pp = self.coord (*p)
-	return self.create_oval (*pp, **kw)
+    def __init__ (self, master = None):
+	DrawableCanvas.__init__ (self, self.WIDTH, self.HEIGHT, self.XORIGIN,
+		self.YORIGIN,
+		master, borderwidth = 1, relief = 'sunken',
+		background = 'white')
+	self.table = Table (self)
 
-    def coord (self, *args):
-	return [ (i[0] * self.__scale + self.__xoffset,
-	    -i[1] * self.__scale + self.__yoffset) for i in args ]
+    def draw (self):
+	self.table.draw ()
 
 class Application (Frame):
+
     def __init__ (self, master = None):
         Frame.__init__ (self, master)
         self.pack (expand = 1, fill = 'both')
@@ -105,8 +94,8 @@ class Application (Frame):
     def createWidgets (self):
 	self.quitButton = Button (self, text = 'Quit', command = self.quit)
 	self.quitButton.pack (side = 'right', anchor = 'n')
-	self.table = Table (self)
-	self.table.pack (expand = 1, fill = 'both')
+	self.tableview = TableView (self)
+	self.tableview.pack (expand = 1, fill = 'both')
 
 app = Application()
 app.mainloop()

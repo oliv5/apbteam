@@ -20,6 +20,9 @@ class Drawable:
 	self.trans_scale = self.trans_matrix.scale
 
     def __draw_rectangle (self, p1, p2, **kw):
+	if 'outline' not in kw:
+	    kw = kw.copy ()
+	    kw['outline'] = 'black'
 	p = self.trans_apply (p1, (p2[0], p1[1]), p2, (p1[0], p2[1]))
 	return self.onto.__draw_polygon (*p, **kw)
 
