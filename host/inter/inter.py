@@ -13,13 +13,13 @@ class Robot (Drawable):
 	self.draw_polygon ((115, 30), (170, 85), (150, 127), (130, 145),
 		(-25, 200), (-70, 200), (-70, -200), (-25, -200),
 		(130, -145), (150, -127), (170, -85), (115, -30))
-	axes = dict (fill = '#404040')
-	self.draw_line ((-70, 0), (170, 0), **axes)
+	axes_fill = '#404040'
+	self.draw_line ((-70, 0), (170, 0), fill = axes_fill, arrow = LAST)
 	f = 142 + 2 * 31.5 - 13.5
 	wr = 63 / 2
-	self.draw_line ((0, +f / 2), (0, -f / 2), **axes)
-	self.draw_line ((-wr, f / 2), (+wr, f / 2), **axes)
-	self.draw_line ((-wr, -f / 2), (+wr, -f / 2), **axes)
+	self.draw_line ((0, +f / 2), (0, -f / 2), fill = axes_fill)
+	self.draw_line ((-wr, f / 2), (+wr, f / 2), fill = axes_fill)
+	self.draw_line ((-wr, -f / 2), (+wr, -f / 2), fill = axes_fill)
 
 class Table (Drawable):
     """The table and its elements."""
@@ -35,6 +35,8 @@ class Table (Drawable):
 	self.draw_rectangle ((0, 2100 - 500), (500, 2100), fill = '#201fff')
 	self.draw_rectangle ((3000 - 500, 2100 - 500), (3000, 2100), fill = '#ff1f1f')
 	self.draw_line ((3000 / 2, -22 - 80), (3000 / 2, 2100 + 22))
+	# Axes.
+	self.draw_line ((0, 200), (0, 0), (200, 0), arrow = BOTH)
 	# Beacons and baskets.
 	self.draw_rectangle ((-22, 2100), (-22 - 80, 2100 + 80), fill = '#5b5b5d')
 	self.draw_rectangle ((-22, 1050 - 40), (-22 - 80, 1050 + 40), fill = '#5b5b5d')
