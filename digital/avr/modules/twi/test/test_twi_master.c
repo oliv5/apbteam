@@ -181,9 +181,12 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		;
 	  }
 	else
+	  {
 	    /* Error */
 	    proto_send0 ('?');
-	return;
+	    return;
+	  }
+	break;
       }
     /* Acknowledge what has been done */
     proto_send (cmd, size, args);
