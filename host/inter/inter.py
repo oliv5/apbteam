@@ -126,8 +126,8 @@ class TableView (DrawableCanvas):
 		background = 'white')
 	self.table = Table (self)
 	self.robot = Robot (self.table)
-	self.robot.angle = pi / 3
-	self.robot.pos = (700, 700)
+	self.robot.angle = 0
+	self.robot.pos = (0, 0)
 
     def draw (self):
 	self.table.draw ()
@@ -202,7 +202,7 @@ class ActuatorView (DrawableCanvas):
 	self.arm_drawable = Drawable (self)
 	self.arm_drawable.trans_translate ((0, 0.5))
 	self.arm = Arm (self.arm_drawable)
-	self.arm.angle = pi / 6
+	self.arm.angle = 0
 	self.rear_drawable = Drawable (self)
 	self.rear_drawable.trans_translate ((0, -0.5))
 	self.rear = Rear (self.rear_drawable)
@@ -211,12 +211,14 @@ class ActuatorView (DrawableCanvas):
 	self.arm.draw ()
 	self.rear.draw ()
 
-class Application (Frame):
+class Inter (Frame):
+    """Robot simulation interface."""
 
     def __init__ (self, master = None):
         Frame.__init__ (self, master)
         self.pack (expand = 1, fill = 'both')
         self.createWidgets ()
+	self.updated = [ ]
 
     def createWidgets (self):
 	self.rightFrame = Frame (self)
@@ -229,5 +231,28 @@ class Application (Frame):
 	self.tableview = TableView (self)
 	self.tableview.pack (expand = True, fill = 'both')
 
-app = Application()
-app.mainloop()
+    def update (self, *args):
+	"""If called with arguments, add them to the list of objects to be
+	updated.
+	If called without argument, redraw all objects to be updated."""
+	if args:
+	    for i in args:
+		if i not in self.updated:
+		    self.updated.append (i)
+	else:
+	    for i in self.updated:
+		i.draw ()
+	    self.updated = [ ]
+
+if __name__ == '__main__':
+    app = Inter ()
+    app.tableview.robot.angle = pi / 3
+    app.tableview.robot.pos = (700, 700)
+    app.actuatorview.arm.angle = pi/6
+    app.actuatorview.rear.traps[0].pos = 1
+    app.actuatorview.rear.traps[1].pos = 0
+    app.actuatorview.rear.traps[2].pos = 0
+    app.actuatorview.rear.traps[3].pos = 1
+    app.actuatorview.rear.traps[4].pos = 0
+    app.actuatorview.rear.traps[5].pos = 0
+    app.mainloop()
