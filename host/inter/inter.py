@@ -228,6 +228,18 @@ class Inter (Frame):
 	self.actuatorview = ActuatorView (self.rightFrame)
 	self.actuatorview.pack (side = 'bottom', fill = 'x')
 
+	self.sensorFrame = Frame (self.rightFrame, borderwidth = 1, relief =
+		'sunken')
+	self.sensorFrame.pack (side = 'bottom', fill = 'x')
+	self.jackVar = IntVar ()
+	self.jackButton = Checkbutton (self.sensorFrame, text = 'Jack',
+		indicatoron = False, variable = self.jackVar)
+	self.jackButton.pack (side = 'top')
+	self.colorVar = IntVar ()
+	self.colorButton = Checkbutton (self.sensorFrame, text = 'Color',
+		indicatoron = False, variable = self.colorVar)
+	self.colorButton.pack (side = 'top')
+
 	self.tableview = TableView (self)
 	self.tableview.pack (expand = True, fill = 'both')
 
