@@ -1,6 +1,25 @@
 from Tkinter import *
 from drawable import *
 
+from math import pi
+
+class Robot (Drawable):
+    """The robot."""
+
+    def draw (self):
+	self.reset ()
+	self.trans_rotate (self.angle)
+	self.trans_translate (self.pos)
+	self.draw_polygon ((115, 30), (170, 85), (150, 127), (130, 145),
+		(-25, 200), (-70, 200), (-70, -200), (-25, -200),
+		(130, -145), (150, -127), (170, -85), (115, -30))
+	axes = dict (fill = '#404040')
+	self.draw_line ((-70, 0), (170, 0), **axes)
+	f = 142 + 2 * 31.5 - 13.5
+	wr = 63 / 2
+	self.draw_line ((0, +f / 2), (0, -f / 2), **axes)
+	self.draw_line ((-wr, f / 2), (+wr, f / 2), **axes)
+	self.draw_line ((-wr, -f / 2), (+wr, -f / 2), **axes)
 
 class Table (Drawable):
     """The table and its elements."""
@@ -80,9 +99,13 @@ class TableView (DrawableCanvas):
 		master, borderwidth = 1, relief = 'sunken',
 		background = 'white')
 	self.table = Table (self)
+	self.robot = Robot (self.table)
+	self.robot.angle = pi / 3
+	self.robot.pos = (700, 700)
 
     def draw (self):
 	self.table.draw ()
+	self.robot.draw ()
 
 class Application (Frame):
 
