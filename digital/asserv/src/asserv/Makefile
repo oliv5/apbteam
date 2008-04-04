@@ -3,7 +3,7 @@ PROGS = asserv
 AVR_PROGS = test_counter
 HOST_PROGS = test_motor_model
 asserv_SOURCES = main.c timer.avr.c counter_ext.avr.c pwm.avr.c pos.c speed.c \
-		 postrack.c traj.c twi_proto.c eeprom.avr.c \
+		 postrack.c traj.c twi_proto.c eeprom.avr.c state.c \
 		 simu.host.c motor_model.host.c models.host.c
 test_counter_SOURCES = test_counter.c timer.avr.c
 test_motor_model_SOURCES = test_motor_model.c motor_model.host.c models.host.c
