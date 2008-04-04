@@ -1,4 +1,4 @@
-/* servo.c */
+/* servo.avr.c */
 /* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
  *
  * Copyright (C) 2008 Dufour Jérémy

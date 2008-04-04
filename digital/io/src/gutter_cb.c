@@ -37,7 +37,7 @@
 fsm_branch_t
 gutter__START__ok (void)
 {
-    asserv_go_to_gutter();
+    asserv_go_to_the_wall();
     return gutter_next (START, ok);
 }
 

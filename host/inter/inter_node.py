@@ -29,6 +29,7 @@ if __name__ == '__main__':
 from inter import Inter
 from Tkinter import *
 from mex.node import Node
+from mex.msg import Msg
 
 class InterNode (Inter):
     """Inter, coupled with a mex Node."""
@@ -37,11 +38,18 @@ class InterNode (Inter):
     # period.
     TICK = 900.0
 
+    IO_JACK = 0xb0
+    IO_COLOR = 0xb1
+    IO_SERVO = 0xb2
+
     def __init__ (self):
 	Inter.__init__ (self)
 	self.node = Node ()
 	self.node.register (0xa0, self.handle_asserv_0)
 	self.node.register (0xa8, self.handle_asserv_8)
+	self.node.register (self.IO_JACK, self.handle_IO_JACK)
+	self.node.register (self.IO_COLOR, self.handle_IO_COLOR)
+	self.node.register (self.IO_SERVO, self.handle_IO_SERVO)
 	self.tk.createfilehandler (self.node, READABLE, self.read)
 	self.step_after = None
 
@@ -101,6 +109,21 @@ class InterNode (Inter):
 	a, = msg.pop ('l')
 	self.actuatorview.arm.angle = float (a) / 1024
 	self.update (self.actuatorview.arm)
+
+    def handle_IO_JACK (self, msg):
+	m = Msg (self.IO_JACK)
+	m.push ('B', self.jackVar.get ())
+	self.node.response (m)
+
+    def handle_IO_COLOR (self, msg):
+	m = Msg (self.IO_COLOR)
+	m.push ('B', self.colorVar.get ())
+	self.node.response (m)
+
+    def handle_IO_SERVO (self, msg):
+	for t in self.actuatorview.rear.traps:
+	    t.pos = float (msg.pop ('B')[0]) / 255
+	self.update (self.actuatorview.rear)
 
 if __name__ == '__main__':
     import mex.hub

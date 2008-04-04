@@ -1,6 +1,7 @@
 BASE = ../../avr
-AVR_PROGS = io
-io_SOURCES = main.c asserv.c servo.c eeprom.c trap.c sharp.c \
+PROGS = io
+io_SOURCES = main.c asserv.c servo.avr.c eeprom.avr.c trap.c sharp.c \
+	     simu.host.c \
 	     fsm.c getsamples.c getsamples_fsm.c getsamples_cb.c \
 	     gutter_fsm.c gutter_cb.c
 MODULES = proto uart twi utils adc

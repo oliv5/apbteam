@@ -111,7 +111,7 @@ trap_close_rear_panel(void)
 }
 
 void
-asserv_go_to_gutter (void)
+asserv_go_to_the_wall (void)
 {
     printf ("Go to gutter\n");
 }

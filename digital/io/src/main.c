@@ -31,12 +31,16 @@
 /* AVR include, non HOST */
 #ifndef HOST
 # include "main_timer.avr.h"
+# include "switch.h"	/* Manage switches (jack, color selector) */
 #endif /* HOST */
 
+#include "simu.host.h"
+
 #include "asserv.h"	/* Functions to control the asserv board */
-#include "switch.h"	/* Manage switches (jack, color selector) */
 #include "eeprom.h"	/* Parameters loaded/stored in the EEPROM */
 #include "trap.h"	/* Trap module (trap_* functions) */
+
+#include "io.h"
 
 /**
  * Initialize the main and all its subsystems.
@@ -135,6 +139,12 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	 *   - 1b: pwm high time value (position).
 	 */
 	servo_set_high_time (args[0], args[1]);
+	break;
+
+      case c ('S', 0):
+	/* Report switch states. */
+	proto_send1b ('S', switch_get_color () << 1 | switch_get_jack ());
+	break;
 
 	/* EEPROM command */
       case c ('e', 1):
@@ -165,6 +175,8 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 int
 main (int argc, char **argv)
 {
+    avr_init (argc, argv);
+
     /* Initialize the main and its subsystems */
     main_init ();
 
