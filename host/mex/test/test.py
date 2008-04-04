@@ -5,6 +5,7 @@ from mex.hub import Hub
 from mex.node import Node
 from mex.msg import Msg
 from mex.forked import Forked
+import select
 
 def log (x):
     print x
@@ -37,7 +38,11 @@ def c2 ():
     r = n.request (m)
     assert r.mtype == 0x82
     assert r.pop ('B') == (43,)
-    n.wait (42)
+    n.wait_async (42)
+    while not n.sync ():
+	fds = select.select ((n, ), (), ())[0]
+	for i in fds:
+	    i.read ()
     n.wait ()
 
 f2 = Forked (c2)

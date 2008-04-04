@@ -60,6 +60,30 @@ class Node:
 	    msg = self.recv ()
 	    self.dispatch (msg)
 
+    def wait_async (self, date = None):
+	"""Asynchronous version of wait.  This should not be called again
+	until sync return True."""
+	self.async_waited = date
+	synced = self.sync ()
+	assert not synced
+
+    def sync (self):
+	"""To be called after read or wait_async.  Return True if the waited
+	date is reached or signal the Hub our waiting status."""
+	if self.date == self.async_waited:
+	    return True
+	else:
+	    idle = Msg (mex.IDLE)
+	    if self.async_waited != None:
+		idle.push ('L', self.async_waited)
+	    self.send (idle)
+
+    def read (self):
+	"""Used for asynchronous operations.  Handle incoming data.  The sync
+	method should be called after this one returns."""
+	msg = self.recv ()
+	self.dispatch (msg)
+
     def send (self, msg):
 	"""Send a message."""
 	data = msg.data ()
@@ -100,6 +124,10 @@ class Node:
 	"""Close connection with the Hub."""
 	self.socket.close ()
 	self.socket = None
+
+    def fileno (self):
+	"""Return socket fileno () for asynchronous operations."""
+	return self.socket.fileno ()
 
     def recv (self):
 	"""Receive one message."""
