@@ -1,1 +1,1 @@
-adc_SOURCES = adc.c
+adc_SOURCES = adc.avr.c adc.host.c

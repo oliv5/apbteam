@@ -1,4 +1,4 @@
-/* adc.c */
+/* adc.avr.c */
 /* n.avr.adc - AVR ADC Module. {{{
  *
  * Copyright (C) 2005 Thomas Burg
@@ -20,10 +20,11 @@
  * Contact :
  *      Email: burg AT efrei DOT fr
  * }}} */
+#include "common.h"
 #include "adc.h"
 
-#include "io.h"
 #include "modules/utils/utils.h"
+#include "io.h"
 
 /* Tested AVR check. */
 #if defined (__AVR_ATmega8__)
@@ -52,10 +53,7 @@
 			    1,    0,    0,    1,    0,     0,     0,     0))
 #define ADCSR_CFG_115200 7
 
-/* +AutoDec */
-/* -AutoDec */
-
-/** Initialise adc. */
+/** Initialise ADC. */
 void
 adc_init (void)
 {
@@ -63,13 +61,13 @@ adc_init (void)
     ADCSR = ADCSR_CFG | ADCSR_CFG_115200;
 }
 
-/** Choose and start mesure on adc line. */
+/** Choose and start measure on ADC line. */
 void
 adc_start (uint8_t c)
 {
-    /* Choose adc. */
+    /* Choose ADC. */
     ADMUX = ADMUX_CFG | (c & 0x07);
-    /* Start mesure. */
+    /* Start measure. */
     ADCSR |= _BV (ADSC);
 }
 

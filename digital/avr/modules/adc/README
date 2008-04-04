@@ -1,4 +1,4 @@
-avr.adc - ADC AVR module.
+avr.adc - AVR ADC module.
 
 Analog to Digital Converter module for AVR.  See modules README for more
 details about AVR modules.
