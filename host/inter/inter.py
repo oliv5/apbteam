@@ -162,8 +162,8 @@ class Servo:
 	d.draw_arc (self.coord, self.l, start = self.start,
 		extent = self.extent, style = 'arc', outline = '#808080')
 	a = self.start + self.pos * self.extent
-	d.draw_line (self.coord, (self.coord[0] + cos (a),
-	    self.coord[1] + sin (a)))
+	d.draw_line (self.coord, (self.coord[0] + self.l * cos (a),
+	    self.coord[1] + self.l * sin (a)))
 
 
 class Rear (Drawable):
@@ -172,12 +172,12 @@ class Rear (Drawable):
     def __init__ (self, onto):
 	Drawable.__init__ (self, onto)
 	self.traps = [
-		Servo ((-2.5, -1), 1, 0, pi/2),
-		Servo ((-1.5, -0.9), 1, 0, pi/2),
-		Servo ((-0.5, -0.8), 1, 0, pi/2),
-		Servo ((0.5, -0.8), 1, pi, -pi/2),
-		Servo ((1.5, -0.9), 1, pi, -pi/2),
-		Servo ((-2.5, 1.3), 1, -pi/6, pi/3),
+		Servo ((-2.5, -1), 0.8, 0, pi/2),
+		Servo ((-1.5, -0.9), 0.8, 0, pi/2),
+		Servo ((-0.5, -0.8), 0.8, 0, pi/2),
+		Servo ((0.5, -0.8), 0.8, pi, -pi/2),
+		Servo ((1.5, -0.9), 0.8, pi, -pi/2),
+		Servo ((-2.5, 1.3), 0.8, -pi/6, pi/3),
 		]
 
     def draw (self):
