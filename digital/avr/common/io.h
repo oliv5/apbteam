@@ -41,6 +41,8 @@
 
 /* Same as on AVR. */
 #define _BV(x) (1<<(x))
+#define bit_is_set(sfr, bit) ((sfr) & _BV (bit))
+#define bit_is_clear(sfr, bit) (!((sfr) & _BV (bit)))
 /* No interrupt support on host. */
 #define sei()
 #define cli()
