@@ -29,6 +29,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <netdb.h>
 
@@ -70,6 +71,13 @@ socket_client (const char *addr, const char *port)
     if (s < 0)
       {
 	perror ("socket");
+	exit (EXIT_FAILURE);
+      }
+    int on = 1;
+    if (setsockopt (s, IPPROTO_TCP, TCP_NODELAY, (void *) &on, sizeof (on))
+	< 0)
+      {
+	perror ("setsockopt (NODELAY)");
 	exit (EXIT_FAILURE);
       }
     if (connect (s, (struct sockaddr *) &saddr, sizeof (saddr)) < 0)

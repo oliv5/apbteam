@@ -37,6 +37,7 @@ class Node:
     def __init__ (self, addr = mex.DEFAULT_ADDR):
 	"""Create a new Node and connect it to given Hub address."""
 	self.socket = socket.socket ()
+	self.socket.setsockopt (socket.SOL_TCP, socket.TCP_NODELAY, 1)
 	self.socket.connect (addr)
 	self.date = 0
 	self.seq = 0

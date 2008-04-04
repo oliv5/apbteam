@@ -40,6 +40,7 @@ class Hub:
 	self.date = 0
 	self.socket = socket.socket ()
 	self.socket.setsockopt (socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+	self.socket.setsockopt (socket.SOL_TCP, socket.TCP_NODELAY, 1)
 	self.socket.bind (self.addr)
 	self.socket.listen (5)
 
