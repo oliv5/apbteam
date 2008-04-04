@@ -40,6 +40,8 @@ class InterNode (Inter):
     def __init__ (self):
 	Inter.__init__ (self)
 	self.node = Node ()
+	self.node.register (0xa0, self.handle_asserv_0)
+	self.node.register (0xa8, self.handle_asserv_8)
 	self.tk.createfilehandler (self.node, READABLE, self.read)
 	self.step_after = None
 
@@ -88,6 +90,17 @@ class InterNode (Inter):
 	    if self.playVar.get ():
 		self.step_after = self.after (int (self.stepSizeScale.get ()
 		    * self.TICK), self.step)
+
+    def handle_asserv_0 (self, msg):
+	x, y, a = msg.pop ('hhl')
+	self.tableview.robot.pos = (x, y)
+	self.tableview.robot.angle = float (a) / 1024
+	self.update (self.tableview.robot)
+
+    def handle_asserv_8 (self, msg):
+	a, = msg.pop ('l')
+	self.actuatorview.arm.angle = float (a) / 1024
+	self.update (self.actuatorview.arm)
 
 if __name__ == '__main__':
     import mex.hub

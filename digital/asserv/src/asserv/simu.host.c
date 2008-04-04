@@ -26,11 +26,13 @@
 #include "simu.host.h"
 
 #include "modules/host/host.h"
+#include "modules/host/mex.h"
 #include "modules/utils/utils.h"
 
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "pwm.h"
 
@@ -65,6 +67,9 @@ double simu_pos_x, simu_pos_y, simu_pos_a;
 uint32_t simu_counter_left, simu_counter_right, simu_counter_aux0;
 double simu_counter_left_th, simu_counter_right_th;
 
+/** Use mex. */
+int simu_mex;
+
 /** Initialise simulation. */
 static void
 simu_init (void)
@@ -72,9 +77,15 @@ simu_init (void)
     int argc;
     char **argv;
     host_get_program_arguments (&argc, &argv);
+    if (argc == 2 && strcmp (argv[0], "-m") == 0)
+      {
+	simu_mex = 1;
+	mex_node_connect ();
+	argc--; argv++;
+      }
     if (argc != 1)
       {
-	fprintf (stderr, "need model name as first argument\n");
+	fprintf (stderr, "Syntax: asserv.host [-m] model\n");
 	exit (1);
       }
     simu_robot = models_get (argv[0]);
@@ -146,7 +157,7 @@ simu_step (void)
       }
     else
       {
-	/* Thanks Thales. */
+	/* Thanks Thalès. */
 	double left_diff = (simu_left_model.th - old_left_th)
 	    / simu_left_model.m.i_G * simu_robot->wheel_r;
 	double right_diff = (simu_right_model.th - old_right_th)
@@ -187,6 +198,27 @@ simu_step (void)
 		     simu_robot->footing * 1000);
 }
 
+/** Send information to the other nodes. */
+void
+simu_send (void)
+{
+    mex_msg_t *m;
+    /* Send position. */
+    m = mex_msg_new (0xa0);
+    mex_msg_push (m, "hhl", (int16_t) simu_pos_x, (int16_t) simu_pos_y,
+		  (int32_t) (1024.0 * simu_pos_a));
+    mex_node_send (m);
+    /* Send PWM. */
+    m = mex_msg_new (0xa1);
+    mex_msg_push (m, "hhh", pwm_left, pwm_right, pwm_aux0);
+    mex_node_send (m);
+    /* Send Arm position. */
+    m = mex_msg_new (0xa8);
+    mex_msg_push (m, "l", (int32_t) (1024.0 * simu_aux0_model.th /
+				     simu_aux0_model.m.i_G));
+    mex_node_send (m);
+}
+
 /** Initialise the timer. */
 void
 timer_init (void)
@@ -198,7 +230,11 @@ timer_init (void)
 void
 timer_wait (void)
 {
+    if (simu_mex)
+	mex_node_wait_date (mex_node_date () + 4);
     simu_step ();
+    if (simu_mex)
+	simu_send ();
 }
 
 /** Read timer value. Used for performance analysis. */
