@@ -115,7 +115,7 @@ class TableView (DrawableCanvas):
     """This class handle the view of the table and every items inside it."""
 
     WIDTH = 3000 + 2 * 22 + 2 * 80 + 2 * 50 + 2 * 10
-    HEIGHT = 2100 + 2 * 22 + 2 * 80 + 2 * 10
+    HEIGHT = 2100 + 2 * 22 + 2 * 80 + 22 + 2 * 10
     XORIGIN = -3000 / 2
     YORIGIN = -2100 / 2
 
