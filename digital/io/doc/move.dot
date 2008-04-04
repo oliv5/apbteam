@@ -3,18 +3,17 @@
 
 digraph move
 {
-	start -> "go_to_position" [label ="ok"];
-	"go_to_position" -> end [label = "reached"];
+	start -> "desired position" [label = "ok"];
+	"desired position" -> end [label = "reached"];
+	"desired position" -> "move on left" [label = "failed or blocked\n border left is far"];
+	"desired position" -> "move on right" [label = "failed or blocked\n border right is far"];
 
-	"go_to_position" -> "failed \n or \n blocked";
-	"failed \n or \n blocked" -> "move_on_left" [label = "Far from left boarder"];
-	"failed \n or \n blocked" -> "move_on_right" [label = "Far from right boarder"];
+	"move on left" -> "move on left" [label = "failed or blocked"];
+	"move on left" -> "desired position" [label = "reached"];
 
-	"move_on_right" -> "go_to_position" [label = "reached"]
-	"move_on_right" -> "failed \n or \n blocked";
-	"move_on_right" -> "move_on_left" [label = "fail || block  \n&&\n near border"];
+	"move on right" -> "move on right" [label = "failed or blocked"];
+	"move on right" -> "desired position" [label = "reached"];
 
-	"move_on_left" -> "go_to_position" [label = "reached"]
-	"move_on_left" -> "failed \n or \n blocked";
-	"move_on_left" -> "move_on_right" [label = "fail || block \n&&\n near border"];
+	"move on right" -> "move on left" [label = "near right border"];
+	"move on left" -> "move on right" [label = "near left border"];
 }
