@@ -1,0 +1,41 @@
+#Move FSM.
+move
+
+States:
+ START
+ END
+ DESIRED_POSITION
+ MOVE_ON_LEFT
+ MOVE_ON_RIGHT
+
+Events:
+ ok
+ reached
+ near_border
+ failed_or_blocked
+
+START:
+ ok -> DESIRED_POSITION
+  Tries to reach a position provided by the user. If the position desired can not be reached, it all try to move on the right or the left.
+
+DESIRED_POSITION:
+ reached -> END
+  The position provided by the user has been reached, the FSM can stop.
+ failed_or_blocked -> MOVE_ON_LEFT
+  The robot has failed to reach the position. It shall try another position before trying to reach this one again. It shall go to the on the left only if the left border is the farest one.
+
+MOVE_ON_LEFT:
+ reached -> DESIRED_POSITION
+  The position has been reached. It will now try to reach the position provided by the user.
+ failed_or_blocked -> MOVE_ON_LEFT
+  The position is fail again, it will try to reach another one.
+ near_border -> MOVE_ON_RIGHT
+  The robot is now too near of the border.
+
+MOVE_ON_RIGHT:
+ reached -> DESIRED_POSITION
+  The position has been reached. It will now try to reach the position provided by the user.
+ failed_or_blocked -> MOVE_ON_RIGHT
+  The position is fail again, it will try to reach another one.
+ near_border -> MOVE_ON_LEFT
+  The robot is now too near of the border.
