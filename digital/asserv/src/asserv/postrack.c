@@ -36,15 +36,14 @@ int32_t postrack_a;
 /** Distance between the weels, u16. */
 uint16_t postrack_footing;
 /** Precomputed footing factor, f8.24.
- * postrack_footing_factor = (2 * 1/2pi * 256) / postrack_footing
+ * postrack_footing_factor = (1/2pi * 256) / postrack_footing
  * Explanations:
  *  - Angles are between 0 and 1, corresponding to 0 and 2pi, therefore we
  *  must divide by 2pi to convert unit (Arc=Angle * Radius only works for
  *  radians).
  *  - dd (see postrack_update) is in f10.16 format, we multiply by 256 to have
  *  a angle in f8.24 format.
- *  - this factor is in f8.24 format, therefore, 1 is writen (1L << 24).
- *  - there is a two factor because of the sum done in the motor control. */
+ *  - this factor is in f8.24 format, therefore, 1 is writen (1L << 24). */
 static uint32_t postrack_footing_factor;
 
 /** Initialise the position tracker. */
@@ -102,6 +101,6 @@ postrack_set_footing (uint16_t footing)
 {
     postrack_footing = footing;
     postrack_footing_factor =
-	(uint32_t) (M_1_PI * (1L << 8) * (1L << 24)) / footing;
+	(uint32_t) (0.5 * M_1_PI * (1L << 8) * (1L << 24)) / footing;
 }
 
