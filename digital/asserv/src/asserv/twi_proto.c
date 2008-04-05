@@ -28,7 +28,6 @@
 #include "modules/utils/utils.h"
 #include "modules/utils/byte.h"
 #include "modules/twi/twi.h"
-#include "modules/math/fixed/fixed.h"
 #include "io.h"
 
 #include "misc.h"
@@ -39,8 +38,6 @@
 #include "speed.h"
 #include "postrack.h"
 #include "traj.h"
-
-#define M_PI		3.14159265358979323846	/* pi */
 
 struct twi_proto_t
 {
@@ -132,18 +129,7 @@ twi_proto_callback (u8 *buf, u8 size)
       case c ('a', 2):
 	/* Set angular speed controlled position consign.
 	 * - w: angle offset. */
-	  {
-	    int32_t a = ((int32_t) (int16_t) v8_to_v16 (buf[2], buf[3])) << 8;
-	    a = fixed_mul_f824 (a, 2 * M_PI * (1L << 24));
-	    uint32_t f = postrack_footing;
-	    int32_t arc = fixed_mul_f824 (f, a);
-	    state_main.mode = MODE_SPEED;
-	    speed_theta.use_pos = speed_alpha.use_pos = 1;
-	    speed_theta.pos_cons = pos_theta.cons;
-	    speed_alpha.pos_cons = pos_alpha.cons;
-	    speed_alpha.pos_cons += arc;
-	    state_start (&state_main, 0);
-	  }
+	traj_angle_offset_start (((int32_t) (int16_t) v8_to_v16 (buf[2], buf[3])) << 8, 0);
 	break;
       case c ('f', 0):
 	/* Go to the wall. */

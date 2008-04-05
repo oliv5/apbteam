@@ -312,6 +312,15 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	speed_aux0.pos_cons += v8_to_v32 (args[0], args[1], args[2], args[3]);
 	state_start (&state_aux0, args[4]);
 	break;
+      case c ('a', 5):
+	/* Set angular speed controlled position consign.
+	 * - d: angle offset.
+	 * - b: sequence number. */
+	if (args[4] == state_main.sequence)
+	    break;
+	traj_angle_offset_start (v8_to_v32 (args[0], args[1], args[2],
+					    args[3]), 0);
+	break;
       case c ('f', 1):
 	/* Go to the wall.
 	 * - b: sequence number. */

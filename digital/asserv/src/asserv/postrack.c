@@ -26,6 +26,7 @@
 #include "postrack.h"
 
 #include "modules/math/fixed/fixed.h"
+#include "modules/math/math.h"
 
 #include "counter.h"
 
@@ -53,8 +54,6 @@ postrack_init (void)
     /* Prevent division by 0 by providing a default large value. */
     postrack_set_footing (0x1000);
 }
-
-#define M_PI		3.14159265358979323846	/* pi */
 
 /** Update the current position. */
 void
@@ -92,8 +91,6 @@ postrack_update (void)
 	postrack_a &= 0x00ffffff;
       }
 }
-
-#define M_1_PI		0.31830988618379067154	/* 1/pi */
 
 /** Change the footing value. */
 void

@@ -25,10 +25,15 @@
 #include "common.h"
 #include "traj.h"
 
+#include "modules/math/fixed/fixed.h"
+#include "modules/math/math.h"
 #include "io.h"
 
-#include "speed.h"
 #include "state.h"
+
+#include "pos.h"
+#include "speed.h"
+#include "postrack.h"
 
 #ifdef HOST
 # include "simu.host.h"
@@ -40,6 +45,21 @@
  * 10, 11: go to the wall.
  */
 uint8_t traj_mode;
+
+/** Angle offset.  Directly handled to speed layer. */
+void
+traj_angle_offset_start (int32_t angle, uint8_t seq)
+{
+    int32_t a = fixed_mul_f824 (angle, 2 * M_PI * (1L << 24));
+    uint32_t f = postrack_footing;
+    int32_t arc = fixed_mul_f824 (f, a);
+    state_main.mode = MODE_SPEED;
+    speed_theta.use_pos = speed_alpha.use_pos = 1;
+    speed_theta.pos_cons = pos_theta.cons;
+    speed_alpha.pos_cons = pos_alpha.cons;
+    speed_alpha.pos_cons += arc;
+    state_start (&state_main, seq);
+}
 
 /** Go to the wall mode. */
 static void

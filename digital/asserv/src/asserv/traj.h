@@ -30,4 +30,7 @@ extern uint8_t traj_mode;
 void
 traj_update (void);
 
+void
+traj_angle_offset_start (int32_t angle, uint8_t seq);
+
 #endif /* traj_h */
