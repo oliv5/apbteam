@@ -30,6 +30,7 @@ from inter import Inter
 from Tkinter import *
 from mex.node import Node
 from mex.msg import Msg
+import time
 
 class InterNode (Inter):
     """Inter, coupled with a mex Node."""
@@ -51,7 +52,10 @@ class InterNode (Inter):
 	self.node.register (self.IO_COLOR, self.handle_IO_COLOR)
 	self.node.register (self.IO_SERVO, self.handle_IO_SERVO)
 	self.tk.createfilehandler (self.node, READABLE, self.read)
+	self.date = 0
+	self.synced = True
 	self.step_after = None
+	self.step_time = None
 
     def createWidgets (self):
 	Inter.createWidgets (self)
@@ -61,7 +65,7 @@ class InterNode (Inter):
 		command = self.step)
 	self.stepButton.pack ()
 	self.stepSizeScale = Scale (self.rightFrame, orient = HORIZONTAL,
-		from_ = 0.1, to = 1.0, resolution = 0.1)
+		from_ = 0.05, to = 1.0, resolution = 0.05)
 	self.stepSizeScale.pack ()
 	self.playVar = IntVar ()
 	self.playButton = Checkbutton (self.rightFrame, variable =
@@ -71,14 +75,16 @@ class InterNode (Inter):
     def step (self):
 	"""Do a step.  Signal to the Hub we are ready to wait to the next step
 	date."""
-	self.node.wait_async (self.node.date
+	self.node.wait_async (self.date
 		+ int (self.stepSizeScale.get () * self.TICK))
+	self.synced = False
 	self.step_after = None
+	self.step_time = time.time ()
 
     def play (self):
 	"""Activate auto-steping."""
 	if self.playVar.get ():
-	    if self.step_after is None:
+	    if self.step_after is None and self.synced:
 		self.step ()
 	    self.stepButton.configure (state = DISABLED)
 	else:
@@ -90,14 +96,21 @@ class InterNode (Inter):
     def read (self, file, mask):
 	"""Handle event on the Node."""
 	self.node.read ()
-	if self.node.sync ():
+	if self.node.sync () and not self.synced:
 	    self.synced = True
-	    self.nowLabel.configure (text = 'Now: %.1f s' % (self.node.date /
-		self.TICK))
+	    self.date = self.node.date
+	    self.nowLabel.configure (text = 'Now: %.2f s' % (self.date
+		/ self.TICK))
 	    self.update ()
 	    if self.playVar.get ():
-		self.step_after = self.after (int (self.stepSizeScale.get ()
-		    * self.TICK), self.step)
+		assert self.step_after is None
+		next = self.step_time + self.stepSizeScale.get ()
+		delay = next - time.time ()
+		if delay > 0:
+		    self.step_after = self.after (int (delay * 1000),
+			    self.step)
+		else:
+		    self.step ()
 
     def handle_asserv_0 (self, msg):
 	x, y, a = msg.pop ('hhl')
