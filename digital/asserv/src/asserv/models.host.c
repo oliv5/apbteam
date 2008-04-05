@@ -139,8 +139,8 @@ static const struct robot_t tazg_robot =
     0.0, 0.0, NULL, 0
 };
 
-/* Gerard arm model, with a RE25CLL and a 1:10 ratio gearbox. */
-static const struct motor_def_t gerard_arm_model =
+/* Giboulée arm model, with a RE25CLL and a 1:10 ratio gearbox. */
+static const struct motor_def_t giboulee_arm_model =
 {
     /* Motor characteristics. */
     407 * (2*M_PI) / 60,/* Speed constant ((rad/s)/V). */
@@ -156,8 +156,8 @@ static const struct motor_def_t gerard_arm_model =
     0.200 * 0.1 * 0.1,	/* Load (kg.m^2). */
 };
 
-/* Gerard, find it a name! */
-static const struct robot_t gerard_robot =
+/* Giboulée, APBTeam 2008. */
+static const struct robot_t giboulee_robot =
 {
     /* Main motors. */
     &amax32ghp_model,
@@ -178,7 +178,7 @@ static const struct robot_t gerard_robot =
     /** Distance between the encoders wheels (m). */
     0.28,
     /** First auxiliary motor or NULL if none. */
-    &gerard_arm_model,
+    &giboulee_arm_model,
     /** Number of steps on the first auxiliary motor encoder. */
     500,
 };
@@ -192,7 +192,7 @@ static const struct
       { "gloubi", &gloubi_robot },
       { "taz", &taz_robot },
       { "tazg", &tazg_robot },
-      { "gerard", &gerard_robot },
+      { "giboulee", &giboulee_robot },
       { 0, 0 }
 };
 
