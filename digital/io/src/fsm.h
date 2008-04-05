@@ -87,5 +87,6 @@ fsm_handle_event (fsm_t *fsm, u8 event);
 
 #include "getsamples_fsm.h"
 #include "gutter_fsm.h"
+#include "move_fsm.h"
 
 #endif /* fsm_h */

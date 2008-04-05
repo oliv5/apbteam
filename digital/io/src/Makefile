@@ -3,7 +3,7 @@ PROGS = io
 io_SOURCES = main.c asserv.c servo.avr.c eeprom.avr.c trap.c sharp.c \
 	     simu.host.c \
 	     fsm.c getsamples.c getsamples_fsm.c getsamples_cb.c \
-	     gutter_fsm.c gutter_cb.c
+	     gutter_fsm.c gutter_cb.c move_fsm.c move_cb.c move.c 
 MODULES = proto uart twi utils adc
 CONFIGFILE = avrconfig.h
 # atmega8, atmega8535, atmega128...
