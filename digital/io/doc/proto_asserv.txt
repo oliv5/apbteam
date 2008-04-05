@@ -56,9 +56,9 @@ List of supported commands
 
 This table describe the list of supported commands by the *asserv* card:
 
-+---------+-------+-----------------+-------------------------------------+
-| Command | Class | Parameters list | Description                         |
-| (cmd)   |       | (param)         |                                     |
++---------+-------+-----------------+------------------------------------------+
+| Command | Class | Parameters list | Description                              |
+| (cmd)   |       | (param)         |                                          |
 +=========+=======+=================+==========================================+
 |   'z'   | Other | None            | Reset				       |
 +---------+-------+-----------------+------------------------------------------+
@@ -93,6 +93,8 @@ The *'p'* command take different sub-parameters to configure the settings.
 |     | - angular high speed (1b)     |                                     |
 |     | - linear low speed (1b)       |                                     |
 |     | - angular low speed (1b)      |                                     |
++-----+-------------------------------+-------------------------------------+
+|  0  | None                          | End of sub-parameters               |
 +-----+-------------------------------+-------------------------------------+
 
 The classes of the commands are used for the responses of the *asserv* card
