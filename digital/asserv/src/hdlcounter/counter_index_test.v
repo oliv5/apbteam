@@ -40,14 +40,14 @@ module counter_top(clk, rst, q0, q1, q2, q3, ale, rd, wr, ad, i0, i1, ioa,
     input [3:0] ioa, ioc;
 
     wire [1:0] qf0;
-    wire [size-1:0] count0;
+    wire [15:0] count0;
 
     // Decode encoders outputs.
     noise_filter f0[1:0] (clk, rst, q0, qf0);
-    quad_decoder_div4 qd0 (clk, rst, qf0, count0);
+    quad_decoder_div4 #(16) qd0 (clk, rst, qf0, count0);
 
     reg [size-1:0] lcount;
-    reg [size-1:0] sample;
+    reg [15:0] sample;
 
     // Sample on index pulse.
     always @(posedge clk or negedge rst) begin
@@ -66,10 +66,10 @@ module counter_top(clk, rst, q0, q1, q2, q3, ale, rd, wr, ad, i0, i1, ioa,
 	if (!rst)
 	    lcount <= 0;
 	else begin
-	    lcount <= ad[1:0] == 0 ? count0 :
-		ad[1:0] == 1 ? 0 :
-		ad[1:0] == 2 ? 0 :
-		sample;
+	    lcount <= ad[1:0] == 0 ? count0[15:8] :
+		ad[1:0] == 1 ? count0[7:0] :
+		ad[1:0] == 2 ? sample[15:8] :
+		sample[7:0];
 	end
     end
 

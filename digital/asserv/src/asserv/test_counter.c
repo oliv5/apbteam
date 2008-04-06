@@ -32,13 +32,14 @@
 
 #include "counter_ext.avr.c"
 
-uint8_t read, read_cpt;
+uint8_t read, read_cpt, read_mode;
 uint8_t ind, ind_cpt, ind_init;
 uint8_t count, count_cpt;
 
 int
 main (void)
 {
+    uint8_t read_old = 0;
     uint8_t old_ind = 0;
     const int total = 5000;
     LED_SETUP;
@@ -54,7 +55,16 @@ main (void)
 	    counter_update ();
 	if (read && !--read_cpt)
 	  {
-	    proto_send2b ('r', counter_read (0), counter_read (3));
+	    uint8_t r0, r1, r2, r3;
+	    r0 = counter_read (0);
+	    r1 = counter_read (1);
+	    r2 = counter_read (2);
+	    r3 = counter_read (3);
+	    if (read_mode == 0 || r3 != read_old)
+	      {
+		proto_send4b ('r', r0, r1, r2, r3);
+		read_old = r3;
+	      }
 	    read_cpt = read;
 	  }
 	if (ind && !--ind_cpt)
@@ -94,6 +104,11 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	break;
       case c ('r', 1):
 	read_cpt = read = args[0];
+	read_mode = 0;
+	break;
+      case c ('R', 1):
+	read_cpt = read = args[0];
+	read_mode = 1;
 	break;
       case c ('i', 1):
 	ind_cpt = ind = args[0];
