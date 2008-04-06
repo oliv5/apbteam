@@ -122,6 +122,34 @@ simu_pos_update (double dl, double dr, double footing)
     simu_pos_a = na;
 }
 
+/** Update sensors. */
+static void
+simu_sensor_update (void)
+{
+    static const double sensors[][2] =
+      {
+	  { -70.0, 200.0 },
+	  { -70.0, -200.0 },
+	  { 170.0, 0.0 },
+      };
+    static const double table_width = 3000.0, table_height = 2100.0;
+    PINC = 0;
+    uint8_t bit = 1;
+    unsigned int i;
+    double x, y;
+    for (i = 0; i < UTILS_COUNT (sensors); i++)
+      {
+	/* Compute absolute position. */
+	x = simu_pos_x + cos (simu_pos_a) * sensors[i][0]
+	    - sin (simu_pos_a) * sensors[i][1];
+	y = simu_pos_y + sin (simu_pos_a) * sensors[i][0]
+	    + cos (simu_pos_a) * sensors[i][1];
+	if (x >= 0.0 && x < table_width && y >= 0.0 && y < table_height)
+	    PINC |= bit;
+	bit <<= 1;
+      }
+}
+
 /** Do a simulation step. */
 static void
 simu_step (void)
@@ -190,16 +218,18 @@ simu_step (void)
 	counter_aux0 += counter_aux0_diff;
 	simu_counter_aux0 = counter_aux0_new;
       }
-    /* Update position */
+    /* Update position. */
     simu_pos_update ((simu_left_model.th - old_left_th)
 		     / simu_left_model.m.i_G * simu_robot->wheel_r * 1000,
 		     (simu_right_model.th - old_right_th)
 		     / simu_right_model.m.i_G * simu_robot->wheel_r * 1000,
 		     simu_robot->footing * 1000);
+    /* Update sensors. */
+    simu_sensor_update ();
 }
 
 /** Send information to the other nodes. */
-void
+static void
 simu_send (void)
 {
     mex_msg_t *m;
