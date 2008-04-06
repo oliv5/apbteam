@@ -46,6 +46,8 @@ enum
 {
     /* Go to the wall. */
     TRAJ_FTW,
+    /* Go to the dispenser. */
+    TRAJ_GTD,
     /* Everything done. */
     TRAJ_DONE,
 };
@@ -111,6 +113,39 @@ traj_ftw_start (uint8_t seq)
     state_start (&state_main, seq);
 }
 
+/** Go to the dispenser mode. */
+static void
+traj_gtd (void)
+{
+    int16_t speed;
+    speed = speed_theta.slow;
+    speed *= 256;
+    speed_theta.use_pos = speed_alpha.use_pos = 0;
+    if (PINC & _BV (2))
+      {
+	speed_theta.cons = speed;
+	speed_alpha.cons = 0;
+      }
+    else
+      {
+	speed_theta.cons = 0;
+	speed_alpha.cons = 0;
+	speed_theta.cur = 0;
+	speed_alpha.cur = 0;
+	state_finish (&state_main);
+	traj_mode = TRAJ_DONE;
+      }
+}
+
+/** Start go to the dispenser mode. */
+void
+traj_gtd_start (uint8_t seq)
+{
+    state_main.mode = MODE_TRAJ;
+    traj_mode = TRAJ_GTD;
+    state_start (&state_main, seq);
+}
+
 /* Compute new speed according the defined trajectory. */
 void
 traj_update (void)
@@ -119,6 +154,9 @@ traj_update (void)
       {
       case TRAJ_FTW:
 	traj_ftw ();
+	break;
+      case TRAJ_GTD:
+	traj_gtd ();
 	break;
       case TRAJ_DONE:
 	break;

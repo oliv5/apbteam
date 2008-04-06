@@ -36,4 +36,7 @@ traj_angle_offset_start (int32_t angle, uint8_t seq);
 void
 traj_ftw_start (uint8_t seq);
 
+void
+traj_gtd_start (uint8_t seq);
+
 #endif /* traj_h */

@@ -137,6 +137,7 @@ twi_proto_callback (u8 *buf, u8 size)
 	break;
       case c ('F', 0):
 	/* Go to the dispenser. */
+	traj_gtd_start (0);
 	break;
       case c ('b', 3):
 	/* Move the arm.

@@ -328,6 +328,13 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	    break;
 	traj_ftw_start (args[0]);
 	break;
+      case c ('F', 1):
+	/* Go to the dispenser.
+	 * - b: sequence number. */
+	if (args[0] == state_main.sequence)
+	    break;
+	traj_gtd_start (args[0]);
+	break;
       case c ('a', 2):
 	/* Set both acknoledge.
 	 * - b: main ack sequence number.
