@@ -41,9 +41,16 @@
 
 /* This file provides high level trajectories commands. */
 
-/** Traj mode:
- * 10, 11: go to the wall.
- */
+/** Traj mode enum. */
+enum
+{
+    /* Go to the wall. */
+    TRAJ_FTW,
+    /* Everything done. */
+    TRAJ_DONE,
+};
+
+/** Traj mode. */
 uint8_t traj_mode;
 
 /** Angle offset.  Directly handled to speed layer. */
@@ -68,6 +75,7 @@ traj_ftw (void)
     int16_t speed;
     speed = speed_theta.slow;
     speed *= 256;
+    speed_theta.use_pos = speed_alpha.use_pos = 0;
     if (PINC & _BV (0) && PINC & _BV (1))
       {
 	speed_theta.cons = -speed;
@@ -90,8 +98,17 @@ traj_ftw (void)
 	speed_theta.cur = 0;
 	speed_alpha.cur = 0;
 	state_finish (&state_main);
-	traj_mode = 11;
+	traj_mode = TRAJ_DONE;
       }
+}
+
+/** Start go to the wall mode. */
+void
+traj_ftw_start (uint8_t seq)
+{
+    state_main.mode = MODE_TRAJ;
+    traj_mode = TRAJ_FTW;
+    state_start (&state_main, seq);
 }
 
 /* Compute new speed according the defined trajectory. */
@@ -100,9 +117,10 @@ traj_update (void)
 {
     switch (traj_mode)
       {
-      case 10:
+      case TRAJ_FTW:
 	traj_ftw ();
-      case 11:
+	break;
+      case TRAJ_DONE:
 	break;
       }
 }

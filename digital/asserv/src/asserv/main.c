@@ -326,10 +326,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	 * - b: sequence number. */
 	if (args[0] == state_main.sequence)
 	    break;
-	state_main.mode = MODE_TRAJ;
-	speed_theta.use_pos = speed_alpha.use_pos = 0;
-	traj_mode = 10;
-	state_start (&state_main, args[0]);
+	traj_ftw_start (args[0]);
 	break;
       case c ('a', 2):
 	/* Set both acknoledge.

@@ -133,6 +133,7 @@ twi_proto_callback (u8 *buf, u8 size)
 	break;
       case c ('f', 0):
 	/* Go to the wall. */
+	traj_ftw_start (0);
 	break;
       case c ('F', 0):
 	/* Go to the dispenser. */
