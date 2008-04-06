@@ -162,7 +162,7 @@ static const struct robot_t giboulee_robot =
     /* Main motors. */
     &amax32ghp_model,
     /* Number of steps on the main motors encoders. */
-    5000,
+    2500,
     /* Wheel radius (m). */
     0.065 / 2,
     /* Distance between the wheels (m). */

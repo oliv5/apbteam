@@ -43,7 +43,7 @@ module test_counter_top();
     always #5 clk <= !clk;
 
     // Counter top setup.
-    wire [0:nc-1] quad_full = 4'b0011;
+    wire [0:nc-1] quad_full = 4'b0001;
     reg [31:0] filter_size[0:nc-1];
     parameter max_filter = 7;
     initial begin

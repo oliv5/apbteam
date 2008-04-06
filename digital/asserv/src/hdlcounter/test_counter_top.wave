@@ -2,7 +2,7 @@
 @28
 test_counter_top.clk
 test_counter_top.rst
-@420
+@22
 test_counter_top.countdiv32_0[27:0]
 test_counter_top.countdiv32_1[27:0]
 test_counter_top.countdiv32_2[27:0]
@@ -13,7 +13,7 @@ test_counter_top.rd
 test_counter_top.sel[1:0]
 @22
 test_counter_top.ad[7:0]
-test_counter_top.uut.count0[7:0]
-test_counter_top.uut.count1[7:0]
+test_counter_top.uut.count0[8:0]
+test_counter_top.uut.count1[8:0]
 test_counter_top.uut.count2[7:0]
 test_counter_top.uut.count3[7:0]
