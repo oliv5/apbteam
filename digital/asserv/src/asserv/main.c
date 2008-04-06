@@ -319,7 +319,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	if (args[4] == state_main.sequence)
 	    break;
 	traj_angle_offset_start (v8_to_v32 (args[0], args[1], args[2],
-					    args[3]), 0);
+					    args[3]), args[4]);
 	break;
       case c ('f', 1):
 	/* Go to the wall.
