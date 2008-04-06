@@ -60,7 +60,9 @@ main (void)
 	    r1 = counter_read (1);
 	    r2 = counter_read (2);
 	    r3 = counter_read (3);
-	    if (read_mode == 0 || r3 != read_old)
+	    if (read_mode == 0 || (read_mode == 1 && r3 != read_old)
+		|| (read_mode == 2
+		    && (r0 == 0 || r1 == 0 || r2 == 0 || r3 == 0)))
 	      {
 		proto_send4b ('r', r0, r1, r2, r3);
 		read_old = r3;
@@ -109,6 +111,10 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
       case c ('R', 1):
 	read_cpt = read = args[0];
 	read_mode = 1;
+	break;
+      case c ('Z', 1):
+	read_cpt = read = args[0];
+	read_mode = 2;
 	break;
       case c ('i', 1):
 	ind_cpt = ind = args[0];
