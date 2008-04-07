@@ -344,3 +344,15 @@ asserv_set_speed (uint8_t linear_high, uint8_t angular_high,
     /* Send the set speed of movements command to the asserv board */
     asserv_twi_send_command ('p', 5);
 }
+
+/**
+ * Go to the position provided in parameters. Those points shall be in the
+ * table.
+ * @param  x  the x position on the table.
+ * @param  y  the y position on the table.
+ */
+void
+asserv_goto (uint32_t x, uint32_t y)
+{
+}
+
