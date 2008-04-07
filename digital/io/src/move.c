@@ -23,8 +23,17 @@
  *
  * }}} */
 #include "common.h"
+#include "asserv.h"
 #include "move.h"
 #include "fsm.h"
+
+#define MOVE_BORDER_END 500
+
+#define MOVE_ANGLE_0 0x0
+#define MOVE_ANGLE_90 0x4000
+#define MOVE_ANGLE_180 0x8000
+#define MOVE_ANGLE_270 0xC000
+
 
 struct move_data_t move_data;
 
@@ -38,5 +47,33 @@ move_start (uint32_t position_x, uint32_t position_y)
     /* Start the FSM. */
     fsm_init (&move_fsm);
     fsm_handle_event (&move_fsm, MOVE_EVENT_ok);
+}
+
+/** Verify if the position desired is in the table use when the robot tries to
+ * reach a point and a obstacle is in front of it.
+ * \param  pos  the robot's current position on the table.
+ * \param  new_pos  the position desired by the user.
+ * \return  true if the it can reach the position.
+ */
+uint8_t
+move_can_go_on_left_or_right (asserv_position_t current_pos, 
+			      asserv_position_t new_pos)
+{
+    // Go on right.
+    if (new_pos.x > current_pos.x)
+      {
+	if (new_pos.x - current_pos.x < 3000 - MOVE_BORDER_END)
+	    return 0x1;
+	else
+	    return 0x0;
+      }
+    // go on left.
+    else 
+      {
+	if (current_pos.x - new_pos.x < MOVE_BORDER_END)
+	    return 0x1;
+	else
+	    return 0x0;
+      }
 }
 

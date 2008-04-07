@@ -24,8 +24,31 @@
  * }}} */
 #include "common.h"
 #include "../../fsm.h"
+#include "../../asserv.h"
+#include "../../move.h"
 
 #include <stdio.h>
+
+/**
+ * Status structure maintains by the update command.
+ */
+typedef struct asserv_struct_s
+{
+    /** Status flags. */
+    uint8_t status;
+    /** Sequence number. */
+    uint8_t seq;
+    /** Bot position. */
+    asserv_position_t position;
+    /** Arm position. */
+    uint16_t arm_position;
+} asserv_struct_s;
+
+/**
+ * Status variable.
+ */
+asserv_struct_s asserv_status;
+
 
 void
 move_print_test (fsm_t *move)
@@ -55,6 +78,9 @@ move_print_test (fsm_t *move)
 int
 main (void)
 {
+    move_data.position_x = asserv_status.position.x = 1500;
+    move_data.position_y = asserv_status.position.y = 1050;
+
     fsm_init (&move_fsm);
 
     fsm_handle_event (&move_fsm, MOVE_EVENT_ok);
@@ -64,15 +90,9 @@ main (void)
     fsm_handle_event (&move_fsm, MOVE_EVENT_failed_or_blocked);
     move_print_test (&move_fsm);
 
-    fsm_handle_event (&move_fsm, MOVE_EVENT_failed_or_blocked);
+    fsm_handle_event (&move_fsm, MOVE_EVENT_failed_or_blocked_or_near_border);
     move_print_test (&move_fsm);
     
-    fsm_handle_event (&move_fsm, MOVE_EVENT_near_border);
-    move_print_test (&move_fsm);
-
-    fsm_handle_event (&move_fsm, MOVE_EVENT_failed_or_blocked);
-    move_print_test (&move_fsm);
-
     fsm_handle_event (&move_fsm, MOVE_EVENT_reached);
     move_print_test (&move_fsm);
 
@@ -88,14 +108,17 @@ main (void)
     return 0;
 }
 
-//void
-//asserv_set_x_position (uint32_t position)
-//{
-//    printf ("X position : %d\n", position);
-//}
-//
-//void
-//asserv_set_y_position (int32_t y)
-//{
-//    printf ("Y position : %d\n", y);
-//}
+void
+asserv_goto (uint32_t x, uint32_t y)
+{
+    printf ("x : %d\n", x);
+    printf ("y : %d\n", y);
+}
+
+void
+asserv_get_position (asserv_position_t *pos)
+{
+    pos->x = asserv_status.position.x;
+    pos->y = asserv_status.position.y;
+}
+
