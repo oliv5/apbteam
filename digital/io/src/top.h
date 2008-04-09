@@ -1,6 +1,6 @@
-#ifndef topfsm_h
-#define topfsm_h
-/* topfsm.h */
+#ifndef top_h
+#define top_h
+/* top.h */
 /* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
  *
  * Copyright (C) 2008 Nélio Laranjeiro
@@ -25,15 +25,15 @@
  *
  * }}} */
 
-struct topfsm_data_t
+struct top_data_t
 {
     uint8_t sequence;
 };
 
-extern struct topfsm_data_t topfsm_data;
+extern struct top_data_t top_data;
 
-/** Start a main FSM. */
+/** Start a Top FSM. */
 void
-topfsm_start (void);
+top_start (void);
 
-#endif /* topfsm_h */
+#endif /* top_h */

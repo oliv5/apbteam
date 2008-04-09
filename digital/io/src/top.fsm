@@ -1,5 +1,5 @@
-# Main FSM.
-topfsm
+# Top FSM.
+top
 
 States:
  START

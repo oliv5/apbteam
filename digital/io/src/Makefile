@@ -2,9 +2,11 @@ BASE = ../../avr
 PROGS = io
 io_SOURCES = main.c asserv.c servo.avr.c eeprom.avr.c trap.c sharp.c \
 	     simu.host.c \
-	     fsm.c getsamples.c getsamples_fsm.c getsamples_cb.c \
-	     gutter_fsm.c gutter_cb.c move_fsm.c move_cb.c move.c \
-	     topfsm.c 
+	     fsm.c \
+	     getsamples.c getsamples_fsm.c getsamples_cb.c \
+	     gutter_fsm.c gutter_cb.c \
+	     move.c move_fsm.c move_cb.c \
+	     top.c top_fsm.c top_cb.c
 MODULES = proto uart twi utils adc
 CONFIGFILE = avrconfig.h
 # atmega8, atmega8535, atmega128...
@@ -42,17 +44,19 @@ EXTRA_CLEAN_FILES = getsamples_fsm.h getsamples_fsm.c getsamples_cb.h \
 		    getsamples_cb_skel.c getsamples.png \
 		    gutter_fsm.h gutter_fsm.c gutter_cb.h \
 		    gutter_cb_skel.c gutter.png \
-		    move_fsm.h move_fsm.c move.png move_cb.h move_cb_skel.c \
-		    topfsm.png 
+		    move_fsm.h move_fsm.c move_cb.h move_cb_skel.c move.png \
+		    top_fsm.h top_fsm.c top_cb.h top_cb_skel.c top.png
 
 # Bootstrap, fsm should be generated before fsm.h is used.
 fsm.c: fsm.h
-fsm.h: getsamples_fsm.h gutter_fsm.h move_fsm.h topfsm.h
+fsm.h: getsamples_fsm.h gutter_fsm.h move_fsm.h top_fsm.h
 
 DFAGEN = python $(BASE)/../../tools/dfagen/dfagen.py
 
 %_fsm.h %_fsm.c %_cb.h %_cb_skel.c: %.fsm fsm.conf $(FSM_TEMPLATES)
 	$(DFAGEN) -o c -d $< -c fsm.conf -p $(<:%.fsm=%)
+
+.PRECIOUS: getsamples_cb.c gutter_cb.c move_cb.c top_cb.c
 
 ifndef CB
 %_cb.c: %_cb_skel.c
@@ -83,7 +87,7 @@ else
 endif
 
 
-png: getsamples.png gutter.png move.png topfsm.png
+png: getsamples.png gutter.png move.png top.png
 
 %.png: %.dot
 	dot -Tpng -o $@ $<

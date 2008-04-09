@@ -1,4 +1,4 @@
-/* robot_main_fsm.c */
+/* top.c */
 /* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
  *
  * Copyright (C) 2008 Nélio Laranjeiro
@@ -24,20 +24,19 @@
  * }}} */
 #include "common.h"
 #include "asserv.h"
-#include "topfsm.h"
+#include "top.h"
 #include "fsm.h"
 
-struct topfsm_data_t topfsm_data;
+struct top_data_t top_data;
 
 /** Start a main FSM. */
 void
 robot_main_start (void)
 {
     /* Set parameters. */
-    topfsm_data.sequence = 0x15;
+    top_data.sequence = 0x15;
     /* Start the FSM. */
-/*    fsm_init (&robot_main_fsm);
-    fsm_handle_event (&robot_main_fsm, ROBOT_MAIN_EVENT_ok);
-    */
+    fsm_init (&top_fsm);
+    fsm_handle_event (&top_fsm, TOP_EVENT_ok);
 }
 
