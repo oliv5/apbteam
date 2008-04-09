@@ -41,7 +41,9 @@ EXTRA_CLEAN_FILES = getsamples_fsm.h getsamples_fsm.c getsamples_cb.h \
 		    getsamples_cb_skel.c getsamples.png \
 		    gutter_fsm.h gutter_fsm.c gutter_cb.h \
 		    gutter_cb_skel.c gutter.png \
-		    move_fsm.h move_fsm.c move.png move_cb.h move_cb_skel.c
+		    move_fsm.h move_fsm.c move.png move_cb.h move_cb_skel.c \
+		    mainFsm.h mainFsm.c mainFsm.png mainFsm_cb.h \
+		    mainFsm_cb_skel.c
 
 # Bootstrap, fsm should be generated before fsm.h is used.
 fsm.c: fsm.h
@@ -81,7 +83,7 @@ else
 endif
 
 
-png: getsamples.png gutter.png move.png
+png: getsamples.png gutter.png move.png mainFsm.png
 
 %.png: %.dot
 	dot -Tpng -o $@ $<
