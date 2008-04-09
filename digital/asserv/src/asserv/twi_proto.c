@@ -139,6 +139,14 @@ twi_proto_callback (u8 *buf, u8 size)
 	/* Go to the dispenser. */
 	traj_gtd_start (0);
 	break;
+      case c ('x', 0):
+	/* Go to position.
+	 * - 3b: x position.
+	 * - 3b: y position. */
+	traj_goto_start (v8_to_v32 (buf[2], buf[3], buf[4], 0),
+			 v8_to_v32 (buf[5], buf[6], buf[7], 0),
+			 0);
+	break;
       case c ('b', 3):
 	/* Move the arm.
 	 * - w: new position.

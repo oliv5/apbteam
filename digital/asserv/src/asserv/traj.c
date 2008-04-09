@@ -27,7 +27,10 @@
 
 #include "modules/math/fixed/fixed.h"
 #include "modules/math/math.h"
+#include "modules/utils/utils.h"
 #include "io.h"
+
+#include <math.h>
 
 #include "state.h"
 
@@ -48,12 +51,20 @@ enum
     TRAJ_FTW,
     /* Go to the dispenser. */
     TRAJ_GTD,
+    /* Go to position. */
+    TRAJ_GOTO,
     /* Everything done. */
     TRAJ_DONE,
 };
 
 /** Traj mode. */
 uint8_t traj_mode;
+
+/** Epsilon, distance considered to be small enough. */
+int16_t traj_eps = 500;
+
+/** Go to position. */
+static uint32_t traj_goto_x, traj_goto_y;
 
 /** Angle offset.  Directly handled to speed layer. */
 void
@@ -146,6 +157,56 @@ traj_gtd_start (uint8_t seq)
     state_start (&state_main, seq);
 }
 
+/** Go to position mode. */
+static void
+traj_goto (void)
+{
+    int32_t dx = traj_goto_x - postrack_x;
+    int32_t dy = traj_goto_y - postrack_y;
+    if (UTILS_ABS (dx) < ((int32_t) traj_eps) << 8
+	&& UTILS_ABS (dy) < ((int32_t) traj_eps) << 8)
+      {
+	/* Near enough, stop. */
+	state_finish (&state_main);
+	traj_mode = TRAJ_DONE;
+      }
+    else
+      {
+	/* Projection of destination in robot base. */
+	int32_t c = fixed_cos_f824 (postrack_a);
+	int32_t s = fixed_sin_f824 (postrack_a);
+	int32_t dt = fixed_mul_f824 (dx, c) + fixed_mul_f824 (dy, s);
+	int32_t da = fixed_mul_f824 (dy, c) - fixed_mul_f824 (dx, s);
+	/* Compute arc length. */
+	int32_t arad = atan2 (da, dt) * (1L << 24);
+	int32_t arc = fixed_mul_f824 (arad, postrack_footing);
+	/* Compute consign. */
+	speed_alpha.pos_cons = pos_alpha.cur;
+	speed_alpha.pos_cons += arc;
+	if (UTILS_ABS (arad) < 0.5 * M_PI * (1L << 24))
+	  {
+	    speed_theta.pos_cons = pos_theta.cur;
+	    speed_theta.pos_cons += dt >> 8;
+	  }
+	else
+	  {
+	    speed_theta.pos_cons = pos_theta.cons;
+	  }
+      }
+}
+
+/** Start go to position mode (x, y: f24.8). */
+void
+traj_goto_start (uint32_t x, uint32_t y, uint8_t seq)
+{
+    state_main.mode = MODE_TRAJ;
+    traj_mode = TRAJ_GOTO;
+    traj_goto_x = x;
+    traj_goto_y = y;
+    speed_theta.use_pos = speed_alpha.use_pos = 1;
+    state_start (&state_main, seq);
+}
+
 /* Compute new speed according the defined trajectory. */
 void
 traj_update (void)
@@ -157,6 +218,9 @@ traj_update (void)
 	break;
       case TRAJ_GTD:
 	traj_gtd ();
+	break;
+      case TRAJ_GOTO:
+	traj_goto ();
 	break;
       case TRAJ_DONE:
 	break;

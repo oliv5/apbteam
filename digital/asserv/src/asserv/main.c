@@ -348,6 +348,17 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	    break;
 	traj_gtd_start (args[0]);
 	break;
+      case c ('x', 9):
+	/* Go to position.
+	 * - d: x, f24.8.
+	 * - d: y, f24.8.
+	 * - b: sequence number. */
+	if (args[8] == state_main.sequence)
+	    break;
+	traj_goto_start (v8_to_v32 (args[0], args[1], args[2], args[3]),
+			 v8_to_v32 (args[4], args[5], args[6], args[7]),
+			 args[8]);
+	break;
       case c ('a', 2):
 	/* Set both acknoledge.
 	 * - b: main ack sequence number.
@@ -495,6 +506,9 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	      case c ('b', 3):
 		pos_blocked = v8_to_v16 (args[1], args[2]);
 		break;
+	      case c ('e', 3):
+		traj_eps = v8_to_v16 (args[1], args[2]);
+		break;
 	      case c ('w', 2):
 		/* Set PWM direction.
 		 * - b: bits: 0000[aux0][right][left]. */
@@ -526,6 +540,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		proto_send1w ('E', pos_e_sat);
 		proto_send1w ('I', pos_int_sat);
 		proto_send1w ('b', pos_blocked);
+		proto_send1w ('e', traj_eps);
 		proto_send1b ('w', pwm_reverse);
 		break;
 	      default:
