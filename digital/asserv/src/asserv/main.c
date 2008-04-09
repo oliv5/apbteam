@@ -312,6 +312,19 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	speed_aux0.pos_cons += v8_to_v32 (args[0], args[1], args[2], args[3]);
 	state_start (&state_aux0, args[4]);
 	break;
+      case c ('l', 5):
+	/* Set linear speed controlled position consign.
+	 * - d: consign offset.
+	 * - b: sequence number. */
+	if (args[4] == state_main.sequence)
+	    break;
+	state_main.mode = MODE_SPEED;
+	speed_theta.use_pos = speed_alpha.use_pos = 1;
+	speed_theta.pos_cons = pos_theta.cons;
+	speed_theta.pos_cons += v8_to_v32 (args[0], args[1], args[2], args[3]);
+	speed_alpha.pos_cons = pos_alpha.cons;
+	state_start (&state_main, args[8]);
+	break;
       case c ('a', 5):
 	/* Set angular speed controlled position consign.
 	 * - d: angle offset.
