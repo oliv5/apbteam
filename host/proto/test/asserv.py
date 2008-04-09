@@ -2,13 +2,11 @@ import sys
 sys.path.append (sys.path[0] + '/..')
 
 import proto
-from fio import IO
+from popen_io import PopenIO
 import time, select, os
 
 # Pass program name as argument.
-fout, fin = os.popen2 (sys.argv[1:], 't', 1)
-time.sleep (0.5)
-io = IO (fin, fout)
+io = PopenIO (sys.argv[1:])
 
 def log (x):
     print x
@@ -30,7 +28,4 @@ p.register ('C', 'HHH', counter_stat)
 
 p.send ('C', 'B', 255)
 
-while not p.sync () or done != 3:
-    fds = select.select ((p,), (), (), 0.1)[0]
-    for i in fds:
-	i.read ()
+p.wait (lambda: done == 3)

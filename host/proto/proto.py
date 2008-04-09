@@ -22,7 +22,7 @@
 #
 # }}}
 """Proto interface module."""
-import binascii, struct
+import binascii, struct, select
 
 START = 0
 BANG = 1
@@ -67,6 +67,14 @@ class Proto:
 		or self.last_send + self.timeout < self.date ()):
 	    self.send_head ()
 	return not self.send_queue
+
+    def wait (self, cond = None):
+	"""Wait forever or until cond () is True."""
+	while not (self.sync () and (cond is None or cond ())):
+	    fds = select.select ((self,), (), (), self.timeout)[0]
+	    for i in fds:
+		assert i is self
+		i.read ()
 
     def register (self, command, fmt, handler):
 	"""Register a handler for the specified command and format.  The
