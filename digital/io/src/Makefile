@@ -3,7 +3,8 @@ PROGS = io
 io_SOURCES = main.c asserv.c servo.avr.c eeprom.avr.c trap.c sharp.c \
 	     simu.host.c \
 	     fsm.c getsamples.c getsamples_fsm.c getsamples_cb.c \
-	     gutter_fsm.c gutter_cb.c move_fsm.c move_cb.c move.c 
+	     gutter_fsm.c gutter_cb.c move_fsm.c move_cb.c move.c \
+	     topfsm.c 
 MODULES = proto uart twi utils adc
 CONFIGFILE = avrconfig.h
 # atmega8, atmega8535, atmega128...
@@ -42,12 +43,11 @@ EXTRA_CLEAN_FILES = getsamples_fsm.h getsamples_fsm.c getsamples_cb.h \
 		    gutter_fsm.h gutter_fsm.c gutter_cb.h \
 		    gutter_cb_skel.c gutter.png \
 		    move_fsm.h move_fsm.c move.png move_cb.h move_cb_skel.c \
-		    mainFsm.h mainFsm.c mainFsm.png mainFsm_cb.h \
-		    mainFsm_cb_skel.c
+		    topfsm.png 
 
 # Bootstrap, fsm should be generated before fsm.h is used.
 fsm.c: fsm.h
-fsm.h: getsamples_fsm.h gutter_fsm.h move_fsm.h
+fsm.h: getsamples_fsm.h gutter_fsm.h move_fsm.h topfsm.h
 
 DFAGEN = python $(BASE)/../../tools/dfagen/dfagen.py
 
@@ -83,7 +83,7 @@ else
 endif
 
 
-png: getsamples.png gutter.png move.png mainFsm.png
+png: getsamples.png gutter.png move.png topfsm.png
 
 %.png: %.dot
 	dot -Tpng -o $@ $<

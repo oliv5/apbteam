@@ -1,5 +1,5 @@
 # Main FSM.
-mainfsm
+topfsm
 
 States:
  START
