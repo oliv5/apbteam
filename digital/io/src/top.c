@@ -31,10 +31,13 @@ struct top_data_t top_data;
 
 /** Start a main FSM. */
 void
-robot_main_start (void)
+top_start (uint8_t color_team)
 {
     /* Set parameters. */
     top_data.sequence = 0x15;
+    /* Get the team color. 
+     * !! I supose that the 0 value is 0 and red value is 1 */
+    top_data.team_color = color_team; 
     /* Start the FSM. */
     fsm_init (&top_fsm);
     fsm_handle_event (&top_fsm, TOP_EVENT_ok);

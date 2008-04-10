@@ -25,15 +25,40 @@
  *
  * }}} */
 
+#define BLUE_DISTRIBUTOR_X 700
+#define BLUE_DISTRIBUTOR_Y 2100
+
+#define RED_DISTRIBUTOR_X 2300
+#define RED_DISTRIBUTOR_Y 2100
+
+#define ICE_DISTRIBUTOR_LEFT 0 
+#define ICE_DISTRIBUTOR_RIGHT 3000 
+#define ICE_DISTRIBUTOR_Y 1350
+
+enum team_color_e
+{
+    BLUE_TEAM,
+    RED_TEAM
+};
+
 struct top_data_t
 {
+    /** The sequence to get.
+     * Each bit corresponds to the slot in the collector (where the balls a
+     * stored in the robot).
+     * bit 0 = slot 0
+     * bit 1 = slot 1 and so on.
+     */
     uint8_t sequence;
+    /** The color of the balls the robot shall take. 
+     * RED_TEAM or BLUE_TEAM. */
+    uint8_t team_color;
 };
 
 extern struct top_data_t top_data;
 
 /** Start a Top FSM. */
 void
-top_start (void);
+top_start (uint8_t team_color);
 
 #endif /* top_h */

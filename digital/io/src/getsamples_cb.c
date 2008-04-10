@@ -103,6 +103,8 @@ fsm_branch_t
 getsamples__BACKWARD__position_reached (void)
 {
     asserv_move_arm (5000, 100);
+
+    fsm_handle_event (&top_fsm, TOP_EVENT_samples_took);
     return getsamples_next (BACKWARD, position_reached);
 }
 

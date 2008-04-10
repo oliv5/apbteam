@@ -7,7 +7,9 @@
  */
 #include "common.h"
 #include "fsm.h"
+#include "top.h"
 #include "top_cb.h"
+#include "getsamples.h"
 
 /*
  * START =ok=>
@@ -17,6 +19,20 @@
 fsm_branch_t
 top__START__ok (void)
 {
+    // Call the get samples state machine.
+
+    // Blue color.
+    if (top_data.team_color == BLUE_TEAM)
+    {
+        getsamples_start (BLUE_DISTRIBUTOR_X, BLUE_DISTRIBUTOR_Y,
+                          top_data.sequence);
+    }
+    else
+    {
+        getsamples_start (RED_DISTRIBUTOR_X, RED_DISTRIBUTOR_Y,
+                          top_data.sequence);
+    }
+
     return top_next (START, ok);
 }
 
