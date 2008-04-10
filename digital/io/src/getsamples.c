@@ -25,6 +25,7 @@
 #include "common.h"
 #include "getsamples.h"
 #include "fsm.h"
+#include "trap.h"
 
 struct getsamples_data_t getsamples_data;
 
@@ -42,3 +43,35 @@ getsamples_start (uint32_t distributor_x, uint32_t distributor_y,
     fsm_handle_event (&getsamples_fsm, GETSAMPLES_EVENT_ok);
 }
 
+/** Configure the classifier using the bit fields in the getsamples_data
+ * structure.
+ */
+void
+getsamples_configure_classifier (void)
+{
+    switch (getsamples_data.samples)
+      {
+      case 0x15:
+	trap_setup_path_to_box (out_left_box);
+	getsamples_data.samples &= 0xF;
+	break;
+      case 0xA:
+	trap_setup_path_to_box (middle_left_box);
+	getsamples_data.samples &= 0x7;
+	break;
+      case 0x5:
+	trap_setup_path_to_box (middle_box);
+	getsamples_data.samples &= 0x3;
+	break;
+      case 0x2:
+	trap_setup_path_to_box (middle_right_box);
+	getsamples_data.samples &= 0x1;
+	break;
+      case 0x1:
+	trap_setup_path_to_box (out_right_box);
+	getsamples_data.samples = 0x0;
+	break;
+      default:
+	trap_setup_path_to_box (garbage);
+      }
+}

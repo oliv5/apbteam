@@ -44,4 +44,10 @@ void
 getsamples_start (uint32_t distributor_x, uint32_t distributor_y,
 		  uint8_t samples);
 
+/** Configure the classifier using the bit fields in the getsamples_data
+ * structure.
+ */
+void
+getsamples_configure_classifier (void);
+
 #endif /* getsamples_h */
