@@ -32,12 +32,13 @@ struct getsamples_data_t getsamples_data;
 /** Start a getsamples FSM. */
 void
 getsamples_start (uint32_t distributor_x, uint32_t distributor_y,
-		  uint8_t samples)
+		  uint8_t samples, uint8_t event_to_post)
 {
     /* Set parameters. */
     getsamples_data.distributor_x = distributor_x;
     getsamples_data.distributor_y = distributor_y;
     getsamples_data.samples = samples;
+    getsamples_data.event = event_to_post;
     /* Start FSM. */
     fsm_init (&getsamples_fsm);
     fsm_handle_event (&getsamples_fsm, GETSAMPLES_EVENT_ok);

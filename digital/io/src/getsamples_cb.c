@@ -75,7 +75,7 @@ getsamples__START__ok (void)
 
 /*
  * TAKE_SAMPLES =sample_took=>
- * no_more => BACKWARD
+ * no_more => END
  *   If the quantity of samples are taken, then go backward and continue classifying the samples.
  * more => TAKE_SAMPLES
  *   Continue to take samples and classify the next sample.
@@ -96,35 +96,11 @@ getsamples__TAKE_SAMPLES__sample_took (void)
 	asserv_goto (getsamples_data.distributor_x - 200,
 		     getsamples_data.distributor_y - 200);
 
+	fsm_handle_event (&top_fsm, getsamples_data.event);
 	return getsamples_next_branch (TAKE_SAMPLES, sample_took, no_more);
       }
 }
 
-/*
- * BACKWARD =position_reached=>
- *  => END
- *   Ending this state machine.
- */
-fsm_branch_t
-getsamples__BACKWARD__position_reached (void)
-{
-    asserv_move_arm (5000, 100);
-
-    fsm_handle_event (&top_fsm, TOP_EVENT_samples_took);
-    return getsamples_next (BACKWARD, position_reached);
-}
-
-/*
- * GO_TO_POSITION =position_failed=>
- *  => GO_TO_POSITION
- *   Go to another point before trying to go to this one again.
- */
-fsm_branch_t
-getsamples__GO_TO_POSITION__position_failed (void)
-{
-    // TODO In this case i don't know what to do.
-    return getsamples_next (GO_TO_POSITION, position_failed);
-}
 
 /*
  * GO_TO_POSITION =position_reached=>

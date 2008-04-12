@@ -41,6 +41,14 @@ enum team_color_e
     RED_TEAM
 };
 
+enum sequence_e
+{
+    /* 3 color balls, 2 ice */
+    SEQUCENCE_ONE = 0x15,
+    /* 2 color balls, 3 ice */
+    SEQUENCE_TWO = 0xA
+};
+
 struct top_data_t
 {
     /** The sequence to get.
@@ -50,6 +58,10 @@ struct top_data_t
      * bit 1 = slot 1 and so on.
      */
     uint8_t sequence;
+    /** The boxes already in use. */
+    uint8_t boxes_used;
+    /** sequence to realize. */
+    uint8_t sequence_to_do;
     /** The color of the balls the robot shall take. 
      * RED_TEAM or BLUE_TEAM. */
     uint8_t team_color;

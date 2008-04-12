@@ -35,6 +35,8 @@ top_start (uint8_t color_team)
 {
     /* Set parameters. */
     top_data.sequence = 0x15;
+    top_data.boxes_used = 0x0;
+    top_data.sequence_to_do = 0x15;
     /* Get the team color. 
      * !! I supose that the 0 value is 0 and red value is 1 */
     top_data.team_color = color_team; 

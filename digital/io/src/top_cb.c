@@ -7,9 +7,83 @@
  */
 #include "common.h"
 #include "fsm.h"
-#include "top.h"
 #include "top_cb.h"
+#include "top.h"
 #include "getsamples.h"
+#include "asserv.h"
+#include "gutter.h"
+
+/*
+ * BACKWARD =collector_full=>
+ *  => GO_TO_GOAL
+ *   Go the goal to depose the samples.
+ */
+fsm_branch_t
+top__BACKWARD__collector_full (void)
+{
+    gutter_start ();
+    top_data.sequence_to_do = (~top_data.sequence_to_do) & 0x1f;
+    return top_next (BACKWARD, collector_full);
+}
+
+/*
+ * BACKWARD =ended=>
+ *  => GET_ICE
+ *   Get ICE to end the sequence.
+ */
+fsm_branch_t
+top__BACKWARD__ended (void)
+{
+    if (top_data.team_color)
+      {
+	    getsamples_start ( ICE_DISTRIBUTOR_LEFT,  ICE_DISTRIBUTOR_Y,
+			       ~top_data.boxes_used, TOP_EVENT_ice_took); 
+      }
+    else
+      {
+	    getsamples_start ( ICE_DISTRIBUTOR_RIGHT,  ICE_DISTRIBUTOR_Y,
+			       ~top_data.boxes_used, TOP_EVENT_ice_took); 
+      }
+    return top_next (BACKWARD, ended);
+}
+
+/*
+ * BACKWARD =ice_dist_empty=>
+ *  => GET_ADV_ICE
+ *   Go to take the ice in the adversary distributor because our is empty.
+ */
+fsm_branch_t
+top__BACKWARD__ice_dist_empty (void)
+{
+    if (top_data.team_color)
+      {
+	    getsamples_start ( ICE_DISTRIBUTOR_RIGHT,  ICE_DISTRIBUTOR_Y,
+			       ~top_data.boxes_used, TOP_EVENT_ice_took); 
+      }
+    else
+      {
+	    getsamples_start ( ICE_DISTRIBUTOR_LEFT,  ICE_DISTRIBUTOR_Y,
+			       ~top_data.boxes_used, TOP_EVENT_ice_took); 
+      }
+
+    return top_next (BACKWARD, ice_dist_empty);
+}
+
+/*
+ * GET_ICE =ice_took=>
+ *  => BACKWARD
+ *   Go backward to end the take balls.
+ */
+fsm_branch_t
+top__GET_ICE__ice_took (void)
+{
+    asserv_position_t pos;
+
+    asserv_get_position (&pos);
+
+    asserv_goto (pos.x - 200, pos.y - 200);
+    return top_next (GET_ICE, ice_took);
+}
 
 /*
  * START =ok=>
@@ -19,76 +93,18 @@
 fsm_branch_t
 top__START__ok (void)
 {
-    // Call the get samples state machine.
-
-    // Blue color.
     if (top_data.team_color == BLUE_TEAM)
-    {
-        getsamples_start (BLUE_DISTRIBUTOR_X, BLUE_DISTRIBUTOR_Y,
-                          top_data.sequence);
-    }
+      {
+	    getsamples_start ( BLUE_DISTRIBUTOR_X, BLUE_DISTRIBUTOR_Y ,
+			       ~top_data.boxes_used, TOP_EVENT_samples_took); 
+      }
     else
-    {
-        getsamples_start (RED_DISTRIBUTOR_X, RED_DISTRIBUTOR_Y,
-                          top_data.sequence);
-    }
+      {
+	    getsamples_start ( RED_DISTRIBUTOR_X, RED_DISTRIBUTOR_Y,
+			       ~top_data.boxes_used, TOP_EVENT_samples_took); 
+      }
 
     return top_next (START, ok);
-}
-
-/*
- * GET_SAMPLES =samples_took_ice_distributor_empty_not_enough_time=>
- *  => GO_TO_GOAL
- *   Some samples had been took and there is not enough time to get some ice.
- */
-fsm_branch_t
-top__GET_SAMPLES__samples_took_ice_distributor_empty_not_enough_time (void)
-{
-    return top_next (GET_SAMPLES, samples_took_ice_distributor_empty_not_enough_time);
-}
-
-/*
- * GET_SAMPLES =samples_took=>
- *  => GET_ICE
- *   The samples had been took and now the ice is missing.
- */
-fsm_branch_t
-top__GET_SAMPLES__samples_took (void)
-{
-    return top_next (GET_SAMPLES, samples_took);
-}
-
-/*
- * GET_SAMPLES =collector_full=>
- *  => GO_TO_GOAL
- *   All the room in the robot are full.
- */
-fsm_branch_t
-top__GET_SAMPLES__collector_full (void)
-{
-    return top_next (GET_SAMPLES, collector_full);
-}
-
-/*
- * GET_SAMPLES =samples_took_ice_distributor_empty_enough_time=>
- *  => GET_ADV_ICE
- *   Go to take ice in the adversary distributor because the one in our part of the table is empty.
- */
-fsm_branch_t
-top__GET_SAMPLES__samples_took_ice_distributor_empty_enough_time (void)
-{
-    return top_next (GET_SAMPLES, samples_took_ice_distributor_empty_enough_time);
-}
-
-/*
- * GO_TO_GOAL =samples_deposed_ice_distributor_empty=>
- *  => GET_ADV_ICE
- *   Go to get some adversary ice because our distributor is empty.
- */
-fsm_branch_t
-top__GO_TO_GOAL__samples_deposed_ice_distributor_empty (void)
-{
-    return top_next (GO_TO_GOAL, samples_deposed_ice_distributor_empty);
 }
 
 /*
@@ -99,40 +115,58 @@ top__GO_TO_GOAL__samples_deposed_ice_distributor_empty (void)
 fsm_branch_t
 top__GO_TO_GOAL__samples_deposed (void)
 {
+    if (top_data.team_color == BLUE_TEAM)
+      {
+	    getsamples_start ( BLUE_DISTRIBUTOR_X, BLUE_DISTRIBUTOR_Y ,
+			       ~top_data.boxes_used, TOP_EVENT_samples_took); 
+      }
+    else
+      {
+	    getsamples_start ( RED_DISTRIBUTOR_X, RED_DISTRIBUTOR_Y,
+			       ~top_data.boxes_used, TOP_EVENT_samples_took); 
+      }
     return top_next (GO_TO_GOAL, samples_deposed);
 }
 
 /*
- * GET_ICE =ice_took=>
- *  => GO_TO_GOAL
- *   The ice had been taken and the collector is full. The robot shall go to depose it into the goal.
- */
-fsm_branch_t
-top__GET_ICE__ice_took (void)
-{
-    return top_next (GET_ICE, ice_took);
-}
-
-/*
- * GET_ADV_ICE =ice_took_collector_not_full=>
- *  => GET_SAMPLES
- *   There is enough time to get some samples and go to the goal.
- */
-fsm_branch_t
-top__GET_ADV_ICE__ice_took_collector_not_full (void)
-{
-    return top_next (GET_ADV_ICE, ice_took_collector_not_full);
-}
-
-/*
  * GET_ADV_ICE =ice_took=>
- *  => GO_TO_GOAL
- *   The ice has been taken, now the robot shall depose it.
+ *  => BACKWARD
+ *   The ice has been taken.
  */
 fsm_branch_t
 top__GET_ADV_ICE__ice_took (void)
 {
+    asserv_position_t pos;
+
+    asserv_get_position (&pos);
+
+    asserv_goto (pos.x - 200, pos.y - 200);
     return top_next (GET_ADV_ICE, ice_took);
+}
+
+/*
+ * GET_SAMPLES =samples_took=>
+ *  => BACKWARD
+ *   The samples had been took and now the ice is missing.
+ */
+fsm_branch_t
+top__GET_SAMPLES__samples_took (void)
+{
+    // Call the get samples state machine.
+
+    // Blue color.
+    if (top_data.team_color == BLUE_TEAM)
+    {
+        getsamples_start (BLUE_DISTRIBUTOR_X, BLUE_DISTRIBUTOR_Y,
+                          top_data.sequence, TOP_EVENT_samples_took);
+    }
+    else
+    {
+        getsamples_start (RED_DISTRIBUTOR_X, RED_DISTRIBUTOR_Y,
+                          top_data.sequence, TOP_EVENT_samples_took);
+    }
+
+    return top_next (START, ok);
 }
 
 

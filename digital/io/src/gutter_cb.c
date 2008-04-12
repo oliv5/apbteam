@@ -24,10 +24,13 @@
  * }}} */
 #include "common.h"
 #include "fsm.h"
+#include "gutter.h"
 #include "gutter_cb.h"
 #include "asserv.h"
 #include "trap.h"
 #include "modules/utils/utils.h"
+#include "top.h"
+#include "topfsm_fsm.h"
 
 /*
  * START =ok=>
@@ -51,6 +54,8 @@ gutter__CLOSE_COLLECTOR__collector_closed (void)
 {
     //Close the collector.
     trap_close_rear_panel();
+    // Post an event to the top fsm machine
+    fsm_handle_event (&top_fsm, TOPFSM_EVENT_samples_deposed);
     return gutter_next (CLOSE_COLLECTOR, collector_closed);
 }
 

@@ -4,9 +4,10 @@ top
 States:
  START
  GET_SAMPLES
- GET_ICE
  GO_TO_GOAL
+ GET_ICE
  GET_ADV_ICE
+ BACKWARD
 
 Events:
  ok
@@ -14,39 +15,33 @@ Events:
  collector_full
  ice_took
  samples_deposed
- samples_took_ice_distributor_empty_not_enough_time
- samples_took_ice_distributor_empty_enough_time
- samples_deposed_ice_distributor_empty
- ice_took_collector_full
- not_enough_time
- ice_took_collector_not_full
+ ice_dist_empty
+ ended
 
 START:
  ok -> GET_SAMPLES
   Go to take some samples. The sequence shall be adapt to take the correct number of samples.
 
 GET_SAMPLES:
- samples_took -> GET_ICE
+ samples_took -> BACKWARD
   The samples had been took and now the ice is missing.
- samples_took_ice_distributor_empty_not_enough_time -> GO_TO_GOAL
-  Some samples had been took and there is not enough time to get some ice. 
- samples_took_ice_distributor_empty_enough_time -> GET_ADV_ICE
-  Go to take ice in the adversary distributor because the one in our part of the table is empty.
- collector_full -> GO_TO_GOAL
-  All the room in the robot are full.
 
 GET_ICE:
- ice_took -> GO_TO_GOAL
-  The ice had been taken and the collector is full. The robot shall go to depose it into the goal.
+ ice_took -> BACKWARD
+  Go backward to end the take balls.
 
 GO_TO_GOAL:
  samples_deposed -> GET_SAMPLES
   The samples had been deposed, it shall try to get more samples. This state will call the getsamples FSM and the moveFSM.
- samples_deposed_ice_distributor_empty -> GET_ADV_ICE
-  Go to get some adversary ice because our distributor is empty.
 
 GET_ADV_ICE:
- ice_took -> GO_TO_GOAL
-  The ice has been taken, now the robot shall depose it.
- ice_took_collector_not_full -> GET_SAMPLES
-  There is enough time to get some samples and go to the goal.
+ ice_took -> BACKWARD
+  The ice has been taken.
+
+BACKWARD:
+ ended -> GET_ICE
+  Get ICE to end the sequence.
+ collector_full -> GO_TO_GOAL
+  Go the goal to depose the samples.
+ ice_dist_empty -> GET_ADV_ICE
+  Go to take the ice in the adversary distributor because our is empty.

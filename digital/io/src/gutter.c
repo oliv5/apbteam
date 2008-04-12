@@ -1,7 +1,5 @@
-#ifndef getsamples_h
-#define getsamples_h
-/* getsamples.h */
-/*  {{{
+/* gutter.c */
+/* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
  *
  * Copyright (C) 2008 Nélio Laranjeiro
  *
@@ -24,32 +22,14 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "common.h"
+#include "gutter.h"
+#include "fsm.h"
 
-/** getsamples FSM associated data. */
-struct getsamples_data_t
+void
+gutter_start (void)
 {
-    /* Distributor x position to get samples. */
-    uint32_t distributor_x;
-    /* Distributor y position to get samples. */
-    uint32_t distributor_y;
-    /* Samples to take. */
-    uint8_t samples;
-    /* event of the main fsm to post. */
-    uint8_t event;
-};
-
-/** getsamples global. */
-extern struct getsamples_data_t getsamples_data;
-
-/** Start a getsamples FSM. */
-void
-getsamples_start (uint32_t distributor_x, uint32_t distributor_y,
-		  uint8_t samples, uint8_t event_to_post);
-
-/** Configure the classifier using the bit fields in the getsamples_data
- * structure.
- */
-void
-getsamples_configure_classifier (void);
-
-#endif /* getsamples_h */
+    /* Start the FSM. */
+    fsm_init (&gutter_fsm);
+    fsm_handle_event (&gutter_fsm, GUTTER_EVENT_ok);
+}
