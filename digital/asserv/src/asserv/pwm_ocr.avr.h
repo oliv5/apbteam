@@ -1,6 +1,6 @@
-#ifndef pwm_h
-#define pwm_h
-/* pwm.h */
+#ifndef pwm_ocr_avr_h
+#define pwm_ocr_avr_h
+/* pwm_ocr.avr.h */
 /* asserv - Position & speed motor control on AVR. {{{
  *
  * Copyright (C) 2008 Nicolas Schodet
@@ -25,25 +25,13 @@
  *
  * }}} */
 
-/** Define the absolute maximum PWM value. */
-#define PWM_MAX 0x3ff
-
-extern int16_t pwm_left, pwm_right, pwm_aux0;
-extern uint8_t pwm_reverse;
-
-#define PWM_REVERSE_BIT(x) PWM_REVERSE_BIT_ (x)
-#define PWM_REVERSE_BIT_(x) PWM_REVERSE_BIT_ ## x
-#define PWM_REVERSE_BIT_pwm_left _BV (0)
-#define PWM_REVERSE_BIT_pwm_right _BV (1)
-#define PWM_REVERSE_BIT_pwm_aux0 _BV (2)
+void
+pwm_ocr_init (void);
 
 void
-pwm_init (void);
+pwm_ocr_update (void);
 
 void
-pwm_update (void);
+pwm_ocr_set_reverse (uint8_t reverse);
 
-void
-pwm_set_reverse (uint8_t reverse);
-
-#endif /* pwm_h */
+#endif /* pwm_ocr_avr_h */

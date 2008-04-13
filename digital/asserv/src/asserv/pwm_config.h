@@ -1,6 +1,6 @@
-#ifndef pwm_h
-#define pwm_h
-/* pwm.h */
+#ifndef pwm_config_h
+#define pwm_config_h
+/* pwm_config.h - Helper for PWM configuration. */
 /* asserv - Position & speed motor control on AVR. {{{
  *
  * Copyright (C) 2008 Nicolas Schodet
@@ -25,25 +25,28 @@
  *
  * }}} */
 
-/** Define the absolute maximum PWM value. */
-#define PWM_MAX 0x3ff
+/* Simplify conditionnal compilation. */
+#define PWM1or2 (defined (PWM1) || defined (PWM2))
+#define PWM3or4 (defined (PWM3) || defined (PWM4))
+#ifdef PWM1
+# define PWM1c(x) x
+#else
+# define PWM1c(x) 0
+#endif
+#ifdef PWM2
+# define PWM2c(x) x
+#else
+# define PWM2c(x) 0
+#endif
+#ifdef PWM3
+# define PWM3c(x) x
+#else
+# define PWM3c(x) 0
+#endif
+#ifdef PWM4
+# define PWM4c(x) x
+#else
+# define PWM4c(x) 0
+#endif
 
-extern int16_t pwm_left, pwm_right, pwm_aux0;
-extern uint8_t pwm_reverse;
-
-#define PWM_REVERSE_BIT(x) PWM_REVERSE_BIT_ (x)
-#define PWM_REVERSE_BIT_(x) PWM_REVERSE_BIT_ ## x
-#define PWM_REVERSE_BIT_pwm_left _BV (0)
-#define PWM_REVERSE_BIT_pwm_right _BV (1)
-#define PWM_REVERSE_BIT_pwm_aux0 _BV (2)
-
-void
-pwm_init (void);
-
-void
-pwm_update (void);
-
-void
-pwm_set_reverse (uint8_t reverse);
-
-#endif /* pwm_h */
+#endif /* pwm_config_h */
