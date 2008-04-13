@@ -42,7 +42,7 @@
 #define COUNTER_AUX0 2
 
 /** Define to 1 to reverse the left counter. */
-#define COUNTER_LEFT_REVERSE 0
+#define COUNTER_LEFT_REVERSE 1
 /** Define to 1 to reverse the right counter. */
 #define COUNTER_RIGHT_REVERSE 0
 /** Define to 1 to reverse the first auxiliary counter. */
