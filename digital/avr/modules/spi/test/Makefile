@@ -1,10 +1,10 @@
 BASE = ../../..
-PROGS = test_spi
+AVR_PROGS = test_spi
 test_spi_SOURCES = test_spi.c 
 MODULES = utils spi uart proto 
 CONFIGFILE = avrconfig.h
 # atmega8, atmega8535, atmega128...
-AVR_MCU = atmega8
+AVR_MCU = atmega128
 # -O2 : speed
 # -Os : size
 OPTIMIZE = -O2

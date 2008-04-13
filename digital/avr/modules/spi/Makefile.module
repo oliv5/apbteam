@@ -1,1 +1,1 @@
-spi_SOURCES = spi.c
+spi_SOURCES = spi.avr.c

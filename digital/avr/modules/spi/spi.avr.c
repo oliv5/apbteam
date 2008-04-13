@@ -1,4 +1,4 @@
-/* spi.c */
+/* spi.avr.c */
 /*  {{{
  *
  * Copyright (C) 2008 Nélio Laranjeiro
