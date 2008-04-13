@@ -25,8 +25,10 @@
  *
  * }}} */
 
-/** Define the absolute maximum PWM value. */
-#define PWM_MAX 0x3ff
+/** Define the absolute maximum PWM value.
+ * This value is lowered until the bug relatives to maximum value is fixed
+ * (rounding after shifting bug). */
+#define PWM_MAX 0x3f0
 
 extern int16_t pwm_left, pwm_right, pwm_aux0;
 extern uint8_t pwm_reverse;
