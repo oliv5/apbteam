@@ -27,6 +27,7 @@
 #include "pwm.h"
 
 #include "modules/spi/spi.h"
+#include "modules/utils/utils.h"
 #include "io.h"
 
 /** Assign PWM outputs. */
@@ -66,8 +67,12 @@ pwm_mp_update (void)
     /* Chip enable. */
     PORTB &= ~_BV (0);
     /* Convert to 12 bits. */
-    uint16_t pwm1 = PWM1c (PWM1) << 1;
-    uint16_t pwm2 = PWM2c (PWM2) << 1;
+    int16_t pwm1 = PWM1c (PWM1) << 1;
+    int16_t pwm2 = PWM2c (PWM2) << 1;
+    if (UTILS_ABS (pwm1) < 0x20)
+	pwm1 = 0;
+    if (UTILS_ABS (pwm2) < 0x20)
+	pwm2 = 0;
     /* Send, computing checksum on the way. */
     cks = 0x42;
     v = ((pwm1 >> 4) & 0xf0) | ((pwm2 >> 8) & 0x0f);
