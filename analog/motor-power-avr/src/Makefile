@@ -1,7 +1,7 @@
 BASE = ../../../digital/avr
 AVR_PROGS = mp
 mp_SOURCES = main.c mp_pwm_L_.c mp_pwm_R_.c mp_pwm_LR_.c
-MODULES = proto uart utils math/fixed
+MODULES = proto uart utils math/fixed spi
 CONFIGFILE = avrconfig.h
 # atmega8, atmega8535, atmega128...
 AVR_MCU = atmega16

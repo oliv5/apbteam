@@ -30,6 +30,7 @@
 #include "modules/utils/utils.avr.h"
 #include "modules/utils/byte.h"
 #include "modules/math/fixed/fixed.h"
+#include "modules/spi/spi.h"
 #include "io.h"
 #include "mp_pwm_LR_.h"
 #include "mp_pwm_L_.h"
@@ -69,6 +70,12 @@ uint16_t envTest_cpt, envTest_period, envTest_autosend;
 // current limit stats
 uint8_t curLim_stat_cpt, curLim_stat_period;
 
+/** Currently read SPI frame. */
+uint8_t spi_frame[4];
+/** Current size of the received frame. */
+uint8_t spi_frame_size;
+
+
 /* +AutoDec */
 
 /** Main loop. */
@@ -92,6 +99,8 @@ main (int argc, char **argv)
     //PORTA = 0xff;
 
     uart0_init ();
+    spi_init (SPI_IT_DISABLE | SPI_ENABLE | SPI_MSB_FIRST | SPI_SLAVE |
+	      SPI_CPOL_FALLING | SPI_CPHA_SETUP | SPI_FOSC_DIV16);
     init_timer_LR_ ();
     init_curLim ();
     //postrack_init ();
@@ -145,6 +154,35 @@ main_loop (void)
     /* Uart */
     if (uart0_poll ())
       proto_accept (uart0_getc ());
+
+    /* SPI. */
+    if (SPSR & _BV (SPIF))
+      {
+	spi_frame[spi_frame_size++] = SPDR;
+	if (spi_frame_size == 4)
+	  {
+	    /* Check integrity. */
+	    if ((spi_frame[0] ^ spi_frame[1] ^ spi_frame[2] ^ spi_frame[3])
+		== 0x42)
+	      {
+		uint8_t left_val = ((spi_frame[0] & 0x70) << 1) | (spi_frame[1] >> 3);
+		uint8_t left_dir = (spi_frame[0] & 0x80) ? 1 : 0;
+		if (left_dir)
+		    left_val = -left_val;
+		uint8_t right_val = ((spi_frame[0] & 0x07) << 5) | (spi_frame[2] >> 3);
+		uint8_t right_dir = (spi_frame[0] & 0x08) ? 1 : 0;
+		if (right_dir)
+		    right_val = -right_val;
+		start_motor_L_ (left_val, left_dir);
+		start_motor_R_ (right_val, right_dir);
+	      }
+	    spi_frame_size = 0;
+	  }
+      }
+    if (PINB & _BV (SPI_BIT_SS))
+      {
+	spi_frame_size = 0;
+      }
 
     /* Counter for launching environemental tests */
     if (!(envTest_cpt --)) {
