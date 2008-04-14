@@ -177,6 +177,19 @@ asserv_close_input_hole (void)
 		     BOT_ARM_THIRD_ROUND, BOT_ARM_SPEED);
 }
 
+uint16_t
+asserv_get_arm_position (void)
+{
+    return asserv_arm_position;
+}
+
+void
+asserv_arm_set_position_reached (uint16_t position)
+{
+    printf ("[asserv] Arm notifier at position %d (we are at %d).\n",
+	    position, asserv_arm_position);
+}
+
 void
 asserv_go_to_distributor (void)
 {
