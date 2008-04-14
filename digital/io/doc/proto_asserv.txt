@@ -66,9 +66,9 @@ This table describe the list of supported commands by the *asserv* card:
 +---------+-------+-----------------+------------------------------------------+
 |   's'   | Other | None            | Stop                                     |
 +---------+-------+-----------------+------------------------------------------+
-|   'l'   | Move  | - distance (3b) | Linear move                              |
+|   'l'   | Move  | - distance (3b) | Linear move (in step (3/100 mm)          |
 +---------+-------+-----------------+------------------------------------------+
-|   'a'   | Move  | - angle (2b)    | Angular move (rotation)                  |
+|   'a'   | Move  | - angle (2b)    | Angular move (0 <=> 0° ; 65536 <=> 360)  |
 +---------+-------+-----------------+------------------------------------------+
 |   'f'   | Move  | None            | Go to the wall (backward movement)       |
 +---------+-------+-----------------+------------------------------------------+
@@ -76,6 +76,8 @@ This table describe the list of supported commands by the *asserv* card:
 +---------+-------+-----------------+------------------------------------------+
 |   'b'   |  Arm  | - position (2b) | Move the arm to a desired position       |
 |         |       | - speed (1b)    | at a specific speed                      |
+|         |       |                 |   - position: 5000 steps by round        |
+|         |       |                 |   - speed: in step by cycle (4.44ms)     |
 +---------+-------+-----------------+------------------------------------------+
 |   'p'   | Other | See next table  | Change setting values                    |
 +---------+-------+-----------------+------------------------------------------+
