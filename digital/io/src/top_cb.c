@@ -34,15 +34,20 @@ top__BACKWARD__collector_full (void)
 fsm_branch_t
 top__BACKWARD__ended (void)
 {
+    /* Generic get sample data */
+    struct getsamples_data_t get_sample_data;
+    get_sample_data.event = TOP_EVENT_ice_took;
+    get_sample_data.sample_bitfield = ~top_data.boxes_used; // XXX
+    get_sample_data.distributor_y = ICE_DISTRIBUTOR_Y;
     if (top_data.team_color)
       {
-	    getsamples_start ( ICE_DISTRIBUTOR_LEFT,  ICE_DISTRIBUTOR_Y,
-			       ~top_data.boxes_used, TOP_EVENT_ice_took); 
+	get_sample_data.distributor_x = ICE_DISTRIBUTOR_LEFT;
+	getsamples_start (get_sample_data);
       }
     else
       {
-	    getsamples_start ( ICE_DISTRIBUTOR_RIGHT,  ICE_DISTRIBUTOR_Y,
-			       ~top_data.boxes_used, TOP_EVENT_ice_took); 
+	get_sample_data.distributor_x = ICE_DISTRIBUTOR_RIGHT;
+	getsamples_start (get_sample_data);
       }
     return top_next (BACKWARD, ended);
 }
@@ -55,17 +60,21 @@ top__BACKWARD__ended (void)
 fsm_branch_t
 top__BACKWARD__ice_dist_empty (void)
 {
+    /* Generic get sample data */
+    struct getsamples_data_t get_sample_data;
+    get_sample_data.event = TOP_EVENT_ice_took;
+    get_sample_data.sample_bitfield = ~top_data.boxes_used; // XXX
+    get_sample_data.distributor_y = ICE_DISTRIBUTOR_Y;
     if (top_data.team_color)
       {
-	    getsamples_start ( ICE_DISTRIBUTOR_RIGHT,  ICE_DISTRIBUTOR_Y,
-			       ~top_data.boxes_used, TOP_EVENT_ice_took); 
+	get_sample_data.distributor_x = ICE_DISTRIBUTOR_LEFT;
+	getsamples_start (get_sample_data);
       }
     else
       {
-	    getsamples_start ( ICE_DISTRIBUTOR_LEFT,  ICE_DISTRIBUTOR_Y,
-			       ~top_data.boxes_used, TOP_EVENT_ice_took); 
+	get_sample_data.distributor_x = ICE_DISTRIBUTOR_RIGHT;
+	getsamples_start (get_sample_data);
       }
-
     return top_next (BACKWARD, ice_dist_empty);
 }
 
@@ -93,17 +102,22 @@ top__GET_ICE__ice_took (void)
 fsm_branch_t
 top__START__ok (void)
 {
+    /* Generic get sample data */
+    struct getsamples_data_t get_sample_data;
+    get_sample_data.event = TOP_EVENT_samples_took;
+    get_sample_data.sample_bitfield = ~top_data.boxes_used; // XXX
     if (top_data.team_color == BLUE_TEAM)
       {
-	    getsamples_start ( BLUE_DISTRIBUTOR_X, BLUE_DISTRIBUTOR_Y ,
-			       ~top_data.boxes_used, TOP_EVENT_samples_took); 
+	get_sample_data.distributor_x = BLUE_DISTRIBUTOR_X;
+	get_sample_data.distributor_y = BLUE_DISTRIBUTOR_Y;
+	getsamples_start (get_sample_data);
       }
     else
       {
-	    getsamples_start ( RED_DISTRIBUTOR_X, RED_DISTRIBUTOR_Y,
-			       ~top_data.boxes_used, TOP_EVENT_samples_took); 
+	get_sample_data.distributor_x = RED_DISTRIBUTOR_X;
+	get_sample_data.distributor_y = RED_DISTRIBUTOR_Y;
+	getsamples_start (get_sample_data);
       }
-
     return top_next (START, ok);
 }
 
@@ -115,15 +129,21 @@ top__START__ok (void)
 fsm_branch_t
 top__GO_TO_GOAL__samples_deposed (void)
 {
+    /* Generic get sample data */
+    struct getsamples_data_t get_sample_data;
+    get_sample_data.event = TOP_EVENT_samples_took;
+    get_sample_data.sample_bitfield = ~top_data.boxes_used; // XXX
     if (top_data.team_color == BLUE_TEAM)
       {
-	    getsamples_start ( BLUE_DISTRIBUTOR_X, BLUE_DISTRIBUTOR_Y ,
-			       ~top_data.boxes_used, TOP_EVENT_samples_took); 
+	get_sample_data.distributor_x = BLUE_DISTRIBUTOR_X;
+	get_sample_data.distributor_y = BLUE_DISTRIBUTOR_Y;
+	getsamples_start (get_sample_data);
       }
     else
       {
-	    getsamples_start ( RED_DISTRIBUTOR_X, RED_DISTRIBUTOR_Y,
-			       ~top_data.boxes_used, TOP_EVENT_samples_took); 
+	get_sample_data.distributor_x = RED_DISTRIBUTOR_X;
+	get_sample_data.distributor_y = RED_DISTRIBUTOR_Y;
+	getsamples_start (get_sample_data);
       }
     return top_next (GO_TO_GOAL, samples_deposed);
 }
@@ -155,17 +175,22 @@ top__GET_SAMPLES__samples_took (void)
     // Call the get samples state machine.
 
     // Blue color.
+    /* Generic get sample data */
+    struct getsamples_data_t get_sample_data;
+    get_sample_data.event = TOP_EVENT_samples_took;
+    get_sample_data.sample_bitfield = top_data.sequence; // XXX
     if (top_data.team_color == BLUE_TEAM)
-    {
-        getsamples_start (BLUE_DISTRIBUTOR_X, BLUE_DISTRIBUTOR_Y,
-                          top_data.sequence, TOP_EVENT_samples_took);
-    }
+      {
+	get_sample_data.distributor_x = BLUE_DISTRIBUTOR_X;
+	get_sample_data.distributor_y = BLUE_DISTRIBUTOR_Y;
+	getsamples_start (get_sample_data);
+      }
     else
-    {
-        getsamples_start (RED_DISTRIBUTOR_X, RED_DISTRIBUTOR_Y,
-                          top_data.sequence, TOP_EVENT_samples_took);
-    }
-
+      {
+	get_sample_data.distributor_x = RED_DISTRIBUTOR_X;
+	get_sample_data.distributor_y = RED_DISTRIBUTOR_Y;
+	getsamples_start (get_sample_data);
+      }
     return top_next (START, ok);
 }
 

@@ -191,14 +191,25 @@ void
 asserv_go_to_distributor (void);
 
 /**
- * Move the arm.
- * A complete rotation correspond to 5000 steps.
+ * Move the arm to a certain number of steps.
  * Arm class command.
- * @param position desired goal position (in step).
+ * This function take the number of steps you want to move to. This is not an
+ * absolute position, this is only the number of steps you want to add to the
+ * current position.
+ * @param offset number of steps to add to the current position.
  * @param speed speed of the movement.
  */
 void
-asserv_move_arm (uint16_t position, uint8_t speed);
+asserv_move_arm (int16_t offset, uint8_t speed);
+
+/**
+ * Move the arm to close the input hole.
+ * It will compute the forward offset to close the input hole by moving the
+ * arm in front of it.
+ * @todo backward/forward selection support.
+ */
+void
+asserv_close_input_hole (void);
 
 /**
  * Set current X position.

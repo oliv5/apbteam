@@ -87,6 +87,8 @@ typedef enum trap_box_id_e
     middle_right_box,
     /** Most right box. */
     out_right_box,
+    /** Count of trap boxes. */
+    trap_count,
 } trap_box_id_e;
 
 /**

@@ -27,52 +27,45 @@
 #include "fsm.h"
 #include "trap.h"
 
+#include "io.h"
+
+/**
+ * Get samples shared data.
+ */
 struct getsamples_data_t getsamples_data;
 
-/** Start a getsamples FSM. */
+/* Start the get samples FSM. */
 void
-getsamples_start (uint32_t distributor_x, uint32_t distributor_y,
-		  uint8_t samples, uint8_t event_to_post)
+getsamples_start (struct getsamples_data_t data)
 {
-    /* Set parameters. */
-    getsamples_data.distributor_x = distributor_x;
-    getsamples_data.distributor_y = distributor_y;
-    getsamples_data.samples = samples;
-    getsamples_data.event = event_to_post;
-    /* Start FSM. */
+    /* Set parameters */
+    getsamples_data.distributor_x = data.distributor_x;
+    getsamples_data.distributor_y = data.distributor_y;
+    getsamples_data.sample_bitfield = data.sample_bitfield;
+    getsamples_data.event = data.event;
+
+    /* Start the get samples FSM */
     fsm_init (&getsamples_fsm);
-    fsm_handle_event (&getsamples_fsm, GETSAMPLES_EVENT_ok);
+    fsm_handle_event (&getsamples_fsm, GETSAMPLES_EVENT_start);
 }
 
-/** Configure the classifier using the bit fields in the getsamples_data
- * structure.
- */
+/* Configure the classifier (using the trap and the internal bit field) for the first bit set to 1. */
 void
 getsamples_configure_classifier (void)
 {
-    switch (getsamples_data.samples)
+    uint8_t trap_num;
+    /* Go through all the bits of the sample bit field */
+    for (trap_num = 0; trap_num < trap_count; trap_num++)
       {
-      case 0x15:
-	trap_setup_path_to_box (out_left_box);
-	getsamples_data.samples &= 0xF;
-	break;
-      case 0xA:
-	trap_setup_path_to_box (middle_left_box);
-	getsamples_data.samples &= 0x7;
-	break;
-      case 0x5:
-	trap_setup_path_to_box (middle_box);
-	getsamples_data.samples &= 0x3;
-	break;
-      case 0x2:
-	trap_setup_path_to_box (middle_right_box);
-	getsamples_data.samples &= 0x1;
-	break;
-      case 0x1:
-	trap_setup_path_to_box (out_right_box);
-	getsamples_data.samples = 0x0;
-	break;
-      default:
-	trap_setup_path_to_box (garbage);
+	/* Is the bit set? */
+	if (bit_is_set (getsamples_data.sample_bitfield, trap_num))
+	  {
+	    /* Configure the classifier */
+	    trap_setup_path_to_box (trap_num);
+	    /* Reset this bit */
+	    getsamples_data.sample_bitfield &= ~ _BV (trap_num);
+	    /* Stop here */
+	    return;
+	  }
       }
 }

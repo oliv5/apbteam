@@ -113,6 +113,8 @@ trap_setup_path_to_box (trap_box_id_e box)
       servo_set_high_time (3, trap_high_time_pos[horizontal][3]);
       servo_set_high_time (4, trap_high_time_pos[horizontal][4]);
       break;
+    default:
+      return;
     }
 }
 

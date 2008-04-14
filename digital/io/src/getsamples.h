@@ -25,29 +25,48 @@
  *
  * }}} */
 
-/** getsamples FSM associated data. */
+/**
+ * Get samples FSM associated data.
+ */
 struct getsamples_data_t
 {
-    /* Distributor x position to get samples. */
+    /**
+     * X position of the distributor where to get samples from.
+     */
     uint32_t distributor_x;
-    /* Distributor y position to get samples. */
+    /**
+     * Y position of the distributor where to get samples from.
+     */
     uint32_t distributor_y;
-    /* Samples to take. */
-    uint8_t samples;
-    /* event of the main fsm to post. */
+    /**
+     * Bit field to indicate where to put the sample.
+     * If bit 0 is set to 1, a sample will be put into the out_right_box. If
+     * set to 0, the out_right_box will not be used to store a sample.
+     */
+    uint8_t sample_bitfield;
+    /**
+     * Event to post to the top FSM when this one is finished.
+     */
     uint8_t event;
 };
 
-/** getsamples global. */
+/**
+ * Get samples shared data.
+ */
 extern struct getsamples_data_t getsamples_data;
 
-/** Start a getsamples FSM. */
+/**
+ * Start the get samples FSM.
+ * @param data get sample data initial configuration.
+ */
 void
-getsamples_start (uint32_t distributor_x, uint32_t distributor_y,
-		  uint8_t samples, uint8_t event_to_post);
+getsamples_start (struct getsamples_data_t data);
 
-/** Configure the classifier using the bit fields in the getsamples_data
- * structure.
+/**
+ * Configure the classifier (using the trap and the internal bit field) for
+ * the first bit set to 1.
+ * After the configuring the classifier, the bit will be reset to 0 to use the
+ * next one when calling this function again.
  */
 void
 getsamples_configure_classifier (void);

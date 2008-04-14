@@ -1,41 +1,63 @@
-#FSM get samples
+# Get samples FSM
 get_samples
+  Get samples from the distributor
 
 States:
- START
- GO_TO_POSITION
- PREPARE_ARM
- FORWARD_CONTROL
+ IDLE
+  waiting for the beginning of the get samples FSM
+ GO_IN_FRONT_OF_DISTRIBUTOR
+  move the bot in front of a distributor (not in contact with the distributor)
+ OPEN_INPUT_HOLE
+  move the arm to let the samples enter into the bot by the input hole
+ APPROACH_DISTRIBUTOR
+  make the bot move forward in order to be in contact with the distributor
  TAKE_SAMPLES
- END
+  take one or more samples
+ MOVE_AWAY_FROM_DISTRIBUTOR
+  move the bot away from the distributor by going backward
+ CLOSE_INPUT_HOLE
+  put the arm back in front of the input hole to prevent sample to enter
 
 Events:
- ok
- position_failed
- arm_moved
- sample_took
- classifier_ready
- position_reached
+ start
+  initialize the FSM
+ bot_move_failed
+  the bot movement failed (blocked by something for example)
+ bot_move_succeed
+  the bot has finished to moved and arrived at the desired position
+ arm_move_succeed
+  the arm has reached the desired position
+ arm_pass_noted_position
+  the arm has just passed the 'noted' position
 
-START:
- ok -> GO_TO_POSITION
-  Go to the distributor. The distributor to reach shall be setted in the fsm structure.
+IDLE:
+ start -> GO_IN_FRONT_OF_DISTRIBUTOR
+  start going in front of the desired distributor
 
-GO_TO_POSITION:
- position_reached -> PREPARE_ARM
-  Go to the position desired, it is very near the position of the distributor in case it is a ice distributor or sample distributor.
+GO_IN_FRONT_OF_DISTRIBUTOR:
+ bot_move_succeed -> OPEN_INPUT_HOLE
+  move the arm to open the input hole
 
-PREPARE_ARM:
- arm_moved -> FORWARD_CONTROL
-  Prepare the arm to the correct position.
+OPEN_INPUT_HOLE:
+ arm_move_succeed -> APPROACH_DISTRIBUTOR
+  start approaching the distributor now
 
-FORWARD_CONTROL:
- position_reached -> TAKE_SAMPLES
-  End the position to the distributor.
+APPROACH_DISTRIBUTOR:
+ bot_move_succeed -> TAKE_SAMPLES
+  start taking some samples
 
 TAKE_SAMPLES:
- sample_took: more -> .
-  Continue to take samples and classify the next sample.
- sample_took: no_more -> END
-  If the quantity of samples are taken, then go backward and continue classifying the samples.
+ arm_pass_noted_position: more -> .
+  prepare the classification of the taken sample
+  take a new one
+ arm_pass_noted_position: no_more -> MOVE_AWAY_FROM_DISTRIBUTOR
+  go backward
 
+MOVE_AWAY_FROM_DISTRIBUTOR:
+ bot_move_succeed -> CLOSE_INPUT_HOLE
+  close input hole
+
+
+CLOSE_INPUT_HOLE:
+ arm_move_succeed -> IDLE
+  tell the top FSM we have finished

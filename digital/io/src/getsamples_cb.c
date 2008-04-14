@@ -30,90 +30,112 @@
 #include "trap.h"
 #include "move.h"
 
+#include "giboulee.h"	/* BOT_ */
+#include "playground.h"	/* PG_* */
+
 /*
- * PREPARE_ARM =arm_moved=>
- *  => FORWARD_CONTROL
- *   Prepare the arm to the correct position.
+ * OPEN_INPUT_HOLE =arm_move_succeed=>
+ *  => APPROACH_DISTRIBUTOR
+ *   start approaching the distributor now
  */
 fsm_branch_t
-getsamples__PREPARE_ARM__arm_moved (void)
+getsamples__OPEN_INPUT_HOLE__arm_move_succeed (void)
 {
-    //Prepare the classifier.
-    getsamples_configure_classifier ();
-
-    // final 
-    asserv_go_to_distributor (); 
-    return getsamples_next (PREPARE_ARM, arm_moved);
+    /* Approach the distributor */
+    asserv_go_to_distributor ();
+    return getsamples_next (OPEN_INPUT_HOLE, arm_move_succeed);
 }
 
 /*
- * FORWARD_CONTROL =position_reached=>
- *  => TAKE_SAMPLES
- *   End the position to the distributor.
+ * CLOSE_INPUT_HOLE =arm_move_succeed=>
+ *  => IDLE
+ *   tell the top FSM we have finished
  */
 fsm_branch_t
-getsamples__FORWARD_CONTROL__position_reached (void)
+getsamples__CLOSE_INPUT_HOLE__arm_move_succeed (void)
 {
-    // Take as many samples as necessary. This shall be updated to verify the
-    asserv_move_arm (1666, 100);
-    return getsamples_next (FORWARD_CONTROL, position_reached);
+    /* Tell the top FSM we have finished */
+    fsm_handle_event (&top_fsm, getsamples_data.event);
+    return getsamples_next (CLOSE_INPUT_HOLE, arm_move_succeed);
 }
 
 /*
- * START =ok=>
- *  => GO_TO_POSITION
- *   Go to the distributor. The distributor to reach shall be setted in the fsm structure.
+ * GO_IN_FRONT_OF_DISTRIBUTOR =bot_move_succeed=>
+ *  => OPEN_INPUT_HOLE
+ *   move the arm to open the input hole
  */
 fsm_branch_t
-getsamples__START__ok (void)
+getsamples__GO_IN_FRONT_OF_DISTRIBUTOR__bot_move_succeed (void)
 {
-    // move to the distributor.
-    move_start (getsamples_data.distributor_x - 100,
-		getsamples_data.distributor_y - 100);
-    return getsamples_next (START, ok);
+    /* Move the arm to open the input hole to be able to take some samples */
+    asserv_close_input_hole ();
+    return getsamples_next (GO_IN_FRONT_OF_DISTRIBUTOR, bot_move_succeed);
 }
 
 /*
- * TAKE_SAMPLES =sample_took=>
- * no_more => END
- *   If the quantity of samples are taken, then go backward and continue classifying the samples.
+ * TAKE_SAMPLES =arm_pass_noted_position=>
+ * no_more => MOVE_AWAY_FROM_DISTRIBUTOR
+ *   go backward
  * more => TAKE_SAMPLES
- *   Continue to take samples and classify the next sample.
+ *   prepare the classification of the taken sample
+ *   take a new one
  */
 fsm_branch_t
-getsamples__TAKE_SAMPLES__sample_took (void)
+getsamples__TAKE_SAMPLES__arm_pass_noted_position (void)
 {
-    // Decrement the samples counter.
-    if (getsamples_data.samples)
+    /* More samples? */
+    if (getsamples_data.sample_bitfield)
       {
+	/* Prepare classification */
 	getsamples_configure_classifier ();
-	asserv_move_arm (1666, 100);
-	return getsamples_next_branch (TAKE_SAMPLES, sample_took, more);
+	/* Continue to take sample */
+	asserv_move_arm (BOT_ARM_THIRD_ROUND, BOT_ARM_SPEED);
+	return getsamples_next_branch (TAKE_SAMPLES, arm_pass_noted_position, more);
       }
     else
       {
-	// Try to end the position to the distributor.
-	asserv_goto (getsamples_data.distributor_x - 200,
-		     getsamples_data.distributor_y - 200);
-
-	fsm_handle_event (&top_fsm, getsamples_data.event);
-	return getsamples_next_branch (TAKE_SAMPLES, sample_took, no_more);
+	/* Go backward */
+	asserv_move_linearly (-PG_DISTANCE_DISTRIBUTOR);
+	return getsamples_next_branch (TAKE_SAMPLES, arm_pass_noted_position, no_more);
       }
 }
 
-
 /*
- * GO_TO_POSITION =position_reached=>
- *  => PREPARE_ARM
- *   Go to the position desired, it is very near the position of the distributor in case it is a ice distributor or sample distributor.
+ * IDLE =start=>
+ *  => GO_IN_FRONT_OF_DISTRIBUTOR
+ *   start going in front of the desired distributor
  */
 fsm_branch_t
-getsamples__GO_TO_POSITION__position_reached (void)
+getsamples__IDLE__start (void)
 {
-    // Put the ARM in the position to allow the robot to take samples from the
-    // distributor.
-    asserv_move_arm (625, 100);
-    return getsamples_next (GO_TO_POSITION, position_reached);
+    /* Move to the desired distributor */
+    move_start (getsamples_data.distributor_x,
+		getsamples_data.distributor_y);
+    return getsamples_next (IDLE, start);
 }
 
+/*
+ * MOVE_AWAY_FROM_DISTRIBUTOR =bot_move_succeed=>
+ *  => CLOSE_INPUT_HOLE
+ *   close input hole
+ */
+fsm_branch_t
+getsamples__MOVE_AWAY_FROM_DISTRIBUTOR__bot_move_succeed (void)
+{
+    /* Move the arm to close the input hole */
+    asserv_close_input_hole ();
+    return getsamples_next (MOVE_AWAY_FROM_DISTRIBUTOR, bot_move_succeed);
+}
 
+/*
+ * APPROACH_DISTRIBUTOR =bot_move_succeed=>
+ *  => TAKE_SAMPLES
+ *   start taking some samples
+ */
+fsm_branch_t
+getsamples__APPROACH_DISTRIBUTOR__bot_move_succeed (void)
+{
+    /* start taking some samples */
+    asserv_move_arm (BOT_ARM_THIRD_ROUND, BOT_ARM_SPEED);
+    return getsamples_next (APPROACH_DISTRIBUTOR, bot_move_succeed);
+}

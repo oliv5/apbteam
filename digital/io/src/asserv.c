@@ -28,6 +28,7 @@
 
 #include "modules/twi/twi.h"	/* twi_* */
 #include "modules/utils/byte.h"	/* v*_to_v* */
+#include "giboulee.h"		/* BOT_* */
 #include "io.h"
 
 /**
@@ -121,6 +122,21 @@ asserv_twi_send_command (uint8_t command, uint8_t length);
  */
 static inline uint8_t
 asserv_twi_send (uint8_t length);
+/**
+ * Move the arm.
+ * A complete rotation correspond to 5000 steps.
+ * @param position desired goal position (in step).
+ * @param speed speed of the movement.
+ */
+void
+asserv_move_arm_absolute (uint16_t position, uint8_t speed);
+
+/**
+ * Current position of the arm.
+ * We need to maintain it by ourself as it is more accurate than the one sent
+ * by the asserv board.
+ */
+static uint16_t asserv_arm_current_position;
 
 /* Update TWI module until request (send or receive) is finished. */
 static inline void
@@ -338,7 +354,7 @@ asserv_go_to_distributor (void)
 
 /* Move the arm. */
 void
-asserv_move_arm (uint16_t position, uint8_t speed)
+asserv_move_arm_absolute (uint16_t position, uint8_t speed)
 {
     /* Put position and speed as parameters */
     asserv_twi_buffer_param[0] = v16_to_v8 (position, 1);
@@ -346,6 +362,25 @@ asserv_move_arm (uint16_t position, uint8_t speed)
     asserv_twi_buffer_param[2] = speed;
     /* Send the move the arm command to the asserv board */
     asserv_twi_send_command ('b', 3);
+}
+
+/* Move the arm to a certain number of steps. */
+void
+asserv_move_arm (int16_t offset, uint8_t speed)
+{
+    /* Compute the new desired position with the desired offset */
+    asserv_arm_current_position += offset;
+    /* Move the arm to the desired position */
+    asserv_move_arm_absolute (asserv_arm_current_position, speed);
+}
+
+/* Move the arm to close the input hole. */
+void
+asserv_close_input_hole (void)
+{
+    /* Move the arm */
+    asserv_move_arm (asserv_arm_current_position %
+		     BOT_ARM_THIRD_ROUND, BOT_ARM_SPEED);
 }
 
 /* Set current X position. */
