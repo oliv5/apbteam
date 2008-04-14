@@ -39,9 +39,9 @@
 /** Send mode:
  *  - POLLING: no interrupts.
  *  - RING: interrupts, ring buffer. */
-#define AC_UART0_SEND_MODE POLLING
+#define AC_UART0_SEND_MODE RING
 /** Recv mode, same as send mode. */
-#define AC_UART0_RECV_MODE POLLING
+#define AC_UART0_RECV_MODE RING
 /** Character size: 5, 6, 7, 8, 9 (only 8 implemented). */
 #define AC_UART0_CHAR_SIZE 8
 /** Parity : ODD, EVEN, NONE. */
