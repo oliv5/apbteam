@@ -47,4 +47,10 @@
  */
 #define BOT_ARM_THIRD_ROUND BOT_ARM_STEP_ROUND / 3
 
+/**
+ * How to compute a angle for giboulee?
+ * One degree is 65536 / 360
+ */
+#define BOT_ANGLE_DEGREE (65536 / 360)
+
 #endif // giboulee_h

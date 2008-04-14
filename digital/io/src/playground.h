@@ -34,6 +34,8 @@
  *   see it with the two start zone at the top of the scheme).
  */
 
+#include "giboulee.h"
+
 /**
  * The width of the table, in millimeters.
  */
@@ -58,10 +60,18 @@ extern uint8_t our_color;
     (our_color ? x : PG_WIDTH - x)
 
 /**
+ * Considering there is a symmetry axis on X, this macro will compute the
+ * value of the angle depending on the color.
+ */
+#define PG_A_VALUE_COMPUTING(a) \
+    (our_color ? a : (a + BOT_ANGLE_DEGREE * 180))
+
+/**
  * The position where to reset the bot when it starts, depending on the color.
  */
 #define PG_X_START (PG_X_VALUE_COMPUTING (200))
 #define PG_Y_START (PG_HEIGHT - 70)
+#define PG_A_START (BOT_ANGLE_DEGREE * 90)
 
 /**
  * The distance to remove from the real position of the distributor before
@@ -76,6 +86,8 @@ extern uint8_t our_color;
 #define PG_DISTRIBUTOR_ICE_OUR_X \
     (PG_X_VALUE_COMPUTING (0 + PG_DISTANCE_DISTRIBUTOR))
 #define PG_DISTRIBUTOR_ICE_OUR_Y 1350
+#define PG_DISTRIBUTOR_ICE_OUR_A \
+    (PG_A_VALUE_COMPUTING (BOT_ANGLE_DEGREE * 180))
 
 /**
  * The position of adverse ice distributor minus the distance to remove (only
@@ -84,6 +96,8 @@ extern uint8_t our_color;
 #define PG_DISTRIBUTOR_ICE_ADVERSE_X \
     (PG_X_VALUE_COMPUTING (PG_WIDTH - PG_DISTANCE_DISTRIBUTOR))
 #define PG_DISTRIBUTOR_ICE_ADVERSE_Y 1350
+#define PG_DISTRIBUTOR_ICE_ADVERSE_A \
+    (PG_A_VALUE_COMPUTING (0))
 
 /**
  * The position of our distributor minus the distance to remove (only for the
@@ -92,5 +106,6 @@ extern uint8_t our_color;
 #define PG_DISTRIBUTOR_SAMPLE_OUR_X \
     (PG_X_VALUE_COMPUTING (700))
 #define PG_DISTRIBUTOR_SAMPLE_OUR_Y (PG_HEIGHT - PG_DISTANCE_DISTRIBUTOR)
+#define PG_DISTRIBUTOR_SAMPLE_OUR_A (BOT_ANGLE_DEGREE * 270)
 
 #endif // playground_h
