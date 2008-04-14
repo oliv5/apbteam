@@ -36,7 +36,7 @@
  *
  * Servo motors can be controlled by the time the input signal spend at its
  * high state. For example, if the signal sent to the servo motor only spend
- * 0.5ms at the high state, it will have a 0° angle position. If the signal
+ * 1ms at the high state, it will have a 0° angle position. If the signal
  * stays for 1.5ms at high state, it will have a 90° angle position.
  * To manage all servo motors in a "one time shot", we need to use the
  * timer/counter 2 of the ATmega128 and its overflow.
@@ -56,12 +56,19 @@
 #define SERVO_NUMBER 6
 
 /**
+ * Minimum high time for servos.
+ */
+#define SERVO_HIGH_TIME_MIN 0x24
+
+/**
+ * Maximum high time for servos.
+ */
+#define SERVO_HIGH_TIME_MAX 0x88
+
+/**
  * Initialize servo module.
  * This functions put the pins of the servos motor in the right direction,
  * initialize the timer/counter 2 and some internals stuff.
- * A important remark: you need to set the default values of each servos motor
- * before calling this functions if you do not want to have some strange
- * behavior.
  */
 void
 servo_init (void);
@@ -70,7 +77,8 @@ servo_init (void);
  * Set the high time of the input signal of a servo (and its position).
  * @param servo the servo to change the position.
  * @param high_time the high time we want the input signal to spend at the
- * high state to set the servo motor to a position.
+ * high state to set the servo motor to a position.  A zero will let the servo
+ * floating.
  */
 void
 servo_set_high_time (uint8_t servo, uint8_t high_time);

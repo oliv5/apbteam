@@ -56,7 +56,7 @@
  * We want a time of 20ms (20/1000).
  * See @a servo_init to know the prescaler value of the timer/counter.
  */
-static const uint16_t servo_tic_cyle_ = ((20/1000) * AC_FREQ / 256);
+static const uint16_t servo_tic_cyle_ = AC_FREQ / 256 * 20 / 1000;
 
 /** @} */
 
@@ -90,11 +90,7 @@ void
 servo_init (void)
 {
     /* Set-up all the pins of the servo to out direction */
-    set_bit (SERVO_DDR, 0);
-    set_bit (SERVO_DDR, 1);
-    set_bit (SERVO_DDR, 2);
-    set_bit (SERVO_DDR, 3);
-    set_bit (SERVO_DDR, 4);
+    SERVO_DDR = 0xff;
     /* All pins are at low state by default */
 
     /* Set-up the timer/counter 2:
@@ -113,10 +109,13 @@ servo_init (void)
 void
 servo_set_high_time (uint8_t servo, uint8_t high_time)
 {
+    uint8_t filtered = high_time;
+    if (filtered != 0)
+	UTILS_BOUND (filtered, SERVO_HIGH_TIME_MIN, SERVO_HIGH_TIME_MAX);
     /* Sanity check */
     if (servo < SERVO_NUMBER)
 	/* Set new desired position (high value time) */
-	servo_high_time_[servo] = high_time;
+	servo_high_time_[servo] = filtered;
 }
 
 /* Get the high time of the servo. */
@@ -147,14 +146,18 @@ SIGNAL (SIG_OVERFLOW2)
       case 2:
       case 3:
       case 4:
+      case 5:
+      case 6:
+      case 7:
 	/* Servos motor high state mode */
 
 	/* Set to low state the previous servo motor pin if needed (not for
 	 * the first one) */
 	if (servo_updating_id_ != 0)
 	    SERVO_PORT &= ~_BV (servo_updating_id_ - 1);
-	/* Set to high state the current servo motor pin */
-	set_bit (SERVO_PORT, servo_updating_id_);
+	/* Set to high state the current servo motor pin, unless is zero */
+	if (servo_high_time_[servo_updating_id_])
+	    set_bit (SERVO_PORT, servo_updating_id_);
 	/* Plan next timer overflow to the TOP minus the current configuration
 	 * of the servo motor */
 	TCNT2 = SERVO_TCNT_TOP - servo_high_time_[servo_updating_id_];
