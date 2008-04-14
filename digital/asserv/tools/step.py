@@ -3,15 +3,21 @@ sys.path.append (sys.path[0] + '/../../../host/proto')
 
 from asserv import Asserv
 import popen_io
+import serial
 import Gnuplot
 
 def step (name, kp, ki, kd, plots):
-    io = popen_io.PopenIO (sys.argv[1:])
+    if sys.argv[1] == '!':
+	io = popen_io.PopenIO (sys.argv[2:])
+    else:
+	io = serial.Serial (sys.argv[1])
     a = Asserv (io, **{ name + 'kp': kp, name + 'ki': ki, name + 'kd': kd})
     a.stats ('PW')
     a.consign (name, 0x200)
     a.wait (lambda: a.stats_count > 225 * 2)
     list = a.get_stats ()
+    a.reset ()
+    a.wait (lambda: True)
 
     g = Gnuplot.Gnuplot (persist = True)
     g ('set data style lines')

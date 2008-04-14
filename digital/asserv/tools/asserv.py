@@ -94,3 +94,7 @@ class Asserv:
 
     def wait (self, cond = None):
 	self.proto.wait (cond)
+
+    def reset (self):
+	self.proto.send ('w')
+	self.proto.send ('z')
