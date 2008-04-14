@@ -26,38 +26,47 @@
 
 #include "../../fsm.h"
 #include "../../getsamples.h"
+#include "../../top.h"
+#include "../../playground.h"
+
+#include "modules/utils/utils.h"
+
+#include "io.h"
 
 #include <stdio.h>
 
+/**
+ * Print current state of the FSM get sample.
+ */
 void
 getsamples_print_test (fsm_t *getsamples)
 {
     printf ("STATE ");
     switch (getsamples->state_current)
       {
-      case GETSAMPLES_STATE_START:
-	printf ("START");
+      case GETSAMPLES_STATE_IDLE:
+	printf ("IDLE");
 	break;
-      case GETSAMPLES_STATE_PREPARE_ARM:
-	printf ("PREPEARE_ARM");
+      case GETSAMPLES_STATE_GO_IN_FRONT_OF_DISTRIBUTOR:
+	printf ("GO_IN_FRONT_OF_DISTRIBUTOR");
 	break;
-      case GETSAMPLES_STATE_END:
-	printf ("END");
+      case GETSAMPLES_STATE_OPEN_INPUT_HOLE:
+	printf ("OPEN_INPUT_HOLE");
 	break;
-      case GETSAMPLES_STATE_FORWARD_CONTROL:
-	printf ("FORWARD_CONTROL");
+      case GETSAMPLES_STATE_APPROACH_DISTRIBUTOR:
+	printf ("APPROACH_DISTRIBUTOR");
 	break;
       case GETSAMPLES_STATE_TAKE_SAMPLES:
 	printf ("TAKE_SAMPLES");
 	break;
-      case GETSAMPLES_STATE_BACKWARD:
-	printf ("BACKWARD");
+      case GETSAMPLES_STATE_MOVE_AWAY_FROM_DISTRIBUTOR:
+	printf ("MOVE_AWAY_FROM_DISTRIBUTOR");
 	break;
-      case GETSAMPLES_STATE_GO_TO_POSITION:
-	printf ("GO_TO_POSITION");
+      case GETSAMPLES_STATE_CLOSE_INPUT_HOLE:
+	printf ("CLOSE_INPUT_HOLE");
 	break;
-      case GETSAMPLES_STATE_NB:
-	printf ("STATE_NB");
+      default:
+	printf ("Unhandled case?!");
       }
     printf ("\n");
 }
@@ -65,87 +74,126 @@ getsamples_print_test (fsm_t *getsamples)
 int
 main (void)
 {
-    fsm_init (&getsamples_fsm);
+    /* Yerk export */
+    uint8_t our_color = 1;
+
+    /* Configure the get sample FSM */
+    struct getsamples_data_t data;
+    /* Go to our distributor */
+    data.distributor_x = PG_DISTRIBUTOR_SAMPLE_OUR_X;
+    data.distributor_y = PG_DISTRIBUTOR_SAMPLE_OUR_Y;
+    data.sample_bitfield = 0;
+    /* We want to put the sample into the 0, 2 and 4 box */
+    data.sample_bitfield |= _BV(0);
+    data.sample_bitfield |= _BV(2);
+    data.sample_bitfield |= _BV(4);
+    /* Dirty hack when finishing the FSM (event returns to the top FSM) */
+    data.event = 1;
+
+    /* Print initial state */
+    getsamples_print_test (&getsamples_fsm);
+    /* Configure and initialize the get sample FSM */
+    getsamples_start (data);
+    /* Print first state */
     getsamples_print_test (&getsamples_fsm);
 
-    getsamples_start (700, 2100, 3);
-
-    /* Implicit:
-       fsm_handle_event (&getsamples_fsm, GETSAMPLES_EVENT_ok); */
-
-    getsamples_print_test (&getsamples_fsm);
-
-    fsm_handle_event (&getsamples_fsm, GETSAMPLES_EVENT_position_failed);
-
+    /* The move to the front of the distributor failed */
+    fsm_handle_event (&getsamples_fsm,
+		      GETSAMPLES_EVENT_bot_move_failed);
     getsamples_print_test (&getsamples_fsm);
     
-    fsm_handle_event (&getsamples_fsm, GETSAMPLES_EVENT_position_reached);
-
-
+    /* We are in front of the distributor */
+    fsm_handle_event (&getsamples_fsm,
+		      GETSAMPLES_EVENT_bot_move_succeed);
     getsamples_print_test (&getsamples_fsm);
 
-    fsm_handle_event (&getsamples_fsm, GETSAMPLES_EVENT_arm_moved);
-
-
+    /* We have open the input hole */
+    fsm_handle_event (&getsamples_fsm,
+		      GETSAMPLES_EVENT_arm_move_succeed);
     getsamples_print_test (&getsamples_fsm);
 
-    fsm_handle_event (&getsamples_fsm, GETSAMPLES_EVENT_position_reached);
-
+    /* The bot is now collated to the distributor */
+    fsm_handle_event (&getsamples_fsm,
+		      GETSAMPLES_EVENT_bot_move_succeed);
     getsamples_print_test (&getsamples_fsm);
 
-    //TODO: samples should be decremented by the FSM transitions.
-    for (getsamples_data.samples--; getsamples_data.samples;
-	 getsamples_data.samples--)
+    /* Get the sample one by one */
+    do
       {
-	fsm_handle_event (&getsamples_fsm, GETSAMPLES_EVENT_sample_took);
-
+	fsm_handle_event (&getsamples_fsm,
+			  GETSAMPLES_EVENT_arm_pass_noted_position);
 	getsamples_print_test (&getsamples_fsm);
-      }
+      } while (getsamples_data.sample_bitfield);
 
-    fsm_handle_event (&getsamples_fsm, GETSAMPLES_EVENT_sample_took);
-
+    /* We need to do it one time again */
+    fsm_handle_event (&getsamples_fsm,
+		      GETSAMPLES_EVENT_arm_pass_noted_position);
     getsamples_print_test (&getsamples_fsm);
 
-    fsm_handle_event (&getsamples_fsm, GETSAMPLES_EVENT_position_reached);
+    /* We go away from the gutter */
+    fsm_handle_event (&getsamples_fsm,
+		      GETSAMPLES_EVENT_bot_move_succeed);
+    getsamples_print_test (&getsamples_fsm);
 
+    /* We close the input hole */
+    fsm_handle_event (&getsamples_fsm,
+		      GETSAMPLES_EVENT_arm_move_succeed);
     getsamples_print_test (&getsamples_fsm);
 
     return 0;
 }
 
+/* Define functions for debug */
 void
-asserv_set_x_position (uint32_t position)
+trap_setup_path_to_box (uint8_t box_id)
 {
-    printf ("X position : %d\n", position);
+    printf ("[trap] Configure trap doors to open %d.\n", box_id);
+}
+
+void
+asserv_close_input_hole (void)
+{
+    printf ("[asserv] Put the arm in front of the input hole.\n");
+}
+
+void
+asserv_move_linearly (int32_t distance)
+{
+    printf ("[asserv] Make the bot move linearly of %d mm.\n", distance);
 }
 
 void
 asserv_move_arm (uint16_t position, uint8_t speed)
 {
-    printf ("Move arm, position : %d, speed : %d\n", position, speed);
-}
-
-void
-asserv_set_y_position (int32_t y)
-{
-    printf ("Y position : %d\n", y);
-}
-
-void
-trap_open_rear_panel(void)
-{
-    printf ("Open rear panel\n");
-}
-
-void
-trap_close_rear_panel (void)
-{
-    printf ("Close rear panel\n");
+    printf ("[asserv] Move arm at %d (speed: %d).\n", position, speed);
 }
 
 void
 asserv_go_to_distributor (void)
 {
-    printf ("Go to distributor\n");
+    printf ("[asserv] Go to distributor.\n");
 }
 
+void
+asserv_get_position (void *undef)
+{
+    printf ("[asserv] Asking position of the bot.\n");
+}
+
+void
+asserv_goto (uint32_t x, uint32_t y)
+{
+    printf ("[asserv] Move the bot to (%d; %d).\n", x, y);
+}
+
+void
+move_start (uint32_t x, uint32_t y)
+{
+    printf ("[FSM:move] Move the bot to (%d; %d).\n", x, y);
+}
+
+void
+gutter_start (void)
+{
+    printf ("[FSM:gutter] Start the gutter FSM\n");
+}
