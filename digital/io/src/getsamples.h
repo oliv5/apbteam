@@ -39,6 +39,10 @@ struct getsamples_data_t
      */
     uint32_t distributor_y;
     /**
+     * The angle to approach the distributor.
+     */
+    int16_t distributor_angle;
+    /**
      * Bit field to indicate where to put the sample.
      * If bit 0 is set to 1, a sample will be put into the out_right_box. If
      * set to 0, the out_right_box will not be used to store a sample.

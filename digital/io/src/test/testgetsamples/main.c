@@ -47,8 +47,8 @@ getsamples_print_test (fsm_t *getsamples)
       case GETSAMPLES_STATE_IDLE:
 	printf ("IDLE");
 	break;
-      case GETSAMPLES_STATE_GO_IN_FRONT_OF_DISTRIBUTOR:
-	printf ("GO_IN_FRONT_OF_DISTRIBUTOR");
+      case GETSAMPLES_STATE_FACE_DISTRIBUTOR:
+	printf ("FACE_DISTRIBUTOR");
 	break;
       case GETSAMPLES_STATE_OPEN_INPUT_HOLE:
 	printf ("OPEN_INPUT_HOLE");
@@ -82,6 +82,7 @@ main (void)
     /* Go to our distributor */
     data.distributor_x = PG_DISTRIBUTOR_SAMPLE_OUR_X;
     data.distributor_y = PG_DISTRIBUTOR_SAMPLE_OUR_Y;
+    data.distributor_angle = PG_DISTRIBUTOR_SAMPLE_OUR_A;
     data.sample_bitfield = 0;
     /* We want to put the sample into the 0, 2 and 4 box */
     data.sample_bitfield |= _BV(0);
@@ -98,9 +99,10 @@ main (void)
     getsamples_print_test (&getsamples_fsm);
 
     /* The move to the front of the distributor failed */
-    fsm_handle_event (&getsamples_fsm,
-		      GETSAMPLES_EVENT_bot_move_failed);
-    getsamples_print_test (&getsamples_fsm);
+    /* TODO: manage it! */
+//     fsm_handle_event (&getsamples_fsm,
+// 		      GETSAMPLES_EVENT_bot_move_failed);
+//     getsamples_print_test (&getsamples_fsm);
     
     /* We are in front of the distributor */
     fsm_handle_event (&getsamples_fsm,
@@ -143,17 +145,14 @@ main (void)
     return 0;
 }
 
+
+static uint16_t asserv_arm_position = 0;
+
 /* Define functions for debug */
 void
 trap_setup_path_to_box (uint8_t box_id)
 {
     printf ("[trap] Configure trap doors to open %d.\n", box_id);
-}
-
-void
-asserv_close_input_hole (void)
-{
-    printf ("[asserv] Put the arm in front of the input hole.\n");
 }
 
 void
@@ -165,7 +164,17 @@ asserv_move_linearly (int32_t distance)
 void
 asserv_move_arm (uint16_t position, uint8_t speed)
 {
-    printf ("[asserv] Move arm at %d (speed: %d).\n", position, speed);
+    asserv_arm_position += position;
+    printf ("[asserv] Move arm at %d (speed: %d).\n",
+	    asserv_arm_position, speed);
+}
+
+void
+asserv_close_input_hole (void)
+{
+    printf ("[asserv] Put the arm in front of the input hole.\n");
+    asserv_move_arm (asserv_arm_position %
+		     BOT_ARM_THIRD_ROUND, BOT_ARM_SPEED);
 }
 
 void
@@ -187,9 +196,9 @@ asserv_goto (uint32_t x, uint32_t y)
 }
 
 void
-move_start (uint32_t x, uint32_t y)
+asserv_goto_angle (int16_t angle)
 {
-    printf ("[FSM:move] Move the bot to (%d; %d).\n", x, y);
+    printf ("[asserv] Move the bot to face %X.\n", angle);
 }
 
 void

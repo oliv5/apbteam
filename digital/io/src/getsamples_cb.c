@@ -34,6 +34,19 @@
 #include "playground.h"	/* PG_* */
 
 /*
+ * FACE_DISTRIBUTOR =bot_move_succeed=>
+ *  => OPEN_INPUT_HOLE
+ *   move the arm to open the input hole
+ */
+fsm_branch_t
+getsamples__FACE_DISTRIBUTOR__bot_move_succeed (void)
+{
+    /* Move the arm to open the input hole to be able to take some samples */
+    asserv_move_arm (-BOT_ARM_MIN_TO_OPEN, BOT_ARM_SPEED);
+    return getsamples_next (FACE_DISTRIBUTOR, bot_move_succeed);
+}
+
+/*
  * OPEN_INPUT_HOLE =arm_move_succeed=>
  *  => APPROACH_DISTRIBUTOR
  *   start approaching the distributor now
@@ -57,19 +70,6 @@ getsamples__CLOSE_INPUT_HOLE__arm_move_succeed (void)
     /* Tell the top FSM we have finished */
     fsm_handle_event (&top_fsm, getsamples_data.event);
     return getsamples_next (CLOSE_INPUT_HOLE, arm_move_succeed);
-}
-
-/*
- * GO_IN_FRONT_OF_DISTRIBUTOR =bot_move_succeed=>
- *  => OPEN_INPUT_HOLE
- *   move the arm to open the input hole
- */
-fsm_branch_t
-getsamples__GO_IN_FRONT_OF_DISTRIBUTOR__bot_move_succeed (void)
-{
-    /* Move the arm to open the input hole to be able to take some samples */
-    asserv_close_input_hole ();
-    return getsamples_next (GO_IN_FRONT_OF_DISTRIBUTOR, bot_move_succeed);
 }
 
 /*
@@ -102,15 +102,14 @@ getsamples__TAKE_SAMPLES__arm_pass_noted_position (void)
 
 /*
  * IDLE =start=>
- *  => GO_IN_FRONT_OF_DISTRIBUTOR
- *   start going in front of the desired distributor
+ *  => FACE_DISTRIBUTOR
+ *   do a goto angle to make the bot facing the distributor
  */
 fsm_branch_t
 getsamples__IDLE__start (void)
 {
-    /* Move to the desired distributor */
-    move_start (getsamples_data.distributor_x,
-		getsamples_data.distributor_y);
+    /* Face the distributor */
+    asserv_goto_angle (getsamples_data.distributor_angle);
     return getsamples_next (IDLE, start);
 }
 

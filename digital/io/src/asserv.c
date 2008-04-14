@@ -350,6 +350,16 @@ asserv_move_angularly (int16_t angle)
     asserv_twi_send_command ('a', 2);
 }
 
+/* Move the bot to a specific angle. */
+void
+asserv_goto_angle (int16_t angle)
+{
+    /* Put angle as parameter */
+    asserv_twi_buffer_param[0] = v16_to_v8 (angle, 1);
+    asserv_twi_buffer_param[1] = v16_to_v8 (angle, 0);
+    /* TODO */
+}
+
 /* Go to the wall (moving backward). */
 void
 asserv_go_to_the_wall (void)

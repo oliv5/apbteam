@@ -1,12 +1,18 @@
 # Get samples FSM
+# A general remark on this FSM: it is not its responsibility to put the bot in
+# front of the distributor, it the responsibility of the top FSM using the
+# move FSM.
+# For example, the top FSM will order the bot to move in front of the
+# distributor using the move FSM. Then, when it is arrived, it will the get
+# sample FSM that will ensure we well placed (in term of angle for example).
 get_samples
   Get samples from the distributor
 
 States:
  IDLE
   waiting for the beginning of the get samples FSM
- GO_IN_FRONT_OF_DISTRIBUTOR
-  move the bot in front of a distributor (not in contact with the distributor)
+ FACE_DISTRIBUTOR
+  face the distributor
  OPEN_INPUT_HOLE
   move the arm to let the samples enter into the bot by the input hole
  APPROACH_DISTRIBUTOR
@@ -21,6 +27,8 @@ States:
 Events:
  start
   initialize the FSM
+# For the moment, this event is currently not managed.
+# TODO: manage it
  bot_move_failed
   the bot movement failed (blocked by something for example)
  bot_move_succeed
@@ -31,10 +39,10 @@ Events:
   the arm has just passed the 'noted' position
 
 IDLE:
- start -> GO_IN_FRONT_OF_DISTRIBUTOR
-  start going in front of the desired distributor
+ start -> FACE_DISTRIBUTOR
+  do a goto angle to make the bot facing the distributor
 
-GO_IN_FRONT_OF_DISTRIBUTOR:
+FACE_DISTRIBUTOR:
  bot_move_succeed -> OPEN_INPUT_HOLE
   move the arm to open the input hole
 
@@ -56,7 +64,6 @@ TAKE_SAMPLES:
 MOVE_AWAY_FROM_DISTRIBUTOR:
  bot_move_succeed -> CLOSE_INPUT_HOLE
   close input hole
-
 
 CLOSE_INPUT_HOLE:
  arm_move_succeed -> IDLE

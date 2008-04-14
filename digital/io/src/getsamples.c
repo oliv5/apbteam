@@ -41,6 +41,7 @@ getsamples_start (struct getsamples_data_t data)
     /* Set parameters */
     getsamples_data.distributor_x = data.distributor_x;
     getsamples_data.distributor_y = data.distributor_y;
+    getsamples_data.distributor_angle = data.distributor_angle;
     getsamples_data.sample_bitfield = data.sample_bitfield;
     getsamples_data.event = data.event;
 

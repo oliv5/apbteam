@@ -48,6 +48,13 @@
 #define BOT_ARM_THIRD_ROUND BOT_ARM_STEP_ROUND / 3
 
 /**
+ * The number of steps to do to open the input hole when the arm is closing
+ * it.
+ * For the moment, 15% of a complete turn
+ */
+#define BOT_ARM_MIN_TO_OPEN (BOT_ARM_STEP_ROUND / 100 * 15)
+
+/**
  * How to compute a angle for giboulee?
  * One degree is 65536 / 360
  */

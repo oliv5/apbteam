@@ -177,6 +177,14 @@ void
 asserv_move_angularly (int16_t angle);
 
 /**
+ * Move the bot to a specific angle.
+ * The angle is absolute and not a difference with the current one.
+ * @param a the absolute angle in degrees
+ */
+void
+asserv_goto_angle (int16_t angle);
+
+/**
  * Go to the wall (moving backward).
  * Move class command.
  */
