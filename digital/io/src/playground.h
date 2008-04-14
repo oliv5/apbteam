@@ -46,7 +46,7 @@
 
 /**
  * Our color.
- * XXX our_color = 0 = bleu, 1 = rouge
+ * XXX our_color = 1 = bleu, 0 = rouge
  */
 extern uint8_t our_color;
 
