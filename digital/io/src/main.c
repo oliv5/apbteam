@@ -93,8 +93,13 @@ main_loop (void)
 	    /* Manage UART protocol */
 	    proto_accept (uart0_getc ());
 
-	/* Update TWI module to get new data */
-	// TODO
+	/* Update TWI module to get new data from the asserv board */
+	asserv_update_status ();
+
+	/* Is last command has been acknowledged? */
+	if (asserv_last_cmd_ack () == 0)
+	    /* Called function to manage retransmission */
+	    asserv_retransmit ();
       }
 }
 

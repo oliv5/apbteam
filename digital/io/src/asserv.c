@@ -73,6 +73,21 @@ typedef struct asserv_struct_s
 asserv_struct_s asserv_status;
 
 /**
+ * Retransmit counter initial value.
+ */
+#define ASSERV_RETRANSMIT_COUNT 10
+
+/**
+ * Retransmit counter.
+ */
+static uint8_t asserv_retransmit_counter;
+
+/**
+ * Length of the last transmitted command.
+ */
+static uint8_t asserv_retransmit_length;
+
+/**
  * Update TWI module until request (send or receive) is finished.
  * This functions is blocking.
  */
@@ -92,6 +107,20 @@ asserv_twi_update (void);
  */
 static inline uint8_t
 asserv_twi_send_command (uint8_t command, uint8_t length);
+
+/**
+ * Send a prepared command to the asserv board using TWI module.
+ * It will reset the counter retransmission value and store the length for
+ * future retransmission.
+ * In comparison with \a asserv_twi_send_command this function is internal and
+ * used by \a asserv_twi_send_command.
+ * @param length th length of the complete command with parameters.
+ * @return
+ *   - 0 if no error occurred.
+ *   - 1 if TWI transmission failed.
+ */
+static inline uint8_t
+asserv_twi_send (uint8_t length);
 
 /* Update TWI module until request (send or receive) is finished. */
 static inline void
@@ -114,12 +143,26 @@ asserv_twi_send_command (uint8_t command, uint8_t length)
     /* Put the sequence number */
     asserv_twi_buffer[1] = ++asserv_twi_seq;
 
+    /* Send the prepared command */
+    return asserv_twi_send (length + 2);
+}
+
+/* Send a prepared command to the asserv board using TWI module. */
+static inline uint8_t
+asserv_twi_send (uint8_t length)
+{
     /* Send command to the asserv */
-    if (twi_ms_send (AC_ASSERV_TWI_ADDRESS, asserv_twi_buffer, length + 2) != 0)
+    if (twi_ms_send (AC_ASSERV_TWI_ADDRESS, asserv_twi_buffer, length) != 0)
 	return 1;
 
     /* Update until the command is sent */
     asserv_twi_update ();
+    
+    /* Reset retransmit counter */
+    asserv_retransmit_counter = ASSERV_RETRANSMIT_COUNT;
+    /* Store length for retransmission */
+    asserv_retransmit_length = length;
+
     return 0;
 }
 /** @} */
@@ -162,6 +205,23 @@ asserv_last_cmd_ack (void)
     /* Compare last command sequence number and the one acknowledge by the
      * asserv */
     return (asserv_status.seq == asserv_twi_seq);
+}
+
+/**
+ * Re-send command if not acknowledged.
+ */
+uint8_t
+asserv_retransmit (void)
+{
+    /* Check if we have reached the maximum number of check before
+     * retransmission */
+    if (--asserv_retransmit_counter == 0)
+      {
+	/* Retransmit! */
+	asserv_twi_send (asserv_retransmit_length);
+	return 1;
+      }
+    return 0;
 }
 
 /* Is last move class command has successfully ended? */

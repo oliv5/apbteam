@@ -69,6 +69,18 @@ uint8_t
 asserv_last_cmd_ack (void);
 
 /**
+ * Re-send command if not acknowledged.
+ * This function should be called when the command has not been acknowledged
+ * by the asserv board. It will re send the last command when a certain number
+ * of cycle has been reached without any acknowledge from the asserv.
+ * @return
+ *   - 0 if the command was not received.
+ *   - 1 if the command was re-sent.
+ */
+uint8_t
+asserv_retransmit (void);
+
+/**
  * Status of a move or arm class command.
  * It is return by status functions.
  */
