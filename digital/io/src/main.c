@@ -125,12 +125,13 @@ main_loop (void)
 	      }
 	    /* TODO: Check if the sensor placed at the noted position has seen
 	     * an arm passed and forward this event to the getsamples FSM */
-// 	    if (arm_in_front_of_reached_position)
-// 	      {
-// 		/* Reset the sensor back to see a new transit of the arm */
-// 		fsm_handle_event (&getsamples_fsm,
-// 				  GETSAMPLES_EVENT_arm_pass_noted_position);
-// 	      }
+	    if (asserv_arm_position_reached ())
+	      {
+		/* Reset the notifier */
+		asserv_arm_set_position_reached (0);
+		fsm_handle_event (&getsamples_fsm,
+				  GETSAMPLES_EVENT_arm_pass_noted_position);
+	      }
 	    /* Check other sensors */
 	  }
       }

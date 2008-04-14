@@ -89,6 +89,11 @@ static uint8_t asserv_retransmit_counter;
 static uint8_t asserv_retransmit_length;
 
 /**
+ * The arm position of notification for the get sample FSM.
+ */
+static uint16_t asserv_arm_notify_position;
+
+/**
  * Update TWI module until request (send or receive) is finished.
  * This functions is blocking.
  */
@@ -475,3 +480,24 @@ asserv_goto (uint32_t x, uint32_t y)
 {
 }
 
+/* Notify get samples FSM when the arm reach desired position. */
+void
+asserv_arm_set_position_reached (uint16_t position)
+{
+    /* Store the position */
+    asserv_arm_notify_position = position;
+}
+
+/* Check if notification of the get sample FSM is required in term of position
+ * of the arm.
+ */
+uint8_t
+asserv_arm_position_reached (void)
+{
+    /* If the position has been reached */
+    /* TODO: manage overflow! */
+    if (asserv_arm_notify_position && 
+	(asserv_get_arm_position () >= asserv_arm_notify_position))
+	return 1;
+    return 0;
+}

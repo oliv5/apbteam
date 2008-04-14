@@ -264,4 +264,24 @@ asserv_set_speed (uint8_t linear_high, uint8_t angular_high,
 void
 asserv_goto (uint32_t x, uint32_t y);
 
+/**
+ * Set the notifier of get samples FSM when the arm reach desired position.
+ * You should called this function from the get sample FSM to tell the asserv
+ * module you want to be notified when the arm reached the desired position.
+ * @param position the desired position of the arm (absolute). Note, 0 is a
+ * reset value do disable the notifier. If you want to use it, please add 1.
+ */
+void
+asserv_arm_set_position_reached (uint16_t position);
+
+/**
+ * Check if notification of the get sample FSM is required in term of
+ * position of the arm.
+ * @return
+ *   - 0 if the notification is not needed ;
+ *   - 1 if the notification of the get sample FSM is required.
+ */
+uint8_t
+asserv_arm_position_reached (void);
+
 #endif /* asserv_h */

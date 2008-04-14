@@ -55,6 +55,12 @@
 #define BOT_ARM_MIN_TO_OPEN (BOT_ARM_STEP_ROUND / 100 * 15)
 
 /**
+ * Steps number relative to the beginning of a third round for the 'noted'
+ * position required by the get sample FSM.
+ */
+#define BOT_ARM_NOTED_POSITION (BOT_ARM_THIRD_ROUND / 3 * 2)
+
+/**
  * How to compute a angle for giboulee?
  * One degree is 65536 / 360
  */

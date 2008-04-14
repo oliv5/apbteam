@@ -86,6 +86,12 @@ getsamples__TAKE_SAMPLES__arm_pass_noted_position (void)
     /* More samples? */
     if (getsamples_data.sample_bitfield)
       {
+	/* Compute notifier */
+	uint16_t arm_current_position = asserv_get_arm_position ();
+	uint16_t arm_notify_position =
+	    arm_current_position + BOT_ARM_NOTED_POSITION -
+	    (arm_current_position % BOT_ARM_THIRD_ROUND);
+	asserv_arm_set_position_reached (arm_notify_position);
 	/* Prepare classification */
 	getsamples_configure_classifier ();
 	/* Continue to take sample */
