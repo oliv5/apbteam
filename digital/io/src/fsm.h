@@ -35,8 +35,8 @@
  *
  *   if (asserv_move_cmd_status () == success)
  *     {
- *       fsm_handle_event (fsm_top, TOP_EVENT_position_reached);
- *       fsm_handle_event (fsm_getsamples, GETSAMPLES_EVENT_position_reached);
+ *       fsm_handle_event (&top_fsm, TOP_EVENT_position_reached);
+ *       fsm_handle_event (&getsamples_fsm, GETSAMPLES_EVENT_position_reached);
  *     }
  *
  * Any unhandled event will be ignored.

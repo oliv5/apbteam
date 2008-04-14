@@ -39,6 +39,7 @@
 #include "asserv.h"	/* Functions to control the asserv board */
 #include "eeprom.h"	/* Parameters loaded/stored in the EEPROM */
 #include "trap.h"	/* Trap module (trap_* functions) */
+#include "fsm.h"	/* fsm_* */
 
 #include "io.h"
 
@@ -100,6 +101,38 @@ main_loop (void)
 	if (asserv_last_cmd_ack () == 0)
 	    /* Called function to manage retransmission */
 	    asserv_retransmit ();
+	else
+	  {
+	    /* Check commands move status */
+	    if (asserv_move_cmd_status () == success)
+	      {
+		/* Pass it to all the FSM that need it */
+		fsm_handle_event (&getsamples_fsm,
+				  GETSAMPLES_EVENT_bot_move_succeed);
+	      }
+	    else
+	      {
+		/* Move failed */
+		fsm_handle_event (&getsamples_fsm,
+				  GETSAMPLES_EVENT_bot_move_failed);
+	      }
+	    /* Check commands arm status */
+	    if (asserv_arm_cmd_status () == success)
+	      {
+		/* Pass it to all the FSM that need it */
+		fsm_handle_event (&getsamples_fsm,
+				  GETSAMPLES_EVENT_arm_move_succeed);
+	      }
+	    /* TODO: Check if the sensor placed at the noted position has seen
+	     * an arm passed and forward this event to the getsamples FSM */
+// 	    if (arm_in_front_of_reached_position)
+// 	      {
+// 		/* Reset the sensor back to see a new transit of the arm */
+// 		fsm_handle_event (&getsamples_fsm,
+// 				  GETSAMPLES_EVENT_arm_pass_noted_position);
+// 	      }
+	    /* Check other sensors */
+	  }
       }
 }
 
