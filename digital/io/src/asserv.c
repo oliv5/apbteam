@@ -138,6 +138,20 @@ asserv_move_arm_absolute (uint16_t position, uint8_t speed);
  */
 static uint16_t asserv_arm_current_position;
 
+/**
+ * Send a prepared command to the asserv board using TWI module.
+ * It will reset the counter retransmission value and store the length for
+ * future retransmission.
+ * In comparison with \a asserv_twi_send_command this function is internal and
+ * used by \a asserv_twi_send_command.
+ * @param length th length of the complete command with parameters.
+ * @return
+ *   - 0 if no error occurred.
+ *   - 1 if TWI transmission failed.
+ */
+static inline uint8_t
+asserv_twi_send (uint8_t length);
+
 /* Update TWI module until request (send or receive) is finished. */
 static inline void
 asserv_twi_update (void)
