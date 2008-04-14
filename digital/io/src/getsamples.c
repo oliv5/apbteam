@@ -32,18 +32,15 @@
 /**
  * Get samples shared data.
  */
-struct getsamples_data_t getsamples_data;
+struct getsamples_data_t getsamples_data_;
 
 /* Start the get samples FSM. */
 void
 getsamples_start (struct getsamples_data_t data)
 {
     /* Set parameters */
-    getsamples_data.distributor_x = data.distributor_x;
-    getsamples_data.distributor_y = data.distributor_y;
-    getsamples_data.distributor_angle = data.distributor_angle;
-    getsamples_data.sample_bitfield = data.sample_bitfield;
-    getsamples_data.event = data.event;
+    getsamples_data_.approach_angle = data.approach_angle;
+    getsamples_data_.sample_bitfield = data.sample_bitfield;
 
     /* Start the get samples FSM */
     fsm_init (&getsamples_fsm);
@@ -59,12 +56,12 @@ getsamples_configure_classifier (void)
     for (trap_num = 0; trap_num < trap_count; trap_num++)
       {
 	/* Is the bit set? */
-	if (bit_is_set (getsamples_data.sample_bitfield, trap_num))
+	if (bit_is_set (getsamples_data_.sample_bitfield, trap_num))
 	  {
 	    /* Configure the classifier */
 	    trap_setup_path_to_box (trap_num);
 	    /* Reset this bit */
-	    getsamples_data.sample_bitfield &= ~ _BV (trap_num);
+	    getsamples_data_.sample_bitfield &= ~_BV (trap_num);
 	    /* Stop here */
 	    return;
 	  }

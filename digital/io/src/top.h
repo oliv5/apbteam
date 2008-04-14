@@ -35,12 +35,6 @@
 #define ICE_DISTRIBUTOR_RIGHT 3000 
 #define ICE_DISTRIBUTOR_Y 1350
 
-enum team_color_e
-{
-    BLUE_TEAM,
-    RED_TEAM
-};
-
 enum sequence_e
 {
     /* 3 color balls, 2 ice */

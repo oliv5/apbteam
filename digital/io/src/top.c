@@ -42,6 +42,6 @@ top_start (uint8_t color_team)
     top_data.team_color = color_team; 
     /* Start the FSM. */
     fsm_init (&top_fsm);
-    fsm_handle_event (&top_fsm, TOP_EVENT_ok);
+    fsm_handle_event (&top_fsm, TOP_EVENT_start);
 }
 

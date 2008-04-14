@@ -47,24 +47,18 @@
 #define PG_HEIGHT 2100
 
 /**
- * Our color.
- * XXX our_color = 1 = bleu, 0 = rouge
- */
-extern uint8_t our_color;
-
-/**
  * Considering there is a symmetry axis on X, this macro will compute the
  * value for on the X axis depending on the color.
  */
 #define PG_X_VALUE_COMPUTING(x) \
-    (our_color ? x : PG_WIDTH - x)
+    (bot_color ? x : PG_WIDTH - x)
 
 /**
  * Considering there is a symmetry axis on X, this macro will compute the
  * value of the angle depending on the color.
  */
 #define PG_A_VALUE_COMPUTING(a) \
-    (our_color ? a : (a + BOT_ANGLE_DEGREE * 180))
+    (bot_color ? a : (a + BOT_ANGLE_DEGREE * 180))
 
 /**
  * The position where to reset the bot when it starts, depending on the color.
@@ -107,5 +101,12 @@ extern uint8_t our_color;
     (PG_X_VALUE_COMPUTING (700))
 #define PG_DISTRIBUTOR_SAMPLE_OUR_Y (PG_HEIGHT - PG_DISTANCE_DISTRIBUTOR)
 #define PG_DISTRIBUTOR_SAMPLE_OUR_A (BOT_ANGLE_DEGREE * 270)
+
+/**
+ * The position of the gutter.
+ */
+#define PG_GUTTER_X (PG_X_VALUE_COMPUTING (2250))
+#define PG_GUTTER_Y (100)
+#define PG_GUTTER_A (BOT_ANGLE_DEGREE * 90)
 
 #endif // playground_h

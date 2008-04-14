@@ -31,6 +31,7 @@
 
 #include "io.h"				/* PORT/PIN, bit_is_set */
 #include "modules/utils/utils.h"	/* set_bit */
+#include "giboulee.h"			/* team_color_e */
 
 /**
  * @defgroup SwitchConfiguration Configuration of the switch module.
@@ -74,7 +75,7 @@
  * Initialize the switch module.
  * This functions just put the pins in input direction and enable pull-ups.
  */
-inline void
+static inline void
 switch_init (void)
 {
     /* By default, all pins are in input direction */
@@ -86,7 +87,7 @@ switch_init (void)
 /**
  * Get the current state of the select colors switch.
  */
-inline uint8_t
+static inline enum team_color_e
 switch_get_color (void)
 {
     return bit_is_set (SWITCH_COLOR_PIN, SWITCH_COLOR_PIN_NUMBER);
@@ -95,7 +96,7 @@ switch_get_color (void)
 /**
  * Get the current state of the jack switch.
  */
-inline uint8_t
+static inline uint8_t
 switch_get_jack (void)
 {
     return bit_is_set (SWITCH_JACK_PIN, SWITCH_JACK_PIN_NUMBER);

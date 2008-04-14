@@ -40,6 +40,7 @@
 #include "eeprom.h"	/* Parameters loaded/stored in the EEPROM */
 #include "trap.h"	/* Trap module (trap_* functions) */
 #include "fsm.h"	/* fsm_* */
+#include "giboulee.h"	/* team_color */
 
 #include "io.h"
 
@@ -52,6 +53,11 @@ static void main_init (void);
  * Main (and infinite) loop of the io program.
  */
 static void main_loop (void);
+
+/**
+ * Our color.
+ */
+enum team_color_e bot_color;
 
 /**
  * Initialize the main and all its subsystems.
@@ -69,6 +75,8 @@ main_init (void)
     asserv_init ();
     /* Trap module */
     trap_init ();
+    /* Switch module */
+    switch_init ();
 
     /* Enable interrupts */
     sei ();

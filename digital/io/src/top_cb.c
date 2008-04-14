@@ -1,197 +1,226 @@
-/*
- * THIS IS AN AUTOMATICALLY GENERATED FILE, DO NOT EDIT!
+/* top_cb.c - top FSM callbacks. */
+/*  {{{
  *
- * Skeleton for top callbacks implementation.
+ * Copyright (C) 2008 Jérémy Dufour
  *
- * 
- */
+ * APBTeam:
+ *        Web: http://apbteam.org/
+ *      Email: team AT apbteam DOT org
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ * }}} */
 #include "common.h"
 #include "fsm.h"
 #include "top_cb.h"
-#include "top.h"
-#include "getsamples.h"
-#include "asserv.h"
-#include "gutter.h"
+
+#include "move.h"	/* move FSM */
+#include "playground.h"	/* PG_* */
+#include "asserv.h"	/* asserv_* */
+/* AVR include, non HOST */
+#ifndef HOST
+# include "chrono.h"	/* chrono_init */
+# include "switch.h"	/* switch_get_color */
+#endif /* HOST */
+#include "simu.host.h"
+
+#include "getsamples.h"	/* getsamples_* */
+#include "gutter.h"	/* gutter_start */
 
 /*
- * BACKWARD =collector_full=>
- *  => GO_TO_GOAL
- *   Go the goal to depose the samples.
+ * DROP_OFF_BALLS_TO_GUTTER =gutter_fsm_finished=>
+ *  => GO_TO_SAMPLE_DISTRIBUTOR
+ *   we have finished to drop off all the balls, let's go to our sample
+ *   ditributor to try the same strategy again
+ *   reset internal data
  */
 fsm_branch_t
-top__BACKWARD__collector_full (void)
+top__DROP_OFF_BALLS_TO_GUTTER__gutter_fsm_finished (void)
 {
+    /* Start the move FSM */
+    move_start (PG_DISTRIBUTOR_SAMPLE_OUR_X, PG_DISTRIBUTOR_SAMPLE_OUR_Y);
+    return top_next (DROP_OFF_BALLS_TO_GUTTER, gutter_fsm_finished);
+}
+
+/*
+ * WAIT_JACK_OUT =jack_removed_from_bot=>
+ *  => GO_TO_SAMPLE_DISTRIBUTOR
+ *   the match start, start the chronometer
+ *   we should also initialize all the subsystems of IO (reset position, get our
+ *   color, ...)
+ *   order the bot to move to our samples distributors with the move FSM
+ */
+fsm_branch_t
+top__WAIT_JACK_OUT__jack_removed_from_bot (void)
+{
+    /* Set-up our color */
+    bot_color = switch_get_color ();
+    /* Start the chronometer */
+    chrono_init ();
+    /* Reset the position of the bot */
+    asserv_set_x_position (PG_X_START);
+    asserv_set_y_position (PG_Y_START);
+    asserv_set_angle_position (PG_A_START);
+    /* Start the move FSM to our samples distributor */
+    move_start (PG_DISTRIBUTOR_SAMPLE_OUR_X, PG_DISTRIBUTOR_SAMPLE_OUR_Y);
+    return top_next (WAIT_JACK_OUT, jack_removed_from_bot);
+}
+
+/*
+ * GET_SAMPLES_FROM_SAMPLES_DISTRIBUTOR =get_samples_fsm_finished=>
+ *  => GO_TO_OUR_ICE_DISTRIBUTOR
+ *   we have finished to get our samples, let's go to our ice distributor with
+ *   the move FSM
+ */
+fsm_branch_t
+top__GET_SAMPLES_FROM_SAMPLES_DISTRIBUTOR__get_samples_fsm_finished (void)
+{
+    /* Start the move FSM to our ice distributor */
+    move_start (PG_DISTRIBUTOR_ICE_OUR_X, PG_DISTRIBUTOR_ICE_OUR_Y);
+    return top_next (GET_SAMPLES_FROM_SAMPLES_DISTRIBUTOR, get_samples_fsm_finished);
+}
+
+/*
+ * GO_TO_ADVERSE_ICE_DISTRIBUTOR =move_fsm_finished=>
+ *  => GET_ICE_FROM_ADVERSE_ICE_DISTRIBUTOR
+ *   we are now in front of the adverse ice distributor, launch the get samples
+ *   FSM
+ */
+fsm_branch_t
+top__GO_TO_ADVERSE_ICE_DISTRIBUTOR__move_fsm_finished (void)
+{
+    /* Start the get samples FSM with the correct angle */
+    struct getsamples_data_t data;
+    /* TODO: where to put the ice?! */
+    data.sample_bitfield = 0;
+    data.approach_angle = PG_DISTRIBUTOR_ICE_ADVERSE_A;
+    getsamples_start (data);
+    return top_next (GO_TO_ADVERSE_ICE_DISTRIBUTOR, move_fsm_finished);
+}
+
+/*
+ * GO_TO_OUR_ICE_DISTRIBUTOR =move_fsm_finished=>
+ *  => GET_ICE_FROM_OUR_ICE_DISTRIBUTOR
+ *   we are now in front of our ice distributor, launch the get samples FSM
+ */
+fsm_branch_t
+top__GO_TO_OUR_ICE_DISTRIBUTOR__move_fsm_finished (void)
+{
+    /* Start the get samples FSM with the correct angle */
+    struct getsamples_data_t data;
+    /* TODO: where to put the ice?! */
+    data.sample_bitfield = 0;
+    data.approach_angle = PG_DISTRIBUTOR_ICE_OUR_A;
+    getsamples_start (data);
+    return top_next (GO_TO_OUR_ICE_DISTRIBUTOR, move_fsm_finished);
+}
+
+/*
+ * GO_TO_SAMPLE_DISTRIBUTOR =move_fsm_finished=>
+ *  => GET_SAMPLES_FROM_SAMPLES_DISTRIBUTOR
+ *   we are now in front of our samples distributor, launch the get samples FSM
+ */
+fsm_branch_t
+top__GO_TO_SAMPLE_DISTRIBUTOR__move_fsm_finished (void)
+{
+    /* Start the get samples FSM with the correct angle */
+    struct getsamples_data_t data;
+    /* TODO: where to put the samples?! */
+    data.sample_bitfield = 0;
+    data.approach_angle = PG_DISTRIBUTOR_SAMPLE_OUR_A;
+    getsamples_start (data);
+    return top_next (GO_TO_SAMPLE_DISTRIBUTOR, move_fsm_finished);
+}
+
+/*
+ * IDLE =start=>
+ *  => WAIT_JACK_IN
+ *   tell the main loop we want to be informed when the jack is inserted into the
+ *   bot
+ */
+fsm_branch_t
+top__IDLE__start (void)
+{
+    /* TODO */
+    return top_next (IDLE, start);
+}
+
+/*
+ * GO_TO_GUTTER =move_fsm_finished=>
+ *  => DROP_OFF_BALLS_TO_GUTTER
+ *   we are now at the gutter, let's drop all ours balls into it with the gutter
+ *   FSM
+ */
+fsm_branch_t
+top__GO_TO_GUTTER__move_fsm_finished (void)
+{
+    /* Start the gutter FSM */
     gutter_start ();
-    top_data.sequence_to_do = (~top_data.sequence_to_do) & 0x1f;
-    return top_next (BACKWARD, collector_full);
+    return top_next (GO_TO_GUTTER, move_fsm_finished);
 }
 
 /*
- * BACKWARD =ended=>
- *  => GET_ICE
- *   Get ICE to end the sequence.
+ * GET_ICE_FROM_OUR_ICE_DISTRIBUTOR =get_samples_fsm_finished=>
+ * not full => GO_TO_ADVERSE_ICE_DISTRIBUTOR
+ *   we have finished to get ice from our distributor and we have some space
+ *   left, let's go the adverse ice distributor with the move FSM
+ * full => GO_TO_GUTTER
+ *   we have finished to get ice from our distributor and we have no more space
+ *   left, let's go the gutter with the move FSM
  */
 fsm_branch_t
-top__BACKWARD__ended (void)
+top__GET_ICE_FROM_OUR_ICE_DISTRIBUTOR__get_samples_fsm_finished (void)
 {
-    /* Generic get sample data */
-    struct getsamples_data_t get_sample_data;
-    get_sample_data.event = TOP_EVENT_ice_took;
-    get_sample_data.sample_bitfield = ~top_data.boxes_used; // XXX
-    get_sample_data.distributor_y = ICE_DISTRIBUTOR_Y;
-    if (top_data.team_color)
+    /* TODO: how to detect we have no more space? */
+    if (0)
       {
-	get_sample_data.distributor_x = ICE_DISTRIBUTOR_LEFT;
-	getsamples_start (get_sample_data);
+	/* Start the move FSM to the adverse ice distributor */
+	move_start (PG_DISTRIBUTOR_ICE_ADVERSE_X, PG_DISTRIBUTOR_ICE_ADVERSE_Y);
+	return top_next_branch (GET_ICE_FROM_OUR_ICE_DISTRIBUTOR, get_samples_fsm_finished, not_full);
       }
     else
       {
-	get_sample_data.distributor_x = ICE_DISTRIBUTOR_RIGHT;
-	getsamples_start (get_sample_data);
+	/* Start the move FSM to go to the gutter */
+	move_start (PG_GUTTER_X, PG_GUTTER_Y);
+	return top_next_branch (GET_ICE_FROM_OUR_ICE_DISTRIBUTOR, get_samples_fsm_finished, full);
       }
-    return top_next (BACKWARD, ended);
 }
 
 /*
- * BACKWARD =ice_dist_empty=>
- *  => GET_ADV_ICE
- *   Go to take the ice in the adversary distributor because our is empty.
+ * GET_ICE_FROM_ADVERSE_ICE_DISTRIBUTOR =get_samples_fsm_finished=>
+ *  => GO_TO_GUTTER
+ *   we have finished to get ice. Even if we are not full, let's go to the gutter
+ *   with the move FSM
  */
 fsm_branch_t
-top__BACKWARD__ice_dist_empty (void)
+top__GET_ICE_FROM_ADVERSE_ICE_DISTRIBUTOR__get_samples_fsm_finished (void)
 {
-    /* Generic get sample data */
-    struct getsamples_data_t get_sample_data;
-    get_sample_data.event = TOP_EVENT_ice_took;
-    get_sample_data.sample_bitfield = ~top_data.boxes_used; // XXX
-    get_sample_data.distributor_y = ICE_DISTRIBUTOR_Y;
-    if (top_data.team_color)
-      {
-	get_sample_data.distributor_x = ICE_DISTRIBUTOR_LEFT;
-	getsamples_start (get_sample_data);
-      }
-    else
-      {
-	get_sample_data.distributor_x = ICE_DISTRIBUTOR_RIGHT;
-	getsamples_start (get_sample_data);
-      }
-    return top_next (BACKWARD, ice_dist_empty);
+    /* Start the move FSM to go to the gutter */
+    move_start (PG_GUTTER_X, PG_GUTTER_Y);
+    return top_next (GET_ICE_FROM_ADVERSE_ICE_DISTRIBUTOR, get_samples_fsm_finished);
 }
 
 /*
- * GET_ICE =ice_took=>
- *  => BACKWARD
- *   Go backward to end the take balls.
+ * WAIT_JACK_IN =jack_inserted_into_bot=>
+ *  => WAIT_JACK_OUT
+ *   tell the main loop we want to be informed when the jack is removed from the
+ *   bot
  */
 fsm_branch_t
-top__GET_ICE__ice_took (void)
+top__WAIT_JACK_IN__jack_inserted_into_bot (void)
 {
-    asserv_position_t pos;
-
-    asserv_get_position (&pos);
-
-    asserv_goto (pos.x - 200, pos.y - 200);
-    return top_next (GET_ICE, ice_took);
+    /* TODO */
+    return top_next (WAIT_JACK_IN, jack_inserted_into_bot);
 }
-
-/*
- * START =ok=>
- *  => GET_SAMPLES
- *   Go to take some samples. The sequence shall be adapt to take the correct number of samples.
- */
-fsm_branch_t
-top__START__ok (void)
-{
-    /* Generic get sample data */
-    struct getsamples_data_t get_sample_data;
-    get_sample_data.event = TOP_EVENT_samples_took;
-    get_sample_data.sample_bitfield = ~top_data.boxes_used; // XXX
-    if (top_data.team_color == BLUE_TEAM)
-      {
-	get_sample_data.distributor_x = BLUE_DISTRIBUTOR_X;
-	get_sample_data.distributor_y = BLUE_DISTRIBUTOR_Y;
-	getsamples_start (get_sample_data);
-      }
-    else
-      {
-	get_sample_data.distributor_x = RED_DISTRIBUTOR_X;
-	get_sample_data.distributor_y = RED_DISTRIBUTOR_Y;
-	getsamples_start (get_sample_data);
-      }
-    return top_next (START, ok);
-}
-
-/*
- * GO_TO_GOAL =samples_deposed=>
- *  => GET_SAMPLES
- *   The samples had been deposed, it shall try to get more samples. This state will call the getsamples FSM and the moveFSM.
- */
-fsm_branch_t
-top__GO_TO_GOAL__samples_deposed (void)
-{
-    /* Generic get sample data */
-    struct getsamples_data_t get_sample_data;
-    get_sample_data.event = TOP_EVENT_samples_took;
-    get_sample_data.sample_bitfield = ~top_data.boxes_used; // XXX
-    if (top_data.team_color == BLUE_TEAM)
-      {
-	get_sample_data.distributor_x = BLUE_DISTRIBUTOR_X;
-	get_sample_data.distributor_y = BLUE_DISTRIBUTOR_Y;
-	getsamples_start (get_sample_data);
-      }
-    else
-      {
-	get_sample_data.distributor_x = RED_DISTRIBUTOR_X;
-	get_sample_data.distributor_y = RED_DISTRIBUTOR_Y;
-	getsamples_start (get_sample_data);
-      }
-    return top_next (GO_TO_GOAL, samples_deposed);
-}
-
-/*
- * GET_ADV_ICE =ice_took=>
- *  => BACKWARD
- *   The ice has been taken.
- */
-fsm_branch_t
-top__GET_ADV_ICE__ice_took (void)
-{
-    asserv_position_t pos;
-
-    asserv_get_position (&pos);
-
-    asserv_goto (pos.x - 200, pos.y - 200);
-    return top_next (GET_ADV_ICE, ice_took);
-}
-
-/*
- * GET_SAMPLES =samples_took=>
- *  => BACKWARD
- *   The samples had been took and now the ice is missing.
- */
-fsm_branch_t
-top__GET_SAMPLES__samples_took (void)
-{
-    // Call the get samples state machine.
-
-    // Blue color.
-    /* Generic get sample data */
-    struct getsamples_data_t get_sample_data;
-    get_sample_data.event = TOP_EVENT_samples_took;
-    get_sample_data.sample_bitfield = top_data.sequence; // XXX
-    if (top_data.team_color == BLUE_TEAM)
-      {
-	get_sample_data.distributor_x = BLUE_DISTRIBUTOR_X;
-	get_sample_data.distributor_y = BLUE_DISTRIBUTOR_Y;
-	getsamples_start (get_sample_data);
-      }
-    else
-      {
-	get_sample_data.distributor_x = RED_DISTRIBUTOR_X;
-	get_sample_data.distributor_y = RED_DISTRIBUTOR_Y;
-	getsamples_start (get_sample_data);
-      }
-    return top_next (START, ok);
-}
-
-

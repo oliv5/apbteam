@@ -33,6 +33,11 @@
 #include "giboulee.h"	/* BOT_ */
 #include "playground.h"	/* PG_* */
 
+/**
+ * Get samples shared data.
+ */
+extern struct getsamples_data_t getsamples_data_;
+
 /*
  * FACE_DISTRIBUTOR =bot_move_succeed=>
  *  => OPEN_INPUT_HOLE
@@ -68,7 +73,7 @@ fsm_branch_t
 getsamples__CLOSE_INPUT_HOLE__arm_move_succeed (void)
 {
     /* Tell the top FSM we have finished */
-    fsm_handle_event (&top_fsm, getsamples_data.event);
+    fsm_handle_event (&top_fsm, TOP_EVENT_get_samples_fsm_finished);
     return getsamples_next (CLOSE_INPUT_HOLE, arm_move_succeed);
 }
 
@@ -84,7 +89,7 @@ fsm_branch_t
 getsamples__TAKE_SAMPLES__arm_pass_noted_position (void)
 {
     /* More samples? */
-    if (getsamples_data.sample_bitfield)
+    if (getsamples_data_.sample_bitfield)
       {
 	/* Compute notifier */
 	uint16_t arm_current_position = asserv_get_arm_position ();
@@ -115,7 +120,7 @@ fsm_branch_t
 getsamples__IDLE__start (void)
 {
     /* Face the distributor */
-    asserv_goto_angle (getsamples_data.distributor_angle);
+    asserv_goto_angle (getsamples_data_.approach_angle);
     return getsamples_next (IDLE, start);
 }
 

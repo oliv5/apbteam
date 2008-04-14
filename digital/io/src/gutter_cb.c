@@ -55,7 +55,7 @@ gutter__CLOSE_COLLECTOR__collector_closed (void)
     //Close the collector.
     trap_close_rear_panel();
     // Post an event to the top fsm machine
-    fsm_handle_event (&top_fsm, TOP_EVENT_samples_deposed);
+    fsm_handle_event (&top_fsm, TOP_EVENT_gutter_fsm_finished);
     return gutter_next (CLOSE_COLLECTOR, collector_closed);
 }
 

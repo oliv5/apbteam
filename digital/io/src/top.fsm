@@ -1,47 +1,106 @@
 # Top FSM.
+# Some remarks on this FSM.
+# Maybe we can make only one state for the all the GO_TO_*DISTRIBUTOR. It is
+# more complicated, but it can be cleaner...
+# We do not manage some cases like, we have not get any balls from any
+# distributors.
 top
+  Top FSM that call others FSM
 
 States:
- START
- GET_SAMPLES
- GO_TO_GOAL
- GET_ICE
- GET_ADV_ICE
- BACKWARD
+ IDLE
+  waiting for the beginning of the top FSM
+ WAIT_JACK_IN
+  waiting for the jack to be inserted into the bot
+ WAIT_JACK_OUT
+  waiting for the jack to be removed from the bot
+ GO_TO_SAMPLE_DISTRIBUTOR
+  go to our distributor of samples (using the move FSM)
+ GO_TO_OUR_ICE_DISTRIBUTOR
+  go to our ice distributor (using the move FSM)
+ GO_TO_ADVERSE_ICE_DISTRIBUTOR
+  go to the adverse ice distributor (using the move FSM)
+ GET_SAMPLES_FROM_SAMPLES_DISTRIBUTOR
+  get samples from the samples distributor (using the get samples FSM)
+ GET_ICE_FROM_OUR_ICE_DISTRIBUTOR
+  get ice from our ice distributor (using the get samples FSM)
+ GET_ICE_FROM_ADVERSE_ICE_DISTRIBUTOR
+  get ice from adverse ice distributor (using the get samples FSM)
+ GO_TO_GUTTER
+  go to the gutter (using the move FSM)
+ DROP_OFF_BALLS_TO_GUTTER
+  drop all the balls contained in the bot into the gutter (using the gutter
+  FSM)
 
 Events:
- ok
- samples_took
- collector_full
- ice_took
- samples_deposed
- ice_dist_empty
- ended
+ start
+  initialize the FSM
+ get_samples_fsm_finished
+  when the get samples FSM returns
+ move_fsm_finished
+  when the move FSM returns
+ gutter_fsm_finished
+  when the gutter FSM returns
+ jack_inserted_into_bot
+  the jack is inserted into the bot
+ jack_removed_from_bot
+  the jack is removed from the bot
 
-START:
- ok -> GET_SAMPLES
-  Go to take some samples. The sequence shall be adapt to take the correct number of samples.
+IDLE:
+ start -> WAIT_JACK_IN
+  tell the main loop we want to be informed when the jack is inserted into the
+  bot
 
-GET_SAMPLES:
- samples_took -> BACKWARD
-  The samples had been took and now the ice is missing.
+WAIT_JACK_IN:
+ jack_inserted_into_bot -> WAIT_JACK_OUT
+  tell the main loop we want to be informed when the jack is removed from the
+  bot
 
-GET_ICE:
- ice_took -> BACKWARD
-  Go backward to end the take balls.
+WAIT_JACK_OUT:
+ jack_removed_from_bot -> GO_TO_SAMPLE_DISTRIBUTOR
+  the match start, start the chronometer
+  we should also initialize all the subsystems of IO (reset position, get our
+  color, ...)
+  order the bot to move to our samples distributors with the move FSM
 
-GO_TO_GOAL:
- samples_deposed -> GET_SAMPLES
-  The samples had been deposed, it shall try to get more samples. This state will call the getsamples FSM and the moveFSM.
+GO_TO_SAMPLE_DISTRIBUTOR:
+ move_fsm_finished -> GET_SAMPLES_FROM_SAMPLES_DISTRIBUTOR
+  we are now in front of our samples distributor, launch the get samples FSM
 
-GET_ADV_ICE:
- ice_took -> BACKWARD
-  The ice has been taken.
+GET_SAMPLES_FROM_SAMPLES_DISTRIBUTOR:
+ get_samples_fsm_finished -> GO_TO_OUR_ICE_DISTRIBUTOR
+  we have finished to get our samples, let's go to our ice distributor with
+  the move FSM
 
-BACKWARD:
- ended -> GET_ICE
-  Get ICE to end the sequence.
- collector_full -> GO_TO_GOAL
-  Go the goal to depose the samples.
- ice_dist_empty -> GET_ADV_ICE
-  Go to take the ice in the adversary distributor because our is empty.
+GO_TO_OUR_ICE_DISTRIBUTOR:
+ move_fsm_finished -> GET_ICE_FROM_OUR_ICE_DISTRIBUTOR
+  we are now in front of our ice distributor, launch the get samples FSM
+
+GET_ICE_FROM_OUR_ICE_DISTRIBUTOR:
+ get_samples_fsm_finished: full -> GO_TO_GUTTER
+  we have finished to get ice from our distributor and we have no more space
+  left, let's go the gutter with the move FSM
+ get_samples_fsm_finished: not full -> GO_TO_ADVERSE_ICE_DISTRIBUTOR
+  we have finished to get ice from our distributor and we have some space
+  left, let's go the adverse ice distributor with the move FSM
+
+GO_TO_GUTTER:
+ move_fsm_finished -> DROP_OFF_BALLS_TO_GUTTER
+  we are now at the gutter, let's drop all ours balls into it with the gutter
+  FSM
+
+DROP_OFF_BALLS_TO_GUTTER:
+ gutter_fsm_finished -> GO_TO_SAMPLE_DISTRIBUTOR
+  we have finished to drop off all the balls, let's go to our sample
+  ditributor to try the same strategy again
+  reset internal data
+
+GO_TO_ADVERSE_ICE_DISTRIBUTOR:
+ move_fsm_finished -> GET_ICE_FROM_ADVERSE_ICE_DISTRIBUTOR
+  we are now in front of the adverse ice distributor, launch the get samples
+  FSM
+
+GET_ICE_FROM_ADVERSE_ICE_DISTRIBUTOR:
+ get_samples_fsm_finished -> GO_TO_GUTTER
+  we have finished to get ice. Even if we are not full, let's go to the gutter
+  with the move FSM

@@ -66,4 +66,18 @@
  */
 #define BOT_ANGLE_DEGREE (65536 / 360)
 
+/**
+ * Definition of the colors.
+ */
+enum team_color_e
+{
+    RED_TEAM = 0,
+    BLUE_TEAM = 1
+};
+
+/**
+ * Our color.
+ */
+extern enum team_color_e bot_color;
+
 #endif // giboulee_h

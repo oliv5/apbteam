@@ -49,6 +49,7 @@ EXTRA_CLEAN_FILES = getsamples_fsm.h getsamples_fsm.c getsamples_cb.h \
 
 # Bootstrap, fsm should be generated before fsm.h is used.
 fsm.c: fsm.h
+main.c: fsm.h
 fsm.h: getsamples_fsm.h gutter_fsm.h move_fsm.h top_fsm.h
 
 DFAGEN = python $(BASE)/../../tools/dfagen/dfagen.py
