@@ -125,7 +125,7 @@
                               1,    1,    0,  0,  0,  0,     0,    0))
 
 // PWM max, min, and offset values
-#define PWM_MIN_LR_ 0x10
+#define PWM_MIN_LR_ 0x01
 #define PWM_MAX_LR_ 0xF0
 #define PWM_OFFSET_LR_ 0x00
 
