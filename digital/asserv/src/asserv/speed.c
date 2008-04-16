@@ -64,7 +64,7 @@ speed_compute_max_speed (int32_t d, int16_t cur, int16_t acc, int8_t max)
     int16_t s;
     /* Compute maximum speed in order to be able to brake in time.
      * s = sqrt (2 * a * d) */
-    s = fixed_sqrt_ui32 (2 * (acc >> 8) * UTILS_ABS (d));
+    s = fixed_sqrt_ui32 ((2 * UTILS_ABS (d) * acc) >> 8);
     /* Apply consign. */
     s = UTILS_MIN (max, s);
     /* Apply sign. */
