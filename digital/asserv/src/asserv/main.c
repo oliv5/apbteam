@@ -101,13 +101,13 @@ main (int argc, char **argv)
     PORTF = 0xfc;
     PORTG = 0x18;
     LED_SETUP;
-    eeprom_read_params ();
     pwm_init ();
     timer_init ();
     counter_init ();
     uart0_init ();
     twi_proto_init ();
     postrack_init ();
+    eeprom_read_params ();
     proto_send0 ('z');
     sei ();
     while (1)
