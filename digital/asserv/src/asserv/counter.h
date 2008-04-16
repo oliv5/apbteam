@@ -26,6 +26,7 @@
  * }}} */
 
 extern uint16_t counter_left, counter_right, counter_aux0;
+extern uint32_t counter_right_correction;
 extern int16_t counter_left_diff, counter_right_diff, counter_aux0_diff;
 
 void

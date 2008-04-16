@@ -441,6 +441,12 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		 * - d: angle. */
 		postrack_a = v8_to_v32 (args[1], args[2], args[3], args[4]);
 		break;
+	      case c ('c', 5):
+		/* Set right counter correction factor.
+		 * - d: factor (f8.24). */
+		counter_right_correction = v8_to_v32 (args[1], args[2],
+						      args[3], args[4]);
+		break;
 	      case c ('f', 3):
 		/* Set footing.
 		 * - w: footing. */
@@ -525,6 +531,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	      case c ('P', 1):
 		/* Print current settings. */
 		proto_send1b ('E', EEPROM_KEY);
+		proto_send1d ('c', counter_right_correction);
 		proto_send1w ('f', postrack_footing);
 		proto_send2w ('a', speed_theta.acc, speed_alpha.acc);
 		proto_send4b ('s', speed_theta.max, speed_alpha.max,

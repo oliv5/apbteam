@@ -25,8 +25,11 @@
 #include "common.h"
 #include "eeprom.h"
 
+#include "modules/utils/byte.h"
+
 #include <avr/eeprom.h>
 
+#include "counter.h"
 #include "pwm.h"
 #include "pos.h"
 #include "speed.h"
@@ -39,6 +42,26 @@
  * If you change EEPROM format, be sure to change the EEPROM_KEY in header if
  * your new format is not compatible with the old one or you will load
  * garbages in parameters. */
+
+static uint32_t
+eeprom_read_dword (uint8_t *addr)
+{
+    uint8_t dw[4];
+    dw[0] = eeprom_read_byte (addr++);
+    dw[1] = eeprom_read_byte (addr++);
+    dw[2] = eeprom_read_byte (addr++);
+    dw[3] = eeprom_read_byte (addr++);
+    return v8_to_v32 (dw[3], dw[2], dw[1], dw[0]);
+}
+
+static void
+eeprom_write_dword (uint8_t *addr, uint32_t dw)
+{
+    eeprom_write_byte (addr++, v32_to_v8 (dw, 0));
+    eeprom_write_byte (addr++, v32_to_v8 (dw, 1));
+    eeprom_write_byte (addr++, v32_to_v8 (dw, 2));
+    eeprom_write_byte (addr++, v32_to_v8 (dw, 3));
+}
 
 /* Read parameters from eeprom. */
 void
@@ -55,6 +78,7 @@ eeprom_read_params (void)
     speed_alpha.slow = eeprom_read_byte (p8++);
     speed_aux0.slow = eeprom_read_byte (p8++);
     pwm_set_reverse (eeprom_read_byte (p8++));
+    counter_right_correction = eeprom_read_dword (p8); p8 += 4;
     p16 = (uint16_t *) p8;
     postrack_set_footing (eeprom_read_word (p16++));
     speed_theta.acc = eeprom_read_word (p16++);
@@ -89,6 +113,7 @@ eeprom_write_params (void)
     eeprom_write_byte (p8++, speed_alpha.slow);
     eeprom_write_byte (p8++, speed_aux0.slow);
     eeprom_write_byte (p8++, pwm_reverse);
+    eeprom_write_dword (p8, counter_right_correction); p8 += 4;
     p16 = (uint16_t *) p8;
     eeprom_write_word (p16++, postrack_footing);
     eeprom_write_word (p16++, speed_theta.acc);

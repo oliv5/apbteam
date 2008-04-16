@@ -26,12 +26,15 @@
 #include "counter.h"
 
 #include "modules/utils/utils.h"
+#include "modules/math/fixed/fixed.h"
 #include "io.h"
 
 /**
  * This file add support for an external counter like the hdlcounter or
  * avrcounter project.  This can be better in order not to loose steps and
  * support more counters.
+ *
+ * There is additionnal support for error correction on the right counter.
  */
 
 /** Define the left counter address. */
@@ -56,8 +59,12 @@
 static uint8_t counter_left_old, counter_right_old, counter_aux0_old;
 /** Overall counter values. */
 uint16_t counter_left, counter_right, counter_aux0;
+/** Overall uncorrected counter values. */
+static int32_t counter_right_raw;
+/** Correction factor (f8.24). */
+uint32_t counter_right_correction = 1L << 24;
 /** Counter differences since last update.
- * Maximum of 7 significant bits, sign included. */
+ * Maximum of 9 significant bits, sign included. */
 int16_t counter_left_diff, counter_right_diff, counter_aux0_diff;
 
 #if !COUNTER_USE_XMEM
@@ -137,7 +144,12 @@ counter_update (void)
     counter_right_diff = (int8_t) (counter_right_old - right);
 #endif
     counter_right_old = right;
-    counter_right += counter_right_diff;
+    /* Fix right counter. */
+    counter_right_raw += counter_right_diff;
+    uint16_t right_new = fixed_mul_f824 (counter_right_raw,
+					 counter_right_correction);
+    counter_right_diff = (int16_t) (right_new - counter_right);
+    counter_right = right_new;
     /* First auxiliary counter. */
 #if !COUNTER_AUX0_REVERSE
     counter_aux0_diff = (int8_t) (aux0 - counter_aux0_old);

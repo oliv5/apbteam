@@ -28,6 +28,7 @@
 #include "modules/host/host.h"
 #include "modules/host/mex.h"
 #include "modules/utils/utils.h"
+#include "modules/math/fixed/fixed.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -45,8 +46,12 @@ uint8_t DDRF, PORTC, PORTD, PORTE, PORTF, PORTG, PINC;
 /** Overall counter values. */
 uint16_t counter_left, counter_right, counter_aux0;
 /** Counter differences since last update.
- * Maximum of 7 significant bits, sign included. */
+ * Maximum of 9 significant bits, sign included. */
 int16_t counter_left_diff, counter_right_diff, counter_aux0_diff;
+/** Overall uncorrected counter values. */
+static int32_t counter_right_raw;
+/** Correction factor (f8.24). */
+uint32_t counter_right_correction = 1L << 24;
 
 /** PWM values, this is an error if absolute value is greater than the
  * maximum. */
@@ -207,7 +212,11 @@ simu_step (void)
     counter_left += counter_left_diff;
     simu_counter_left = counter_left_new;
     counter_right_diff = counter_right_new - simu_counter_right;
-    counter_right += counter_right_diff;
+    counter_right_raw += counter_right_diff;
+    uint16_t right_new = fixed_mul_f824 (counter_right_raw,
+					 counter_right_correction);
+    counter_right_diff = (int16_t) (right_new - counter_right);
+    counter_right = right_new;
     simu_counter_right = counter_right_new;
     /* Update auxiliary counter. */
     if (simu_robot->aux0_motor)
