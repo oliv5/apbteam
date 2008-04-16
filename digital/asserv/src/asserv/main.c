@@ -323,7 +323,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	speed_theta.pos_cons = pos_theta.cons;
 	speed_theta.pos_cons += v8_to_v32 (args[0], args[1], args[2], args[3]);
 	speed_alpha.pos_cons = pos_alpha.cons;
-	state_start (&state_main, args[8]);
+	state_start (&state_main, args[4]);
 	break;
       case c ('a', 5):
 	/* Set angular speed controlled position consign.
