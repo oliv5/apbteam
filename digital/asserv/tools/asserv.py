@@ -44,7 +44,7 @@ class Asserv:
 		akp = 0, aki = 0, akd = 0,
 		a0kp = 0, a0ki = 0, a0kd = 0,
 		E = 1023, I = 1023, b = 15000,
-		ta = 0, aa = 0, a0a = 0,
+		ta = 1, aa = 1, a0a = 1,
 		tsm = 0, asm = 0, tss = 0, ass = 0, a0sm = 0, a0ss = 0
 		)
 	self.param.update (param)
@@ -107,6 +107,16 @@ class Asserv:
 	else:
 	    assert w == 'a0'
 	    self.proto.send ('c', 'h', c)
+
+    def speed (self, w, s):
+	"""Speed consign."""
+	if w == 't':
+	    self.proto.send ('s', 'bb', s, 0)
+	elif w == 'a':
+	    self.proto.send ('s', 'bb', 0, s)
+	else:
+	    assert w == 'a0'
+	    self.proto.send ('s', 'b', s)
 
     def send_param (self):
 	p = self.param
