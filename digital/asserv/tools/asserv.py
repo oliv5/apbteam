@@ -1,20 +1,44 @@
 import proto, time
+import numpy
 
 class Asserv:
 
+    stats_format = {
+	    'C': 'HHH',
+	    'Z': 'H',
+	    'S': 'bbb',
+	    'P': 'hhhhhh',
+	    'W': 'hhh',
+	    }
+    # The last occuring stats will increment stats_count, so they have to
+    # be in the same order than in asserv program.
+    stats_order = 'CZSPW'
+    stats_items = {
+	    'lc': ('C', 0),
+	    'rc': ('C', 1),
+	    'a0c': ('C', 2),
+	    'a0z': ('Z', 0),
+	    'ts': ('S', 0),
+	    'as': ('S', 1),
+	    'a0s': ('S', 2),
+	    'te': ('P', 0),
+	    'ti': ('P', 1),
+	    'ae': ('P', 2),
+	    'ai': ('P', 3),
+	    'a0e': ('P', 4),
+	    'a0i': ('P', 5),
+	    'lw': ('W', 0),
+	    'rw': ('W', 1),
+	    'a0w': ('W', 2),
+	    }
+
     def __init__ (self, file, **param):
 	self.proto = proto.Proto (file, time.time, 0.1)
-	self.proto.register ('C', 'HHH',
-		lambda *args: self.handle_stats ('C', *args))
-	self.proto.register ('Z', 'H',
-		lambda *args: self.handle_stats ('Z', *args))
-	self.proto.register ('S', 'bbb',
-		lambda *args: self.handle_stats ('S', *args))
-	self.proto.register ('P', 'hhhhhh',
-		lambda *args: self.handle_stats ('P', *args))
-	self.proto.register ('W', 'hhh',
-		lambda *args: self.handle_stats ('W', *args))
-	self.stats_ = None
+	def make_handle (s):
+	    return lambda *args: self.handle_stats (s, *args)
+	for (s, f) in self.stats_format.iteritems ():
+	    self.proto.register (s, f, make_handle (s))
+	self.stats_enabled = None
 	self.param = dict (
 		tkp = 0, tki = 0, tkd = 0,
 		akp = 0, aki = 0, akd = 0,
@@ -26,33 +50,53 @@ class Asserv:
 	self.param.update (param)
 	self.send_param ()
 
-    def stats (self, stats, interval = 1):
-	"""Activate stats (given by letter)."""
-	# The last occuring stats will increment stats_count, so they have to
-	# be in the same order than in asserv program.
-	all = 'CZSPW'
-	stats = [s for s in all if s in stats]
+    def stats (self, *stats_items, **options):
+	"""Activate stats."""
+	interval = 1
+	if 'interval' in options:
+	    interval = options['interval']
+	# Build list of stats letters.
+	stats = [self.stats_items[i][0] for i in stats_items]
+	stats = [s for s in self.stats_order if s in stats]
+	stats_last_pos = 0
+	stats_pos = { }
+	for s in stats:
+	    stats_pos[s] = stats_last_pos
+	    stats_last_pos += len (self.stats_format[s])
+	# Build stats item positions.
+	self.stats_items_pos = [ ]
+	for i in stats_items:
+	    id = self.stats_items[i]
+	    self.stats_items_pos.append (stats_pos[id[0]] + id[1])
+	# Enable stats.
 	for s in stats:
 	    self.proto.send (s, 'B', interval)
-	self.stats_ = stats
+	# Prepare aquisition.
+	self.stats_enabled = stats
 	self.stats_counter = stats[-1]
 	self.stats_count = 0
 	self.stats_list = [ ]
 	self.stats_line = [ ]
 
-    def get_stats (self):
+    def get_stats (self, wait = None):
+	if wait:
+	    self.wait (wait)
 	list = self.stats_list
 	# Drop first line as it might be garbage.
 	del list[0]
-	for s in reversed (self.stats_):
+	for s in reversed (self.stats_enabled):
 	    self.proto.send (s, 'B', 0)
+	# Extract asked stats.
+	array = numpy.array (list)
+	array = array[:, self.stats_items_pos]
 	# Cleanup.
-	self.stats_ = None
+	self.stats_enabled = None
+	del self.stats_items_pos
 	del self.stats_counter
 	del self.stats_count
 	del self.stats_list
 	del self.stats_line
-	return list
+	return array
 
     def consign (self, w, c):
 	"""Consign offset."""
@@ -85,7 +129,7 @@ class Asserv:
 		p['tss'], p['ass'])
 
     def handle_stats (self, stat, *args):
-	if self.stats_ is not None:
+	if self.stats_enabled is not None:
 	    self.stats_line.extend (args)
 	    if self.stats_counter == stat:
 		self.stats_list.append (self.stats_line)
@@ -93,8 +137,18 @@ class Asserv:
 		self.stats_count += 1
 
     def wait (self, cond = None):
+	try:
+	    cond_count = int (cond)
+	    cond = lambda: self.stats_count > cond_count
+	except TypeError:
+	    pass
 	self.proto.wait (cond)
 
     def reset (self):
 	self.proto.send ('w')
 	self.proto.send ('z')
+
+    def close (self):
+	self.reset ()
+	self.wait (lambda: True)
+	self.proto.file.close ()
