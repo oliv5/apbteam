@@ -147,6 +147,11 @@ twi_proto_callback (u8 *buf, u8 size)
 			 v8_to_v32 (buf[5], buf[6], buf[7], 0),
 			 0);
 	break;
+      case c ('y', 0):
+	/* Go to angle.
+	 * - w: angle. */
+	traj_goto_angle_start (v8_to_v32 (0, buf[2], buf[3], 0), 0);
+	break;
       case c ('b', 3):
 	/* Move the arm.
 	 * - w: new position.

@@ -98,6 +98,7 @@ eeprom_read_params (void)
     pos_d_sat = eeprom_read_word (p16++);
     pos_blocked = eeprom_read_word (p16++);
     traj_eps = eeprom_read_word (p16++);
+    traj_aeps = eeprom_read_word (p16++);
 }
 
 /* Write parameters to eeprom. */
@@ -134,6 +135,7 @@ eeprom_write_params (void)
     eeprom_write_word (p16++, pos_d_sat);
     eeprom_write_word (p16++, pos_blocked);
     eeprom_write_word (p16++, traj_eps);
+    eeprom_write_word (p16++, traj_aeps);
 }
 
 /* Clear eeprom parameters. */

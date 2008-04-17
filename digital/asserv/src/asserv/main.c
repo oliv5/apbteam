@@ -359,6 +359,15 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 			 v8_to_v32 (args[4], args[5], args[6], args[7]),
 			 args[8]);
 	break;
+      case c ('x', 5):
+	/* Go to angle.
+	 * - d: a, f8.24.
+	 * - b: sequence number. */
+	if (args[4] == state_main.sequence)
+	    break;
+	traj_goto_angle_start (v8_to_v32 (args[0], args[1], args[2], args[3]),
+			       args[4]);
+	break;
       case c ('a', 2):
 	/* Set both acknoledge.
 	 * - b: main ack sequence number.
@@ -515,8 +524,9 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	      case c ('b', 3):
 		pos_blocked = v8_to_v16 (args[1], args[2]);
 		break;
-	      case c ('e', 3):
+	      case c ('e', 5):
 		traj_eps = v8_to_v16 (args[1], args[2]);
+		traj_aeps = v8_to_v16 (args[3], args[4]);
 		break;
 	      case c ('w', 2):
 		/* Set PWM direction.

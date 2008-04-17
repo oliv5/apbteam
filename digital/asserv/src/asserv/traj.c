@@ -53,6 +53,8 @@ enum
     TRAJ_GTD,
     /* Go to position. */
     TRAJ_GOTO,
+    /* Go to angle. */
+    TRAJ_GOTO_ANGLE,
     /* Everything done. */
     TRAJ_DONE,
 };
@@ -63,8 +65,14 @@ uint8_t traj_mode;
 /** Epsilon, distance considered to be small enough. */
 int16_t traj_eps = 500;
 
+/** Angle epsilon, angle considered to be small enough (f0.16). */
+int16_t traj_aeps = 0x0100;
+
 /** Go to position. */
 static uint32_t traj_goto_x, traj_goto_y;
+
+/** Go to angle. */
+static uint32_t traj_goto_a;
 
 /** Angle offset.  Directly handled to speed layer. */
 void
@@ -204,6 +212,45 @@ traj_goto_start (uint32_t x, uint32_t y, uint8_t seq)
     traj_goto_x = x;
     traj_goto_y = y;
     speed_theta.use_pos = speed_alpha.use_pos = 1;
+    speed_theta.pos_cons = pos_theta.cons;
+    speed_alpha.pos_cons = pos_alpha.cons;
+    state_start (&state_main, seq);
+}
+
+/** Go to angle mode. */
+static void
+traj_goto_angle (void)
+{
+    /* There is some tricky parts to handle rotation direction. */
+    int16_t da = (uint16_t) (traj_goto_a >> 8) - (uint16_t) (postrack_a >> 8);
+    if (UTILS_ABS (da) < traj_aeps)
+      {
+	/* Near enough, stop, let speed terminate the movement. */
+	state_main.mode = MODE_SPEED;
+	traj_mode = TRAJ_DONE;
+      }
+    else
+      {
+	/* Compute arc length. */
+	int32_t arad = fixed_mul_f824 (((int32_t) da) << 8,
+				       2 * M_PI * (1L << 24));
+	int32_t arc = fixed_mul_f824 (arad, postrack_footing);
+	/* Compute consign. */
+	speed_alpha.pos_cons = pos_alpha.cur;
+	speed_alpha.pos_cons += arc;
+      }
+}
+
+/** Start go to angle mode (a: f8.24). */
+void
+traj_goto_angle_start (uint32_t a, uint8_t seq)
+{
+    state_main.mode = MODE_TRAJ;
+    traj_mode = TRAJ_GOTO_ANGLE;
+    traj_goto_a = a;
+    speed_theta.use_pos = speed_alpha.use_pos = 1;
+    speed_theta.pos_cons = pos_theta.cons;
+    speed_alpha.pos_cons = pos_alpha.cons;
     state_start (&state_main, seq);
 }
 
@@ -221,6 +268,9 @@ traj_update (void)
 	break;
       case TRAJ_GOTO:
 	traj_goto ();
+	break;
+      case TRAJ_GOTO_ANGLE:
+	traj_goto_angle ();
 	break;
       case TRAJ_DONE:
 	break;
