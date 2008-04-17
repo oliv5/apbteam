@@ -37,6 +37,12 @@ gutter_print_test (fsm_t *gutter)
 	case GUTTER_STATE_IDLE:
 	  printf ("IDLE");
 	  break;
+	case GUTTER_STATE_ROTATE_REAR_SIDE_TO_GUTTER:
+	  printf ("ROTATE_REAR_SIDE_TO_GUTTER");
+	  break;
+	case GUTTER_STATE_GO_TO_THE_GUTTER_WALL:
+	  printf ("GO_TO_THE_GUTTER_WALL");
+	  break;
 	case GUTTER_STATE_CLOSE_COLLECTOR:
 	  printf ("CLOSE COLLECTOR");
 	  break;
@@ -54,7 +60,17 @@ main (void)
 {
     fsm_init (&gutter_fsm);
 
+    gutter_print_test (&gutter_fsm);
     fsm_handle_event (&gutter_fsm, GUTTER_EVENT_start);
+
+    // Request the main_loop to go to next state because the angle had
+    // been reached.
+    fsm_handle_event (&gutter_fsm, GUTTER_EVENT_rotation_done);
+    gutter_print_test (&gutter_fsm);
+
+    // Request the main_loop to go to next state because the angle had
+    // been reached.
+    fsm_handle_event (&gutter_fsm, GUTTER_EVENT_ready);
     gutter_print_test (&gutter_fsm);
 
     fsm_handle_event (&gutter_fsm, GUTTER_EVENT_collector_opened);
@@ -76,5 +92,18 @@ void
 trap_close_rear_panel(void)
 {
     printf ("\t Close rear panel\n");
+}
+
+void
+asserv_goto_angle (int16_t angle)
+{
+    printf ("\t Angle requested\n");
+}
+
+/* Go to the wall (moving backward). */
+void
+asserv_go_to_the_wall (void)
+{
+    printf ("\t go to the wall\n");
 }
 

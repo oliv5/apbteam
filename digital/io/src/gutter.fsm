@@ -3,16 +3,28 @@ gutter
 
 States:
  IDLE
+ ROTATE_REAR_SIDE_TO_GUTTER
+ GO_TO_THE_GUTTER_WALL
  OPEN_COLLECTOR
  CLOSE_COLLECTOR
 
 Events:
  start
+ rotation_done
+ ready
  collector_opened
  collector_closed
 
 IDLE:
- start -> OPEN_COLLECTOR
+ start -> ROTATE_REAR_SIDE_TO_GUTTER
+  Pur the robot back to the gutter to allow it to drop the balls in the gutter.
+
+ROTATE_REAR_SIDE_TO_GUTTER:
+ rotation_done -> GO_TO_THE_GUTTER_WALL
+  The rotation is done, the robot can go to the wall in backward mode to drop the balls in the gutter. 
+
+GO_TO_THE_GUTTER_WALL:
+ ready -> OPEN_COLLECTOR
   Open the collector and wait for a while.
 
 OPEN_COLLECTOR:

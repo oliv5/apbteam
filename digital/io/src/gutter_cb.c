@@ -28,20 +28,34 @@
 #include "gutter_cb.h"
 #include "trap.h"
 #include "modules/utils/utils.h"
+#include "asserv.h"
+
+/*
+ * ROTATE_REAR_SIDE_TO_GUTTER =rotation_done=>
+ *  => GO_TO_THE_GUTTER_WALL
+ *   The rotation is done, the robot can go to the wall in backward mode to drop the balls in the gutter.
+ */
+fsm_branch_t
+gutter__ROTATE_REAR_SIDE_TO_GUTTER__rotation_done (void)
+{
+    // Go to the wall in backward mode.
+    asserv_go_to_the_wall();
+    return gutter_next (ROTATE_REAR_SIDE_TO_GUTTER, rotation_done);
+}
 
 /*
  * IDLE =start=>
- *  => OPEN_COLLECTOR
- *   Open the collector and wait for a while.
+ *  => ROTATE_REAR_SIDE_TO_GUTTER
+ *   Pur the robot back to the gutter to allow it to drop the balls in the gutter.
  */
 fsm_branch_t
 gutter__IDLE__start (void)
 {
-    // Open the rear panel.
-    trap_open_rear_panel ();
+    // Request the robot to rotate to ends with the rear panel in front of the
+    // gutter.
+    asserv_goto_angle (0x8000);
     return gutter_next (IDLE, start);
 }
-
 
 /*
  * CLOSE_COLLECTOR =collector_closed=>
@@ -54,6 +68,19 @@ gutter__CLOSE_COLLECTOR__collector_closed (void)
     //Close the collector.
     trap_close_rear_panel();
     return gutter_next (CLOSE_COLLECTOR, collector_closed);
+}
+
+/*
+ * GO_TO_THE_GUTTER_WALL =ready=>
+ *  => OPEN_COLLECTOR
+ *   Open the collector and wait for a while.
+ */
+fsm_branch_t
+gutter__GO_TO_THE_GUTTER_WALL__ready (void)
+{
+    // Open the rear panel.
+    trap_open_rear_panel ();
+    return gutter_next (GO_TO_THE_GUTTER_WALL, ready);
 }
 
 /*
