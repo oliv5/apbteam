@@ -34,18 +34,23 @@ class Asserv:
 
     def __init__ (self, file, **param):
 	self.proto = proto.Proto (file, time.time, 0.1)
+	self.seq = 0
+	self.seq_ack = 0
+	self.proto.register ('A', 'BB', self.handle_ack)
 	def make_handle (s):
 	    return lambda *args: self.handle_stats (s, *args)
 	for (s, f) in self.stats_format.iteritems ():
 	    self.proto.register (s, f, make_handle (s))
 	self.stats_enabled = None
 	self.param = dict (
+		scale = 1,
 		tkp = 0, tki = 0, tkd = 0,
 		akp = 0, aki = 0, akd = 0,
 		a0kp = 0, a0ki = 0, a0kd = 0,
-		E = 1023, I = 1023, b = 15000,
+		E = 1023, I = 1023, D = 1023, b = 15000,
 		ta = 1, aa = 1, a0a = 1,
-		tsm = 0, asm = 0, tss = 0, ass = 0, a0sm = 0, a0ss = 0
+		tsm = 0, asm = 0, tss = 0, ass = 0, a0sm = 0, a0ss = 0,
+		c = 1, f = 0x1000,
 		)
 	self.param.update (param)
 	self.send_param ()
@@ -118,6 +123,19 @@ class Asserv:
 	    assert w == 'a0'
 	    self.proto.send ('s', 'b', s)
 
+    def goto (self, x, y):
+	"""Go to position."""
+	self.seq += 1
+	self.proto.send ('x', 'LLB', 256 * x / self.param['scale'],
+		256 * y / self.param['scale'], self.seq)
+	self.wait (self.finished)
+
+    def goto_angle (self, a):
+	"""Go to angle."""
+	self.seq += 1
+	self.proto.send ('x', 'LB', a * (1 << 24) / 360, self.seq)
+	self.wait (self.finished)
+
     def send_param (self):
 	p = self.param
 	self.proto.send ('p', 'BHH', ord ('p'), p['tkp'] * 256,
@@ -131,12 +149,15 @@ class Asserv:
 	self.proto.send ('p', 'BH', ord ('d'), p['a0kd'] * 256)
 	self.proto.send ('p', 'BH', ord ('E'), p['E'])
 	self.proto.send ('p', 'BH', ord ('I'), p['I'])
+	self.proto.send ('p', 'BH', ord ('D'), p['D'])
 	self.proto.send ('p', 'BH', ord ('b'), p['b'])
 	self.proto.send ('p', 'BHH', ord ('a'), p['ta'] * 256,
 		p['aa'] * 256)
 	self.proto.send ('p', 'BH', ord ('a'), p['a0a'] * 256)
 	self.proto.send ('p', 'BBBBB', ord ('s'), p['tsm'], p['asm'],
 		p['tss'], p['ass'])
+	self.proto.send ('p', 'BL', ord ('c'), p['c'] * 256 * 256 * 256)
+	self.proto.send ('p', 'BH', ord ('f'), p['f'])
 
     def handle_stats (self, stat, *args):
 	if self.stats_enabled is not None:
@@ -146,6 +167,9 @@ class Asserv:
 		self.stats_line = [ ]
 		self.stats_count += 1
 
+    def handle_ack (self, mseq, a0seq):
+	self.seq_ack = mseq & 0x7f
+
     def wait (self, cond = None):
 	try:
 	    cond_count = int (cond)
@@ -153,6 +177,9 @@ class Asserv:
 	except TypeError:
 	    pass
 	self.proto.wait (cond)
+
+    def finished (self):
+	return self.seq == self.seq_ack
 
     def reset (self):
 	self.proto.send ('w')
