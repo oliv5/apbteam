@@ -166,8 +166,8 @@ traj_goto (void)
     if (UTILS_ABS (dx) < ((int32_t) traj_eps) << 8
 	&& UTILS_ABS (dy) < ((int32_t) traj_eps) << 8)
       {
-	/* Near enough, stop. */
-	state_finish (&state_main);
+	/* Near enough, stop, let speed terminate the movement. */
+	state_main.mode = MODE_SPEED;
 	traj_mode = TRAJ_DONE;
       }
     else

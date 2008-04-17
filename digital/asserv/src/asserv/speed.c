@@ -110,7 +110,8 @@ speed_update (void)
 	speed_update_by (&speed_theta, &pos_theta);
 	speed_update_by (&speed_alpha, &pos_alpha);
 	/* Check for completion. */
-	if ((speed_theta.use_pos || speed_alpha.use_pos)
+	if (state_main.mode == MODE_SPEED
+	    && (speed_theta.use_pos || speed_alpha.use_pos)
 	    && (!speed_theta.use_pos || speed_theta.cur == 0)
 	    && (!speed_alpha.use_pos || speed_alpha.cur == 0))
 	  {
@@ -122,7 +123,8 @@ speed_update (void)
 	/* Update speed. */
 	speed_update_by (&speed_aux0, &pos_aux0);
 	/* Check for completion. */
-	if (speed_aux0.use_pos && speed_aux0.cur == 0)
+	if (state_aux0.mode == MODE_SPEED
+	    && speed_aux0.use_pos && speed_aux0.cur == 0)
 	    state_finish (&state_aux0);
       }
 }
