@@ -74,10 +74,10 @@ This table describe the list of supported commands by the *asserv* card:
 +---------+-------+-----------------+------------------------------------------+
 |   'F'   | Move  | None            | Go to a distributor (forward movement)   |
 +---------+-------+-----------------+------------------------------------------+
-|   'x'   | Move  | - x (3b)        | Go to a absolute position                |
+|   'x'   | Move  | - x (3b)        | Go to an absolute position               |
 |         |       | - y (3b)        |                                          |
 +---------+-------+-----------------+------------------------------------------+
-|   'y'   | Move  | - a (2b)        | Go to a absolute angle                   |
+|   'y'   | Move  | - a (2b)        | Go to an absolute angle                  |
 +---------+-------+-----------------+------------------------------------------+
 |   'b'   |  Arm  | - position (2b) | Move the arm to a desired position       |
 |         |       | - speed (1b)    | at a specific speed                      |
