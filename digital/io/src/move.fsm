@@ -2,24 +2,23 @@
 move
 
 States:
- START
- END
+ IDLE
  DESIRED_POSITION
  MOVE_ON_LEFT
  MOVE_ON_RIGHT
 
 Events:
- ok
+ start
  reached
  failed_or_blocked_or_near_border
  failed_or_blocked
 
-START:
- ok -> DESIRED_POSITION
+IDLE:
+ start -> DESIRED_POSITION
   Tries to reach a position provided by the user. If the position desired can not be reached, it all try to move on the right or the left.
 
 DESIRED_POSITION:
- reached -> END
+ reached -> IDLE
   The position provided by the user has been reached, the FSM can stop.
  failed_or_blocked: near_right_border -> MOVE_ON_LEFT
   The robot has failed to reach the position. It shall try another position before trying to reach this one again. It shall go to the on the left only if the left border is the farest one.

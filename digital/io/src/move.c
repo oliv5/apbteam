@@ -46,7 +46,7 @@ move_start (uint32_t position_x, uint32_t position_y)
     move_data.position_y = position_y;
     /* Start the FSM. */
     fsm_init (&move_fsm);
-    fsm_handle_event (&move_fsm, MOVE_EVENT_ok);
+    fsm_handle_event (&move_fsm, MOVE_EVENT_start);
 }
 
 /** Verify if the position desired is in the table use when the robot tries to

@@ -57,8 +57,8 @@ move_print_test (fsm_t *move)
 
     switch (move->state_current)
       {
-	case MOVE_STATE_END:
-	  printf ("END");
+	case MOVE_STATE_IDLE:
+	  printf ("IDLE");
 	  break;
 	case MOVE_STATE_DESIRED_POSITION:
 	  printf ("DESIRED POSITION");
@@ -83,7 +83,7 @@ main (void)
 
     fsm_init (&move_fsm);
 
-    fsm_handle_event (&move_fsm, MOVE_EVENT_ok);
+    fsm_handle_event (&move_fsm, MOVE_EVENT_start);
 
     move_print_test (&move_fsm);
 

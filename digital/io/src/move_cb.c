@@ -16,15 +16,15 @@
 
 
 /*
- * START =ok=>
+ * IDLE =start=>
  *  => DESIRED_POSITION
  *   Tries to reach a position provided by the user. If the position desired can not be reached, it all try to move on the right or the left.
  */
 fsm_branch_t
-move__START__ok (void)
+move__IDLE__start (void)
 {
     asserv_goto (move_data.position_x, move_data.position_y);
-    return move_next (START, ok);
+    return move_next (IDLE, start);
 }
 
 /*
