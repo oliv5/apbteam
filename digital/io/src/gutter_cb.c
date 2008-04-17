@@ -26,23 +26,22 @@
 #include "fsm.h"
 #include "gutter.h"
 #include "gutter_cb.h"
-#include "asserv.h"
 #include "trap.h"
 #include "modules/utils/utils.h"
-#include "top.h"
-#include "top_fsm.h"
 
 /*
- * START =ok=>
- *  => GO_TO_GUTTER
- *   Go to the gutter.
+ * IDLE =start=>
+ *  => OPEN_COLLECTOR
+ *   Open the collector and wait for a while.
  */
 fsm_branch_t
-gutter__START__ok (void)
+gutter__IDLE__start (void)
 {
-    asserv_go_to_the_wall();
-    return gutter_next (START, ok);
+    // Open the rear panel.
+    trap_open_rear_panel ();
+    return gutter_next (IDLE, start);
 }
+
 
 /*
  * CLOSE_COLLECTOR =collector_closed=>
@@ -54,33 +53,7 @@ gutter__CLOSE_COLLECTOR__collector_closed (void)
 {
     //Close the collector.
     trap_close_rear_panel();
-    // Post an event to the top fsm machine
-    fsm_handle_event (&top_fsm, TOP_EVENT_gutter_fsm_finished);
     return gutter_next (CLOSE_COLLECTOR, collector_closed);
-}
-
-/*
- * GO_TO_GUTTER =position_failed=>
- *  => GO_TO_GUTTER
- *   The position failed, shall try another path.
- */
-fsm_branch_t
-gutter__GO_TO_GUTTER__position_failed (void)
-{
-    return gutter_next (GO_TO_GUTTER, position_failed);
-}
-
-/*
- * GO_TO_GUTTER =position_reached=>
- *  => OPEN_COLLECTOR
- *   The robo is near the gutter and the door can be opened.
- */
-fsm_branch_t
-gutter__GO_TO_GUTTER__position_reached (void)
-{
-    // Open the collector.
-    trap_open_rear_panel();
-    return gutter_next (GO_TO_GUTTER, position_reached);
 }
 
 /*

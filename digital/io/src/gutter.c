@@ -31,5 +31,5 @@ gutter_start (void)
 {
     /* Start the FSM. */
     fsm_init (&gutter_fsm);
-    fsm_handle_event (&gutter_fsm, GUTTER_EVENT_ok);
+    fsm_handle_event (&gutter_fsm, GUTTER_EVENT_start);
 }

@@ -2,33 +2,23 @@
 gutter
 
 States:
- START
- GO_TO_GUTTER
+ IDLE
  OPEN_COLLECTOR
  CLOSE_COLLECTOR
- END
 
 Events:
- ok
- position_reached
- position_failed
+ start
  collector_opened
  collector_closed
 
-START:
- ok -> GO_TO_GUTTER
-  Go to the gutter.
-
-GO_TO_GUTTER:
- position_reached -> OPEN_COLLECTOR
-  The robo is near the gutter and the door can be opened.
- position_failed -> .
-  The position failed, shall try another path.
+IDLE:
+ start -> OPEN_COLLECTOR
+  Open the collector and wait for a while.
 
 OPEN_COLLECTOR:
  collector_opened -> CLOSE_COLLECTOR
-  Wait some time and clse the door.
+  Close the rear panel.
 
 CLOSE_COLLECTOR:
- collector_closed-> END
-  The samples has been inserted in the gutter.
+ collector_closed-> IDLE
+  The samples has been inserted in the gutter. Go to the idle state.
