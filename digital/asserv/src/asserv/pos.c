@@ -49,7 +49,9 @@ struct pos_t pos_aux0;
 /** Error saturation. */
 int32_t pos_e_sat = 1023;
 /** Integral saturation. */
-int32_t pos_int_sat = 1023;
+int32_t pos_i_sat = 1023;
+/** Differential saturation. */
+int32_t pos_d_sat = 1023;
 /** Blocked value.  If error is greater than this value, stop the robot and
  * report blocked state. */
 int32_t pos_blocked = 15000L;
@@ -58,8 +60,8 @@ int32_t pos_blocked = 15000L;
  * How to compute maximum numbers size:
  * Result is 24 bits (16 bits kept after shift).
  * If e_sat == 1023, e max is 11 bits (do not forget the sign bit), and diff
- * max is 12 bits.
- * If int_sat == 1023, i max is 11 bits.
+ * max is 12 bits (can be saturated with d_sat).
+ * If i_sat == 1023, i max is 11 bits.
  * In the final addition, let's give 23 bits to the p part, and 22 bits to the
  * i and d part (23b + 22b + 22b => 23b + 23b => 24b). 
  * Therefore, kp can be 23 - 11 = 12 bits (f4.8).
@@ -68,7 +70,7 @@ int32_t pos_blocked = 15000L;
  * How to increase this number:
  *  - lower the shift.
  *  - bound the value returned.
- *  - lower e & int saturation. */
+ *  - lower e, i & d saturation. */
 static inline int16_t
 pos_compute_pid (int32_t e, struct pos_t *pos)
 {
@@ -77,9 +79,10 @@ pos_compute_pid (int32_t e, struct pos_t *pos)
     UTILS_BOUND (e, -pos_e_sat, pos_e_sat);
     /* Integral update. */
     pos->i += e;
-    UTILS_BOUND (pos->i, -pos_int_sat, pos_int_sat);
+    UTILS_BOUND (pos->i, -pos_i_sat, pos_i_sat);
     /* Differential value. */
     diff = e - pos->e_old;
+    UTILS_BOUND (diff, -pos_d_sat, pos_d_sat);
     /* Compute PID. */
     pid = e * pos->kp + pos->i * pos->ki + diff * pos->kd;
     /* Save result. */

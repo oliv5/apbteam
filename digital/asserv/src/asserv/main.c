@@ -507,7 +507,10 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		pos_e_sat = v8_to_v16 (args[1], args[2]);
 		break;
 	      case c ('I', 3):
-		pos_int_sat = v8_to_v16 (args[1], args[2]);
+		pos_i_sat = v8_to_v16 (args[1], args[2]);
+		break;
+	      case c ('D', 3):
+		pos_d_sat = v8_to_v16 (args[1], args[2]);
 		break;
 	      case c ('b', 3):
 		pos_blocked = v8_to_v16 (args[1], args[2]);
@@ -545,7 +548,8 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		proto_send1w ('i', pos_aux0.ki);
 		proto_send1w ('d', pos_aux0.kd);
 		proto_send1w ('E', pos_e_sat);
-		proto_send1w ('I', pos_int_sat);
+		proto_send1w ('I', pos_i_sat);
+		proto_send1w ('D', pos_d_sat);
 		proto_send1w ('b', pos_blocked);
 		proto_send1w ('e', traj_eps);
 		proto_send1b ('w', pwm_reverse);

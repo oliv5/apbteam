@@ -94,7 +94,8 @@ eeprom_read_params (void)
     pos_alpha.kd = eeprom_read_word (p16++);
     pos_aux0.kd = eeprom_read_word (p16++);
     pos_e_sat = eeprom_read_word (p16++);
-    pos_int_sat = eeprom_read_word (p16++);
+    pos_i_sat = eeprom_read_word (p16++);
+    pos_d_sat = eeprom_read_word (p16++);
     pos_blocked = eeprom_read_word (p16++);
     traj_eps = eeprom_read_word (p16++);
 }
@@ -129,7 +130,8 @@ eeprom_write_params (void)
     eeprom_write_word (p16++, pos_alpha.kd);
     eeprom_write_word (p16++, pos_aux0.kd);
     eeprom_write_word (p16++, pos_e_sat);
-    eeprom_write_word (p16++, pos_int_sat);
+    eeprom_write_word (p16++, pos_i_sat);
+    eeprom_write_word (p16++, pos_d_sat);
     eeprom_write_word (p16++, pos_blocked);
     eeprom_write_word (p16++, traj_eps);
 }
