@@ -63,8 +63,9 @@ speed_compute_max_speed (int32_t d, int16_t cur, int16_t acc, int8_t max)
 {
     int16_t s;
     /* Compute maximum speed in order to be able to brake in time.
+     * The "+ 0xff" is to ceil result.
      * s = sqrt (2 * a * d) */
-    s = fixed_sqrt_ui32 ((2 * UTILS_ABS (d) * acc) >> 8);
+    s = fixed_sqrt_ui32 ((2 * UTILS_ABS (d) * acc + 0xff) >> 8);
     /* Apply consign. */
     s = UTILS_MIN (max, s);
     /* Apply sign. */
@@ -81,11 +82,8 @@ static void
 speed_update_by_position (struct speed_t *speed, struct pos_t *pos)
 {
     int32_t diff = speed->pos_cons - pos->cons;
-    if (diff >= -speed->max && diff <= speed->max)
-	speed->cur = diff << 8;
-    else
-	speed->cur = speed_compute_max_speed (diff, speed->cur, speed->acc,
-					      speed->max);
+    speed->cur = speed_compute_max_speed (diff, speed->cur, speed->acc,
+					  speed->max);
 }
 
 /** Update shaft position consign according to its consign type. */
