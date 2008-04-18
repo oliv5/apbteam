@@ -123,6 +123,18 @@ class Asserv:
 	    assert w == 'a0'
 	    self.proto.send ('s', 'b', s)
 
+    def speed_pos (self, w, offset):
+	"""Speed controlled position consign."""
+	self.seq += 1
+	if w == 't':
+	    self.proto.send ('s', 'LLB', offset, 0, self.seq)
+	elif w == 'a':
+	    self.proto.send ('s', 'LLB', 0, offset, self.seq)
+	else:
+	    assert w == 'a0'
+	    self.proto.send ('s', 'LB', offset, self.seq)
+	self.wait (self.finished)
+
     def goto (self, x, y):
 	"""Go to position."""
 	self.seq += 1
