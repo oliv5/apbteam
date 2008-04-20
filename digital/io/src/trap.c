@@ -120,12 +120,12 @@ trap_setup_path_to_box (trap_box_id_e box)
 
 /* Set high time value for horizontal and vertical position of a trap. */
 void
-trap_set_high_time (uint8_t servo_id, uint8_t horizontal, uint8_t vertical)
+trap_set_high_time (uint8_t servo_id, uint8_t h, uint8_t v)
 {
     if (servo_id < SERVO_NUMBER)
       {
-	trap_high_time_pos[horizontal][servo_id] = horizontal;
-	trap_high_time_pos[vertical][servo_id] = vertical;
+	trap_high_time_pos[horizontal][servo_id] = h;
+	trap_high_time_pos[vertical][servo_id] = v;
       }
 }
 
