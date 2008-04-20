@@ -142,11 +142,14 @@ class Arm (Drawable):
 		style = 'arc', outline = '#808080')
 	self.draw_arc ((0, 0), 0.45, start = -5 * pi / 12, extent = 10 * pi / 12,
 		style = 'arc', outline = '#808080')
+	self.draw_arc ((0, 0), 0.25, start = -7 * pi / 12, extent = 14 * pi / 12,
+		style = 'arc', outline = '#808080')
 	self.trans_scale (0.4)
-	self.trans_rotate (self.angle)
-	self.draw_line ((0, 0), (0, -1))
-	self.draw_line ((0, 0), (cos (pi / 6), sin (pi / 6)))
-	self.draw_line ((0, 0), (-cos (pi / 6), sin (pi / 6)))
+	self.trans_rotate (-self.angle)
+	self.draw_line ((0, 0), (0, 1))
+	self.draw_line ((0, 1), (0.3, 1), arrow = LAST, fill = '#808080')
+	self.draw_line ((0, 0), (cos (pi / 6), -sin (pi / 6)))
+	self.draw_line ((0, 0), (-cos (pi / 6), -sin (pi / 6)))
 
 class Servo:
     """Servo motor."""
