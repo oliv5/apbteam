@@ -216,12 +216,12 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	getsamples_start (args[0] << 8, args[1]);
 	break;
 
-	/* Asserv */
+	/* Asserv/arm */
       case c ('a', 1):
 	  {
 	    switch (args[0])
 	      {
-	      case 'f':
+	      case 'w':
 		/* Free motor */
 		asserv_free_motor ();
 		break;
@@ -229,13 +229,17 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		/* Stop motor */
 		asserv_stop_motor ();
 		break;
-	      case 'w':
+	      case 'f':
 		/* Go to the wall */
 		asserv_go_to_the_wall ();
 		break;
-	      case 'd':
+	      case 'F':
 		/* Go to the distributor */
 		asserv_go_to_distributor ();
+		break;
+	      case 'c':
+		/* Close the input hole with the arm */
+		asserv_close_input_hole ();
 		break;
 	      }
 	  }
@@ -244,11 +248,25 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	  {
 	    switch (args[0])
 	      {
-	      case 'r':
+	      case 'y':
 		/* Angular move
 		 *  - 2b: angle of rotation
 		 */
 		asserv_goto_angle (v8_to_v16 (args[1], args[2]));
+		break;
+	      }
+	  }
+	break;
+      case c ('a', 4):
+	  {
+	    switch (args[0])
+	      {
+	      case 'b':
+		/* Move the arm
+		 *  - 2b: offset angle ;
+		 *  - 1b: speed.
+		 */
+		asserv_move_arm (v8_to_v16 (args[1], args[2]), args[3]);
 		break;
 	      }
 	  }
