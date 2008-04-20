@@ -41,6 +41,7 @@
 #include "trap.h"	/* Trap module (trap_* functions) */
 #include "fsm.h"	/* fsm_* */
 #include "giboulee.h"	/* team_color */
+#include "getsamples.h"	/* getsamples_start */
 
 #include "io.h"
 
@@ -204,6 +205,15 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	    eeprom_clear_param ();
 	else
 	    eeprom_save_param ();
+	break;
+
+	/* FSM commands */
+      case c ('g', 2):
+	/* Start the get samples FSM
+	 *   - 1b: the approach angle to face the distributor ;
+	 *   - 1b: how many and where to put collected samples ;
+	 */
+	getsamples_start (args[0], args[1]);
 	break;
 
       default:
