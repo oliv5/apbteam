@@ -131,6 +131,7 @@ simu_pos_update (double dl, double dr, double footing)
 static void
 simu_sensor_update (void)
 {
+    /** Micro-switch sensors. */
     static const double sensors[][2] =
       {
 	  { -70.0, 200.0 },
@@ -153,6 +154,11 @@ simu_sensor_update (void)
 	    PINC |= bit;
 	bit <<= 1;
       }
+    /** Top zero sensor. */
+    double aa = simu_aux0_model.th / simu_aux0_model.m.i_G * 3;
+    if (!(cos (aa) > 0 && fabs (sin (aa)) * 80.0 < 7.5))
+	PINC |= bit;
+    bit <<= 1;
 }
 
 /** Do a simulation step. */

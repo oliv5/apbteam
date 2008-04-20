@@ -30,6 +30,8 @@ struct aux_t
 {
     /** Absolute position. */
     int16_t pos;
+    /** Trajectory mode. */
+    uint8_t traj_mode;
 };
 
 extern struct aux_t aux0;
@@ -39,5 +41,11 @@ aux_pos_update (void);
 
 void
 aux_traj_goto_start (uint16_t pos, uint8_t seq);
+
+void
+aux_traj_find_zero_start (uint8_t seq);
+
+void
+aux_traj_update (void);
 
 #endif /* aux_h */

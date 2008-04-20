@@ -88,6 +88,8 @@ This table describe the list of supported commands by the *asserv* card:
 |         |       |                 |   - position: 5000 steps by round        |
 |         |       |                 |   - speed: in step by cycle (4.44ms)     |
 +---------+-------+-----------------+------------------------------------------+
+|   'B'   |  arm  | None            | Find the zero position of the arm        |
++---------+-------+-----------------+------------------------------------------+
 |   'p'   | Other | See next table  | Change setting values                    |
 +---------+-------+-----------------+------------------------------------------+
 
