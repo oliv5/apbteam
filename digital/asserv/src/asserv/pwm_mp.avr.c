@@ -72,9 +72,9 @@ pwm_mp_send (int16_t pwm1, int16_t pwm2)
     /* Convert to 12 bits. */
     int16_t pwm1c = pwm1 << 1;
     int16_t pwm2c = pwm2 << 1;
-    if (UTILS_ABS (pwm1c) < 0x20)
+    if (UTILS_ABS (pwm1c) < 0x10)
 	pwm1c = 0;
-    if (UTILS_ABS (pwm2c) < 0x20)
+    if (UTILS_ABS (pwm2c) < 0x10)
 	pwm2c = 0;
     /* Send, computing checksum on the way. */
     cks = 0x42;
