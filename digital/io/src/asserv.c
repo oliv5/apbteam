@@ -366,6 +366,26 @@ asserv_goto_angle (int16_t angle)
     asserv_twi_send_command ('y', 2);
 }
 
+/* Go to an absolute position and then an absolute angle. */
+void
+asserv_goto_xya (uint32_t x, uint32_t y, int16_t a)
+{
+    /* Put X as parameter */
+    asserv_twi_buffer_param[0] = v32_to_v8 (x, 2);
+    asserv_twi_buffer_param[1] = v32_to_v8 (x, 1);
+    asserv_twi_buffer_param[2] = v32_to_v8 (x, 0);
+    /* Put distance as parameter */
+    asserv_twi_buffer_param[3] = v32_to_v8 (y, 2);
+    asserv_twi_buffer_param[4] = v32_to_v8 (y, 1);
+    asserv_twi_buffer_param[5] = v32_to_v8 (y, 0);
+    /* Put angle as parameter */
+    asserv_twi_buffer_param[6] = v16_to_v8 (a, 1);
+    asserv_twi_buffer_param[7] = v16_to_v8 (a, 0);
+    /* Send the got to an absolute position and them absolute angle command to
+     * the asserv board */
+    asserv_twi_send_command ('X', 8);
+}
+
 /* Go to the wall (moving backward). */
 void
 asserv_go_to_the_wall (void)

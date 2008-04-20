@@ -185,6 +185,15 @@ void
 asserv_goto_angle (int16_t angle);
 
 /**
+ * Go to an absolute position and then an absolute angle.
+ * @param x the absolute position on the X axis.
+ * @param y the absolute position on the Y axis.
+ * @param a the absolute angle.
+ */
+void
+asserv_goto_xya (uint32_t x, uint32_t y, int16_t a);
+
+/**
  * Go to the wall (moving backward).
  * Move class command.
  */
