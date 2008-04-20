@@ -140,7 +140,8 @@ main_loop (void)
     main_timer[3] = timer_read ();
     /* Stats. */
     if (main_sequence_ack
-	&& state_main.sequence_ack != state_main.sequence_finish
+	&& (state_main.sequence_ack != state_main.sequence_finish
+	    || state_aux0.sequence_ack != state_aux0.sequence_finish)
 	&& !--main_sequence_ack_cpt)
       {
 	proto_send2b ('A', state_main.sequence_finish,
