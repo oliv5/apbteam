@@ -79,6 +79,10 @@ This table describe the list of supported commands by the *asserv* card:
 +---------+-------+-----------------+------------------------------------------+
 |   'y'   | Move  | - a (2b)        | Go to an absolute angle                  |
 +---------+-------+-----------------+------------------------------------------+
+|   'X'   | Move  | - x (3b)        | Go to an absolute position, then an      |
+|         |       | - y (3b)        | absolute angle                           |
+|         |       | - a (2b)        |                                          |
++---------+-------+-----------------+------------------------------------------+
 |   'b'   |  Arm  | - position (2b) | Move the arm to a desired position       |
 |         |       | - speed (1b)    | at a specific speed                      |
 |         |       |                 |   - position: 5000 steps by round        |

@@ -139,7 +139,7 @@ twi_proto_callback (u8 *buf, u8 size)
 	/* Go to the dispenser. */
 	traj_gtd_start (0);
 	break;
-      case c ('x', 0):
+      case c ('x', 6):
 	/* Go to position.
 	 * - 3b: x position.
 	 * - 3b: y position. */
@@ -147,10 +147,20 @@ twi_proto_callback (u8 *buf, u8 size)
 			 v8_to_v32 (buf[5], buf[6], buf[7], 0),
 			 0);
 	break;
-      case c ('y', 0):
+      case c ('y', 2):
 	/* Go to angle.
 	 * - w: angle. */
 	traj_goto_angle_start (v8_to_v32 (0, buf[2], buf[3], 0), 0);
+	break;
+      case c ('X', 8):
+	/* Go to position, then angle.
+	 * - 3b: x position.
+	 * - 3b: y position.
+	 * - w: angle. */
+	traj_goto_xya_start (v8_to_v32 (buf[2], buf[3], buf[4], 0),
+			     v8_to_v32 (buf[5], buf[6], buf[7], 0),
+			     v8_to_v32 (0, buf[8], buf[9], 0),
+			     0);
 	break;
       case c ('b', 3):
 	/* Move the arm.

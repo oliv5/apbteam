@@ -47,4 +47,7 @@ traj_goto_start (uint32_t x, uint32_t y, uint8_t seq);
 void
 traj_goto_angle_start (uint32_t a, uint8_t seq);
 
+void
+traj_goto_xya_start (uint32_t x, uint32_t y, uint32_t a, uint8_t seq);
+
 #endif /* traj_h */

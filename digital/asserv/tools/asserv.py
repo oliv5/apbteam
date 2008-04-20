@@ -145,7 +145,15 @@ class Asserv:
     def goto_angle (self, a):
 	"""Go to angle."""
 	self.seq += 1
-	self.proto.send ('x', 'LB', a * (1 << 24) / 360, self.seq)
+	self.proto.send ('x', 'HB', a * (1 << 16) / 360, self.seq)
+	self.wait (self.finished)
+
+    def goto_xya (self, x, y, a):
+	"""Go to position, then angle."""
+	self.seq += 1
+	self.proto.send ('x', 'LLHB', 256 * x / self.param['scale'],
+		256 * y / self.param['scale'],
+		a * (1 << 16) / 360, self.seq)
 	self.wait (self.finished)
 
     def send_param (self):

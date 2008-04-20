@@ -55,6 +55,8 @@ enum
     TRAJ_GOTO,
     /* Go to angle. */
     TRAJ_GOTO_ANGLE,
+    /* Go to position, then angle. */
+    TRAJ_GOTO_XYA,
     /* Everything done. */
     TRAJ_DONE,
 };
@@ -250,6 +252,39 @@ traj_goto_angle_start (uint32_t a, uint8_t seq)
     state_start (&state_main, MODE_TRAJ, seq);
 }
 
+/** Go to position, then angle mode. */
+static void
+traj_goto_xya (void)
+{
+    int32_t dx = traj_goto_x - postrack_x;
+    int32_t dy = traj_goto_y - postrack_y;
+    if (UTILS_ABS (dx) < ((int32_t) traj_eps) << 8
+	&& UTILS_ABS (dy) < ((int32_t) traj_eps) << 8)
+      {
+	/* Near enough, now do a go to angle. */
+	traj_mode = TRAJ_GOTO_ANGLE;
+	traj_goto_angle ();
+      }
+    else
+      {
+	traj_goto ();
+      }
+}
+
+/** Start go to position, then angle mode (x, y: f24.8, a: f8.24). */
+void
+traj_goto_xya_start (uint32_t x, uint32_t y, uint32_t a, uint8_t seq)
+{
+    traj_mode = TRAJ_GOTO_XYA;
+    traj_goto_x = x;
+    traj_goto_y = y;
+    traj_goto_a = a;
+    speed_theta.use_pos = speed_alpha.use_pos = 1;
+    speed_theta.pos_cons = pos_theta.cons;
+    speed_alpha.pos_cons = pos_alpha.cons;
+    state_start (&state_main, MODE_TRAJ, seq);
+}
+
 /* Compute new speed according the defined trajectory. */
 void
 traj_update (void)
@@ -267,6 +302,9 @@ traj_update (void)
 	break;
       case TRAJ_GOTO_ANGLE:
 	traj_goto_angle ();
+	break;
+      case TRAJ_GOTO_XYA:
+	traj_goto_xya ();
 	break;
       case TRAJ_DONE:
 	break;
