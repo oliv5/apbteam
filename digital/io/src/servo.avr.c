@@ -139,16 +139,8 @@ SIGNAL (SIG_OVERFLOW2)
     static uint16_t servo_high_time_cycle = servo_tic_cyle_;
 
     /* State machine actions */
-    switch (servo_updating_id_)
+    if (servo_updating_id_ >= 0)
       {
-      case 0:
-      case 1:
-      case 2:
-      case 3:
-      case 4:
-      case 5:
-      case 6:
-      case 7:
 	/* Servos motor high state mode */
 
 	/* Set to low state the previous servo motor pin if needed (not for
@@ -168,9 +160,9 @@ SIGNAL (SIG_OVERFLOW2)
 	 * we are at the last one) */
 	if (++servo_updating_id_ == SERVO_NUMBER)
 	    servo_updating_id_ = -1;
-	break;
-
-      case -1:
+      }
+    else
+      {
 	/* Sleeping time mode */
 
 	/* Is it the first we are in this mode? */
@@ -199,6 +191,5 @@ SIGNAL (SIG_OVERFLOW2)
 		servo_high_time_cycle = servo_tic_cyle_;
 	      }
 	  }
-	break;
       }
 }
