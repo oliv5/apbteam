@@ -52,6 +52,11 @@ struct state_t
 {
     /** Current motor control mode. */
     uint8_t mode;
+    /** Control mode variant.
+     * Used for main motors:
+     *  - bit 0: disable theta position control.
+     *  - bit 1: disable alpha position control. */
+    uint8_t variant;
     /** Sequence number of the currently processed command, should be between
      * 1 and 127.  When a command is received on the serial port it is ignored
      * if its sequence number is equal to the current sequence number.  In
@@ -79,8 +84,10 @@ extern struct state_t state_aux0;
 
 /** Start a new command execution. */
 static inline void
-state_start (struct state_t *motor, uint8_t sequence)
+state_start (struct state_t *motor, uint8_t mode, uint8_t sequence)
 {
+    motor->mode = mode;
+    motor->variant = 0;
     motor->sequence = sequence;
     motor->finished = 0;
     motor->blocked = 0;

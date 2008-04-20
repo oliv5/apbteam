@@ -99,8 +99,10 @@ pos_update (void)
 	int16_t pid_theta, pid_alpha;
 	int32_t diff_theta, diff_alpha;
 	/* Update current shaft positions. */
-	pos_theta.cur += counter_left_diff + counter_right_diff;
-	pos_alpha.cur += counter_right_diff - counter_left_diff;
+	if (!(state_main.variant & 1))
+	    pos_theta.cur += counter_left_diff + counter_right_diff;
+	if (!(state_main.variant & 2))
+	    pos_alpha.cur += counter_right_diff - counter_left_diff;
 	/* Compute PID. */
 	diff_theta = pos_theta.cons - pos_theta.cur;
 	diff_alpha = pos_alpha.cons - pos_alpha.cur;

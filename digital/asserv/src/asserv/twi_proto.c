@@ -112,6 +112,7 @@ twi_proto_callback (u8 *buf, u8 size)
       case c ('s', 0):
 	/* Stop (set zero speed). */
 	state_main.mode = MODE_SPEED;
+	state_main.variant = 0;
 	speed_theta.use_pos = speed_alpha.use_pos = 0;
 	speed_theta.cons = 0;
 	speed_alpha.cons = 0;
@@ -119,12 +120,11 @@ twi_proto_callback (u8 *buf, u8 size)
       case c ('l', 3):
 	/* Set linear speed controlled position consign.
 	 * - 3b: theta consign offset. */
-	state_main.mode = MODE_SPEED;
 	speed_theta.use_pos = speed_alpha.use_pos = 1;
 	speed_theta.pos_cons = pos_theta.cons;
 	speed_theta.pos_cons += v8_to_v32 (0, buf[2], buf[3], buf[4]);
 	speed_alpha.pos_cons = pos_alpha.cons;
-	state_start (&state_main, 0);
+	state_start (&state_main, MODE_SPEED, 0);
 	break;
       case c ('a', 2):
 	/* Set angular speed controlled position consign.
@@ -156,13 +156,12 @@ twi_proto_callback (u8 *buf, u8 size)
 	/* Move the arm.
 	 * - w: new position.
 	 * - b: speed. */
-	state_aux0.mode = MODE_SPEED;
 	speed_aux0.use_pos = 1;
 	speed_aux0.pos_cons = pos_aux0.cons;
 	speed_aux0.pos_cons += v8_to_v32 (0, 0, buf[2], buf[3]);
 	speed_aux0.max = buf[4];
 	speed_aux0.slow = buf[4];
-	state_start (&state_aux0, 0);
+	state_start (&state_aux0, MODE_SPEED, 0);
 	break;
       case c ('p', x):
 	/* Set parameters. */

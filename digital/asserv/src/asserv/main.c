@@ -253,6 +253,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	 * - w: theta consign offset.
 	 * - w: alpha consign offset. */
 	state_main.mode = MODE_POS;
+	state_main.variant = 0;
 	pos_theta.cons += v8_to_v16 (args[0], args[1]);
 	pos_alpha.cons += v8_to_v16 (args[2], args[3]);
 	break;
@@ -260,11 +261,13 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	/* Add to auxiliary position consign.
 	 * - w: consign offset. */
 	state_aux0.mode = MODE_POS;
+	state_aux0.variant = 0;
 	pos_aux0.cons += v8_to_v16 (args[0], args[1]);
 	break;
       case c ('s', 0):
 	/* Stop (set zero speed). */
 	state_main.mode = MODE_SPEED;
+	state_main.variant = 0;
 	speed_theta.use_pos = speed_alpha.use_pos = 0;
 	speed_theta.cons = 0;
 	speed_alpha.cons = 0;
@@ -274,6 +277,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	 * - b: theta speed.
 	 * - b: alpha speed. */
 	state_main.mode = MODE_SPEED;
+	state_main.variant = 0;
 	speed_theta.use_pos = speed_alpha.use_pos = 0;
 	speed_theta.cons = args[0] << 8;
 	speed_alpha.cons = args[1] << 8;
@@ -282,6 +286,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	/* Set auxiliary speed.
 	 * - b: speed. */
 	state_aux0.mode = MODE_SPEED;
+	state_aux0.variant = 0;
 	speed_aux0.use_pos = 0;
 	speed_aux0.cons = args[0] << 8;
 	break;
@@ -292,13 +297,12 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	 * - b: sequence number. */
 	if (args[8] == state_main.sequence)
 	    break;
-	state_main.mode = MODE_SPEED;
 	speed_theta.use_pos = speed_alpha.use_pos = 1;
 	speed_theta.pos_cons = pos_theta.cons;
 	speed_theta.pos_cons += v8_to_v32 (args[0], args[1], args[2], args[3]);
 	speed_alpha.pos_cons = pos_alpha.cons;
 	speed_alpha.pos_cons += v8_to_v32 (args[4], args[5], args[6], args[7]);
-	state_start (&state_main, args[8]);
+	state_start (&state_main, MODE_SPEED, args[8]);
 	break;
       case c ('s', 5):
 	/* Set auxiliary speed controlled position consign.
@@ -306,11 +310,10 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	 * - b: sequence number. */
 	if (args[4] == state_aux0.sequence)
 	    break;
-	state_aux0.mode = MODE_SPEED;
 	speed_aux0.use_pos = 1;
 	speed_aux0.pos_cons = pos_aux0.cons;
 	speed_aux0.pos_cons += v8_to_v32 (args[0], args[1], args[2], args[3]);
-	state_start (&state_aux0, args[4]);
+	state_start (&state_aux0, MODE_SPEED, args[4]);
 	break;
       case c ('l', 5):
 	/* Set linear speed controlled position consign.
@@ -318,12 +321,11 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	 * - b: sequence number. */
 	if (args[4] == state_main.sequence)
 	    break;
-	state_main.mode = MODE_SPEED;
 	speed_theta.use_pos = speed_alpha.use_pos = 1;
 	speed_theta.pos_cons = pos_theta.cons;
 	speed_theta.pos_cons += v8_to_v32 (args[0], args[1], args[2], args[3]);
 	speed_alpha.pos_cons = pos_alpha.cons;
-	state_start (&state_main, args[4]);
+	state_start (&state_main, MODE_SPEED, args[4]);
 	break;
       case c ('a', 5):
 	/* Set angular speed controlled position consign.

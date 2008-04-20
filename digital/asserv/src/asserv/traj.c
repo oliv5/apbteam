@@ -81,12 +81,11 @@ traj_angle_offset_start (int32_t angle, uint8_t seq)
     int32_t a = fixed_mul_f824 (angle, 2 * M_PI * (1L << 24));
     uint32_t f = postrack_footing;
     int32_t arc = fixed_mul_f824 (f, a);
-    state_main.mode = MODE_SPEED;
     speed_theta.use_pos = speed_alpha.use_pos = 1;
     speed_theta.pos_cons = pos_theta.cons;
     speed_alpha.pos_cons = pos_alpha.cons;
     speed_alpha.pos_cons += arc;
-    state_start (&state_main, seq);
+    state_start (&state_main, MODE_SPEED, seq);
 }
 
 /** Go to the wall mode. */
@@ -127,9 +126,8 @@ traj_ftw (void)
 void
 traj_ftw_start (uint8_t seq)
 {
-    state_main.mode = MODE_TRAJ;
     traj_mode = TRAJ_FTW;
-    state_start (&state_main, seq);
+    state_start (&state_main, MODE_TRAJ, seq);
 }
 
 /** Go to the dispenser mode. */
@@ -160,9 +158,9 @@ traj_gtd (void)
 void
 traj_gtd_start (uint8_t seq)
 {
-    state_main.mode = MODE_TRAJ;
     traj_mode = TRAJ_GTD;
-    state_start (&state_main, seq);
+    state_start (&state_main, MODE_TRAJ, seq);
+    state_main.variant = 2;
 }
 
 /** Go to position mode. */
@@ -207,14 +205,13 @@ traj_goto (void)
 void
 traj_goto_start (uint32_t x, uint32_t y, uint8_t seq)
 {
-    state_main.mode = MODE_TRAJ;
     traj_mode = TRAJ_GOTO;
     traj_goto_x = x;
     traj_goto_y = y;
     speed_theta.use_pos = speed_alpha.use_pos = 1;
     speed_theta.pos_cons = pos_theta.cons;
     speed_alpha.pos_cons = pos_alpha.cons;
-    state_start (&state_main, seq);
+    state_start (&state_main, MODE_TRAJ, seq);
 }
 
 /** Go to angle mode. */
@@ -245,13 +242,12 @@ traj_goto_angle (void)
 void
 traj_goto_angle_start (uint32_t a, uint8_t seq)
 {
-    state_main.mode = MODE_TRAJ;
     traj_mode = TRAJ_GOTO_ANGLE;
     traj_goto_a = a;
     speed_theta.use_pos = speed_alpha.use_pos = 1;
     speed_theta.pos_cons = pos_theta.cons;
     speed_alpha.pos_cons = pos_alpha.cons;
-    state_start (&state_main, seq);
+    state_start (&state_main, MODE_TRAJ, seq);
 }
 
 /* Compute new speed according the defined trajectory. */
