@@ -173,10 +173,10 @@ asserv_twi_send_command (uint8_t command, uint8_t length)
     if (!asserv_last_cmd_ack ())
 	return 1;
 
-    /* Put the command into the buffer */
-    asserv_twi_buffer[0] = command;
     /* Put the sequence number */
-    asserv_twi_buffer[1] = ++asserv_twi_seq;
+    asserv_twi_buffer[0] = ++asserv_twi_seq;
+    /* Put the command into the buffer */
+    asserv_twi_buffer[1] = command;
 
     /* Send the prepared command */
     return asserv_twi_send (length + 2);
