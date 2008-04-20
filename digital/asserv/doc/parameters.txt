@@ -1,0 +1,81 @@
+==================================
+ How to measure robot parameters?
+==================================
+:Author: Ni
+
+Scaling factor
+==============
+
+The scaling factor will be used to convert between asserv steps and
+millimeters.  We will look at the left counter as this one is not corrected.
+
+Select a flat, clean and long (2 to 10 meters) surface, then position the
+robot precisely on a starting line.  Draw a parallel line at the other end and
+measure distance between the two lines.
+
+Now, reset the robot counters and start monitoring left counter value.  Drag
+the robot as linearly as possible until it reaches the final line.  While
+doing this, remember any counter overflow or try to calculate how many
+overflow is expected (with a wheel diameter estimation).
+
+Position precisely the robot on the finish line and write down the left
+counter value.
+
+The scaling factor is given by::
+
+  distance (mm) / augmented_counter
+
+where ``augmented_counter`` is the counter value prefixed with the number of
+overflows.
+
+Keep the right counter value as well as it can be used for the next measure.
+
+Right wheel correction
+======================
+
+As wheels can not be exactly the same, we will introduce a correction factor.
+
+Do the same measure as for the scaling factor, but we need the left and right
+counters values.
+
+The correction factor is given by::
+
+  left_augmented_counter / right_augmented_counter * 2^24
+
+The ``2^24`` factor is used to have a 24 bit floating point number.
+
+Now, it is time to check your measures. Ask the robot to drive a distance and
+check it.
+
+Encoders footing
+================
+
+This is the distance between the encoders wheels, used to compute robot angle.
+
+Place the robot precisely on a line.
+
+Now, reset the robot counters and start monitoring counters values.  Make a
+large number of turns (about 10) and position the robot precisely on its
+starting line.  While doing this monitor counting direction, and any counters
+overflow or underflow.
+
+Write down the counters values and the number of overflow.
+
+A counter was counting backward, so you will have to handle negatives numbers.
+
+For example, if the current counters values are 0x1234 and 0x2345, if the
+first counter was counting upward and the second one backward, and each
+counter has overflowed 3 times, this gives, in the 24 bit two's complement
+notation, 0x031234 and 0xfc2345 (0xfc = 0xff - 3).  The second number
+represents -0x03dcbb (0x1000000 - 0xfc2345).
+
+Now make the difference between the two augmented counters values, or the sum
+of their absolute values, this will give the total distance in steps travelled
+by the two encoders to do the number of turns.
+
+The encoders footing is given by::
+
+  difference / 2 / pi
+
+The ``2`` divider is there because we summed the distance traveled by both
+encoders.  Then we divide by ``pi`` to get the diameter.
