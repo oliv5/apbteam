@@ -179,10 +179,9 @@ main_loop (void)
 #ifdef HOST
     if (main_simu && !--main_simu_cpt)
       {
-	proto_send3w ('Y', (uint16_t) simu_pos_x,
+	proto_send3w ('H', (uint16_t) simu_pos_x,
 		      (uint16_t) simu_pos_y,
 		      (uint16_t) (simu_pos_a * 1024));
-	proto_send3b ('Z', traj_mode, 0, 0);
 	main_simu_cpt = main_simu;
       }
 #endif /* HOST */
@@ -434,7 +433,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	main_print_pin_cpt = main_print_pin = args[0];
 	break;
 #ifdef HOST
-      case c ('Y', 1):
+      case c ('H', 1):
 	/* Simulation data. */
 	main_simu_cpt = main_simu = args[0];
 	break;
@@ -586,7 +585,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	      }
 	  }
 #ifdef HOST
-	else if (cmd == 'y')
+	else if (cmd == 'h')
 	  {
 	    switch (c (args[0], size))
 	      {
