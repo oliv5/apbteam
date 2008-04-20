@@ -33,6 +33,8 @@
 #include "giboulee.h"	/* BOT_ */
 #include "playground.h"	/* PG_* */
 
+#include "io.h"
+
 /**
  * The approach angle to face the distributor.
  */
@@ -42,6 +44,36 @@ extern int16_t approach_angle_;
  * The samples bit field to collect.
  */
 extern uint8_t sample_bitfield_;
+
+/**
+ * Configure the classifier (using the trap and the internal bit field) for
+ * the first bit set to 1.
+ * After the configuring the classifier, the bit will be reset to 0 to use the
+ * next one when calling this function again.
+ */
+void
+getsamples_configure_classifier (void);
+
+/* Configure the classifier (using the trap and the internal bit field) for the first bit set to 1. */
+void
+getsamples_configure_classifier (void)
+{
+    uint8_t trap_num;
+    /* Go through all the bits of the sample bit field */
+    for (trap_num = 0; trap_num < trap_count; trap_num++)
+      {
+	/* Is the bit set? */
+	if (bit_is_set (sample_bitfield_, trap_num))
+	  {
+	    /* Configure the classifier */
+	    trap_setup_path_to_box (trap_num);
+	    /* Reset this bit */
+	    sample_bitfield_ &= ~_BV (trap_num);
+	    /* Stop here */
+	    return;
+	  }
+      }
+}
 
 /*
  * FACE_DISTRIBUTOR =bot_move_succeed=>

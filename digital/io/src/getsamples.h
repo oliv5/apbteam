@@ -25,6 +25,8 @@
  *
  * }}} */
 
+#include "common.h"
+
 /**
  * Start the get samples FSM.
  * @param approach_angle the angle of approach to face the distributor
@@ -36,14 +38,5 @@
  */
 void
 getsamples_start (int16_t approach_angle, uint8_t sample_bitfield);
-
-/**
- * Configure the classifier (using the trap and the internal bit field) for
- * the first bit set to 1.
- * After the configuring the classifier, the bit will be reset to 0 to use the
- * next one when calling this function again.
- */
-void
-getsamples_configure_classifier (void);
 
 #endif /* getsamples_h */

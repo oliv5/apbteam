@@ -22,12 +22,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
-#include "common.h"
 #include "getsamples.h"
 #include "fsm.h"
-#include "trap.h"
-
-#include "io.h"
 
 /**
  * The approach angle to face the distributor.
@@ -50,25 +46,4 @@ getsamples_start (int16_t approach_angle, uint8_t sample_bitfield)
     /* Start the get samples FSM */
     fsm_init (&getsamples_fsm);
     fsm_handle_event (&getsamples_fsm, GETSAMPLES_EVENT_start);
-}
-
-/* Configure the classifier (using the trap and the internal bit field) for the first bit set to 1. */
-void
-getsamples_configure_classifier (void)
-{
-    uint8_t trap_num;
-    /* Go through all the bits of the sample bit field */
-    for (trap_num = 0; trap_num < trap_count; trap_num++)
-      {
-	/* Is the bit set? */
-	if (bit_is_set (sample_bitfield_, trap_num))
-	  {
-	    /* Configure the classifier */
-	    trap_setup_path_to_box (trap_num);
-	    /* Reset this bit */
-	    sample_bitfield_ &= ~_BV (trap_num);
-	    /* Stop here */
-	    return;
-	  }
-      }
 }
