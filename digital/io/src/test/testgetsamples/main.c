@@ -26,7 +26,6 @@
 
 #include "../../fsm.h"
 #include "../../getsamples.h"
-#include "../../top.h"
 #include "../../playground.h"
 
 #include "modules/utils/utils.h"
@@ -71,25 +70,21 @@ getsamples_print_test (fsm_t *getsamples)
     printf ("\n");
 }
 
+/* Yerk export */
+enum team_color_e bot_color = RED_TEAM;
+
 int
 main (void)
 {
-    /* Yerk export */
-    uint8_t our_color = 1;
-
     /* Configure the get sample FSM */
     struct getsamples_data_t data;
     /* Go to our distributor */
-    data.distributor_x = PG_DISTRIBUTOR_SAMPLE_OUR_X;
-    data.distributor_y = PG_DISTRIBUTOR_SAMPLE_OUR_Y;
-    data.distributor_angle = PG_DISTRIBUTOR_SAMPLE_OUR_A;
+    data.approach_angle = PG_DISTRIBUTOR_SAMPLE_OUR_A;
     data.sample_bitfield = 0;
     /* We want to put the sample into the 0, 2 and 4 box */
     data.sample_bitfield |= _BV(0);
     data.sample_bitfield |= _BV(2);
     data.sample_bitfield |= _BV(4);
-    /* Dirty hack when finishing the FSM (event returns to the top FSM) */
-    data.event = 1;
 
     /* Print initial state */
     getsamples_print_test (&getsamples_fsm);
@@ -98,13 +93,7 @@ main (void)
     /* Print first state */
     getsamples_print_test (&getsamples_fsm);
 
-    /* The move to the front of the distributor failed */
-    /* TODO: manage it! */
-//     fsm_handle_event (&getsamples_fsm,
-// 		      GETSAMPLES_EVENT_bot_move_failed);
-//     getsamples_print_test (&getsamples_fsm);
-    
-    /* We are in front of the distributor */
+    /* We are facing the distributor */
     fsm_handle_event (&getsamples_fsm,
 		      GETSAMPLES_EVENT_bot_move_succeed);
     getsamples_print_test (&getsamples_fsm);
@@ -114,7 +103,7 @@ main (void)
 		      GETSAMPLES_EVENT_arm_move_succeed);
     getsamples_print_test (&getsamples_fsm);
 
-    /* The bot is now collated to the distributor */
+    /* The bot is now in contact with to the distributor */
     fsm_handle_event (&getsamples_fsm,
 		      GETSAMPLES_EVENT_bot_move_succeed);
     getsamples_print_test (&getsamples_fsm);
@@ -125,9 +114,10 @@ main (void)
 	fsm_handle_event (&getsamples_fsm,
 			  GETSAMPLES_EVENT_arm_pass_noted_position);
 	getsamples_print_test (&getsamples_fsm);
-      } while (getsamples_data.sample_bitfield);
+      } while (data.sample_bitfield);
 
-    /* We need to do it one time again */
+    /* We need to do it one time again to make the bot move away from the
+     * distributor */
     fsm_handle_event (&getsamples_fsm,
 		      GETSAMPLES_EVENT_arm_pass_noted_position);
     getsamples_print_test (&getsamples_fsm);
