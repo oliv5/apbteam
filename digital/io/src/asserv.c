@@ -443,8 +443,9 @@ asserv_set_x_position (int32_t x)
     asserv_twi_buffer_param[1] = v32_to_v8 (x, 2);
     asserv_twi_buffer_param[2] = v32_to_v8 (x, 1);
     asserv_twi_buffer_param[3] = v32_to_v8 (x, 0);
+    asserv_twi_buffer_param[4] = 0;
     /* Send the set X position command to the asserv board */
-    asserv_twi_send_command ('p', 4);
+    asserv_twi_send_command ('p', 5);
 }
 
 /* Set current Y position. */
@@ -457,8 +458,9 @@ asserv_set_y_position (int32_t y)
     asserv_twi_buffer_param[1] = v32_to_v8 (y, 2);
     asserv_twi_buffer_param[2] = v32_to_v8 (y, 1);
     asserv_twi_buffer_param[3] = v32_to_v8 (y, 0);
+    asserv_twi_buffer_param[4] = 0;
     /* Send the set Y position command to the asserv board */
-    asserv_twi_send_command ('p', 4);
+    asserv_twi_send_command ('p', 5);
 }
 
 /* Set current angular position. */
@@ -470,8 +472,9 @@ asserv_set_angle_position (int16_t angle)
     /* Put angle position as parameter */
     asserv_twi_buffer_param[1] = v32_to_v8 (angle, 1);
     asserv_twi_buffer_param[2] = v32_to_v8 (angle, 0);
+    asserv_twi_buffer_param[3] = 0;
     /* Send the set angular position command to the asserv board */
-    asserv_twi_send_command ('p', 3);
+    asserv_twi_send_command ('p', 4);
 }
 
 /* Set speeds of movements. */
@@ -486,8 +489,9 @@ asserv_set_speed (uint8_t linear_high, uint8_t angular_high,
     asserv_twi_buffer_param[2] = angular_high;
     asserv_twi_buffer_param[3] = linear_low;
     asserv_twi_buffer_param[4] = angular_low;
+    asserv_twi_buffer_param[5] = 0;
     /* Send the set speed of movements command to the asserv board */
-    asserv_twi_send_command ('p', 5);
+    asserv_twi_send_command ('p', 6);
 }
 
 /* Go to an absolute position in (X, Y). */
