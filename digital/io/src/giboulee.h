@@ -45,7 +45,7 @@
 /**
  * Number of step to make a third of a round.
  */
-#define BOT_ARM_THIRD_ROUND BOT_ARM_STEP_ROUND / 3
+#define BOT_ARM_THIRD_ROUND (BOT_ARM_STEP_ROUND / 3)
 
 /**
  * The number of steps to do to open the input hole when the arm is closing
