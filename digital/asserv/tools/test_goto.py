@@ -9,9 +9,11 @@ import random
 
 if sys.argv[1] == '!':
     io = popen_io.PopenIO (sys.argv[2:])
+    init = init.host
 else:
     io = serial.Serial (sys.argv[1])
-a = Asserv (io, **init.host)
+    init = init.target
+a = Asserv (io, **init)
 for i in xrange (10):
     x = random.randrange (2000)
     y = random.randrange (1100)
