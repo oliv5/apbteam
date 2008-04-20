@@ -40,6 +40,7 @@
 #include "speed.h"
 #include "postrack.h"
 #include "traj.h"
+#include "aux.h"
 
 #include "twi_proto.h"
 #include "eeprom.h"
@@ -132,6 +133,7 @@ main_loop (void)
     main_timer[2] = timer_read ();
     /* Compute absolute position. */
     postrack_update ();
+    aux_pos_update ();
     /* Compute trajectory. */
     if (state_main.mode >= MODE_TRAJ)
 	traj_update ();
@@ -160,7 +162,7 @@ main_loop (void)
       }
     if (main_stat_aux_pos && !--main_stat_aux_pos_cpt)
       {
-	proto_send1w ('Z', pos_aux0.cur);
+	proto_send1w ('Y', aux0.pos);
 	main_stat_aux_pos_cpt = main_stat_aux_pos;
       }
     if (main_stat_speed && !--main_stat_speed_cpt)
@@ -383,6 +385,14 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 			     v8_to_v32 (0, args[8], args[9], 0),
 			     args[10]);
 	break;
+      case c ('y', 3):
+	/* Auxiliary go to position.
+	 * - w: pos, i16.
+	 * - b: sequence number. */
+	if (args[2] == state_aux0.sequence)
+	    break;
+	aux_traj_goto_start (v8_to_v16 (args[0], args[1]), args[2]);
+	break;
       case c ('a', 2):
 	/* Set both acknoledge.
 	 * - b: main ack sequence number.
@@ -408,7 +418,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	/* Position stats. */
 	main_stat_postrack_cpt = main_stat_postrack = args[0];
 	break;
-      case c ('Z', 1):
+      case c ('Y', 1):
 	/* Auxiliary position stats. */
 	main_stat_aux_pos_cpt = main_stat_aux_pos = args[0];
 	break;
