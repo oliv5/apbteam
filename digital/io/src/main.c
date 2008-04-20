@@ -216,6 +216,58 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	getsamples_start (args[0], args[1]);
 	break;
 
+	/* Asserv */
+      case c ('a', 1):
+	  {
+	    switch (args[0])
+	      {
+	      case 'f':
+		/* Free motor */
+		asserv_free_motor ();
+		break;
+	      case 's':
+		/* Stop motor */
+		asserv_stop_motor ();
+		break;
+	      case 'w':
+		/* Go to the wall */
+		asserv_go_to_the_wall ();
+		break;
+	      case 'd':
+		/* Go to the distributor */
+		asserv_go_to_distributor ();
+		break;
+	      }
+	  }
+	break;
+      case c ('a', 3):
+	  {
+	    switch (args[0])
+	      {
+	      case 'r':
+		/* Angular move
+		 *  - 2b: angle of rotation
+		 */
+		asserv_goto_angle (v8_to_v16 (args[1], args[2]));
+		break;
+	      }
+	  }
+	break;
+      case c ('a', 5):
+	  {
+	    switch (args[0])
+	      {
+	      case 'l':
+		/* Linear move
+		 *  - 4b: distance to move.
+		 */
+		asserv_move_linearly (v8_to_v32 (args[1], args[2], args[3],
+						 args[4]));
+		break;
+	      }
+	  }
+	break;
+
       default:
 	/* Unknown commands */
 	proto_send0 ('?');
