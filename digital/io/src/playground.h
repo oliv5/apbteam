@@ -65,7 +65,7 @@
  */
 #define PG_X_START (PG_X_VALUE_COMPUTING (200))
 #define PG_Y_START (PG_HEIGHT - 70)
-#define PG_A_START (BOT_ANGLE_DEGREE * 90)
+#define PG_A_START (-90 * BOT_ANGLE_DEGREE)
 
 /**
  * The distance to remove from the real position of the distributor before
@@ -81,7 +81,7 @@
     (PG_X_VALUE_COMPUTING (0 + PG_DISTANCE_DISTRIBUTOR))
 #define PG_DISTRIBUTOR_ICE_OUR_Y 1350
 #define PG_DISTRIBUTOR_ICE_OUR_A \
-    (PG_A_VALUE_COMPUTING (BOT_ANGLE_DEGREE * 180))
+    (PG_A_VALUE_COMPUTING (180 * BOT_ANGLE_DEGREE))
 
 /**
  * The position of adverse ice distributor minus the distance to remove (only
@@ -100,13 +100,13 @@
 #define PG_DISTRIBUTOR_SAMPLE_OUR_X \
     (PG_X_VALUE_COMPUTING (700))
 #define PG_DISTRIBUTOR_SAMPLE_OUR_Y (PG_HEIGHT - PG_DISTANCE_DISTRIBUTOR)
-#define PG_DISTRIBUTOR_SAMPLE_OUR_A (BOT_ANGLE_DEGREE * 270)
+#define PG_DISTRIBUTOR_SAMPLE_OUR_A (90 * BOT_ANGLE_DEGREE)
 
 /**
  * The position of the gutter.
  */
 #define PG_GUTTER_X (PG_X_VALUE_COMPUTING (2250))
 #define PG_GUTTER_Y (100)
-#define PG_GUTTER_A (BOT_ANGLE_DEGREE * 90)
+#define PG_GUTTER_A (-90 * BOT_ANGLE_DEGREE)
 
 #endif // playground_h
