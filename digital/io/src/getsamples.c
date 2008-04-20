@@ -26,22 +26,17 @@
 #include "fsm.h"
 
 /**
- * The approach angle to face the distributor.
+ * 'Private' get samples data used internaly by the FSM.
  */
-int16_t approach_angle_;
-
-/**
- * The samples bit field to collect.
- */
-uint8_t sample_bitfield_;
+struct getsamples_data_t getsamples_data_;
 
 /* Start the get samples FSM. */
 void
 getsamples_start (int16_t approach_angle, uint8_t sample_bitfield)
 {
     /* Set parameters */
-    approach_angle_ = approach_angle;
-    sample_bitfield_ = sample_bitfield;
+    getsamples_data_.approach_angle = approach_angle;
+    getsamples_data_.sample_bitfield = sample_bitfield;
 
     /* Start the get samples FSM */
     fsm_init (&getsamples_fsm);

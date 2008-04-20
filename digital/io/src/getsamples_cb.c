@@ -36,14 +36,9 @@
 #include "io.h"
 
 /**
- * The approach angle to face the distributor.
+ * 'Private' get samples data used internaly by the FSM.
  */
-extern int16_t approach_angle_;
-
-/**
- * The samples bit field to collect.
- */
-extern uint8_t sample_bitfield_;
+extern struct getsamples_data_t getsamples_data_;
 
 /**
  * Configure the classifier (using the trap and the internal bit field) for
@@ -63,12 +58,12 @@ getsamples_configure_classifier (void)
     for (trap_num = 0; trap_num < trap_count; trap_num++)
       {
 	/* Is the bit set? */
-	if (bit_is_set (sample_bitfield_, trap_num))
+	if (bit_is_set (getsamples_data_.sample_bitfield, trap_num))
 	  {
 	    /* Configure the classifier */
 	    trap_setup_path_to_box (trap_num);
 	    /* Reset this bit */
-	    sample_bitfield_ &= ~_BV (trap_num);
+	    getsamples_data_.sample_bitfield &= ~_BV (trap_num);
 	    /* Stop here */
 	    return;
 	  }
@@ -126,7 +121,7 @@ fsm_branch_t
 getsamples__TAKE_SAMPLES__arm_pass_noted_position (void)
 {
     /* More samples? */
-    if (sample_bitfield_)
+    if (getsamples_data_.sample_bitfield)
       {
 	/* Compute notifier */
 	uint16_t arm_current_position = asserv_get_arm_position ();
@@ -157,7 +152,7 @@ fsm_branch_t
 getsamples__IDLE__start (void)
 {
     /* Face the distributor */
-    asserv_goto_angle (approach_angle_);
+    asserv_goto_angle (getsamples_data_.approach_angle);
     return getsamples_next (IDLE, start);
 }
 
