@@ -73,23 +73,24 @@ getsamples_print_test (fsm_t *getsamples)
 /* Yerk export */
 enum team_color_e bot_color = RED_TEAM;
 
+extern uint8_t sample_bitfield_;
+
 int
 main (void)
 {
     /* Configure the get sample FSM */
-    struct getsamples_data_t data;
     /* Go to our distributor */
-    data.approach_angle = PG_DISTRIBUTOR_SAMPLE_OUR_A;
-    data.sample_bitfield = 0;
+    int16_t approach_angle = PG_DISTRIBUTOR_SAMPLE_OUR_A;
+    uint8_t sample_bitfield = 0;
     /* We want to put the sample into the 0, 2 and 4 box */
-    data.sample_bitfield |= _BV(0);
-    data.sample_bitfield |= _BV(2);
-    data.sample_bitfield |= _BV(4);
+    sample_bitfield |= _BV(0);
+    sample_bitfield |= _BV(2);
+    sample_bitfield |= _BV(4);
 
     /* Print initial state */
     getsamples_print_test (&getsamples_fsm);
     /* Configure and initialize the get sample FSM */
-    getsamples_start (data);
+    getsamples_start (approach_angle, sample_bitfield);
     /* Print first state */
     getsamples_print_test (&getsamples_fsm);
 
@@ -114,7 +115,7 @@ main (void)
 	fsm_handle_event (&getsamples_fsm,
 			  GETSAMPLES_EVENT_arm_pass_noted_position);
 	getsamples_print_test (&getsamples_fsm);
-      } while (data.sample_bitfield);
+      } while (sample_bitfield_);
 
     /* We need to do it one time again to make the bot move away from the
      * distributor */
@@ -202,6 +203,24 @@ void
 asserv_goto_angle (int16_t angle)
 {
     printf ("[asserv] Move the bot to face %X.\n", angle);
+}
+
+void
+asserv_set_x_position (int32_t x)
+{
+    printf ("[asserv] Set X position to %d.\n", x);
+}
+
+void
+asserv_set_y_position (int32_t y)
+{
+    printf ("[asserv] Set Y position to %d.\n", y);
+}
+
+void
+asserv_set_angle_position (int16_t a)
+{
+    printf ("[asserv] Set angle position to %d.\n", a);
 }
 
 void
