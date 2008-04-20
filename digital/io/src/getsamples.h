@@ -26,28 +26,16 @@
  * }}} */
 
 /**
- * Get samples FSM associated data.
- */
-struct getsamples_data_t
-{
-    /**
-     * The angle to approach the distributor.
-     */
-    int16_t approach_angle;
-    /**
-     * Bit field to indicate where to put the sample.
-     * If bit 0 is set to 1, a sample will be put into the out_right_box. If
-     * set to 0, the out_right_box will not be used to store a sample.
-     */
-    uint8_t sample_bitfield;
-};
-
-/**
  * Start the get samples FSM.
- * @param data get sample data initial configuration.
+ * @param approach_angle the angle of approach to face the distributor
+ * @param sample_bitfield a bit-field to indicate where to put the collected
+ * samples. For example, if the bit 0 is set to 1, the sample took will be put
+ * into the box id 0 (out_right_box). Otherwise, if this bit is set to 0, the
+ * out_right box will not be use to store the sample. This parameter is also
+ * used to know the number of samples to collect from the distributor.
  */
 void
-getsamples_start (struct getsamples_data_t data);
+getsamples_start (int16_t approach_angle, uint8_t sample_bitfield);
 
 /**
  * Configure the classifier (using the trap and the internal bit field) for

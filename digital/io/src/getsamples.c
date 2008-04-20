@@ -30,17 +30,22 @@
 #include "io.h"
 
 /**
- * Get samples shared data.
+ * The approach angle to face the distributor.
  */
-struct getsamples_data_t getsamples_data_;
+int16_t approach_angle_;
+
+/**
+ * The samples bit field to collect.
+ */
+uint8_t sample_bitfield_;
 
 /* Start the get samples FSM. */
 void
-getsamples_start (struct getsamples_data_t data)
+getsamples_start (int16_t approach_angle, uint8_t sample_bitfield)
 {
     /* Set parameters */
-    getsamples_data_.approach_angle = data.approach_angle;
-    getsamples_data_.sample_bitfield = data.sample_bitfield;
+    approach_angle_ = approach_angle;
+    sample_bitfield_ = sample_bitfield;
 
     /* Start the get samples FSM */
     fsm_init (&getsamples_fsm);
@@ -56,12 +61,12 @@ getsamples_configure_classifier (void)
     for (trap_num = 0; trap_num < trap_count; trap_num++)
       {
 	/* Is the bit set? */
-	if (bit_is_set (getsamples_data_.sample_bitfield, trap_num))
+	if (bit_is_set (sample_bitfield_, trap_num))
 	  {
 	    /* Configure the classifier */
 	    trap_setup_path_to_box (trap_num);
 	    /* Reset this bit */
-	    getsamples_data_.sample_bitfield &= ~_BV (trap_num);
+	    sample_bitfield_ &= ~_BV (trap_num);
 	    /* Stop here */
 	    return;
 	  }

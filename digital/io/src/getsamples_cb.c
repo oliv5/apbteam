@@ -34,9 +34,14 @@
 #include "playground.h"	/* PG_* */
 
 /**
- * Get samples shared data.
+ * The approach angle to face the distributor.
  */
-extern struct getsamples_data_t getsamples_data_;
+extern int16_t approach_angle_;
+
+/**
+ * The samples bit field to collect.
+ */
+extern uint8_t sample_bitfield_;
 
 /*
  * FACE_DISTRIBUTOR =bot_move_succeed=>
@@ -89,7 +94,7 @@ fsm_branch_t
 getsamples__TAKE_SAMPLES__arm_pass_noted_position (void)
 {
     /* More samples? */
-    if (getsamples_data_.sample_bitfield)
+    if (sample_bitfield_)
       {
 	/* Compute notifier */
 	uint16_t arm_current_position = asserv_get_arm_position ();
@@ -120,7 +125,7 @@ fsm_branch_t
 getsamples__IDLE__start (void)
 {
     /* Face the distributor */
-    asserv_goto_angle (getsamples_data_.approach_angle);
+    asserv_goto_angle (approach_angle_);
     return getsamples_next (IDLE, start);
 }
 

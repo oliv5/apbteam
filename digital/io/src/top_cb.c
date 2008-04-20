@@ -102,11 +102,8 @@ fsm_branch_t
 top__GO_TO_ADVERSE_ICE_DISTRIBUTOR__move_fsm_finished (void)
 {
     /* Start the get samples FSM with the correct angle */
-    struct getsamples_data_t data;
     /* TODO: where to put the ice?! */
-    data.sample_bitfield = 0;
-    data.approach_angle = PG_DISTRIBUTOR_ICE_ADVERSE_A;
-    getsamples_start (data);
+    getsamples_start (PG_DISTRIBUTOR_ICE_ADVERSE_A, 0);
     return top_next (GO_TO_ADVERSE_ICE_DISTRIBUTOR, move_fsm_finished);
 }
 
@@ -119,11 +116,8 @@ fsm_branch_t
 top__GO_TO_OUR_ICE_DISTRIBUTOR__move_fsm_finished (void)
 {
     /* Start the get samples FSM with the correct angle */
-    struct getsamples_data_t data;
     /* TODO: where to put the ice?! */
-    data.sample_bitfield = 0;
-    data.approach_angle = PG_DISTRIBUTOR_ICE_OUR_A;
-    getsamples_start (data);
+    getsamples_start (PG_DISTRIBUTOR_ICE_OUR_A, 0);
     return top_next (GO_TO_OUR_ICE_DISTRIBUTOR, move_fsm_finished);
 }
 
@@ -136,11 +130,8 @@ fsm_branch_t
 top__GO_TO_SAMPLE_DISTRIBUTOR__move_fsm_finished (void)
 {
     /* Start the get samples FSM with the correct angle */
-    struct getsamples_data_t data;
     /* TODO: where to put the samples?! */
-    data.sample_bitfield = 0;
-    data.approach_angle = PG_DISTRIBUTOR_SAMPLE_OUR_A;
-    getsamples_start (data);
+    getsamples_start (PG_DISTRIBUTOR_SAMPLE_OUR_A, 0);
     return top_next (GO_TO_SAMPLE_DISTRIBUTOR, move_fsm_finished);
 }
 
