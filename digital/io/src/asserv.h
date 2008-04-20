@@ -177,7 +177,7 @@ void
 asserv_move_angularly (int16_t angle);
 
 /**
- * Move the bot to a specific angle.
+ * Make the bot turn of an absolute angle.
  * The angle is absolute and not a difference with the current one.
  * @param a the absolute angle in degrees
  */
@@ -256,10 +256,9 @@ asserv_set_speed (uint8_t linear_high, uint8_t angular_high,
 		  uint8_t linear_low, uint8_t angular_low);
 
 /**
- * Go to the position provided in parameters. Those points shall be in the
- * table.
- * @param  x  the x position on the table.
- * @param  y  the y position on the table.
+ * Go to an absolute position in (X, Y).
+ * @param x the x position on the table.
+ * @param y the y position on the table.
  */
 void
 asserv_goto (uint32_t x, uint32_t y);

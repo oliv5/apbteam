@@ -355,14 +355,15 @@ asserv_move_angularly (int16_t angle)
     asserv_twi_send_command ('a', 2);
 }
 
-/* Move the bot to a specific angle. */
+/* Make the bot turn of an absolute angle. */
 void
 asserv_goto_angle (int16_t angle)
 {
     /* Put angle as parameter */
     asserv_twi_buffer_param[0] = v16_to_v8 (angle, 1);
     asserv_twi_buffer_param[1] = v16_to_v8 (angle, 0);
-    /* TODO */
+    /* Sent the got to an absolute angle command to the asserv board */
+    asserv_twi_send_command ('y', 2);
 }
 
 /* Go to the wall (moving backward). */
@@ -469,15 +470,20 @@ asserv_set_speed (uint8_t linear_high, uint8_t angular_high,
     asserv_twi_send_command ('p', 5);
 }
 
-/**
- * Go to the position provided in parameters. Those points shall be in the
- * table.
- * @param  x  the x position on the table.
- * @param  y  the y position on the table.
- */
+/* Go to an absolute position in (X, Y). */
 void
 asserv_goto (uint32_t x, uint32_t y)
 {
+    /* Put X as parameter */
+    asserv_twi_buffer_param[0] = v32_to_v8 (x, 2);
+    asserv_twi_buffer_param[1] = v32_to_v8 (x, 1);
+    asserv_twi_buffer_param[2] = v32_to_v8 (x, 0);
+    /* Put distance as parameter */
+    asserv_twi_buffer_param[3] = v32_to_v8 (y, 2);
+    asserv_twi_buffer_param[4] = v32_to_v8 (y, 1);
+    asserv_twi_buffer_param[5] = v32_to_v8 (y, 0);
+    /* Send the got to an absolute position command to the asserv board */
+    asserv_twi_send_command ('x', 6);
 }
 
 /* Notify get samples FSM when the arm reach desired position. */
