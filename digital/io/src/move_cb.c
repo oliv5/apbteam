@@ -11,10 +11,6 @@
 #include "move.h"
 #include "asserv.h"
 
-
-/* if the left border is under 500 mm of the actual position do not go there. */
-#define MOVE_BORDER_LEVEL 200
-
 /*
  * IDLE =start=>
  *  => DESIRED_POSITION
@@ -35,19 +31,7 @@ move__IDLE__start (void)
 fsm_branch_t
 move__MOVE_ON_RIGHT__failed (void)
 {
-    asserv_position_t pos;
-    asserv_position_t new_pos;
-
-    asserv_get_position (&pos);
-    new_pos.x = pos.x - MOVE_BORDER_LEVEL;
-    new_pos.y = pos.y;
-    new_pos.a = pos.a;
-
-    if (move_can_go_on_left_or_right (pos, new_pos))
-      {
-	asserv_goto (new_pos.x, new_pos.y);
-      }
-
+    move_go_to_right (); 
     return move_next (MOVE_ON_RIGHT, failed);
 }
 
@@ -71,19 +55,7 @@ move__MOVE_ON_RIGHT__reached (void)
 fsm_branch_t
 move__MOVE_ON_RIGHT__blocked (void)
 {
-    asserv_position_t pos;
-    asserv_position_t new_pos;
-
-    asserv_get_position (&pos);
-    new_pos.x = pos.x - MOVE_BORDER_LEVEL;
-    new_pos.y = pos.y;
-    new_pos.a = pos.a;
-
-    if (move_can_go_on_left_or_right (pos, new_pos))
-      {
-	asserv_goto (new_pos.x, new_pos.y);
-      }
-
+    move_go_to_right (); 
     return move_next (MOVE_ON_RIGHT, blocked);
 }
 
@@ -168,19 +140,7 @@ move__DESIRED_POSITION__blocked (void)
 fsm_branch_t
 move__MOVE_ON_LEFT__failed (void)
 {
-    asserv_position_t pos;
-    asserv_position_t new_pos;
-
-    asserv_get_position (&pos);
-    new_pos.x = pos.x + MOVE_BORDER_LEVEL;
-    new_pos.y = pos.y;
-    new_pos.a = pos.a;
-    if (move_can_go_on_left_or_right (pos, new_pos))
-      {
-	// call the correct function to go to the right.
-	asserv_goto (new_pos.x, new_pos.y);
-      }
-
+    move_go_to_left (); 
     return move_next (MOVE_ON_LEFT, failed);
 }
 
@@ -204,19 +164,7 @@ move__MOVE_ON_LEFT__reached (void)
 fsm_branch_t
 move__MOVE_ON_LEFT__blocked (void)
 {
-    asserv_position_t pos;
-    asserv_position_t new_pos;
-
-    asserv_get_position (&pos);
-    new_pos.x = pos.x + MOVE_BORDER_LEVEL;
-    new_pos.y = pos.y;
-    new_pos.a = pos.a;
-    if (move_can_go_on_left_or_right (pos, new_pos))
-      {
-	// call the correct function to go to the right.
-	asserv_goto (new_pos.x, new_pos.y);
-      }
-
+    move_go_to_left (); 
     return move_next (MOVE_ON_LEFT, blocked);
 }
 

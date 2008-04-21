@@ -77,3 +77,44 @@ move_can_go_on_left_or_right (asserv_position_t current_pos,
       }
 }
 
+/** Go to the right.
+  */
+void
+move_go_to_right (void)
+{
+    asserv_position_t pos;
+    asserv_position_t new_pos;
+
+    asserv_get_position (&pos);
+    new_pos.x = pos.x - MOVE_BORDER_LEVEL;
+    new_pos.y = pos.y;
+    new_pos.a = pos.a;
+
+    if (move_can_go_on_left_or_right (pos, new_pos))
+      {
+	asserv_goto (new_pos.x, new_pos.y);
+      }
+}
+
+/** Go to the left.
+  */
+void
+move_go_to_left (void)
+{
+    asserv_position_t pos;
+    asserv_position_t new_pos;
+
+    asserv_get_position (&pos);
+    new_pos.x = pos.x + MOVE_BORDER_LEVEL;
+    new_pos.y = pos.y;
+    new_pos.a = pos.a;
+
+    if (move_can_go_on_left_or_right (pos, new_pos))
+      {
+	asserv_goto (new_pos.x, new_pos.y);
+      }
+    
+    return move_next (MOVE_ON_LEFT, failed);
+}
+
+

@@ -27,6 +27,10 @@
 
 #include "asserv.h"
 
+/* if the left border is under 500 mm of the actual position do not go there. */
+#define MOVE_BORDER_LEVEL 200
+
+
 /** move FSM associated data. */
 struct move_data_t
 {
@@ -53,5 +57,15 @@ move_start (uint32_t position_x, uint32_t position_y);
 uint8_t
 move_can_go_on_left_or_right (asserv_position_t current_pos, 
 			      asserv_position_t new_pos);
+
+/** Go to the right.
+  */
+void
+move_go_to_right (void);
+
+/** Go to the left.
+  */
+void
+move_go_to_left (void);
 
 #endif /* move_h */
