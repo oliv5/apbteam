@@ -87,23 +87,36 @@ main (void)
 
     move_print_test (&move_fsm);
 
-    fsm_handle_event (&move_fsm, MOVE_EVENT_failed_or_blocked);
+    fsm_handle_event (&move_fsm, MOVE_EVENT_failed);
     move_print_test (&move_fsm);
 
-    fsm_handle_event (&move_fsm, MOVE_EVENT_failed_or_blocked_or_near_border);
+    fsm_handle_event (&move_fsm, MOVE_EVENT_failed);
     move_print_test (&move_fsm);
     
-    fsm_handle_event (&move_fsm, MOVE_EVENT_reached);
+    fsm_handle_event (&move_fsm, MOVE_EVENT_blocked);
     move_print_test (&move_fsm);
 
-    fsm_handle_event (&move_fsm, MOVE_EVENT_failed_or_blocked);
-    move_print_test (&move_fsm);
-
-    fsm_handle_event (&move_fsm, MOVE_EVENT_reached);
+    fsm_handle_event (&move_fsm, MOVE_EVENT_blocked);
     move_print_test (&move_fsm);
 
     fsm_handle_event (&move_fsm, MOVE_EVENT_reached);
     move_print_test (&move_fsm);
+
+    fsm_handle_event (&move_fsm, MOVE_EVENT_failed);
+    move_print_test (&move_fsm);
+
+    fsm_handle_event (&move_fsm, MOVE_EVENT_reached);
+    move_print_test (&move_fsm);
+
+    fsm_handle_event (&move_fsm, MOVE_EVENT_blocked);
+    move_print_test (&move_fsm);
+
+    fsm_handle_event (&move_fsm, MOVE_EVENT_reached);
+    move_print_test (&move_fsm);
+
+    fsm_handle_event (&move_fsm, MOVE_EVENT_reached);
+    move_print_test (&move_fsm);
+
 
     return 0;
 }
