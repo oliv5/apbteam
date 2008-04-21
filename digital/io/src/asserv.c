@@ -494,6 +494,32 @@ asserv_set_speed (uint8_t linear_high, uint8_t angular_high,
     asserv_twi_send_command ('p', 6);
 }
 
+/* Set the complete position of the bot. */
+void
+asserv_set_position (int32_t x, int32_t y, int16_t angle)
+{
+    /* 'X' subcommand */
+    asserv_twi_buffer_param[0] = 'X';
+    /* Put x position as parameter */
+    asserv_twi_buffer_param[1] = v32_to_v8 (x, 2);
+    asserv_twi_buffer_param[2] = v32_to_v8 (x, 1);
+    asserv_twi_buffer_param[3] = v32_to_v8 (x, 0);
+    /* 'Y' subcommand */
+    asserv_twi_buffer_param[4] = 'X';
+    /* Put x position as parameter */
+    asserv_twi_buffer_param[5] = v32_to_v8 (x, 2);
+    asserv_twi_buffer_param[6] = v32_to_v8 (x, 1);
+    asserv_twi_buffer_param[7] = v32_to_v8 (x, 0);
+    /* 'A' subcommand */
+    asserv_twi_buffer_param[8] = 'A';
+    /* Put angle position as parameter */
+    asserv_twi_buffer_param[9] = v32_to_v8 (angle, 1);
+    asserv_twi_buffer_param[10] = v32_to_v8 (angle, 0);
+    asserv_twi_buffer_param[11] = 0;
+    /* Send the whole things in a one time shot */
+    asserv_twi_send_command ('p', 12);
+}
+
 /* Go to an absolute position in (X, Y). */
 void
 asserv_goto (uint32_t x, uint32_t y)

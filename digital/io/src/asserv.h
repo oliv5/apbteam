@@ -265,6 +265,18 @@ asserv_set_speed (uint8_t linear_high, uint8_t angular_high,
 		  uint8_t linear_low, uint8_t angular_low);
 
 /**
+ * Set the complete position of the bot.
+ * This is an helpful function preventing you from calling multiples other
+ * ones.
+ * It calls other class commands.
+ * @param x X position
+ * @param y Y position
+ * @param angle angular position
+ */
+void
+asserv_set_position (int32_t x, int32_t y, int16_t angle);
+
+/**
  * Go to an absolute position in (X, Y).
  * @param x the x position on the table.
  * @param y the y position on the table.

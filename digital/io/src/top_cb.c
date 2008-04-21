@@ -70,9 +70,7 @@ top__WAIT_JACK_OUT__jack_removed_from_bot (void)
     /* Start the chronometer */
     chrono_init ();
     /* Reset the position of the bot */
-    asserv_set_x_position (PG_X_START);
-    asserv_set_y_position (PG_Y_START);
-    asserv_set_angle_position (PG_A_START);
+    asserv_set_position (PG_X_START, PG_Y_START, PG_A_START);
     /* Start the move FSM to our samples distributor */
     move_start (PG_DISTRIBUTOR_SAMPLE_OUR_X, PG_DISTRIBUTOR_SAMPLE_OUR_Y);
     return top_next (WAIT_JACK_OUT, jack_removed_from_bot);
