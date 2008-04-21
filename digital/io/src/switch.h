@@ -29,77 +29,39 @@
  * @file Module to manage 'switchs'. For example, colors selector and jack.
  */
 
-#include "io.h"				/* PORT/PIN, bit_is_set */
-#include "modules/utils/utils.h"	/* set_bit */
 #include "giboulee.h"			/* team_color_e */
-
-/**
- * @defgroup SwitchConfiguration Configuration of the switch module.
- * You can change the value of the defines and variables of this group to
- * configure the module.
- */
-
-/**
- * Color selector switch port.
- */
-#define SWITCH_COLOR_PORT PORTC
-
-/**
- * Color selector read register port.
- */
-#define SWITCH_COLOR_PIN PINC
-
-/**
- * Color selector switch pin number of the port.
- */
-#define SWITCH_COLOR_PIN_NUMBER 0
-
-/**
- * Jack switch port.
- */
-#define SWITCH_JACK_PORT PORTC
-
-/**
- * Jack switch read register port.
- */
-#define SWITCH_JACK_PIN PINC
-
-/**
- * Jack switch pin number of the port.
- */
-#define SWITCH_JACK_PIN_NUMBER 1
-
-/** @} */
+#include "common.h"
 
 /**
  * Initialize the switch module.
  * This functions just put the pins in input direction and enable pull-ups.
  */
-static inline void
-switch_init (void)
-{
-    /* By default, all pins are in input direction */
-    /* Enable the pull-ups */
-   set_bit (SWITCH_COLOR_PORT, SWITCH_COLOR_PIN_NUMBER);
-   set_bit (SWITCH_JACK_PORT, SWITCH_JACK_PIN_NUMBER);
-}
+void
+switch_init (void);
+
+/**
+ * Update the switch module.
+ * This function must be called at each "main cycle" to ensure that the filter
+ * of the jack is updated.
+ */
+void
+switch_update (void);
 
 /**
  * Get the current state of the select colors switch.
+ * Be careful, the result of this function is not filtered.
+ * @return the color of our team.
  */
-static inline enum team_color_e
-switch_get_color (void)
-{
-    return bit_is_set (SWITCH_COLOR_PIN, SWITCH_COLOR_PIN_NUMBER);
-}
+enum team_color_e
+switch_get_color (void);
 
 /**
- * Get the current state of the jack switch.
+ * Get the filtered value of the jack.
+ * In comparison with the \a switch_get_jack_raw, this function ensure you the
+ * state of the jack is the same during a defined period of time.
+ * @return the filtered state of the jack.
  */
-static inline uint8_t
-switch_get_jack (void)
-{
-    return bit_is_set (SWITCH_JACK_PIN, SWITCH_JACK_PIN_NUMBER);
-}
+uint8_t
+switch_get_jack (void);
 
 #endif /* switch_h */

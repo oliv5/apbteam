@@ -39,6 +39,10 @@ main_timer_wait (void);
 void
 switch_init (void);
 
+/** Hooked, do nothing. */
+void
+switch_update (void);
+
 /** Hooked, request via mex. */
 uint8_t
 switch_get_color (void);

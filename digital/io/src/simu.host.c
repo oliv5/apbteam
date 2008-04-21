@@ -124,6 +124,11 @@ switch_get_jack (void)
 }
 
 void
+switch_update (void)
+{
+}
+
+void
 main_timer_init (void)
 {
     simu_init ();

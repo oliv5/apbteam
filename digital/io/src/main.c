@@ -106,6 +106,9 @@ main_loop (void)
 	/* Update TWI module to get new data from the asserv board */
 	asserv_update_status ();
 
+	/* Update switch module */
+	switch_update ();
+
 	/* Is last command has been acknowledged? */
 	if (asserv_last_cmd_ack () == 0)
 	    /* Called function to manage retransmission */
@@ -141,7 +144,11 @@ main_loop (void)
 		fsm_handle_event (&getsamples_fsm,
 				  GETSAMPLES_EVENT_arm_pass_noted_position);
 	      }
-	    /* Check other sensors */
+	    /* Jack */
+	    fsm_handle_event (&top_fsm, switch_get_jack () ?
+			      TOP_EVENT_jack_removed_from_bot :
+			      TOP_EVENT_jack_inserted_into_bot);
+	    /* TODO: Check other sensors */
 	  }
       }
 }
