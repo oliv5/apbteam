@@ -67,4 +67,15 @@ extern struct top_data_t top_data;
 void
 top_start (uint8_t team_color);
 
+/**
+ * Do we need to tell the top FSM the settings has been acknowledged?
+ * You need to call this function in the main loop to ensure we pass a
+ * requested event (settings_acknowledged) to the top FSM.
+ * @return
+ *   - 0 if you do not need to generate the event for the top FSM ;
+ *   - 1 if you need to generate the event.
+ */
+uint8_t
+top_generate_settings_ack_event (void);
+
 #endif /* top_h */

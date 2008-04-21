@@ -29,6 +29,12 @@
 
 struct top_data_t top_data;
 
+/**
+ * When we need to tell the main loop we want to be alerted when the last
+ * command sent to the asserv board has been acknowledged.
+ */
+uint8_t top_waiting_for_settings_ack_ = 0;
+
 /** Start a main FSM. */
 void
 top_start (uint8_t color_team)
@@ -45,3 +51,9 @@ top_start (uint8_t color_team)
     fsm_handle_event (&top_fsm, TOP_EVENT_start);
 }
 
+/* Do we need to tell the top FSM the settings has been acknowledged? */
+uint8_t
+top_generate_settings_ack_event (void)
+{
+    return top_waiting_for_settings_ack_;
+}

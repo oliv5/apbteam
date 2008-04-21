@@ -39,6 +39,12 @@
 #include "getsamples.h"	/* getsamples_* */
 #include "gutter.h"	/* gutter_start */
 
+/**
+ * When we need to tell the main loop we want to be alerted when the last
+ * command sent to the asserv board has been acknowledged.
+ */
+extern uint8_t top_waiting_for_settings_ack_;
+
 /*
  * DROP_OFF_BALLS_TO_GUTTER =gutter_fsm_finished=>
  *  => GO_TO_SAMPLE_DISTRIBUTOR
@@ -56,11 +62,10 @@ top__DROP_OFF_BALLS_TO_GUTTER__gutter_fsm_finished (void)
 
 /*
  * WAIT_JACK_OUT =jack_removed_from_bot=>
- *  => GO_TO_SAMPLE_DISTRIBUTOR
+ *  => CONFIGURE_ASSERV
  *   the match start, start the chronometer
- *   we should also initialize all the subsystems of IO (reset position, get our
- *   color, ...)
- *   order the bot to move to our samples distributors with the move FSM
+ *   we should also initialize all the subsystems of IO (get our color, ...)
+ *   set the settings of the asserv board (especially the position)
  */
 fsm_branch_t
 top__WAIT_JACK_OUT__jack_removed_from_bot (void)
@@ -71,8 +76,9 @@ top__WAIT_JACK_OUT__jack_removed_from_bot (void)
     chrono_init ();
     /* Reset the position of the bot */
     asserv_set_position (PG_X_START, PG_Y_START, PG_A_START);
-    /* Start the move FSM to our samples distributor */
-    move_start (PG_DISTRIBUTOR_SAMPLE_OUR_X, PG_DISTRIBUTOR_SAMPLE_OUR_Y);
+    /* Tell the main loop we need to be aware when the asserv acknowledge our
+     * settings command */
+    top_waiting_for_settings_ack_ = 1;
     return top_next (WAIT_JACK_OUT, jack_removed_from_bot);
 }
 
@@ -213,3 +219,20 @@ top__WAIT_JACK_IN__jack_inserted_into_bot (void)
     /* TODO */
     return top_next (WAIT_JACK_IN, jack_inserted_into_bot);
 }
+
+/*
+ * CONFIGURE_ASSERV =settings_acknowledged=>
+ *  => GO_TO_SAMPLE_DISTRIBUTOR
+ *   order the bot to move to our samples distributors with the move FSM
+ */
+fsm_branch_t
+top__CONFIGURE_ASSERV__settings_acknowledged (void)
+{
+    /* Clear the flag for the setting acknowleged */
+    top_waiting_for_settings_ack_ = 0;
+    /* Start the move FSM to our samples distributor */
+    move_start (PG_DISTRIBUTOR_SAMPLE_OUR_X, PG_DISTRIBUTOR_SAMPLE_OUR_Y);
+    return top_next (CONFIGURE_ASSERV, settings_acknowledged);
+}
+
+

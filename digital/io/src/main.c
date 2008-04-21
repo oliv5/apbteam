@@ -42,6 +42,7 @@
 #include "fsm.h"	/* fsm_* */
 #include "giboulee.h"	/* team_color */
 #include "getsamples.h"	/* getsamples_start */
+#include "top.h"	/* top_* */
 
 #include "io.h"
 
@@ -148,6 +149,11 @@ main_loop (void)
 	    fsm_handle_event (&top_fsm, switch_get_jack () ?
 			      TOP_EVENT_jack_removed_from_bot :
 			      TOP_EVENT_jack_inserted_into_bot);
+	    /* Settings acknowledge */
+	    if (top_generate_settings_ack_event ())
+	      {
+		fsm_handle_event (&top_fsm, TOP_EVENT_settings_acknowledged);
+	      }
 	    /* TODO: Check other sensors */
 	  }
       }

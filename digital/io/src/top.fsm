@@ -14,6 +14,8 @@ States:
   waiting for the jack to be inserted into the bot
  WAIT_JACK_OUT
   waiting for the jack to be removed from the bot
+ CONFIGURE_ASSERV
+  configuring the asserv board
  GO_TO_SAMPLE_DISTRIBUTOR
   go to our distributor of samples (using the move FSM)
  GO_TO_OUR_ICE_DISTRIBUTOR
@@ -45,6 +47,8 @@ Events:
   the jack is inserted into the bot
  jack_removed_from_bot
   the jack is removed from the bot
+ settings_acknowledged
+  the asserv board has acknowledged the settings sent
 
 IDLE:
  start -> WAIT_JACK_IN
@@ -57,10 +61,13 @@ WAIT_JACK_IN:
   bot
 
 WAIT_JACK_OUT:
- jack_removed_from_bot -> GO_TO_SAMPLE_DISTRIBUTOR
+ jack_removed_from_bot -> CONFIGURE_ASSERV
   the match start, start the chronometer
-  we should also initialize all the subsystems of IO (reset position, get our
-  color, ...)
+  we should also initialize all the subsystems of IO (get our color, ...)
+  set the settings of the asserv board (especially the position)
+
+CONFIGURE_ASSERV:
+ settings_acknowledged -> GO_TO_SAMPLE_DISTRIBUTOR
   order the bot to move to our samples distributors with the move FSM
 
 GO_TO_SAMPLE_DISTRIBUTOR:
