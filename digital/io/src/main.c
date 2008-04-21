@@ -79,6 +79,8 @@ main_init (void)
     trap_init ();
     /* Switch module */
     switch_init ();
+    /* Start the top FSM */
+    top_start ();
 
     /* Enable interrupts */
     sei ();

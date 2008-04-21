@@ -56,16 +56,13 @@ struct top_data_t
     uint8_t boxes_used;
     /** sequence to realize. */
     uint8_t sequence_to_do;
-    /** The color of the balls the robot shall take. 
-     * RED_TEAM or BLUE_TEAM. */
-    uint8_t team_color;
 };
 
 extern struct top_data_t top_data;
 
 /** Start a Top FSM. */
 void
-top_start (uint8_t team_color);
+top_start (void);
 
 /**
  * Do we need to tell the top FSM the settings has been acknowledged?

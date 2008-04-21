@@ -37,15 +37,12 @@ uint8_t top_waiting_for_settings_ack_ = 0;
 
 /** Start a main FSM. */
 void
-top_start (uint8_t color_team)
+top_start (void)
 {
     /* Set parameters. */
     top_data.sequence = 0x15;
     top_data.boxes_used = 0x0;
     top_data.sequence_to_do = 0x15;
-    /* Get the team color. 
-     * !! I supose that the 0 value is 0 and red value is 1 */
-    top_data.team_color = color_team; 
     /* Start the FSM. */
     fsm_init (&top_fsm);
     fsm_handle_event (&top_fsm, TOP_EVENT_start);
