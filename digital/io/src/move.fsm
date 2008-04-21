@@ -34,7 +34,7 @@ DESIRED_POSITION:
 MOVE_ON_LEFT:
  reached -> DESIRED_POSITION
   The position has been reached. It will now try to reach the position provided by the user.
- failed: near_left_border -> MOVE_ON_RIGHT
+ failed -> MOVE_ON_RIGHT
   The position is fail again, it will try to reach another one.
  blocked -> MOVE_ON_RIGHT
   The position is fail again, it will go backward to reach another one.
@@ -42,7 +42,7 @@ MOVE_ON_LEFT:
 MOVE_ON_RIGHT:
  reached -> DESIRED_POSITION
   The position has been reached. It will now try to reach the position provided by the user.
- failed: near_right_border -> MOVE_ON_LEFT
+ failed -> MOVE_ON_LEFT
   The position is fail again, it will try to reach another one.
  blocked -> MOVE_ON_LEFT
   The position is fail again, it will go backward to reach another one.
