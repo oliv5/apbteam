@@ -25,6 +25,10 @@
 #include "common.h"
 #include "fsm.h"
 
+#ifdef HOST
+# include <stdio.h>
+#endif
+
 /** Reset a FSM. */
 void
 fsm_init (fsm_t *fsm)
@@ -51,6 +55,9 @@ fsm_handle_event (fsm_t *fsm, u8 event)
 #ifdef HOST
 	assert (((br >> 16) & 0xff) == fsm->state_current);
 	assert (((br >> 8) & 0xff) == event);
+	printf ("%s %s =%s=> %s\n", fsm->name,
+		fsm->states_names[fsm->state_current],
+		fsm->events_names[event], fsm->states_names[br & 0xff]);
 	fsm->state_current = br & 0xff;
 #else
 	fsm->state_current = br;

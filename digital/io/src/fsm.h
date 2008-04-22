@@ -74,6 +74,14 @@ struct fsm_t
     u8 state_init;
     /** Current active state. */
     u8 state_current;
+#ifdef HOST
+    /** FSM name. */
+    const char *name;
+    /** States names. */
+    const char * const *states_names;
+    /** Events names. */
+    const char * const *events_names;
+#endif
 };
 typedef struct fsm_t fsm_t;
 
