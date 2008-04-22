@@ -4,13 +4,13 @@ move
 States:
  IDLE
  DESIRED_POSITION
+ COMPUTE_POS
  MOVE_ON_LEFT
  MOVE_ON_RIGHT
 
 Events:
  start
  reached
- failed
  blocked
  near_left_border
  near_right_border
@@ -22,27 +22,23 @@ IDLE:
 DESIRED_POSITION:
  reached -> IDLE
   The position provided by the user has been reached, the FSM can stop.
- failed: near_right_border -> MOVE_ON_LEFT
-  The robot has failed to reach the position. It shall try another position before trying to reach this one again. It shall go to the on the left only if the left border is the farest one.
- failed: near_left_border -> MOVE_ON_RIGHT
-  The robot has failed to reach the position. It shall try another position before trying to reach this one again. It shall go to the on the right only if the right border is the farest one.
- blocked: near_left_border -> MOVE_ON_RIGHT
-  The robot has failed to reach the position. It shall try another position before trying to reach this one again. It shall go to the on the right only if the right border is the farest one.
- blocked: near_right_border -> MOVE_ON_LEFT
-  The robot has failed to reach the position. It shall try another position before trying to reach this one again. It shall go to the on the left only if the left border is the farest one.
+ blocked -> COMPUTE_POS
+  The robot will compute the position from the border and will take the decision to go on the left or on the right.
 
 MOVE_ON_LEFT:
  reached -> DESIRED_POSITION
   The position has been reached. It will now try to reach the position provided by the user.
- failed -> MOVE_ON_RIGHT
-  The position is fail again, it will try to reach another one.
- blocked -> MOVE_ON_RIGHT
-  The position is fail again, it will go backward to reach another one.
+ blocked -> COMPUTE_POS
+  The robot will compute the position from the border and will take the decision to go on the left or on the right.
 
 MOVE_ON_RIGHT:
  reached -> DESIRED_POSITION
   The position has been reached. It will now try to reach the position provided by the user.
- failed -> MOVE_ON_LEFT
-  The position is fail again, it will try to reach another one.
- blocked -> MOVE_ON_LEFT
-  The position is fail again, it will go backward to reach another one.
+ blocked -> COMPUTE_POS
+  The robot will compute the position from the border and will take the decision to go on the left or on the right.
+
+COMPUTE_POS:
+ near_left_border -> MOVE_ON_RIGHT
+  The robot is near the left border it shall try to move on the right.
+ near_right_border -> MOVE_ON_LEFT
+  The robot is near the right border it shall try to move on the left.
