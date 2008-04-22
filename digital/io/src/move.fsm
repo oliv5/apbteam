@@ -4,7 +4,6 @@ move
 States:
  IDLE
  DESIRED_POSITION
- COMPUTE_POS
  MOVE_ON_LEFT
  MOVE_ON_RIGHT
 
@@ -12,8 +11,6 @@ Events:
  start
  reached
  blocked
- near_left_border
- near_right_border
 
 IDLE:
  start -> DESIRED_POSITION
@@ -22,8 +19,10 @@ IDLE:
 DESIRED_POSITION:
  reached -> IDLE
   The position provided by the user has been reached, the FSM can stop.
- blocked -> COMPUTE_POS
-  The robot will compute the position from the border and will take the decision to go on the left or on the right.
+ blocked:near_left_border -> MOVE_ON_RIGHT
+  The robot will compute the position from the border and will take the decision to go on the right because the left border is too near.
+ blocked:near_right_border -> MOVE_ON_LEFT
+  The robot will compute the position from the border and will take the decision to go on the left because the right border is too near.
 
 MOVE_ON_LEFT:
  reached -> DESIRED_POSITION
@@ -36,9 +35,3 @@ MOVE_ON_RIGHT:
   The position has been reached. It will now try to reach the position provided by the user.
  blocked -> MOVE_ON_LEFT
   The robot will try to go on the left because the previous movement block on the left.
-
-COMPUTE_POS:
- near_left_border -> MOVE_ON_RIGHT
-  The robot is near the left border it shall try to move on the right.
- near_right_border -> MOVE_ON_LEFT
-  The robot is near the right border it shall try to move on the left.
