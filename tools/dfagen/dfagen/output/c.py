@@ -16,6 +16,8 @@ class WriterData:
 		initial = automaton.initial.name,
 		states = self.list_states,
 		events = self.list_events,
+		states_names = self.list_states_names,
+		events_names = self.list_events_names,
 		branches = self.list_branches,
 		transition_table = self.transition_table,
 		states_template = self.states_template,
@@ -28,6 +30,13 @@ class WriterData:
     def list_events (self):
 	return ''.join (['    ' + self.prefix.upper () + '_EVENT_'
 	    + e.name.replace (' ', '_') + ',\n' for e in self.events])
+
+    def list_states_names (self):
+	return ''.join (['    "' + s.name + '",\n' for s in self.states])
+
+    def list_events_names (self):
+	return ''.join (['    "' + e.name.replace (' ', '_') + '",\n'
+	    for e in self.events])
 
     def list_branches (self):
 	l = ''
