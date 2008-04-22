@@ -28,14 +28,14 @@ DESIRED_POSITION:
 MOVE_ON_LEFT:
  reached -> DESIRED_POSITION
   The position has been reached. It will now try to reach the position provided by the user.
- blocked -> COMPUTE_POS
-  The robot will compute the position from the border and will take the decision to go on the left or on the right.
+ blocked -> MOVE_ON_RIGHT
+  The robot will try to go on the left because the previous movement block on the right.
 
 MOVE_ON_RIGHT:
  reached -> DESIRED_POSITION
   The position has been reached. It will now try to reach the position provided by the user.
- blocked -> COMPUTE_POS
-  The robot will compute the position from the border and will take the decision to go on the left or on the right.
+ blocked -> MOVE_ON_LEFT
+  The robot will try to go on the left because the previous movement block on the left.
 
 COMPUTE_POS:
  near_left_border -> MOVE_ON_RIGHT
