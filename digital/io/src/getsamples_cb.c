@@ -172,7 +172,7 @@ fsm_branch_t
 getsamples__MOVE_AWAY_FROM_DISTRIBUTOR__bot_move_succeed (void)
 {
     /* Move the arm to close the input hole */
-    asserv_move_arm (BOT_ARM_MIN_TO_OPEN, BOT_ARM_SPEED);
+    asserv_move_arm (BOT_ARM_MIN_TO_OPEN + BOT_ARM_THIRD_ROUND, BOT_ARM_SPEED);
     return getsamples_next (MOVE_AWAY_FROM_DISTRIBUTOR, bot_move_succeed);
 }
 
