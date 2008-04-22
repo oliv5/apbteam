@@ -1,4 +1,7 @@
-The power supply board aims at :
+#---TABSTOP=3
+*Title: Power Supply Board desing
+
+**The power supply board aims at :
 - Generating 5V power for electronics in the robot
 - Generating 5V power for servo motors (separate 5V to avoid perturbations of
   the electronics by servomotors)
@@ -9,7 +12,7 @@ The power supply board aims at :
 - A voltmeter shall give a visual and quickly understandable information on
   battery state
 
-It is composed of the following elements :
+**It is composed of the following elements :
 - 5V bucks
 - a switch controled by a switching circuitry for input power selection (Nestor
   or Battery)
@@ -17,7 +20,7 @@ It is composed of the following elements :
 - a 4-leds voltmeter
 
 
-*** 5V bucks ***
+**5V bucks
 - the bucks used are LM2678. They are compliant with the fllowing requierements :
   * Input voltage : 8V to 40V.
   * 120mOhm switcher allow up to 92% efficiency up to 5A
