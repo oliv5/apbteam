@@ -84,13 +84,12 @@ main (void)
     fsm_init (&move_fsm);
 
     fsm_handle_event (&move_fsm, MOVE_EVENT_start);
-
     move_print_test (&move_fsm);
 
-    fsm_handle_event (&move_fsm, MOVE_EVENT_failed);
+    fsm_handle_event (&move_fsm, MOVE_EVENT_blocked);
     move_print_test (&move_fsm);
 
-    fsm_handle_event (&move_fsm, MOVE_EVENT_failed);
+    fsm_handle_event (&move_fsm, MOVE_EVENT_blocked);
     move_print_test (&move_fsm);
     
     fsm_handle_event (&move_fsm, MOVE_EVENT_blocked);
@@ -102,7 +101,7 @@ main (void)
     fsm_handle_event (&move_fsm, MOVE_EVENT_reached);
     move_print_test (&move_fsm);
 
-    fsm_handle_event (&move_fsm, MOVE_EVENT_failed);
+    fsm_handle_event (&move_fsm, MOVE_EVENT_blocked);
     move_print_test (&move_fsm);
 
     fsm_handle_event (&move_fsm, MOVE_EVENT_reached);
@@ -116,7 +115,6 @@ main (void)
 
     fsm_handle_event (&move_fsm, MOVE_EVENT_reached);
     move_print_test (&move_fsm);
-
 
     return 0;
 }

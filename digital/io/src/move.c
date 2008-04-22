@@ -113,8 +113,6 @@ move_go_to_left (void)
       {
 	asserv_goto (new_pos.x, new_pos.y);
       }
-    
-    return move_next (MOVE_ON_LEFT, failed);
 }
 
 

@@ -24,15 +24,15 @@ move__IDLE__start (void)
 }
 
 /*
- * MOVE_ON_RIGHT =failed=>
+ * MOVE_ON_RIGHT =blocked=>
  *  => MOVE_ON_LEFT
- *   The position is fail again, it will try to reach another one.
+ *   The robot will try to go on the left because the previous movement block on the left.
  */
 fsm_branch_t
-move__MOVE_ON_RIGHT__failed (void)
+move__MOVE_ON_RIGHT__blocked (void)
 {
-    move_go_to_right (); 
-    return move_next (MOVE_ON_RIGHT, failed);
+    move_go_to_left (); 
+    return move_next (MOVE_ON_RIGHT, blocked);
 }
 
 /*
@@ -48,26 +48,14 @@ move__MOVE_ON_RIGHT__reached (void)
 }
 
 /*
- * MOVE_ON_RIGHT =blocked=>
- *  => MOVE_ON_LEFT
- *   The position is fail again, it will go backward to reach another one.
- */
-fsm_branch_t
-move__MOVE_ON_RIGHT__blocked (void)
-{
-    move_go_to_right (); 
-    return move_next (MOVE_ON_RIGHT, blocked);
-}
-
-/*
- * DESIRED_POSITION =failed=>
- * near_left_border => MOVE_ON_RIGHT
- *   The robot has failed to reach the position. It shall try another position before trying to reach this one again. It shall go to the on the right only if the right border is the farest one.
+ * DESIRED_POSITION =blocked=>
  * near_right_border => MOVE_ON_LEFT
- *   The robot has failed to reach the position. It shall try another position before trying to reach this one again. It shall go to the on the left only if the left border is the farest one.
+ *   The robot will compute the position from the border and will take the decision to go on the left because the right border is too near.
+ * near_left_border => MOVE_ON_RIGHT
+ *   The robot will compute the position from the border and will take the decision to go on the right because the left border is too near.
  */
 fsm_branch_t
-move__DESIRED_POSITION__failed (void)
+move__DESIRED_POSITION__blocked (void)
 {
     asserv_position_t pos;
     asserv_position_t new_pos;
@@ -79,14 +67,14 @@ move__DESIRED_POSITION__failed (void)
     if (move_can_go_on_left_or_right (pos, new_pos))
       {
 	asserv_goto (new_pos.x, new_pos.y);
-	return move_next_branch (DESIRED_POSITION, failed, near_left_border);
+	return move_next_branch (DESIRED_POSITION, blocked, near_left_border);
       }
     else
       {
 	new_pos.x = pos.x + MOVE_BORDER_LEVEL;
 	// replace this by the correct function.
 	asserv_goto (new_pos.x, new_pos.y);
-	return move_next_branch (DESIRED_POSITION, failed, near_right_border);
+	return move_next_branch (DESIRED_POSITION, blocked, near_right_border);
       }
 }
 
@@ -102,46 +90,15 @@ move__DESIRED_POSITION__reached (void)
 }
 
 /*
- * DESIRED_POSITION =blocked=>
- * near_right_border => MOVE_ON_LEFT
- *   The robot has failed to reach the position. It shall try another position before trying to reach this one again. It shall go to the on the left only if the left border is the farest one.
- * near_left_border => MOVE_ON_RIGHT
- *   The robot has failed to reach the position. It shall try another position before trying to reach this one again. It shall go to the on the right only if the right border is the farest one.
- */
-fsm_branch_t
-move__DESIRED_POSITION__blocked (void)
-{
-    asserv_position_t pos;
-    asserv_position_t new_pos;
-
-    asserv_get_position (&pos);
-    new_pos = pos;
-    new_pos.x += MOVE_BORDER_LEVEL ;
-
-    if (move_can_go_on_left_or_right (pos, new_pos))
-      {
-	asserv_goto (new_pos.x, new_pos.y);
-	return move_next_branch (DESIRED_POSITION, blocked, near_right_border);
-      }
-    else
-      {
-	new_pos.x = pos.x + MOVE_BORDER_LEVEL;
-	// replace this by the correct function.
-	asserv_goto (new_pos.x, new_pos.y);
-	return move_next_branch (DESIRED_POSITION, blocked, near_left_border);
-      }
-}
-
-/*
- * MOVE_ON_LEFT =failed=>
+ * MOVE_ON_LEFT =blocked=>
  *  => MOVE_ON_RIGHT
- *   The position is fail again, it will try to reach another one.
+ *   The robot will try to go on the left because the previous movement block on the right.
  */
 fsm_branch_t
-move__MOVE_ON_LEFT__failed (void)
+move__MOVE_ON_LEFT__blocked (void)
 {
-    move_go_to_left (); 
-    return move_next (MOVE_ON_LEFT, failed);
+    move_go_to_right();
+    return move_next (MOVE_ON_LEFT, blocked);
 }
 
 /*
@@ -154,18 +111,6 @@ move__MOVE_ON_LEFT__reached (void)
 {
     asserv_goto (move_data.position_x, move_data.position_y);
     return move_next (MOVE_ON_LEFT, reached);
-}
-
-/*
- * MOVE_ON_LEFT =blocked=>
- *  => MOVE_ON_RIGHT
- *   The position is fail again, it will go backward to reach another one.
- */
-fsm_branch_t
-move__MOVE_ON_LEFT__blocked (void)
-{
-    move_go_to_left (); 
-    return move_next (MOVE_ON_LEFT, blocked);
 }
 
 
