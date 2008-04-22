@@ -118,21 +118,25 @@ main_loop (void)
 	    asserv_retransmit ();
 	else
 	  {
+	    asserv_status_e move_status = asserv_last_cmd_ack ()
+		? asserv_move_cmd_status () : none;
 	    /* Check commands move status */
-	    if (asserv_move_cmd_status () == success)
+	    if (move_status == success)
 	      {
 		/* Pass it to all the FSM that need it */
 		fsm_handle_event (&getsamples_fsm,
 				  GETSAMPLES_EVENT_bot_move_succeed);
 	      }
-	    else
+	    else if (move_status == failure)
 	      {
 		/* Move failed */
 		fsm_handle_event (&getsamples_fsm,
 				  GETSAMPLES_EVENT_bot_move_failed);
 	      }
+	    asserv_status_e arm_status = asserv_last_cmd_ack ()
+		? asserv_arm_cmd_status () : none;
 	    /* Check commands arm status */
-	    if (asserv_arm_cmd_status () == success)
+	    if (arm_status == success)
 	      {
 		/* Pass it to all the FSM that need it */
 		fsm_handle_event (&getsamples_fsm,
