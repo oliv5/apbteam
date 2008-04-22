@@ -48,11 +48,20 @@ uint8_t servo_high_time_current_[SERVO_NUMBER];
  * the full swing. */
 #define SERVO_SPEED (int) ((256 / (360.0 / 4.4444)) + 0.5)
 
+/** Do not update too often, interface is too slow. */
+uint8_t simu_servo_update = 10, simu_servo_update_cpt;
+uint8_t simu_switch_update = 100, simu_switch_update_cpt;
+
+/** Sampled switches. */
+uint8_t simu_switches;
+
 /** Initialise simulation. */
 void
 simu_init (void)
 {
     mex_node_connect ();
+    simu_servo_update_cpt = 1;
+    simu_switch_update_cpt = 1;
 }
 
 /** Make a simulation step. */
@@ -73,10 +82,35 @@ simu_step (void)
 	    servo_high_time_current_[i] -= SERVO_SPEED;
       }
     /* Send servos. */
-    m = mex_msg_new (MSG_SIMU_IO_SERVO);
-    for (i = 0; i < SERVO_NUMBER; i++)
-	mex_msg_push (m, "B", servo_high_time_current_[i]);
-    mex_node_send (m);
+    if (simu_servo_update && !--simu_servo_update_cpt)
+      {
+	simu_servo_update_cpt = simu_servo_update;
+	m = mex_msg_new (MSG_SIMU_IO_SERVO);
+	for (i = 0; i < SERVO_NUMBER; i++)
+	    mex_msg_push (m, "B", servo_high_time_current_[i]);
+	mex_node_send (m);
+      }
+    /* Update switches. */
+    if (simu_switch_update && !--simu_switch_update_cpt)
+      {
+	simu_switch_update_cpt = simu_switch_update;
+	uint8_t r;
+	simu_switches = 0;
+	/* Get color switch. */
+	m = mex_msg_new (MSG_SIMU_IO_COLOR);
+	m = mex_node_request (m);
+	mex_msg_pop (m, "B", &r);
+	mex_msg_delete (m);
+	if (!r)
+	    simu_switches |= 1;
+	/* Get jack. */
+	m = mex_msg_new (MSG_SIMU_IO_JACK);
+	m = mex_node_request (m);
+	mex_msg_pop (m, "B", &r);
+	mex_msg_delete (m);
+	if (!r)
+	    simu_switches |= 2;
+      }
 }
 
 void
@@ -104,23 +138,13 @@ switch_init (void)
 uint8_t
 switch_get_color (void)
 {
-    mex_msg_t *m = mex_msg_new (MSG_SIMU_IO_COLOR);
-    m = mex_node_request (m);
-    uint8_t r;
-    mex_msg_pop (m, "B", &r);
-    mex_msg_delete (m);
-    return r;
+    return (simu_switches & 1) ? 1 : 0;
 }
 
 uint8_t
 switch_get_jack (void)
 {
-    mex_msg_t *m = mex_msg_new (MSG_SIMU_IO_JACK);
-    m = mex_node_request (m);
-    uint8_t r;
-    mex_msg_pop (m, "B", &r);
-    mex_msg_delete (m);
-    return r;
+    return (simu_switches & 2) ? 1 : 0;
 }
 
 void
