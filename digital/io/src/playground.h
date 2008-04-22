@@ -51,14 +51,14 @@
  * value for on the X axis depending on the color.
  */
 #define PG_X_VALUE_COMPUTING(x) \
-    (bot_color ? x : PG_WIDTH - x)
+    (bot_color ? (x) : PG_WIDTH - (x))
 
 /**
  * Considering there is a symmetry axis on X, this macro will compute the
  * value of the angle depending on the color.
  */
 #define PG_A_VALUE_COMPUTING(a) \
-    (bot_color ? a : (a + BOT_ANGLE_DEGREE * 180))
+    (bot_color ? (a) : ((a) + BOT_ANGLE_DEGREE * 180))
 
 /**
  * The position where to reset the bot when it starts, depending on the color.
