@@ -50,9 +50,9 @@
 /**
  * The number of steps to do to open the input hole when the arm is closing
  * it.
- * For the moment, 15% of a complete turn
+ * For the moment, 30 degree.
  */
-#define BOT_ARM_MIN_TO_OPEN (BOT_ARM_STEP_ROUND * 15L / 100)
+#define BOT_ARM_MIN_TO_OPEN (BOT_ARM_STEP_ROUND * 30L / 360)
 
 /**
  * Steps number relative to the beginning of a third round for the 'noted'

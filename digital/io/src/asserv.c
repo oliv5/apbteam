@@ -424,15 +424,6 @@ asserv_move_arm (int16_t offset, uint8_t speed)
     asserv_move_arm_absolute (asserv_arm_current_position, speed);
 }
 
-/* Move the arm to close the input hole. */
-void
-asserv_close_input_hole (void)
-{
-    /* Move the arm */
-    asserv_move_arm (asserv_arm_current_position %
-		     BOT_ARM_THIRD_ROUND, BOT_ARM_SPEED);
-}
-
 /* Set current X position. */
 void
 asserv_set_x_position (int32_t x)
@@ -551,9 +542,10 @@ uint8_t
 asserv_arm_position_reached (void)
 {
     /* If the position has been reached */
-    /* TODO: manage overflow! */
     if (asserv_arm_notify_position && 
-	(asserv_get_arm_position () >= asserv_arm_notify_position))
+	((int16_t) (asserv_get_arm_position ()
+		    - asserv_arm_notify_position) >= 0))
 	return 1;
     return 0;
 }
+

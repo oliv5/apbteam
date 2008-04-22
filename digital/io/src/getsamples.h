@@ -45,6 +45,8 @@ struct getsamples_data_t
      * distributor.
      */
     uint8_t sample_bitfield;
+    /** Position of the arm where we want to be awken. */
+    uint16_t arm_noted_position;
 };
 
 

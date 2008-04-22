@@ -256,10 +256,6 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		/* Go to the distributor */
 		asserv_go_to_distributor ();
 		break;
-	      case 'c':
-		/* Close the input hole with the arm */
-		asserv_close_input_hole ();
-		break;
 	      }
 	  }
 	break;

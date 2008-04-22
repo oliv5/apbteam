@@ -70,6 +70,17 @@ getsamples_configure_classifier (void)
       }
 }
 
+/* Count the number of samples to take. */
+uint8_t
+getsamples_count_samples (void)
+{
+    uint8_t i, bit, count = 0;
+    for (i = 0, bit = 1; i < 8; i++, bit <<= 1)
+	if (getsamples_data_.sample_bitfield & bit)
+	    count++;
+    return count;
+}
+
 /*
  * FACE_DISTRIBUTOR =bot_move_succeed=>
  *  => OPEN_INPUT_HOLE
@@ -120,19 +131,15 @@ getsamples__CLOSE_INPUT_HOLE__arm_move_succeed (void)
 fsm_branch_t
 getsamples__TAKE_SAMPLES__arm_pass_noted_position (void)
 {
+    /* Prepare classification */
+    getsamples_configure_classifier ();
     /* More samples? */
     if (getsamples_data_.sample_bitfield)
       {
 	/* Compute notifier */
-	uint16_t arm_current_position = asserv_get_arm_position ();
-	uint16_t arm_notify_position =
-	    arm_current_position + BOT_ARM_NOTED_POSITION -
-	    (arm_current_position % BOT_ARM_THIRD_ROUND);
-	asserv_arm_set_position_reached (arm_notify_position);
-	/* Prepare classification */
-	getsamples_configure_classifier ();
+	getsamples_data_.arm_noted_position += BOT_ARM_THIRD_ROUND;
+	asserv_arm_set_position_reached (getsamples_data_.arm_noted_position);
 	/* Continue to take sample */
-	asserv_move_arm (BOT_ARM_THIRD_ROUND, BOT_ARM_SPEED);
 	return getsamples_next_branch (TAKE_SAMPLES, arm_pass_noted_position, more);
       }
     else
@@ -165,7 +172,7 @@ fsm_branch_t
 getsamples__MOVE_AWAY_FROM_DISTRIBUTOR__bot_move_succeed (void)
 {
     /* Move the arm to close the input hole */
-    asserv_close_input_hole ();
+    asserv_move_arm (BOT_ARM_MIN_TO_OPEN, BOT_ARM_SPEED);
     return getsamples_next (MOVE_AWAY_FROM_DISTRIBUTOR, bot_move_succeed);
 }
 
@@ -178,6 +185,10 @@ fsm_branch_t
 getsamples__APPROACH_DISTRIBUTOR__bot_move_succeed (void)
 {
     /* start taking some samples */
-    asserv_move_arm (BOT_ARM_THIRD_ROUND, BOT_ARM_SPEED);
+    getsamples_data_.arm_noted_position = asserv_get_arm_position () +
+	BOT_ARM_NOTED_POSITION;
+    asserv_arm_set_position_reached (getsamples_data_.arm_noted_position);
+    asserv_move_arm (getsamples_count_samples () * BOT_ARM_THIRD_ROUND,
+		     BOT_ARM_SPEED);
     return getsamples_next (APPROACH_DISTRIBUTOR, bot_move_succeed);
 }
