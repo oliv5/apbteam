@@ -123,7 +123,10 @@ twi_proto_callback (u8 *buf, u8 size)
 	 * - 3b: theta consign offset. */
 	speed_theta.use_pos = speed_alpha.use_pos = 1;
 	speed_theta.pos_cons = pos_theta.cons;
-	speed_theta.pos_cons += v8_to_v32 (0, buf[2], buf[3], buf[4]);
+	if (buf[2] & 0x80)
+	    speed_theta.pos_cons += v8_to_v32 (0xff, buf[2], buf[3], buf[4]);
+	else
+	    speed_theta.pos_cons += v8_to_v32 (0, buf[2], buf[3], buf[4]);
 	speed_alpha.pos_cons = pos_alpha.cons;
 	state_start (&state_main, MODE_SPEED, 0);
 	break;
