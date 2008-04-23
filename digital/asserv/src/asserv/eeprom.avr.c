@@ -44,7 +44,7 @@
  * garbages in parameters. */
 
 static uint32_t
-eeprom_read_dword (uint8_t *addr)
+eeprom_read_32 (uint8_t *addr)
 {
     uint8_t dw[4];
     dw[0] = eeprom_read_byte (addr++);
@@ -55,7 +55,7 @@ eeprom_read_dword (uint8_t *addr)
 }
 
 static void
-eeprom_write_dword (uint8_t *addr, uint32_t dw)
+eeprom_write_32 (uint8_t *addr, uint32_t dw)
 {
     eeprom_write_byte (addr++, v32_to_v8 (dw, 0));
     eeprom_write_byte (addr++, v32_to_v8 (dw, 1));
@@ -78,7 +78,7 @@ eeprom_read_params (void)
     speed_alpha.slow = eeprom_read_byte (p8++);
     speed_aux0.slow = eeprom_read_byte (p8++);
     pwm_set_reverse (eeprom_read_byte (p8++));
-    counter_right_correction = eeprom_read_dword (p8); p8 += 4;
+    counter_right_correction = eeprom_read_32 (p8); p8 += 4;
     p16 = (uint16_t *) p8;
     postrack_set_footing (eeprom_read_word (p16++));
     speed_theta.acc = eeprom_read_word (p16++);
@@ -115,7 +115,7 @@ eeprom_write_params (void)
     eeprom_write_byte (p8++, speed_alpha.slow);
     eeprom_write_byte (p8++, speed_aux0.slow);
     eeprom_write_byte (p8++, pwm_reverse);
-    eeprom_write_dword (p8, counter_right_correction); p8 += 4;
+    eeprom_write_32 (p8, counter_right_correction); p8 += 4;
     p16 = (uint16_t *) p8;
     eeprom_write_word (p16++, postrack_footing);
     eeprom_write_word (p16++, speed_theta.acc);
