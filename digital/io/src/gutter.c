@@ -43,7 +43,7 @@ uint8_t
 gutter_generate_wait_finished_event (void)
 {
     if (gutter_wait_cycle_)
-	return !(gutter_wait_cycle_--);
+	return !(--gutter_wait_cycle_);
     else
 	return 0;
 }
