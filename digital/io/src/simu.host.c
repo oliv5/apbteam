@@ -179,9 +179,3 @@ void
 eeprom_clear_param (void)
 {
 }
-
-void
-chrono_init (void)
-{
-}
-

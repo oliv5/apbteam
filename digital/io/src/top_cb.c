@@ -29,9 +29,9 @@
 #include "move.h"	/* move FSM */
 #include "playground.h"	/* PG_* */
 #include "asserv.h"	/* asserv_* */
+#include "chrono.h"	/* chrono_init */
 /* AVR include, non HOST */
 #ifndef HOST
-# include "chrono.h"	/* chrono_init */
 # include "switch.h"	/* switch_get_color */
 #endif /* HOST */
 #include "simu.host.h"

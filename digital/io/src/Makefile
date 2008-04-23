@@ -1,7 +1,7 @@
 BASE = ../../avr
 PROGS = io
 io_SOURCES = main.c asserv.c servo.avr.c eeprom.avr.c trap.c sharp.c \
-             switch.avr.c \
+             switch.avr.c chrono.c \
 	     simu.host.c \
 	     fsm.c \
 	     getsamples.c getsamples_fsm.c getsamples_cb.c \

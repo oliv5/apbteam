@@ -33,59 +33,35 @@
  * match_duration / (1 / (AC_FREQ / (Prescaler * (TOP + 1))))
  * It will overflow 79 times and them reset the timer/counter to 58982
  * (TOP - ((TOP + 1) / 10)).
+ * @todo add the ability to unblock the chrono_end_match with a flag that can
+ * be unset with an uart command. Maybe dangerous...
  */
 
-#include "modules/utils/utils.h"	/* regv */
-#include "io.h"				/* Registers for timer/counter 1 */
-
-/**
- * Number of overflow of the timer/counter 1 before doing the last one.
- */
-#define CHRONO_OVERFLOW_MAX 70
-
-/**
- * Number of TIC to restart from for the last overflow.
- */
-#define CHRONO_RESTART_TIC 58982
-
-/**
- * Match is finished.
- * This variable will be set to 0 when the match is over.
- */
-static uint8_t chrono_match_over;
-
-/**
- * Overflow counter.
- */
-static volatile uint8_t chrono_ov_count_;
+#include "common.h"
 
 /**
  * Initialize the chrono timer/counter 1.
+ * It starts it for a duration of 90s.
  */
-static inline void
-chrono_init (void)
-{
-    /* Presaler = 256 */
-    TCCR1B = regv (ICNC1, ICES1, 5, WGM13, WGM12, CS12, CS11, CS10,
-		       0,     1, 0,     0,     0,    1,    0,    0);
-    /* Enable overflow interrupt */
-    set_bit (TIMSK, TOIE1);
-}
+void
+chrono_init (void);
 
-/* Overflow of timer/counter 1 handler. */
-SIGNAL (SIG_OVERFLOW1)
-{
-    switch (++chrono_ov_count_)
-      {
-      case CHRONO_OVERFLOW_MAX:
-	/* Last but not complete overflow */
-	TCNT1 = CHRONO_RESTART_TIC;
-	break;
-      case CHRONO_OVERFLOW_MAX + 1:
-	/* End of match! */
-	chrono_match_over = 1;
-	break;
-      }
-}
+/**
+ * Match over?
+ * @return
+ *   - 0 if the match is not finished yet
+ *   - 1 if the match is over
+ */
+uint8_t
+chrono_is_match_over (void);
+
+/**
+ * End the match.
+ * This function is responsible of resetting the asserv board to stop the bot
+ * from moving and put the io board in a state where it will not do something.
+ * @param block blocking function until hardware reset?
+ */
+void
+chrono_end_match (uint8_t block);
 
 #endif /* chrono_h */

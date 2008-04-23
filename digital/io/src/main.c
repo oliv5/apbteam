@@ -43,6 +43,7 @@
 #include "giboulee.h"	/* team_color */
 #include "getsamples.h"	/* getsamples_start */
 #include "top.h"	/* top_* */
+#include "chrono.h"	/* chrono_end_match */
 
 #include "io.h"
 
@@ -105,6 +106,15 @@ main_loop (void)
 	while (uart0_poll ())
 	    /* Manage UART protocol */
 	    proto_accept (uart0_getc ());
+
+	/* Is match over? */
+	if (chrono_is_match_over ())
+	  {
+	    /* End it and block here indefinitely */
+	    chrono_end_match (42);
+	    /* Safety */
+	    return;
+	  }
 
 	/* Update TWI module to get new data from the asserv board */
 	asserv_update_status ();

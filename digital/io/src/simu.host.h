@@ -51,10 +51,6 @@ switch_get_color (void);
 uint8_t
 switch_get_jack (void);
 
-/** Hooked, do nothing. */
-void
-chrono_init (void);
-
 #endif /* defined (HOST) */
 
 #endif /* simu_host_h */
