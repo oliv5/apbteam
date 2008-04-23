@@ -24,74 +24,64 @@
  * }}} */
 #include "common.h"
 #include "fsm.h"
-#include "gutter.h"
 #include "gutter_cb.h"
-#include "trap.h"
-#include "modules/utils/utils.h"
-#include "asserv.h"
+
+#include "asserv.h"	/* asserv_go_to_the_wall */
+#include "trap.h"	/* trap_* */
+#include "playground.h"	/* PG_GUTTER_A */
 
 /*
- * ROTATE_REAR_SIDE_TO_GUTTER =rotation_done=>
+ * ROTATE_REAR_SIDE_TO_GUTTER =bot_move_succeed=>
  *  => GO_TO_THE_GUTTER_WALL
- *   The rotation is done, the robot can go to the wall in backward mode to drop the balls in the gutter.
+ *   make the bot reversing against the gutter
  */
 fsm_branch_t
-gutter__ROTATE_REAR_SIDE_TO_GUTTER__rotation_done (void)
+gutter__ROTATE_REAR_SIDE_TO_GUTTER__bot_move_succeed (void)
 {
-    // Go to the wall in backward mode.
-    asserv_go_to_the_wall();
-    return gutter_next (ROTATE_REAR_SIDE_TO_GUTTER, rotation_done);
+    /* Make the bot reversing against the gutter */
+    asserv_go_to_the_wall ();
+    return gutter_next (ROTATE_REAR_SIDE_TO_GUTTER, bot_move_succeed);
 }
 
 /*
  * IDLE =start=>
  *  => ROTATE_REAR_SIDE_TO_GUTTER
- *   Pur the robot back to the gutter to allow it to drop the balls in the gutter.
+ *   put the bot back to the gutter
  */
 fsm_branch_t
 gutter__IDLE__start (void)
 {
-    // Request the robot to rotate to ends with the rear panel in front of the
-    // gutter.
-    asserv_goto_angle (0x8000);
+    /* Put the bot back to the gutter */
+    asserv_goto_angle (PG_GUTTER_A);
     return gutter_next (IDLE, start);
 }
 
 /*
- * CLOSE_COLLECTOR =collector_closed=>
- *  => END
- *   The samples has been inserted in the gutter.
+ * GO_TO_THE_GUTTER_WALL =bot_move_succeed=>
+ *  => DROP_BALLS
+ *   open the collector to drop the balls
+ *   wait for a while
  */
 fsm_branch_t
-gutter__CLOSE_COLLECTOR__collector_closed (void)
+gutter__GO_TO_THE_GUTTER_WALL__bot_move_succeed (void)
 {
-    //Close the collector.
-    trap_close_rear_panel();
-    return gutter_next (CLOSE_COLLECTOR, collector_closed);
-}
-
-/*
- * GO_TO_THE_GUTTER_WALL =ready=>
- *  => OPEN_COLLECTOR
- *   Open the collector and wait for a while.
- */
-fsm_branch_t
-gutter__GO_TO_THE_GUTTER_WALL__ready (void)
-{
-    // Open the rear panel.
+    /* Open the rear panel */
     trap_open_rear_panel ();
-    return gutter_next (GO_TO_THE_GUTTER_WALL, ready);
+    /* Wait for a while XXX TODO */
+    return gutter_next (GO_TO_THE_GUTTER_WALL, bot_move_succeed);
 }
 
 /*
- * OPEN_COLLECTOR =collector_opened=>
- *  => CLOSE_COLLECTOR
- *   Wait some time and clse the door.
+ * DROP_BALLS =wait_finished=>
+ *  => IDLE
+ *   close the rear panel
  */
 fsm_branch_t
-gutter__OPEN_COLLECTOR__collector_opened (void)
+gutter__DROP_BALLS__wait_finished (void)
 {
-    utils_delay_ms(4.4);
-    return gutter_next (OPEN_COLLECTOR, collector_opened);
+    /* Close the rear panel */
+    trap_close_rear_panel ();
+    /* Tell the top FSM we have finished */
+    fsm_handle_event (&top_fsm, TOP_EVENT_gutter_fsm_finished);
+    return gutter_next (DROP_BALLS, wait_finished);
 }
-

@@ -1,36 +1,46 @@
-#FSM gutter
+# Gutter FSM
+# Drop balls from the inside of the bot into the gutter to score points.
 gutter
 
 States:
  IDLE
+  waiting for the beginning of the gutter FSM
  ROTATE_REAR_SIDE_TO_GUTTER
+  stand back to the gutter
  GO_TO_THE_GUTTER_WALL
- OPEN_COLLECTOR
- CLOSE_COLLECTOR
+  make the bot reversing against the gutter
+ DROP_BALLS
+  open the collector to let the balls fall into the gutter
 
 Events:
  start
- rotation_done
- ready
- collector_opened
- collector_closed
+  initialize the FSM
+ bot_move_succeed
+  the bot has finished to moved successfully
+ bot_move_failed
+  the bot movement failed (blocked by something for example)
+ wait_finished
+  we have wait the desired time
 
 IDLE:
  start -> ROTATE_REAR_SIDE_TO_GUTTER
-  Pur the robot back to the gutter to allow it to drop the balls in the gutter.
+  put the bot back to the gutter
 
 ROTATE_REAR_SIDE_TO_GUTTER:
- rotation_done -> GO_TO_THE_GUTTER_WALL
-  The rotation is done, the robot can go to the wall in backward mode to drop the balls in the gutter. 
+ bot_move_succeed -> GO_TO_THE_GUTTER_WALL
+  make the bot reversing against the gutter 
 
 GO_TO_THE_GUTTER_WALL:
- ready -> OPEN_COLLECTOR
-  Open the collector and wait for a while.
+ bot_move_succeed -> DROP_BALLS
+  open the collector to drop the balls
+  wait for a while
+# TODO: handle the case where a ball is between the bot and the border,
+# preventing from fucking the wall
+# The best way is probably to abort this FSM with an error, tell the upper one
+# (top) we need to try at another place (the gutter is quite long).
+# bot_move_failed
 
-OPEN_COLLECTOR:
- collector_opened -> CLOSE_COLLECTOR
-  Close the rear panel.
-
-CLOSE_COLLECTOR:
- collector_closed-> IDLE
-  The samples has been inserted in the gutter. Go to the idle state.
+DROP_BALLS:
+ wait_finished -> IDLE
+  close the rear panel
+  tell the top FSM we have finished
