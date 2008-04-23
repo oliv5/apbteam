@@ -50,7 +50,7 @@
 
 /**
  * Match is finished.
- * This variable will be set to 0 when the match is over.
+ * This variable will be set to 1 when the match is over.
  */
 static volatile uint8_t chrono_match_over_ = 0;
 
