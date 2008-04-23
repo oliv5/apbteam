@@ -216,8 +216,10 @@ asserv_init (void)
 {
     /* Initialize TWI with my (io) address */
     twi_init (AC_IO_TWI_ADDRESS);
-    /* We are at first command */
-    asserv_twi_seq = asserv_status.seq = 0;
+    /* Get first status of the asserv board */
+    asserv_update_status ();
+    /* Reset sequence number */
+    asserv_twi_seq = asserv_status.seq;
     /* Scaling factor. */
     asserv_set_scale (BOT_SCALE * (1L << 24));
 }
