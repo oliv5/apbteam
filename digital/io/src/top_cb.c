@@ -155,13 +155,11 @@ top__GO_TO_SAMPLE_DISTRIBUTOR__move_fsm_finished (void)
 /*
  * IDLE =start=>
  *  => WAIT_JACK_IN
- *   tell the main loop we want to be informed when the jack is inserted into the
- *   bot
+ *   wait for the jack to be inserted into the bot
  */
 fsm_branch_t
 top__IDLE__start (void)
 {
-    /* TODO */
     return top_next (IDLE, start);
 }
 
@@ -223,13 +221,11 @@ top__GET_ICE_FROM_ADVERSE_ICE_DISTRIBUTOR__get_samples_fsm_finished (void)
 /*
  * WAIT_JACK_IN =jack_inserted_into_bot=>
  *  => WAIT_JACK_OUT
- *   tell the main loop we want to be informed when the jack is removed from the
- *   bot
+ *   wait for the jack to be removed from the bot
  */
 fsm_branch_t
 top__WAIT_JACK_IN__jack_inserted_into_bot (void)
 {
-    /* TODO */
     return top_next (WAIT_JACK_IN, jack_inserted_into_bot);
 }
 

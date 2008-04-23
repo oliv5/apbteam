@@ -54,13 +54,11 @@ Events:
 
 IDLE:
  start -> WAIT_JACK_IN
-  tell the main loop we want to be informed when the jack is inserted into the
-  bot
+  wait for the jack to be inserted into the bot
 
 WAIT_JACK_IN:
  jack_inserted_into_bot -> WAIT_JACK_OUT
-  tell the main loop we want to be informed when the jack is removed from the
-  bot
+  wait for the jack to be removed from the bot
 
 WAIT_JACK_OUT:
  jack_removed_from_bot -> CONFIGURE_ASSERV
