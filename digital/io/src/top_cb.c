@@ -97,6 +97,19 @@ top__GET_SAMPLES_FROM_SAMPLES_DISTRIBUTOR__get_samples_fsm_finished (void)
 }
 
 /*
+ * MOVE_AWAY_FROM_BORDER =move_fsm_finished=>
+ *  => GO_TO_SAMPLE_DISTRIBUTOR
+ *   order the bot to move to our samples distributors with the move FSM
+ */
+fsm_branch_t
+top__MOVE_AWAY_FROM_BORDER__move_fsm_finished (void)
+{
+    /* Start the move FSM to our samples distributor */
+    move_start (PG_DISTRIBUTOR_SAMPLE_OUR_X, PG_DISTRIBUTOR_SAMPLE_OUR_Y);
+    return top_next (MOVE_AWAY_FROM_BORDER, move_fsm_finished);
+}
+
+/*
  * GO_TO_ADVERSE_ICE_DISTRIBUTOR =move_fsm_finished=>
  *  => GET_ICE_FROM_ADVERSE_ICE_DISTRIBUTOR
  *   we are now in front of the adverse ice distributor, launch the get samples
@@ -222,16 +235,16 @@ top__WAIT_JACK_IN__jack_inserted_into_bot (void)
 
 /*
  * CONFIGURE_ASSERV =settings_acknowledged=>
- *  => GO_TO_SAMPLE_DISTRIBUTOR
- *   order the bot to move to our samples distributors with the move FSM
+ *  => MOVE_AWAY_FROM_BORDER
+ *   move the bot away from the border to be able to turn freely
  */
 fsm_branch_t
 top__CONFIGURE_ASSERV__settings_acknowledged (void)
 {
     /* Clear the flag for the setting acknowleged */
     top_waiting_for_settings_ack_ = 0;
-    /* Start the move FSM to our samples distributor */
-    move_start (PG_DISTRIBUTOR_SAMPLE_OUR_X, PG_DISTRIBUTOR_SAMPLE_OUR_Y);
+    /* Start the move FSM to move the the bot away from the border */
+    move_start (PG_X_START, PG_Y_START + BOT_MIN_DISTANCE_TURN_FREE);
     return top_next (CONFIGURE_ASSERV, settings_acknowledged);
 }
 

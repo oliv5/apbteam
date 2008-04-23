@@ -76,6 +76,12 @@
 #endif
 
 /**
+ * Distance required to be away from a border to be able to turn freely.
+ * In millimeter.
+ */
+#define BOT_MIN_DISTANCE_TURN_FREE 300
+
+/**
  * Definition of the colors.
  */
 enum team_color_e

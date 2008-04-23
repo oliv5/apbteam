@@ -16,6 +16,8 @@ States:
   waiting for the jack to be removed from the bot
  CONFIGURE_ASSERV
   configuring the asserv board
+ MOVE_AWAY_FROM_BORDER
+  move the bot away from the border to be able to turn freely
  GO_TO_SAMPLE_DISTRIBUTOR
   go to our distributor of samples (using the move FSM)
  GO_TO_OUR_ICE_DISTRIBUTOR
@@ -67,7 +69,11 @@ WAIT_JACK_OUT:
   set the settings of the asserv board (especially the position)
 
 CONFIGURE_ASSERV:
- settings_acknowledged -> GO_TO_SAMPLE_DISTRIBUTOR
+ settings_acknowledged -> MOVE_AWAY_FROM_BORDER
+  move the bot away from the border to be able to turn freely
+
+MOVE_AWAY_FROM_BORDER:
+ move_fsm_finished -> GO_TO_SAMPLE_DISTRIBUTOR
   order the bot to move to our samples distributors with the move FSM
 
 GO_TO_SAMPLE_DISTRIBUTOR:
