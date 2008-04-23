@@ -47,16 +47,18 @@ extern uint8_t top_waiting_for_settings_ack_;
 
 /*
  * DROP_OFF_BALLS_TO_GUTTER =gutter_fsm_finished=>
- *  => GO_TO_SAMPLE_DISTRIBUTOR
- *   we have finished to drop off all the balls, let's go to our sample
- *   ditributor to try the same strategy again
- *   reset internal data
+ *  => MOVE_AWAY_FROM_GUTTER_BORDER
+ *   we have finished to drop off all the balls, let's move away from the gutter
+ *   to move freely
  */
 fsm_branch_t
 top__DROP_OFF_BALLS_TO_GUTTER__gutter_fsm_finished (void)
 {
-    /* Start the move FSM */
-    move_start (PG_DISTRIBUTOR_SAMPLE_OUR_X, PG_DISTRIBUTOR_SAMPLE_OUR_Y);
+    /* Get current position */
+    asserv_position_t position;
+    asserv_get_position (&position);
+    /* Move away from the gutter */
+    move_start (position.x, position.y + BOT_MIN_DISTANCE_TURN_FREE);
     return top_next (DROP_OFF_BALLS_TO_GUTTER, gutter_fsm_finished);
 }
 
@@ -83,6 +85,19 @@ top__WAIT_JACK_OUT__jack_removed_from_bot (void)
 }
 
 /*
+ * MOVE_AWAY_FROM_START_BORDER =move_fsm_finished=>
+ *  => GO_TO_SAMPLE_DISTRIBUTOR
+ *   order the bot to move to our samples distributors with the move FSM
+ */
+fsm_branch_t
+top__MOVE_AWAY_FROM_START_BORDER__move_fsm_finished (void)
+{
+    /* Start the move FSM to our samples distributor */
+    move_start (PG_DISTRIBUTOR_SAMPLE_OUR_X, PG_DISTRIBUTOR_SAMPLE_OUR_Y);
+    return top_next (MOVE_AWAY_FROM_START_BORDER, move_fsm_finished);
+}
+
+/*
  * GET_SAMPLES_FROM_SAMPLES_DISTRIBUTOR =get_samples_fsm_finished=>
  *  => GO_TO_OUR_ICE_DISTRIBUTOR
  *   we have finished to get our samples, let's go to our ice distributor with
@@ -94,19 +109,6 @@ top__GET_SAMPLES_FROM_SAMPLES_DISTRIBUTOR__get_samples_fsm_finished (void)
     /* Start the move FSM to our ice distributor */
     move_start (PG_DISTRIBUTOR_ICE_OUR_X, PG_DISTRIBUTOR_ICE_OUR_Y);
     return top_next (GET_SAMPLES_FROM_SAMPLES_DISTRIBUTOR, get_samples_fsm_finished);
-}
-
-/*
- * MOVE_AWAY_FROM_BORDER =move_fsm_finished=>
- *  => GO_TO_SAMPLE_DISTRIBUTOR
- *   order the bot to move to our samples distributors with the move FSM
- */
-fsm_branch_t
-top__MOVE_AWAY_FROM_BORDER__move_fsm_finished (void)
-{
-    /* Start the move FSM to our samples distributor */
-    move_start (PG_DISTRIBUTOR_SAMPLE_OUR_X, PG_DISTRIBUTOR_SAMPLE_OUR_Y);
-    return top_next (MOVE_AWAY_FROM_BORDER, move_fsm_finished);
 }
 
 /*
@@ -205,6 +207,20 @@ top__GET_ICE_FROM_OUR_ICE_DISTRIBUTOR__get_samples_fsm_finished (void)
 }
 
 /*
+ * MOVE_AWAY_FROM_GUTTER_BORDER =move_fsm_finished=>
+ *  => GO_TO_SAMPLE_DISTRIBUTOR
+ *   go to our sample ditributor to try the same strategy again
+ *   reset internal data
+ */
+fsm_branch_t
+top__MOVE_AWAY_FROM_GUTTER_BORDER__move_fsm_finished (void)
+{
+    /* Start the move FSM */
+    move_start (PG_DISTRIBUTOR_SAMPLE_OUR_X, PG_DISTRIBUTOR_SAMPLE_OUR_Y);
+    return top_next (MOVE_AWAY_FROM_GUTTER_BORDER, move_fsm_finished);
+}
+
+/*
  * GET_ICE_FROM_ADVERSE_ICE_DISTRIBUTOR =get_samples_fsm_finished=>
  *  => GO_TO_GUTTER
  *   we have finished to get ice. Even if we are not full, let's go to the gutter
@@ -231,7 +247,7 @@ top__WAIT_JACK_IN__jack_inserted_into_bot (void)
 
 /*
  * CONFIGURE_ASSERV =settings_acknowledged=>
- *  => MOVE_AWAY_FROM_BORDER
+ *  => MOVE_AWAY_FROM_START_BORDER
  *   move the bot away from the border to be able to turn freely
  */
 fsm_branch_t

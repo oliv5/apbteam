@@ -16,8 +16,9 @@ States:
   waiting for the jack to be removed from the bot
  CONFIGURE_ASSERV
   configuring the asserv board
- MOVE_AWAY_FROM_BORDER
-  move the bot away from the border to be able to turn freely
+ MOVE_AWAY_FROM_START_BORDER
+  move the bot away from the border of the start point to be able to turn
+  freely
  GO_TO_SAMPLE_DISTRIBUTOR
   go to our distributor of samples (using the move FSM)
  GO_TO_OUR_ICE_DISTRIBUTOR
@@ -35,6 +36,8 @@ States:
  DROP_OFF_BALLS_TO_GUTTER
   drop all the balls contained in the bot into the gutter (using the gutter
   FSM)
+ MOVE_AWAY_FROM_GUTTER_BORDER
+  move the bot away from the border of the gutter to be able to turn freely
 
 Events:
  start
@@ -67,10 +70,10 @@ WAIT_JACK_OUT:
   set the settings of the asserv board (especially the position)
 
 CONFIGURE_ASSERV:
- settings_acknowledged -> MOVE_AWAY_FROM_BORDER
+ settings_acknowledged -> MOVE_AWAY_FROM_START_BORDER
   move the bot away from the border to be able to turn freely
 
-MOVE_AWAY_FROM_BORDER:
+MOVE_AWAY_FROM_START_BORDER:
  move_fsm_finished -> GO_TO_SAMPLE_DISTRIBUTOR
   order the bot to move to our samples distributors with the move FSM
 
@@ -101,10 +104,9 @@ GO_TO_GUTTER:
   FSM
 
 DROP_OFF_BALLS_TO_GUTTER:
- gutter_fsm_finished -> GO_TO_SAMPLE_DISTRIBUTOR
-  we have finished to drop off all the balls, let's go to our sample
-  ditributor to try the same strategy again
-  reset internal data
+ gutter_fsm_finished -> MOVE_AWAY_FROM_GUTTER_BORDER
+  we have finished to drop off all the balls, let's move away from the gutter
+  to move freely
 
 GO_TO_ADVERSE_ICE_DISTRIBUTOR:
  move_fsm_finished -> GET_ICE_FROM_ADVERSE_ICE_DISTRIBUTOR
@@ -115,3 +117,8 @@ GET_ICE_FROM_ADVERSE_ICE_DISTRIBUTOR:
  get_samples_fsm_finished -> GO_TO_GUTTER
   we have finished to get ice. Even if we are not full, let's go to the gutter
   with the move FSM
+
+MOVE_AWAY_FROM_GUTTER_BORDER:
+ move_fsm_finished -> GO_TO_SAMPLE_DISTRIBUTOR
+  go to our sample ditributor to try the same strategy again
+  reset internal data
