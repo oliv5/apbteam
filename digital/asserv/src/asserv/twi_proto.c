@@ -149,7 +149,15 @@ twi_proto_callback (u8 *buf, u8 size)
 	 * - 3b: y position. */
 	traj_goto_start (v8_to_v32 (buf[2], buf[3], buf[4], 0),
 			 v8_to_v32 (buf[5], buf[6], buf[7], 0),
-			 0);
+			 0, 0);
+	break;
+      case c ('r', 6):
+	/* Go to position, backward allowed.
+	 * - 3b: x position.
+	 * - 3b: y position. */
+	traj_goto_start (v8_to_v32 (buf[2], buf[3], buf[4], 0),
+			 v8_to_v32 (buf[5], buf[6], buf[7], 0),
+			 1, 0);
 	break;
       case c ('y', 2):
 	/* Go to angle.
@@ -164,7 +172,17 @@ twi_proto_callback (u8 *buf, u8 size)
 	traj_goto_xya_start (v8_to_v32 (buf[2], buf[3], buf[4], 0),
 			     v8_to_v32 (buf[5], buf[6], buf[7], 0),
 			     v8_to_v32 (0, buf[8], buf[9], 0),
-			     0);
+			     0, 0);
+	break;
+      case c ('R', 8):
+	/* Go to position, then angle, backward allowed.
+	 * - 3b: x position.
+	 * - 3b: y position.
+	 * - w: angle. */
+	traj_goto_xya_start (v8_to_v32 (buf[2], buf[3], buf[4], 0),
+			     v8_to_v32 (buf[5], buf[6], buf[7], 0),
+			     v8_to_v32 (0, buf[8], buf[9], 0),
+			     1, 0);
 	break;
       case c ('b', 3):
 	/* Move the arm.

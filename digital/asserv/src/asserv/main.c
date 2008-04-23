@@ -363,7 +363,18 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	    break;
 	traj_goto_start (v8_to_v32 (args[0], args[1], args[2], args[3]),
 			 v8_to_v32 (args[4], args[5], args[6], args[7]),
-			 args[8]);
+			 0, args[8]);
+	break;
+      case c ('r', 9):
+	/* Go to position, backward allowed.
+	 * - d: x, f24.8.
+	 * - d: y, f24.8.
+	 * - b: sequence number. */
+	if (args[8] == state_main.sequence)
+	    break;
+	traj_goto_start (v8_to_v32 (args[0], args[1], args[2], args[3]),
+			 v8_to_v32 (args[4], args[5], args[6], args[7]),
+			 1, args[8]);
 	break;
       case c ('x', 3):
 	/* Go to angle.
@@ -385,7 +396,20 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	traj_goto_xya_start (v8_to_v32 (args[0], args[1], args[2], args[3]),
 			     v8_to_v32 (args[4], args[5], args[6], args[7]),
 			     v8_to_v32 (0, args[8], args[9], 0),
-			     args[10]);
+			     0, args[10]);
+	break;
+      case c ('r', 11):
+	/* Go to position, then angle, backward allowed.
+	 * - d: x, f24.8.
+	 * - d: y, f24.8.
+	 * - w: a, f0.16.
+	 * - b: sequence number. */
+	if (args[10] == state_main.sequence)
+	    break;
+	traj_goto_xya_start (v8_to_v32 (args[0], args[1], args[2], args[3]),
+			     v8_to_v32 (args[4], args[5], args[6], args[7]),
+			     v8_to_v32 (0, args[8], args[9], 0),
+			     1, args[10]);
 	break;
       case c ('y', 3):
 	/* Auxiliary go to position.

@@ -135,10 +135,11 @@ class Asserv:
 	    self.proto.send ('s', 'LB', offset, self.seq)
 	self.wait (self.finished)
 
-    def goto (self, x, y):
+    def goto (self, x, y, backward_ok = False):
 	"""Go to position."""
 	self.seq += 1
-	self.proto.send ('x', 'LLB', 256 * x / self.param['scale'],
+	self.proto.send (backward_ok and 'r' or 'x', 'LLB',
+		256 * x / self.param['scale'],
 		256 * y / self.param['scale'], self.seq)
 	self.wait (self.finished)
 
@@ -148,10 +149,11 @@ class Asserv:
 	self.proto.send ('x', 'HB', a * (1 << 16) / 360, self.seq)
 	self.wait (self.finished)
 
-    def goto_xya (self, x, y, a):
+    def goto_xya (self, x, y, a, backward_ok = False):
 	"""Go to position, then angle."""
 	self.seq += 1
-	self.proto.send ('x', 'LLHB', 256 * x / self.param['scale'],
+	self.proto.send (backward_ok and 'r' or 'x', 'LLHB',
+		256 * x / self.param['scale'],
 		256 * y / self.param['scale'],
 		a * (1 << 16) / 360, self.seq)
 	self.wait (self.finished)
