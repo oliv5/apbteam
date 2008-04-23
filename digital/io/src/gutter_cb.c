@@ -30,6 +30,17 @@
 #include "trap.h"	/* trap_* */
 #include "playground.h"	/* PG_GUTTER_A */
 
+/**
+ * Gutter private data to wait a certain number of cycles.
+ */
+uint16_t gutter_wait_cycle_;
+
+/**
+ * Count of cycles to wait before we estimate all the balls have been dropped
+ * into the gutter. A cycle normally last 4.4ms.
+ */
+#define GUTTER_WAIT_FOR_BALLS_TO_DROP 1126
+
 /*
  * ROTATE_REAR_SIDE_TO_GUTTER =bot_move_succeed=>
  *  => GO_TO_THE_GUTTER_WALL
@@ -51,6 +62,8 @@ gutter__ROTATE_REAR_SIDE_TO_GUTTER__bot_move_succeed (void)
 fsm_branch_t
 gutter__IDLE__start (void)
 {
+    /* Initialize internal data */
+    gutter_wait_cycle_ = 0;
     /* Put the bot back to the gutter */
     asserv_goto_angle (PG_GUTTER_A);
     return gutter_next (IDLE, start);
@@ -67,7 +80,9 @@ gutter__GO_TO_THE_GUTTER_WALL__bot_move_succeed (void)
 {
     /* Open the rear panel */
     trap_open_rear_panel ();
-    /* Wait for a while XXX TODO */
+    /* Wait for GUTTER_WAIT_FOR_BALLS_TO_DROP before being calling back by the
+     * main loop */
+    gutter_wait_cycle_ = GUTTER_WAIT_FOR_BALLS_TO_DROP;
     return gutter_next (GO_TO_THE_GUTTER_WALL, bot_move_succeed);
 }
 

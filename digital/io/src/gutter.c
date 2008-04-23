@@ -26,10 +26,24 @@
 #include "gutter.h"
 #include "fsm.h"
 
+/* Number of cycles to wait. */
+extern uint16_t gutter_wait_cycle_;
+
+/* Start the gutter FSM. */
 void
 gutter_start (void)
 {
     /* Start the FSM. */
     fsm_init (&gutter_fsm);
     fsm_handle_event (&gutter_fsm, GUTTER_EVENT_start);
+}
+
+/* Do we need to generate a wait_finished event? */
+uint8_t
+gutter_generate_wait_finished_event (void)
+{
+    if (gutter_wait_cycle_)
+	return !(gutter_wait_cycle_--);
+    else
+	return 0;
 }

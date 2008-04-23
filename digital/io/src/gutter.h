@@ -25,8 +25,23 @@
  *
  * }}} */
 
-/* gutter start */
+/**
+ * Start the gutter FSM.
+ */
 void
 gutter_start (void);
+
+/**
+ * Do we need to generate a wait_finished event?
+ * You need to call this function in the main loop in order to ensure we
+ * generate a wait_finished event when the gutter FSM need one.
+ * The purpose is to let the gutter FSM wait a specific number of cycle it
+ * wants.
+ * @return
+ *   - 0 if you do need to generate a wait_finished event
+ *   - 1 if you need to generate a wait_finished event for the gutter FSM.
+ */
+uint8_t
+gutter_generate_wait_finished_event (void);
 
 #endif /* gutter_h */

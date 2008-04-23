@@ -44,6 +44,7 @@
 #include "getsamples.h"	/* getsamples_start */
 #include "top.h"	/* top_* */
 #include "chrono.h"	/* chrono_end_match */
+#include "gutter.h"	/* gutter_generate_wait_finished_event */
 
 #include "io.h"
 
@@ -136,12 +137,16 @@ main_loop (void)
 		/* Pass it to all the FSM that need it */
 		fsm_handle_event (&getsamples_fsm,
 				  GETSAMPLES_EVENT_bot_move_succeed);
+		fsm_handle_event (&gutter_fsm,
+				  GUTTER_EVENT_bot_move_succeed);
 	      }
 	    else if (move_status == failure)
 	      {
 		/* Move failed */
 		fsm_handle_event (&getsamples_fsm,
 				  GETSAMPLES_EVENT_bot_move_failed);
+		fsm_handle_event (&gutter_fsm,
+				  GUTTER_EVENT_bot_move_failed);
 	      }
 	    asserv_status_e arm_status = asserv_last_cmd_ack ()
 		? asserv_arm_cmd_status () : none;
@@ -169,6 +174,11 @@ main_loop (void)
 	    if (top_generate_settings_ack_event ())
 	      {
 		fsm_handle_event (&top_fsm, TOP_EVENT_settings_acknowledged);
+	      }
+	    /* Gutter wait_finished event */
+	    if (gutter_generate_wait_finished_event ())
+	      {
+		fsm_handle_event (&gutter_fsm, GUTTER_EVENT_wait_finished);
 	      }
 	    /* TODO: Check other sensors */
 	  }
