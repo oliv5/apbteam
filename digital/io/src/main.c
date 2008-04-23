@@ -139,6 +139,8 @@ main_loop (void)
 				  GETSAMPLES_EVENT_bot_move_succeed);
 		fsm_handle_event (&gutter_fsm,
 				  GUTTER_EVENT_bot_move_succeed);
+		fsm_handle_event (&move_fsm,
+				  MOVE_EVENT_reached);
 	      }
 	    else if (move_status == failure)
 	      {
@@ -147,6 +149,8 @@ main_loop (void)
 				  GETSAMPLES_EVENT_bot_move_failed);
 		fsm_handle_event (&gutter_fsm,
 				  GUTTER_EVENT_bot_move_failed);
+		fsm_handle_event (&move_fsm,
+				  MOVE_EVENT_blocked);
 	      }
 	    asserv_status_e arm_status = asserv_last_cmd_ack ()
 		? asserv_arm_cmd_status () : none;
