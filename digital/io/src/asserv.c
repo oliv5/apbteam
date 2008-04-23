@@ -28,14 +28,21 @@
 
 #include "modules/twi/twi.h"	/* twi_* */
 #include "modules/utils/byte.h"	/* v*_to_v* */
+#include "modules/math/fixed/fixed.h"
 #include "giboulee.h"		/* BOT_* */
 #include "io.h"
+
+/** Scaling factor. */
+uint32_t asserv_scale;
 
 /**
  * @defgroup AsservPrivate Asserv module private variables and functions
  * declarations and definitions
  * @{
  */
+
+/** Scaling factor inverse. */
+static uint32_t asserv_scale_inv;
 
 /**
  * Sequence number.
@@ -127,6 +134,7 @@ asserv_twi_send_command (uint8_t command, uint8_t length);
  */
 static inline uint8_t
 asserv_twi_send (uint8_t length);
+
 /**
  * Move the arm.
  * A complete rotation correspond to 5000 steps.
@@ -210,6 +218,8 @@ asserv_init (void)
     twi_init (AC_IO_TWI_ADDRESS);
     /* We are at first command */
     asserv_twi_seq = asserv_status.seq = 0;
+    /* Scaling factor. */
+    asserv_set_scale (BOT_SCALE * (1L << 24));
 }
 
 /* Update the status of the asserv board seen from the io program. */
@@ -294,8 +304,10 @@ asserv_get_position (asserv_position_t *current_position)
     if (current_position)
       {
 	/* Copy last received status buffer information to current position */
-	current_position->x = asserv_status.position.x;
-	current_position->y = asserv_status.position.y;
+	current_position->x = fixed_mul_f824 (asserv_status.position.x,
+					      asserv_scale);
+	current_position->y = fixed_mul_f824 (asserv_status.position.y,
+					      asserv_scale);
 	current_position->a = asserv_status.position.a;
       }
 }
@@ -336,6 +348,7 @@ asserv_stop_motor (void)
 void
 asserv_move_linearly (int32_t distance)
 {
+    distance = fixed_mul_f824 (distance, asserv_scale_inv);
     /* Put distance as parameter */
     asserv_twi_buffer_param[0] = v32_to_v8 (distance, 2);
     asserv_twi_buffer_param[1] = v32_to_v8 (distance, 1);
@@ -370,6 +383,8 @@ asserv_goto_angle (int16_t angle)
 void
 asserv_goto_xya (uint32_t x, uint32_t y, int16_t a)
 {
+    x = fixed_mul_f824 (x, asserv_scale_inv);
+    y = fixed_mul_f824 (y, asserv_scale_inv);
     /* Put X as parameter */
     asserv_twi_buffer_param[0] = v32_to_v8 (x, 2);
     asserv_twi_buffer_param[1] = v32_to_v8 (x, 1);
@@ -428,6 +443,7 @@ asserv_move_arm (int16_t offset, uint8_t speed)
 void
 asserv_set_x_position (int32_t x)
 {
+    x = fixed_mul_f824 (x, asserv_scale_inv);
     /* 'X' subcommand */
     asserv_twi_buffer_param[0] = 'X';
     /* Put x position as parameter */
@@ -443,6 +459,7 @@ asserv_set_x_position (int32_t x)
 void
 asserv_set_y_position (int32_t y)
 {
+    y = fixed_mul_f824 (y, asserv_scale_inv);
     /* 'Y' subcommand */
     asserv_twi_buffer_param[0] = 'Y';
     /* Put y position as parameter */
@@ -489,6 +506,8 @@ asserv_set_speed (uint8_t linear_high, uint8_t angular_high,
 void
 asserv_set_position (int32_t x, int32_t y, int16_t angle)
 {
+    x = fixed_mul_f824 (x, asserv_scale_inv);
+    y = fixed_mul_f824 (y, asserv_scale_inv);
     /* 'X' subcommand */
     asserv_twi_buffer_param[0] = 'X';
     /* Put x position as parameter */
@@ -515,6 +534,8 @@ asserv_set_position (int32_t x, int32_t y, int16_t angle)
 void
 asserv_goto (uint32_t x, uint32_t y)
 {
+    x = fixed_mul_f824 (x, asserv_scale_inv);
+    y = fixed_mul_f824 (y, asserv_scale_inv);
     /* Put X as parameter */
     asserv_twi_buffer_param[0] = v32_to_v8 (x, 2);
     asserv_twi_buffer_param[1] = v32_to_v8 (x, 1);
@@ -547,5 +568,13 @@ asserv_arm_position_reached (void)
 		    - asserv_arm_notify_position) >= 0))
 	return 1;
     return 0;
+}
+
+/* Set scale. */
+void
+asserv_set_scale (uint32_t scale)
+{
+    asserv_scale = scale;
+    asserv_scale_inv = fixed_div_f824 (1L << 24, scale);
 }
 

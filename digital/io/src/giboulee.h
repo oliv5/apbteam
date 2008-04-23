@@ -67,6 +67,15 @@
 #define BOT_ANGLE_DEGREE (65536 / 360)
 
 /**
+ * The scaling factor, millimeter per step.
+ */
+#ifdef HOST
+# define BOT_SCALE 0.0395840674352314
+#else
+# define BOT_SCALE 0.0413359788359788
+#endif
+
+/**
  * Definition of the colors.
  */
 enum team_color_e

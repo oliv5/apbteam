@@ -163,7 +163,7 @@ asserv_stop_motor (void);
 /**
  * Move linearly.
  * Move class command.
- * @param distance the distance to move (in step).
+ * @param distance the distance to move (mm).
  */
 void
 asserv_move_linearly (int32_t distance);
@@ -294,5 +294,11 @@ asserv_arm_set_position_reached (uint16_t position);
  */
 uint8_t
 asserv_arm_position_reached (void);
+
+/** Set scale.
+ * @param scale vous avez qu'à deviner (f8.24).
+ */
+void
+asserv_set_scale (uint32_t scale);
 
 #endif /* asserv_h */

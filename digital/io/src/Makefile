@@ -8,7 +8,7 @@ io_SOURCES = main.c asserv.c servo.avr.c eeprom.avr.c trap.c sharp.c \
 	     gutter_fsm.c gutter_cb.c gutter.c \
 	     move.c move_fsm.c move_cb.c \
 	     top.c top_fsm.c top_cb.c
-MODULES = proto uart twi utils adc
+MODULES = proto uart twi utils adc math/fixed
 CONFIGFILE = avrconfig.h
 # atmega8, atmega8535, atmega128...
 AVR_MCU = atmega128
