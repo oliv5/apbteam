@@ -220,15 +220,6 @@ void
 asserv_move_arm (int16_t offset, uint8_t speed);
 
 /**
- * Move the arm to close the input hole.
- * It will compute the forward offset to close the input hole by moving the
- * arm in front of it.
- * @todo backward/forward selection support.
- */
-void
-asserv_close_input_hole (void);
-
-/**
  * Set current X position.
  * Other class command.
  * @param x X position.
