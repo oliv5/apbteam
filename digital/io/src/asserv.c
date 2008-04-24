@@ -164,8 +164,7 @@ static inline uint8_t
 asserv_twi_send_command (uint8_t command, uint8_t length)
 {
     /* Check we are not doing a command ? */
-    if (!asserv_last_cmd_ack ())
-	return 1;
+    assert (asserv_last_cmd_ack ());
 
     /* Put the sequence number */
     asserv_twi_buffer[0] = ++asserv_twi_seq;
