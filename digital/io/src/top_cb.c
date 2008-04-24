@@ -256,7 +256,7 @@ top__CONFIGURE_ASSERV__settings_acknowledged (void)
     /* Clear the flag for the setting acknowleged */
     top_waiting_for_settings_ack_ = 0;
     /* Start the move FSM to move the the bot away from the border */
-    move_start (PG_X_START, PG_Y_START + BOT_MIN_DISTANCE_TURN_FREE);
+    move_start (PG_X_START, PG_Y_START - BOT_MIN_DISTANCE_TURN_FREE);
     return top_next (CONFIGURE_ASSERV, settings_acknowledged);
 }
 
