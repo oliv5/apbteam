@@ -30,6 +30,7 @@
 #include "playground.h"	/* PG_* */
 #include "asserv.h"	/* asserv_* */
 #include "chrono.h"	/* chrono_init */
+#include "trap.h"	/* trap_close_rear_panel */
 /* AVR include, non HOST */
 #ifndef HOST
 # include "switch.h"	/* switch_get_color */
@@ -242,6 +243,9 @@ top__GET_ICE_FROM_ADVERSE_ICE_DISTRIBUTOR__get_samples_fsm_finished (void)
 fsm_branch_t
 top__WAIT_JACK_IN__jack_inserted_into_bot (void)
 {
+    /* TODO: move the arm to reset to 0 */
+    /* Close the rear panel */
+    trap_close_rear_panel ();
     return top_next (WAIT_JACK_IN, jack_inserted_into_bot);
 }
 

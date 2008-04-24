@@ -53,7 +53,7 @@ static uint8_t asserv_twi_seq;
 /**
  * Shared buffer used to send commands to the asserv.
  */
-static uint8_t asserv_twi_buffer[7];
+static uint8_t asserv_twi_buffer[14];
 
 /**
  * Pointer to access the buffer to put the parameters list.
