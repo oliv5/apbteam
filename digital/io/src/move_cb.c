@@ -86,6 +86,7 @@ move__DESIRED_POSITION__blocked (void)
 fsm_branch_t
 move__DESIRED_POSITION__reached (void)
 {
+    fsm_handle_event (&top_fsm, TOP_EVENT_move_fsm_finished);
     return move_next (DESIRED_POSITION, reached);
 }
 
