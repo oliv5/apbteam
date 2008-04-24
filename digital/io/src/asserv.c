@@ -517,11 +517,11 @@ asserv_set_position (int32_t x, int32_t y, int16_t angle)
     asserv_twi_buffer_param[2] = v32_to_v8 (x, 1);
     asserv_twi_buffer_param[3] = v32_to_v8 (x, 0);
     /* 'Y' subcommand */
-    asserv_twi_buffer_param[4] = 'X';
-    /* Put x position as parameter */
-    asserv_twi_buffer_param[5] = v32_to_v8 (x, 2);
-    asserv_twi_buffer_param[6] = v32_to_v8 (x, 1);
-    asserv_twi_buffer_param[7] = v32_to_v8 (x, 0);
+    asserv_twi_buffer_param[4] = 'Y';
+    /* Put y position as parameter */
+    asserv_twi_buffer_param[5] = v32_to_v8 (y, 2);
+    asserv_twi_buffer_param[6] = v32_to_v8 (y, 1);
+    asserv_twi_buffer_param[7] = v32_to_v8 (y, 0);
     /* 'A' subcommand */
     asserv_twi_buffer_param[8] = 'A';
     /* Put angle position as parameter */
@@ -542,7 +542,7 @@ asserv_goto (uint32_t x, uint32_t y)
     asserv_twi_buffer_param[0] = v32_to_v8 (x, 2);
     asserv_twi_buffer_param[1] = v32_to_v8 (x, 1);
     asserv_twi_buffer_param[2] = v32_to_v8 (x, 0);
-    /* Put distance as parameter */
+    /* Put Y as parameter */
     asserv_twi_buffer_param[3] = v32_to_v8 (y, 2);
     asserv_twi_buffer_param[4] = v32_to_v8 (y, 1);
     asserv_twi_buffer_param[5] = v32_to_v8 (y, 0);
