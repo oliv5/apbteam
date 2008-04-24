@@ -71,7 +71,7 @@
  * The distance to remove from the real position of the distributor before
  * doing the "go to the distributor".
  */
-#define PG_DISTANCE_DISTRIBUTOR 100
+#define PG_DISTANCE_DISTRIBUTOR 300
 
 /**
  * The position of our ice distributor minus the distance to remove (only for the
@@ -106,7 +106,7 @@
  * The position of the gutter.
  */
 #define PG_GUTTER_X (PG_X_VALUE_COMPUTING (2250))
-#define PG_GUTTER_Y (100)
+#define PG_GUTTER_Y (300)
 #define PG_GUTTER_A (90 * BOT_ANGLE_DEGREE)
 
 #endif // playground_h
