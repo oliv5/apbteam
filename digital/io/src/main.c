@@ -64,6 +64,11 @@ static void main_loop (void);
 enum team_color_e bot_color;
 
 /**
+ * Post a event to the top FSM in the next iteration of main loop.
+ */
+uint8_t main_post_event_for_top_fsm;
+
+/**
  * Initialize the main and all its subsystems.
  */
 static void
@@ -196,6 +201,14 @@ main_loop (void)
 	    if (main_gutter_generate_wait_finished_event)
 	      {
 		FSM_HANDLE_EVENT (&gutter_fsm, GUTTER_EVENT_wait_finished);
+	      }
+	    /* Event generated at the end of the sub FSM to post to the top FSM */
+	    if (main_post_event_for_top_fsm)
+	      {
+		/* Post the event */
+		FSM_HANDLE_EVENT (&top_fsm, main_post_event_for_top_fsm - 1);
+		/* Reset */
+		main_post_event_for_top_fsm = 0;
 	      }
 	    /* TODO: Check other sensors */
 	  }

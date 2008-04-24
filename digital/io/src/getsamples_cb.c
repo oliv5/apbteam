@@ -32,6 +32,7 @@
 
 #include "giboulee.h"	/* BOT_ */
 #include "playground.h"	/* PG_* */
+#include "main.h"	/* main_post_event_for_top_fsm */
 
 #include "io.h"
 
@@ -116,7 +117,7 @@ fsm_branch_t
 getsamples__CLOSE_INPUT_HOLE__arm_move_succeed (void)
 {
     /* Tell the top FSM we have finished */
-    fsm_handle_event (&top_fsm, TOP_EVENT_get_samples_fsm_finished);
+    main_post_event_for_top_fsm = TOP_EVENT_get_samples_fsm_finished + 1;
     return getsamples_next (CLOSE_INPUT_HOLE, arm_move_succeed);
 }
 

@@ -29,6 +29,7 @@
 #include "asserv.h"	/* asserv_go_to_the_wall */
 #include "trap.h"	/* trap_* */
 #include "playground.h"	/* PG_GUTTER_A */
+#include "main.h"	/* main_post_event_for_top_fsm */
 
 /**
  * Gutter private data to wait a certain number of cycles.
@@ -97,6 +98,6 @@ gutter__DROP_BALLS__wait_finished (void)
     /* Close the rear panel */
     trap_close_rear_panel ();
     /* Tell the top FSM we have finished */
-    fsm_handle_event (&top_fsm, TOP_EVENT_gutter_fsm_finished);
+    main_post_event_for_top_fsm = TOP_EVENT_gutter_fsm_finished + 1;
     return gutter_next (DROP_BALLS, wait_finished);
 }

@@ -10,6 +10,7 @@
 #include "move_cb.h"
 #include "move.h"
 #include "asserv.h"
+#include "main.h"	/* main_post_event_for_top_fsm */
 
 /*
  * IDLE =start=>
@@ -86,7 +87,7 @@ move__DESIRED_POSITION__blocked (void)
 fsm_branch_t
 move__DESIRED_POSITION__reached (void)
 {
-    fsm_handle_event (&top_fsm, TOP_EVENT_move_fsm_finished);
+    main_post_event_for_top_fsm = TOP_EVENT_move_fsm_finished + 1;
     return move_next (DESIRED_POSITION, reached);
 }
 
