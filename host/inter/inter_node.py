@@ -96,7 +96,7 @@ class InterNode (Inter):
     def read (self, file, mask):
 	"""Handle event on the Node."""
 	self.node.read ()
-	if self.node.sync () and not self.synced:
+	if not self.synced and self.node.sync ():
 	    self.synced = True
 	    self.date = self.node.date
 	    self.nowLabel.configure (text = 'Now: %.2f s' % (self.date
