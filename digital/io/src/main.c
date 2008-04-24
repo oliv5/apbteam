@@ -66,7 +66,7 @@ enum team_color_e bot_color;
 /**
  * Post a event to the top FSM in the next iteration of main loop.
  */
-uint8_t main_post_event_for_top_fsm;
+uint8_t main_post_event_for_top_fsm = 0xFF;
 
 /**
  * Initialize the main and all its subsystems.
@@ -203,12 +203,17 @@ main_loop (void)
 		FSM_HANDLE_EVENT (&gutter_fsm, GUTTER_EVENT_wait_finished);
 	      }
 	    /* Event generated at the end of the sub FSM to post to the top FSM */
-	    if (main_post_event_for_top_fsm)
+	    if (main_post_event_for_top_fsm != 0xFF)
 	      {
-		/* Post the event */
-		FSM_HANDLE_EVENT (&top_fsm, main_post_event_for_top_fsm - 1);
+		/* We must post the event at the end of this block because it
+		 * will issue a continue and every instruction after will
+		 * never be executed. */
+		/* We need to save the event before reseting it */
+		uint8_t save_event = main_post_event_for_top_fsm;
 		/* Reset */
-		main_post_event_for_top_fsm = 0;
+		main_post_event_for_top_fsm = 0xFF;
+		/* Post the event */
+		FSM_HANDLE_EVENT (&top_fsm, save_event);
 	      }
 	    /* TODO: Check other sensors */
 	  }

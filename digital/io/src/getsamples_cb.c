@@ -117,7 +117,7 @@ fsm_branch_t
 getsamples__CLOSE_INPUT_HOLE__arm_move_succeed (void)
 {
     /* Tell the top FSM we have finished */
-    main_post_event_for_top_fsm = TOP_EVENT_get_samples_fsm_finished + 1;
+    main_post_event_for_top_fsm = TOP_EVENT_get_samples_fsm_finished;
     return getsamples_next (CLOSE_INPUT_HOLE, arm_move_succeed);
 }
 

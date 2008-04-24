@@ -98,6 +98,6 @@ gutter__DROP_BALLS__wait_finished (void)
     /* Close the rear panel */
     trap_close_rear_panel ();
     /* Tell the top FSM we have finished */
-    main_post_event_for_top_fsm = TOP_EVENT_gutter_fsm_finished + 1;
+    main_post_event_for_top_fsm = TOP_EVENT_gutter_fsm_finished;
     return gutter_next (DROP_BALLS, wait_finished);
 }
