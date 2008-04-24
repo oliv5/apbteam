@@ -222,10 +222,10 @@ asserv_update_status (void)
     /* Parse received data and store them */
     asserv_status.status = status_buffer[0];
     asserv_status.seq = status_buffer[1];
-    asserv_status.position.x = v8_to_v32 (status_buffer[2], status_buffer[3],
-				     status_buffer[4], 0);
-    asserv_status.position.y = v8_to_v32 (status_buffer[5], status_buffer[6],
-				     status_buffer[7], 0);
+    asserv_status.position.x = ((int32_t) v8_to_v32 (status_buffer[2], status_buffer[3],
+				     status_buffer[4], 0)) >> 8;
+    asserv_status.position.y = ((int32_t) v8_to_v32 (status_buffer[5], status_buffer[6],
+				     status_buffer[7], 0)) >> 8;
     asserv_status.position.a = v8_to_v16 (status_buffer[8], status_buffer[9]);
     asserv_status.arm_position = v8_to_v16 (status_buffer[10], status_buffer[11]);
 }
