@@ -107,6 +107,6 @@
  */
 #define PG_GUTTER_X (PG_X_VALUE_COMPUTING (2250))
 #define PG_GUTTER_Y (100)
-#define PG_GUTTER_A (-90 * BOT_ANGLE_DEGREE)
+#define PG_GUTTER_A (90 * BOT_ANGLE_DEGREE)
 
 #endif // playground_h
