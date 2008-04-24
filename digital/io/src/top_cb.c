@@ -122,7 +122,7 @@ top__GO_TO_ADVERSE_ICE_DISTRIBUTOR__move_fsm_finished (void)
 {
     /* Start the get samples FSM with the correct angle */
     /* TODO: where to put the ice?! */
-    getsamples_start (PG_DISTRIBUTOR_ICE_ADVERSE_A, 0);
+    getsamples_start (PG_DISTRIBUTOR_ICE_ADVERSE_A, 1);
     return top_next (GO_TO_ADVERSE_ICE_DISTRIBUTOR, move_fsm_finished);
 }
 
@@ -136,7 +136,7 @@ top__GO_TO_OUR_ICE_DISTRIBUTOR__move_fsm_finished (void)
 {
     /* Start the get samples FSM with the correct angle */
     /* TODO: where to put the ice?! */
-    getsamples_start (PG_DISTRIBUTOR_ICE_OUR_A, 0);
+    getsamples_start (PG_DISTRIBUTOR_ICE_OUR_A, 1);
     return top_next (GO_TO_OUR_ICE_DISTRIBUTOR, move_fsm_finished);
 }
 
@@ -150,7 +150,7 @@ top__GO_TO_SAMPLE_DISTRIBUTOR__move_fsm_finished (void)
 {
     /* Start the get samples FSM with the correct angle */
     /* TODO: where to put the samples?! */
-    getsamples_start (PG_DISTRIBUTOR_SAMPLE_OUR_A, 0);
+    getsamples_start (PG_DISTRIBUTOR_SAMPLE_OUR_A, 1);
     return top_next (GO_TO_SAMPLE_DISTRIBUTOR, move_fsm_finished);
 }
 
