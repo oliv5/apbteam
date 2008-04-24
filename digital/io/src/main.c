@@ -97,6 +97,13 @@ main_init (void)
 static void
 main_loop (void)
 {
+#define FSM_HANDLE_EVENT(fsm,event) \
+      { if (fsm_handle_event (fsm,event)) \
+	  { \
+	    continue; \
+	  } \
+      }
+
     /* Infinite loop */
     while (1)
       {
@@ -125,31 +132,37 @@ main_loop (void)
 
 	/* Is last command has been acknowledged? */
 	if (asserv_last_cmd_ack () == 0)
+	  {
 	    /* Called function to manage retransmission */
 	    asserv_retransmit ();
+	  }
 	else
 	  {
+	    /* Update */
+	    uint8_t main_asserv_arm_position_reached = asserv_arm_position_reached ();
+	    uint8_t main_top_generate_settings_ack_event = top_generate_settings_ack_event ();
+	    uint8_t main_gutter_generate_wait_finished_event = gutter_generate_wait_finished_event ();
 	    asserv_status_e move_status = asserv_last_cmd_ack ()
 		? asserv_move_cmd_status () : none;
 	    /* Check commands move status */
 	    if (move_status == success)
 	      {
 		/* Pass it to all the FSM that need it */
-		fsm_handle_event (&getsamples_fsm,
+		FSM_HANDLE_EVENT (&getsamples_fsm,
 				  GETSAMPLES_EVENT_bot_move_succeed);
-		fsm_handle_event (&gutter_fsm,
+		FSM_HANDLE_EVENT (&gutter_fsm,
 				  GUTTER_EVENT_bot_move_succeed);
-		fsm_handle_event (&move_fsm,
+		FSM_HANDLE_EVENT (&move_fsm,
 				  MOVE_EVENT_reached);
 	      }
 	    else if (move_status == failure)
 	      {
 		/* Move failed */
-		fsm_handle_event (&getsamples_fsm,
+		FSM_HANDLE_EVENT (&getsamples_fsm,
 				  GETSAMPLES_EVENT_bot_move_failed);
-		fsm_handle_event (&gutter_fsm,
+		FSM_HANDLE_EVENT (&gutter_fsm,
 				  GUTTER_EVENT_bot_move_failed);
-		fsm_handle_event (&move_fsm,
+		FSM_HANDLE_EVENT (&move_fsm,
 				  MOVE_EVENT_blocked);
 	      }
 	    asserv_status_e arm_status = asserv_last_cmd_ack ()
@@ -158,31 +171,31 @@ main_loop (void)
 	    if (arm_status == success)
 	      {
 		/* Pass it to all the FSM that need it */
-		fsm_handle_event (&getsamples_fsm,
+		FSM_HANDLE_EVENT (&getsamples_fsm,
 				  GETSAMPLES_EVENT_arm_move_succeed);
 	      }
 	    /* TODO: Check if the sensor placed at the noted position has seen
 	     * an arm passed and forward this event to the getsamples FSM */
-	    if (asserv_arm_position_reached ())
+	    if (main_asserv_arm_position_reached)
 	      {
 		/* Reset the notifier */
 		asserv_arm_set_position_reached (0);
-		fsm_handle_event (&getsamples_fsm,
+		FSM_HANDLE_EVENT (&getsamples_fsm,
 				  GETSAMPLES_EVENT_arm_pass_noted_position);
 	      }
 	    /* Jack */
-	    fsm_handle_event (&top_fsm, switch_get_jack () ?
+	    FSM_HANDLE_EVENT (&top_fsm, switch_get_jack () ?
 			      TOP_EVENT_jack_removed_from_bot :
 			      TOP_EVENT_jack_inserted_into_bot);
 	    /* Settings acknowledge */
-	    if (top_generate_settings_ack_event ())
+	    if (main_top_generate_settings_ack_event)
 	      {
-		fsm_handle_event (&top_fsm, TOP_EVENT_settings_acknowledged);
+		FSM_HANDLE_EVENT (&top_fsm, TOP_EVENT_settings_acknowledged);
 	      }
 	    /* Gutter wait_finished event */
-	    if (gutter_generate_wait_finished_event ())
+	    if (main_gutter_generate_wait_finished_event)
 	      {
-		fsm_handle_event (&gutter_fsm, GUTTER_EVENT_wait_finished);
+		FSM_HANDLE_EVENT (&gutter_fsm, GUTTER_EVENT_wait_finished);
 	      }
 	    /* TODO: Check other sensors */
 	  }

@@ -38,7 +38,7 @@ fsm_init (fsm_t *fsm)
 }
 
 /** Handle an event on the given FSM. */
-void
+uint8_t
 fsm_handle_event (fsm_t *fsm, u8 event)
 {
     assert (fsm);
@@ -62,6 +62,8 @@ fsm_handle_event (fsm_t *fsm, u8 event)
 #else
 	fsm->state_current = br;
 #endif
+	return 1;
       }
+    return 0;
 }
 

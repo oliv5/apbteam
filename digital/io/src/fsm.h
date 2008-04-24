@@ -89,8 +89,12 @@ typedef struct fsm_t fsm_t;
 void
 fsm_init (fsm_t *fsm);
 
-/** Handle an event on the given FSM. */
-void
+/** Handle an event on the given FSM.
+ * @return
+ *   - 0 if this FSM does not handle this event ;
+ *   - 1 if this FSM handles this event in its current state.
+ */
+uint8_t
 fsm_handle_event (fsm_t *fsm, u8 event);
 
 #include "getsamples_fsm.h"
