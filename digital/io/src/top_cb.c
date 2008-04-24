@@ -58,7 +58,7 @@ top__DROP_OFF_BALLS_TO_GUTTER__gutter_fsm_finished (void)
     asserv_position_t position;
     asserv_get_position (&position);
     /* Move away from the gutter */
-    move_start (position.x, position.y + BOT_MIN_DISTANCE_TURN_FREE);
+    move_start (position.x, position.y - BOT_MIN_DISTANCE_TURN_FREE);
     return top_next (DROP_OFF_BALLS_TO_GUTTER, gutter_fsm_finished);
 }
 
