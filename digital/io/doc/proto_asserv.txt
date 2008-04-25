@@ -159,6 +159,12 @@ Here is a list of the bits used and their definitions:
  3. Arm movement finished with failure: it should not happen, but we are not
     sure yet (AB).
 
+ 4. Movement is going forward: the current linear speed is greater than 0
+    (FWD) ;
+
+ 5. Movement is going backward: the current linear speed is smaller than 0
+    (BCK) ;
+
 The others bits are unused.
 
 

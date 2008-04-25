@@ -71,7 +71,9 @@ twi_proto_update (void)
 	twi_proto_callback (buf, sizeof (buf));
     /* Update status. */
     u8 status[12];
-    status[0] = (state_aux0.blocked << 3)
+    status[0] = (speed_theta.cons < 0 ? (1 << 5) : 0)
+	| (speed_theta.cons > 0 ? (1 << 4) : 0)
+	| (state_aux0.blocked << 3)
 	| (state_aux0.finished << 2)
 	| (state_main.blocked << 1)
 	| (state_main.finished << 0);
