@@ -77,12 +77,12 @@ class Table (Drawable):
 	# Vertical dispensers.
 	self.draw_rectangle ((-22, 2100 - 750 - 85 / 2), (0, 2100 - 750 + 85 / 2), fill = '#5b5b5b')
 	self.draw_circle ((40, 2100 - 750), 40)
-	self.draw_rectangle ((750 - 85 / 2, 2100), (750 + 85 / 2, 2100 + 22), fill = '#5b5b5b')
-	self.draw_circle ((750, 2100 - 40), 40)
+	self.draw_rectangle ((700 - 85 / 2, 2100), (700 + 85 / 2, 2100 + 22), fill = '#5b5b5b')
+	self.draw_circle ((700, 2100 - 40), 40)
 	self.draw_rectangle ((3000 + 22, 2100 - 750 - 85 / 2), (3000, 2100 - 750 + 85 / 2), fill = '#5b5b5b')
 	self.draw_circle ((3000 - 40, 2100 - 750), 40)
-	self.draw_rectangle ((3000 - 750 + 85 / 2, 2100), (3000 - 750 - 85 / 2, 2100 + 22), fill = '#5b5b5b')
-	self.draw_circle ((3000 - 750, 2100 - 40), 40)
+	self.draw_rectangle ((3000 - 700 + 85 / 2, 2100), (3000 - 700 - 85 / 2, 2100 + 22), fill = '#5b5b5b')
+	self.draw_circle ((3000 - 700, 2100 - 40), 40)
 	# Horizontal dispenser.
 	self.draw_rectangle ((3000 / 2 - 924 / 2, 2100 + 22), (3000 / 2 + 924 / 2, 2100 + 22 + 80 + 22), fill = '#5b5b5b')
 	self.draw_rectangle ((3000 / 2 - 924 / 2 + 22, 2100 + 22), (3000 / 2 + 924 / 2 - 22, 2100 + 22 + 80), fill = '#5b5b5b')
@@ -91,7 +91,7 @@ class Table (Drawable):
 	# Balls.
 	balls = [ (800, 200, 'rb'), (800, 400, 'RB'), (800, 600, 'ww'),
 		(1300, 200, 'rb'), (1300, 400, 'rb'), (1300, 600, 'ww'),
-		(520, 800, 'WW'), (750, 40, 'RB'), (40, 750, 'WW'),
+		(520, 800, 'WW'), (700, 40, 'RB'), (40, 750, 'WW'),
 		(450, 1120, 'ww'), (750, 1070, 'ww'), (1050, 1020, 'ww'),
 		(1500 - 72 / 2, -22 - 80 / 2, 'BR'),
 		(1500 - 72 / 2 - 1 * 73, -22 - 80 / 2, 'RB'),
