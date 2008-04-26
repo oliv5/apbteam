@@ -164,3 +164,9 @@ class DrawableCanvas(Tkinter.Canvas):
 	return [ (i[0] * self.__scale + self.__xoffset,
 	    -i[1] * self.__scale + self.__yoffset) for i in args ]
 
+    def screen_coord (self, screen):
+	"""Return drawable coordinates corresponding to the given screen
+	coordinates."""
+	return ((self.canvasx (screen[0]) - self.__xoffset) / self.__scale,
+		-(self.canvasy (screen[1]) - self.__yoffset) / self.__scale)
+
