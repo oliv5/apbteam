@@ -47,6 +47,11 @@
 #define PG_HEIGHT 2100
 
 /**
+ * The distance from table border for movements.
+ */
+#define PG_BORDER_DISTANCE 250
+
+/**
  * Considering there is a symmetry axis on X, this macro will compute the
  * value for on the X axis depending on the color.
  */
