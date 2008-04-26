@@ -34,6 +34,7 @@ class Asserv:
 
     def __init__ (self, file, **param):
 	self.proto = proto.Proto (file, time.time, 0.1)
+	self.async = False
 	self.seq = 0
 	self.seq_ack = 0
 	self.proto.register ('A', 'BB', self.handle_ack)
@@ -133,7 +134,18 @@ class Asserv:
 	else:
 	    assert w == 'a0'
 	    self.proto.send ('s', 'LB', offset, self.seq)
-	self.wait (self.finished)
+	self.wait (self.finished, auto = True)
+
+    def set_pos (self, x = None, y = None, a = None):
+	"""Set current position."""
+	if x is not None:
+	    self.proto.send ('p', 'BL', ord ('X'),
+		    256 * x / self.param['scale'])
+	if y is not None:
+	    self.proto.send ('p', 'BL', ord ('Y'),
+		    256 * y / self.param['scale'])
+	if a is not None:
+	    self.proto.send ('p', 'BL', ord ('A'), a * (1 << 24) / 360)
 
     def goto (self, x, y, backward_ok = False):
 	"""Go to position."""
@@ -141,13 +153,13 @@ class Asserv:
 	self.proto.send (backward_ok and 'r' or 'x', 'LLB',
 		256 * x / self.param['scale'],
 		256 * y / self.param['scale'], self.seq)
-	self.wait (self.finished)
+	self.wait (self.finished, auto = True)
 
     def goto_angle (self, a):
 	"""Go to angle."""
 	self.seq += 1
 	self.proto.send ('x', 'HB', a * (1 << 16) / 360, self.seq)
-	self.wait (self.finished)
+	self.wait (self.finished, auto = True)
 
     def goto_xya (self, x, y, a, backward_ok = False):
 	"""Go to position, then angle."""
@@ -156,7 +168,13 @@ class Asserv:
 		256 * x / self.param['scale'],
 		256 * y / self.param['scale'],
 		a * (1 << 16) / 360, self.seq)
-	self.wait (self.finished)
+	self.wait (self.finished, auto = True)
+
+    def register_pos (self, func, interval = 225 / 4):
+	"""Will call func each time a position is received."""
+	self.pos_func = func
+	self.proto.register ('X', 'lll', self.handle_pos)
+	self.proto.send ('X', 'B', interval)
 
     def send_param (self):
 	p = self.param
@@ -192,7 +210,15 @@ class Asserv:
     def handle_ack (self, mseq, a0seq):
 	self.seq_ack = mseq & 0x7f
 
-    def wait (self, cond = None):
+    def handle_pos (self, x, y, a):
+	x = x / 256 * self.param['scale']
+	y = y / 256 * self.param['scale']
+	a = a * 360 / (1 << 24)
+	self.pos_func (x, y, a)
+
+    def wait (self, cond = None, auto = False):
+	if auto and self.async:
+	    return
 	try:
 	    cond_count = int (cond)
 	    cond = lambda: self.stats_count > cond_count
@@ -203,6 +229,9 @@ class Asserv:
     def finished (self):
 	return self.seq == self.seq_ack
 
+    def free (self):
+	self.proto.send ('w')
+
     def reset (self):
 	self.proto.send ('w')
 	self.proto.send ('z')
@@ -211,3 +240,6 @@ class Asserv:
 	self.reset ()
 	self.wait (lambda: True)
 	self.proto.file.close ()
+
+    def fileno (self):
+	return self.proto.fileno ()
