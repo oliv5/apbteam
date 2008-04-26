@@ -149,7 +149,8 @@ pos_update (void)
 	    pid = pos_compute_pid (diff, &pos_aux0);
 	    /* Update PWM. */
 	    pwm_aux0 = pid;
-	    UTILS_BOUND (pwm_aux0, -PWM_MAX, PWM_MAX);
+	    /* WARNING: crude way to limit PWM for this 12V motor. */
+	    UTILS_BOUND (pwm_aux0, -(PWM_MAX / 2), (PWM_MAX / 2));
 	  }
       }
 }

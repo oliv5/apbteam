@@ -148,7 +148,9 @@ static const struct motor_def_t giboulee_arm_model =
     0,			/* Bearing friction (N.m/(rad/s)). */
     2.18,		/* Terminal resistance (Ohm). */
     0.24 / 1000,	/* Terminal inductance (H). */
-    12.0,		/* Maximum voltage (V). */
+    24.0,		/* Maximum voltage (V). */
+    /* WARNING: Giboulée arm use a 12V motor on 24V power, PWM should be
+     * limited to half scale. */
     /* Gearbox characteristics. */
     10,			/* Gearbox ratio. */
     0.75,		/* Gearbox efficiency. */
