@@ -4,34 +4,43 @@ move
 States:
  IDLE
  DESIRED_POSITION
- MOVE_ON_LEFT
- MOVE_ON_RIGHT
+ BACKWARD
+ GO_AWAY
+ STOP_WAIT
 
 Events:
  start
- reached
- blocked
+ bot_move_succeed
+ bot_move_failed
+ bot_move_obstacle
+ wait_finished
 
 IDLE:
  start -> DESIRED_POSITION
-  Tries to reach a position provided by the user. If the position desired can not be reached, it all try to move on the right or the left.
+  Save the destination position and put obstacles number to 0.
 
 DESIRED_POSITION:
- reached -> IDLE
-  The position provided by the user has been reached, the FSM can stop.
- blocked:near_left_border -> MOVE_ON_RIGHT
-  The robot will compute the position from the border and will take the decision to go on the right because the left border is too near.
- blocked:near_right_border -> MOVE_ON_LEFT
-  The robot will compute the position from the border and will take the decision to go on the left because the right border is too near.
+ bot_move_succeed-> IDLE
+  Destination position reached by the bot. Set the flag of the top event to inform it.
+ bot_move_failed-> BACKWARD
+  Store the current position, initialise the path system i.e. provide the position of the obstacle and request the path system the next position.
+ bot_move_obstacle-> STOP_WAIT
+  Stop the bot.
 
-MOVE_ON_LEFT:
- reached -> DESIRED_POSITION
-  The position has been reached. It will now try to reach the position provided by the user.
- blocked -> MOVE_ON_RIGHT
-  The robot will try to go on the left because the previous movement block on the right.
+BACKWARD:
+ bot_move_succeed-> GO_AWAY
+  Launch the pathfinder and go to the next position.
 
-MOVE_ON_RIGHT:
- reached -> DESIRED_POSITION
-  The position has been reached. It will now try to reach the position provided by the user.
- blocked -> MOVE_ON_LEFT
-  The robot will try to go on the left because the previous movement block on the left.
+STOP_WAIT:
+ wait_finished-> GO_AWAY
+  Launch the pathfinder and go to the next position.
+
+GO_AWAY:
+ bot_move_obstacle -> STOP_WAIT
+  Go to the stop wait event.
+ bot_move_succeed: position_desired -> IDLE
+  The position desired provided on the FSM call had been reached.
+ bot_move_succeed: position_intermediary -> GO_AWAY
+  Request the next step to reached to the path finder.
+ bot_move_failed -> BACKWARD
+  Store the current position, and go backward.

@@ -114,4 +114,9 @@
 #define PG_GUTTER_Y (300)
 #define PG_GUTTER_A (90 * BOT_ANGLE_DEGREE)
 
+/**
+ * The backward move for the MOVE_FSM.
+ */
+#define PG_MOVE_DISTANCE 300
+
 #endif // playground_h

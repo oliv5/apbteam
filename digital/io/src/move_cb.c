@@ -8,111 +8,173 @@
 #include "common.h"
 #include "fsm.h"
 #include "move_cb.h"
-#include "move.h"
+#include "path.h"
 #include "asserv.h"
-#include "main.h"	/* main_post_event_for_top_fsm */
+#include "playground.h"
+#include "move.h"
+
+/*
+ * GO_AWAY =bot_move_succeed=>
+ * position_intermediary => GO_AWAY
+ *   Request the next step to reached to the path finder.
+ * position_desired => IDLE
+ *   The position desired provided on the FSM call had been reached.
+ */
+fsm_branch_t
+move__GO_AWAY__bot_move_succeed (void)
+{
+    if (move_data.position_x == move_data.path_pos_x 
+	&& move_data.position_y == move_data.path_pos_y)
+	return move_next_branch (GO_AWAY, bot_move_succeed, position_desired);
+    else
+      {
+	path_endpoints (move_data.path_pos_x, move_data.path_pos_y,
+			move_data.position_x, move_data.position_y);
+	path_update ();
+
+	path_get_next (&move_data.path_pos_x, &move_data.path_pos_y);
+	asserv_goto (move_data.path_pos_x, move_data.path_pos_y);
+	return move_next_branch (GO_AWAY, bot_move_succeed, position_intermediary);
+      }
+}
+
+/*
+ * GO_AWAY =bot_move_failed=>
+ *  => BACKWARD
+ *   Store the current position, and go backward.
+ */
+fsm_branch_t
+move__GO_AWAY__bot_move_failed (void)
+{
+    asserv_move_linearly (-PG_MOVE_DISTANCE); 
+    return move_next (GO_AWAY, bot_move_failed);
+}
+
+/*
+ * GO_AWAY =bot_move_obstacle=>
+ *  => STOP_WAIT
+ *   Go to the stop wait event.
+ */
+fsm_branch_t
+move__GO_AWAY__bot_move_obstacle (void)
+{
+    asserv_position_t obstacle_pos;
+
+    asserv_stop_motor ();
+
+    // Store the obstacle in the path finder.
+    asserv_get_position (&obstacle_pos);
+    path_obstacle (move_data.nb_obstacle, obstacle_pos.x,
+		   obstacle_pos.y, MOVE_OBSTACLE_RADIUS, 
+		   MOVE_OBSTACLE_VALIDITY);
+    move_data.nb_obstacle ++;
+
+    // TODO: Set flag on main to wait.
+    return move_next (GO_AWAY, bot_move_obstacle);
+}
+
+/*
+ * STOP_WAIT =wait_finished=>
+ *  => GO_AWAY
+ *   Launch the pathfinder and go to the next position.
+ */
+fsm_branch_t
+move__STOP_WAIT__wait_finished (void)
+{
+    asserv_position_t current_pos;
+
+    // get the current position.
+    asserv_get_position (&current_pos);
+
+    // configure the path finder.
+    path_endpoints (current_pos.x, current_pos.y,
+		    move_data.position_x, move_data.position_y);
+    path_update();
+
+    path_get_next (&move_data.path_pos_x, &move_data.path_pos_y);
+    asserv_goto (move_data.path_pos_x, move_data.path_pos_y);
+    return move_next (STOP_WAIT, wait_finished);
+}
 
 /*
  * IDLE =start=>
  *  => DESIRED_POSITION
- *   Tries to reach a position provided by the user. If the position desired can not be reached, it all try to move on the right or the left.
+ *   Save the destination position and put obstacles number to 0.
  */
 fsm_branch_t
 move__IDLE__start (void)
 {
+    // Try to go the desired position.
     asserv_goto (move_data.position_x, move_data.position_y);
     return move_next (IDLE, start);
 }
 
 /*
- * MOVE_ON_RIGHT =blocked=>
- *  => MOVE_ON_LEFT
- *   The robot will try to go on the left because the previous movement block on the left.
+ * BACKWARD =bot_move_succeed=>
+ *  => GO_AWAY
+ *   Launch the pathfinder and go to the next position.
  */
 fsm_branch_t
-move__MOVE_ON_RIGHT__blocked (void)
+move__BACKWARD__bot_move_succeed (void)
 {
-    move_go_to_left (); 
-    return move_next (MOVE_ON_RIGHT, blocked);
+    asserv_position_t current_pos;
+
+    // Configure the path finder.
+    asserv_get_position (&current_pos);
+    path_endpoints (current_pos.x, current_pos.y,
+		    move_data.position_x, move_data.position_y);
+    path_update ();
+
+    // Get the next point to reach.
+    path_get_next (&move_data.path_pos_x, &move_data.path_pos_y);
+    asserv_goto (move_data.path_pos_x, move_data.path_pos_y);
+    return move_next (BACKWARD, bot_move_succeed);
 }
 
 /*
- * MOVE_ON_RIGHT =reached=>
- *  => DESIRED_POSITION
- *   The position has been reached. It will now try to reach the position provided by the user.
+ * DESIRED_POSITION =bot_move_failed=>
+ *  => BACKWARD
+ *   Store the current position, initialise the path system i.e. provide the position of the obstacle and request the path system the next position.
  */
 fsm_branch_t
-move__MOVE_ON_RIGHT__reached (void)
+move__DESIRED_POSITION__bot_move_failed (void)
 {
-    asserv_goto (move_data.position_x, move_data.position_y);
-    return move_next (MOVE_ON_RIGHT, reached);
+    // Go backward linearly.
+    asserv_move_linearly (-PG_MOVE_DISTANCE); 
+
+    return move_next (DESIRED_POSITION, bot_move_failed);
 }
 
 /*
- * DESIRED_POSITION =blocked=>
- * near_right_border => MOVE_ON_LEFT
- *   The robot will compute the position from the border and will take the decision to go on the left because the right border is too near.
- * near_left_border => MOVE_ON_RIGHT
- *   The robot will compute the position from the border and will take the decision to go on the right because the left border is too near.
- */
-fsm_branch_t
-move__DESIRED_POSITION__blocked (void)
-{
-    asserv_position_t pos;
-    asserv_position_t new_pos;
-
-    asserv_get_position (&pos);
-    new_pos = pos;
-    new_pos.x += MOVE_BORDER_LEVEL ;
-
-    if (move_can_go_on_left_or_right (pos, new_pos))
-      {
-	asserv_goto (new_pos.x, new_pos.y);
-	return move_next_branch (DESIRED_POSITION, blocked, near_left_border);
-      }
-    else
-      {
-	new_pos.x = pos.x + MOVE_BORDER_LEVEL;
-	// replace this by the correct function.
-	asserv_goto (new_pos.x, new_pos.y);
-	return move_next_branch (DESIRED_POSITION, blocked, near_right_border);
-      }
-}
-
-/*
- * DESIRED_POSITION =reached=>
+ * DESIRED_POSITION =bot_move_succeed=>
  *  => IDLE
- *   The position provided by the user has been reached, the FSM can stop.
+ *   Destination position reached by the bot. Set the flag of the top event to inform it.
  */
 fsm_branch_t
-move__DESIRED_POSITION__reached (void)
+move__DESIRED_POSITION__bot_move_succeed (void)
 {
-    main_post_event_for_top_fsm = TOP_EVENT_move_fsm_finished;
-    return move_next (DESIRED_POSITION, reached);
+    return move_next (DESIRED_POSITION, bot_move_succeed);
 }
 
 /*
- * MOVE_ON_LEFT =blocked=>
- *  => MOVE_ON_RIGHT
- *   The robot will try to go on the left because the previous movement block on the right.
+ * DESIRED_POSITION =bot_move_obstacle=>
+ *  => STOP_WAIT
+ *   Stop the bot.
  */
 fsm_branch_t
-move__MOVE_ON_LEFT__blocked (void)
+move__DESIRED_POSITION__bot_move_obstacle (void)
 {
-    move_go_to_right();
-    return move_next (MOVE_ON_LEFT, blocked);
-}
+    asserv_position_t obstacle_pos;
+    
+    asserv_stop_motor ();
 
-/*
- * MOVE_ON_LEFT =reached=>
- *  => DESIRED_POSITION
- *   The position has been reached. It will now try to reach the position provided by the user.
- */
-fsm_branch_t
-move__MOVE_ON_LEFT__reached (void)
-{
-    asserv_goto (move_data.position_x, move_data.position_y);
-    return move_next (MOVE_ON_LEFT, reached);
-}
+    // Store the obstacle in the path finder.
+    asserv_get_position (&obstacle_pos);
+    path_obstacle (move_data.nb_obstacle, obstacle_pos.x,
+		   obstacle_pos.y, MOVE_OBSTACLE_RADIUS, 
+		   MOVE_OBSTACLE_VALIDITY);
+    move_data.nb_obstacle ++;
 
+    return move_next (DESIRED_POSITION, bot_move_obstacle);
+}
 

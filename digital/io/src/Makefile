@@ -8,7 +8,8 @@ io_SOURCES = main.c asserv.c servo.avr.c eeprom.avr.c trap.c sharp.c \
 	     getsamples.c getsamples_fsm.c getsamples_cb.c \
 	     gutter_fsm.c gutter_cb.c gutter.c \
 	     move.c move_fsm.c move_cb.c \
-	     top.c top_fsm.c top_cb.c
+	     top.c top_fsm.c top_cb.c \
+	     path.c
 test_path_SOURCES = test_path.c path.c
 MODULES = proto uart twi utils adc math/fixed
 test_path_MODULES = math/fixed
