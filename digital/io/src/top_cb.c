@@ -40,6 +40,8 @@
 #include "getsamples.h"	/* getsamples_* */
 #include "gutter.h"	/* gutter_start */
 
+#include "io.h"
+
 /**
  * When we need to tell the main loop we want to be alerted when the last
  * command sent to the asserv board has been acknowledged.
@@ -146,12 +148,13 @@ top__GO_TO_OUR_ICE_DISTRIBUTOR__move_fsm_finished (void)
     if (top_fsm_loop_count_ == 0)
       {
 	/* First time we try to get our ice, let's took two */
-	bitfield = 0xA;
+	bitfield = _BV (middle_left_box) | _BV (middle_right_box);
       }
     else
       {
 	/* Second time we try to get our ice, let's took only three */
-	bitfield = 0x15;
+	bitfield = _BV (out_left_box) | _BV (middle_box) | _BV
+	    (out_right_box);
       }
     getsamples_start (PG_DISTRIBUTOR_ICE_OUR_A, bitfield);
     return top_next (GO_TO_OUR_ICE_DISTRIBUTOR, move_fsm_finished);
@@ -170,13 +173,14 @@ top__GO_TO_SAMPLE_DISTRIBUTOR__move_fsm_finished (void)
     if (top_fsm_loop_count_ == 0)
       {
 	/* First time we try to get our samples, let's took three of them */
-	bitfield = 0x15;
+	bitfield = _BV (out_left_box) | _BV (middle_box) | _BV
+	    (out_right_box);
       }
     else
       {
 	/* Second time we try to get our samples, let's took only two of them
 	 */
-	bitfield = 0xA;
+	bitfield = _BV (middle_left_box) | _BV (middle_right_box);
       }
     getsamples_start (PG_DISTRIBUTOR_SAMPLE_OUR_A, bitfield);
     return top_next (GO_TO_SAMPLE_DISTRIBUTOR, move_fsm_finished);
