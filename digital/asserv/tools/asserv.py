@@ -199,6 +199,10 @@ class Asserv:
 	self.proto.send ('p', 'BL', ord ('c'), p['c'] * 256 * 256 * 256)
 	self.proto.send ('p', 'BH', ord ('f'), p['f'])
 
+    def write_eeprom (self):
+	self.proto.send ('p', 'BB', ord ('E'), 1)
+	self.wait (lambda: True)
+
     def handle_stats (self, stat, *args):
 	if self.stats_enabled is not None:
 	    self.stats_line.extend (args)
