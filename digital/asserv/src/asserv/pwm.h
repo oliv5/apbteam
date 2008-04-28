@@ -33,11 +33,34 @@
 extern int16_t pwm_left, pwm_right, pwm_aux0;
 extern uint8_t pwm_reverse;
 
+/** Define maximum PWM value for each output. */
+#define PWM_MAX_FOR(x) PWM_MAX_FOR_ (x)
+#define PWM_MAX_FOR_(x) PWM_MAX_FOR_ ## x
+#define PWM_MAX_FOR_pwm_left PWM_MAX
+#define PWM_MAX_FOR_pwm_right PWM_MAX
+#define PWM_MAX_FOR_pwm_aux0 (PWM_MAX / 2)
+
+/** Define minimum PWM value for each output, if the value is less than the
+ * minimum, use 0. */
+#define PWM_MIN_FOR(x) PWM_MIN_FOR_ (x)
+#define PWM_MIN_FOR_(x) PWM_MIN_FOR_ ## x
+#define PWM_MIN_FOR_pwm_left 0x8
+#define PWM_MIN_FOR_pwm_right 0x8
+#define PWM_MIN_FOR_pwm_aux0 0x20
+
+/** Define which bit controls the PWM inversion. */
 #define PWM_REVERSE_BIT(x) PWM_REVERSE_BIT_ (x)
 #define PWM_REVERSE_BIT_(x) PWM_REVERSE_BIT_ ## x
 #define PWM_REVERSE_BIT_pwm_left _BV (0)
 #define PWM_REVERSE_BIT_pwm_right _BV (1)
 #define PWM_REVERSE_BIT_pwm_aux0 _BV (2)
+
+/** Set pwm value and saturate. */
+#define PWM_SET(pwm, value) \
+    do { \
+	(pwm) = (value); \
+	UTILS_BOUND ((pwm), -PWM_MAX_FOR (pwm), PWM_MAX_FOR (pwm)); \
+    } while (0)
 
 void
 pwm_init (void);

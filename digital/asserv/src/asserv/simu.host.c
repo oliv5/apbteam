@@ -167,9 +167,12 @@ simu_step (void)
 {
     double old_left_th, old_right_th, old_aux0_th;
     /* Convert pwm value into voltage. */
-    assert (pwm_left >= -PWM_MAX && pwm_left <= PWM_MAX);
-    assert (pwm_right >= -PWM_MAX && pwm_right <= PWM_MAX);
-    assert (pwm_aux0 >= -PWM_MAX && pwm_aux0 <= PWM_MAX);
+    assert (pwm_left >= -PWM_MAX_FOR (pwm_left)
+	    && pwm_left <= PWM_MAX_FOR (pwm_left));
+    assert (pwm_right >= -PWM_MAX_FOR (pwm_right)
+	    && pwm_right <= PWM_MAX_FOR (pwm_right));
+    assert (pwm_aux0 >= -PWM_MAX_FOR (pwm_aux0)
+	    && pwm_aux0 <= PWM_MAX_FOR (pwm_aux0));
     simu_left_model.u = simu_left_model.m.u_max
 	* ((double) pwm_left / (PWM_MAX + 1));
     simu_right_model.u = simu_right_model.m.u_max

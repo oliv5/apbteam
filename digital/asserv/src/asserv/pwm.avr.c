@@ -46,9 +46,12 @@ void
 pwm_update (void)
 {
     /* Some assumption checks. */
-    assert (pwm_left > -PWM_MAX && pwm_left < PWM_MAX);
-    assert (pwm_right > -PWM_MAX && pwm_right < PWM_MAX);
-    assert (pwm_aux0 > -PWM_MAX && pwm_aux0 < PWM_MAX);
+    assert (pwm_left >= -PWM_MAX_FOR (pwm_left)
+	    && pwm_left <= PWM_MAX_FOR (pwm_left));
+    assert (pwm_right >= -PWM_MAX_FOR (pwm_right)
+	    && pwm_right <= PWM_MAX_FOR (pwm_right));
+    assert (pwm_aux0 >= -PWM_MAX_FOR (pwm_aux0)
+	    && pwm_aux0 <= PWM_MAX_FOR (pwm_aux0));
     pwm_mp_update ();
     pwm_ocr_update ();
 }

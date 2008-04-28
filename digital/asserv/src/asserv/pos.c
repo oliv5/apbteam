@@ -123,10 +123,8 @@ pos_update (void)
 	    pid_theta = pos_compute_pid (diff_theta, &pos_theta);
 	    pid_alpha = pos_compute_pid (diff_alpha, &pos_alpha);
 	    /* Update PWM. */
-	    pwm_left = pid_theta - pid_alpha;
-	    UTILS_BOUND (pwm_left, -PWM_MAX, PWM_MAX);
-	    pwm_right = pid_theta + pid_alpha;
-	    UTILS_BOUND (pwm_right, -PWM_MAX, PWM_MAX);
+	    PWM_SET (pwm_left, pid_theta - pid_alpha);
+	    PWM_SET (pwm_right, pid_theta + pid_alpha);
 	  }
       }
     if (state_aux0.mode >= MODE_POS)
@@ -148,9 +146,7 @@ pos_update (void)
 	  {
 	    pid = pos_compute_pid (diff, &pos_aux0);
 	    /* Update PWM. */
-	    pwm_aux0 = pid;
-	    /* WARNING: crude way to limit PWM for this 12V motor. */
-	    UTILS_BOUND (pwm_aux0, -(PWM_MAX / 2), (PWM_MAX / 2));
+	    PWM_SET (pwm_aux0, pid);
 	  }
       }
 }
