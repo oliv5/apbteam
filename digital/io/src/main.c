@@ -250,12 +250,24 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	break;
 
       case c ('T', 1):
-	/* Setup traps to open a path to a destination box.
-	 *   - 1b: box identification
-	 */
-	trap_setup_path_to_box (args[0]);
+	  {
+	    /* Setup traps to open a path to a destination box.
+	     *   - 1b: box identification
+	     */
+	    switch (args[0])
+	      {
+	      case 'o':
+		trap_open_rear_panel ();
+		break;
+	      case 'c':
+		trap_close_rear_panel ();
+		break;
+	      default:
+		trap_setup_path_to_box (args[0]);
+		break;
+	      }
+	  }
 	break;
-
       case c ('s', 2):
 	/* Set servo motor to a desired position using the servo module.
 	 *   - 1b: servo id number;
