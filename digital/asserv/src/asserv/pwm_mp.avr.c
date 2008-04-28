@@ -48,8 +48,8 @@ pwm_mp_init (void)
 #if PWM3or4
     /* Only needed for PWM3 and 4 because it is done in spi_init for SS (port
      * B0). */
-    PORTD |= _BV (4);
-    DDRD |= _BV (4);
+    PORTE |= _BV (4);
+    DDRE |= _BV (4);
 #endif
 #if PWM1or2 || PWM3or4
     spi_init (SPI_IT_DISABLE | SPI_ENABLE | SPI_MSB_FIRST | SPI_MASTER |
