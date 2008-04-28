@@ -129,9 +129,11 @@ top__GET_SAMPLES_FROM_SAMPLES_DISTRIBUTOR__get_samples_fsm_finished (void)
 fsm_branch_t
 top__GO_TO_ADVERSE_ICE_DISTRIBUTOR__move_fsm_finished (void)
 {
-    /* Start the get samples FSM with the correct angle */
-    /* TODO: where to put the ice?! */
-    getsamples_start (PG_DISTRIBUTOR_ICE_ADVERSE_A, 1);
+    /* Start the get samples FSM with the correct angle to get only two
+     * samples. The problem is this should depend on the time we have until
+     * the end of match */
+    uint8_t bitfield = _BV (out_right_box) | _BV (middle_right_box);
+    getsamples_start (PG_DISTRIBUTOR_ICE_ADVERSE_A, bitfield);
     return top_next (GO_TO_ADVERSE_ICE_DISTRIBUTOR, move_fsm_finished);
 }
 
@@ -241,8 +243,12 @@ top__GET_ICE_FROM_OUR_ICE_DISTRIBUTOR__get_samples_fsm_finished (void)
 
 /*
  * MOVE_AWAY_FROM_GUTTER_BORDER =move_fsm_finished=>
- *  => GO_TO_SAMPLE_DISTRIBUTOR
+ * first_loop => GO_TO_SAMPLE_DISTRIBUTOR
  *   go to our sample ditributor to try the same strategy again
+ *   reset internal data
+ * second_loop => GO_TO_ADVERSE_ICE_DISTRIBUTOR
+ *   there is no more sample nor ice in our distributors, let's try the one of
+ *   the opponent
  *   reset internal data
  */
 fsm_branch_t
@@ -250,9 +256,21 @@ top__MOVE_AWAY_FROM_GUTTER_BORDER__move_fsm_finished (void)
 {
     /* We have finished a loop */
     top_fsm_loop_count_++;
-    /* Start the move FSM */
-    move_start (PG_DISTRIBUTOR_SAMPLE_OUR_X, PG_DISTRIBUTOR_SAMPLE_OUR_Y);
-    return top_next (MOVE_AWAY_FROM_GUTTER_BORDER, move_fsm_finished);
+    if (top_fsm_loop_count_ < 2)
+      {
+	/* Two first loops, normal behaviour (our sample distributor, them
+	 * ice) */
+	/* Start the move FSM */
+	move_start (PG_DISTRIBUTOR_SAMPLE_OUR_X, PG_DISTRIBUTOR_SAMPLE_OUR_Y);
+	return top_next_branch (MOVE_AWAY_FROM_GUTTER_BORDER, move_fsm_finished, first_loop);
+      }
+    else
+      {
+	/* Second loops, ice only */
+	/* Start the move FSM */
+	move_start (PG_DISTRIBUTOR_ICE_ADVERSE_X, PG_DISTRIBUTOR_ICE_ADVERSE_Y);
+	return top_next_branch (MOVE_AWAY_FROM_GUTTER_BORDER, move_fsm_finished, second_loop);
+      }
 }
 
 /*

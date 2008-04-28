@@ -119,6 +119,10 @@ GET_ICE_FROM_ADVERSE_ICE_DISTRIBUTOR:
   with the move FSM
 
 MOVE_AWAY_FROM_GUTTER_BORDER:
- move_fsm_finished -> GO_TO_SAMPLE_DISTRIBUTOR
+ move_fsm_finished: first_loop -> GO_TO_SAMPLE_DISTRIBUTOR
   go to our sample ditributor to try the same strategy again
+  reset internal data
+ move_fsm_finished: second_loop -> GO_TO_ADVERSE_ICE_DISTRIBUTOR
+  there is no more sample nor ice in our distributors, let's try the one of
+  the opponent
   reset internal data
