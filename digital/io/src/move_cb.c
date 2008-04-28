@@ -13,6 +13,8 @@
 #include "playground.h"
 #include "move.h"
 
+#include "main.h"      /* main_post_event_for_top_fsm */
+
 /*
  * GO_AWAY =bot_move_succeed=>
  * position_intermediary => GO_AWAY
@@ -153,6 +155,7 @@ move__DESIRED_POSITION__bot_move_failed (void)
 fsm_branch_t
 move__DESIRED_POSITION__bot_move_succeed (void)
 {
+    main_post_event_for_top_fsm = TOP_EVENT_move_fsm_finished;
     return move_next (DESIRED_POSITION, bot_move_succeed);
 }
 
