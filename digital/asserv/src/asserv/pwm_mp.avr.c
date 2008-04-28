@@ -33,7 +33,7 @@
 /** Assign PWM outputs. */
 #define PWM1 pwm_left
 #define PWM2 pwm_right
-#undef PWM3
+#define PWM3 pwm_aux0
 #undef PWM4
 
 #include "pwm_config.h"

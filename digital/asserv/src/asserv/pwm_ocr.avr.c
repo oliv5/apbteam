@@ -32,7 +32,7 @@
 /** Assign PWM outputs. */
 #undef PWM1
 #undef PWM2
-#define PWM3 pwm_aux0
+#undef PWM3
 #undef PWM4
 
 #define PWM1_OCR OCR1B
