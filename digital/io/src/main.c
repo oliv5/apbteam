@@ -76,10 +76,14 @@ main_init (void)
 {
     /* Serial port */
     uart0_init ();
+    /* Enable interrupts */
+    sei ();
     /* Main timer */
     main_timer_init ();
     /* Load parameters */
     eeprom_load_param ();
+    /* Dirty fix */
+    utils_delay_ms (500);
     /* Asserv communication */
     asserv_init ();
     /* Trap module */
@@ -88,9 +92,6 @@ main_init (void)
     switch_init ();
     /* Start the top FSM */
     top_start ();
-
-    /* Enable interrupts */
-    sei ();
 
     /* io initialization done */
     proto_send0 ('z');
