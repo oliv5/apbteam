@@ -234,6 +234,8 @@ class Asserv:
 
     def reset (self):
 	self.proto.send ('w')
+	self.proto.send ('w', 'H', 0)
+	self.proto.send ('z')
 	self.proto.send ('z')
 
     def close (self):
