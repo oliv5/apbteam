@@ -46,6 +46,11 @@
  */
 extern uint8_t top_waiting_for_settings_ack_;
 
+/**
+ * Number of loop/iteration of the top FSM
+ */
+static uint8_t top_fsm_loop_count_;
+
 /*
  * DROP_OFF_BALLS_TO_GUTTER =gutter_fsm_finished=>
  *  => MOVE_AWAY_FROM_GUTTER_BORDER
@@ -58,6 +63,7 @@ top__DROP_OFF_BALLS_TO_GUTTER__gutter_fsm_finished (void)
     /* Get current position */
     asserv_position_t position;
     asserv_get_position (&position);
+    /* FIXME: linear move is better? */
     /* Move away from the gutter */
     move_start (position.x, position.y + BOT_MIN_DISTANCE_TURN_FREE);
     return top_next (DROP_OFF_BALLS_TO_GUTTER, gutter_fsm_finished);
@@ -136,8 +142,18 @@ fsm_branch_t
 top__GO_TO_OUR_ICE_DISTRIBUTOR__move_fsm_finished (void)
 {
     /* Start the get samples FSM with the correct angle */
-    /* TODO: where to put the ice?! */
-    getsamples_start (PG_DISTRIBUTOR_ICE_OUR_A, 1);
+    uint8_t bitfield = 0;
+    if (top_fsm_loop_count_ == 0)
+      {
+	/* First time we try to get our ice, let's took two */
+	bitfield = 0xA;
+      }
+    else
+      {
+	/* Second time we try to get our ice, let's took only three */
+	bitfield = 0x15;
+      }
+    getsamples_start (PG_DISTRIBUTOR_ICE_OUR_A, bitfield);
     return top_next (GO_TO_OUR_ICE_DISTRIBUTOR, move_fsm_finished);
 }
 
@@ -150,8 +166,19 @@ fsm_branch_t
 top__GO_TO_SAMPLE_DISTRIBUTOR__move_fsm_finished (void)
 {
     /* Start the get samples FSM with the correct angle */
-    /* TODO: where to put the samples?! */
-    getsamples_start (PG_DISTRIBUTOR_SAMPLE_OUR_A, 1);
+    uint8_t bitfield = 0;
+    if (top_fsm_loop_count_ == 0)
+      {
+	/* First time we try to get our samples, let's took three of them */
+	bitfield = 0x15;
+      }
+    else
+      {
+	/* Second time we try to get our samples, let's took only two of them
+	 */
+	bitfield = 0xA;
+      }
+    getsamples_start (PG_DISTRIBUTOR_SAMPLE_OUR_A, bitfield);
     return top_next (GO_TO_SAMPLE_DISTRIBUTOR, move_fsm_finished);
 }
 
@@ -163,6 +190,7 @@ top__GO_TO_SAMPLE_DISTRIBUTOR__move_fsm_finished (void)
 fsm_branch_t
 top__IDLE__start (void)
 {
+    top_fsm_loop_count_ = 0;
     return top_next (IDLE, start);
 }
 
@@ -216,6 +244,8 @@ top__GET_ICE_FROM_OUR_ICE_DISTRIBUTOR__get_samples_fsm_finished (void)
 fsm_branch_t
 top__MOVE_AWAY_FROM_GUTTER_BORDER__move_fsm_finished (void)
 {
+    /* We have finished a loop */
+    top_fsm_loop_count_++;
     /* Start the move FSM */
     move_start (PG_DISTRIBUTOR_SAMPLE_OUR_X, PG_DISTRIBUTOR_SAMPLE_OUR_Y);
     return top_next (MOVE_AWAY_FROM_GUTTER_BORDER, move_fsm_finished);
