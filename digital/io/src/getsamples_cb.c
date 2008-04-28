@@ -56,7 +56,7 @@ getsamples_configure_classifier (void)
 {
     uint8_t trap_num;
     /* Go through all the bits of the sample bit field */
-    for (trap_num = 0; trap_num < trap_count; trap_num++)
+    for (trap_num = out_left_box; trap_num < trap_count; trap_num++)
       {
 	/* Is the bit set? */
 	if (bit_is_set (getsamples_data_.sample_bitfield, trap_num))

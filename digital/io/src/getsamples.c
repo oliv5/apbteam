@@ -24,6 +24,9 @@
  * }}} */
 #include "getsamples.h"
 #include "fsm.h"
+#include "trap.h"	/* trap_* */
+
+#include "io.h" /* _BV */
 
 /**
  * 'Private' get samples data used internaly by the FSM.
@@ -34,9 +37,19 @@ struct getsamples_data_t getsamples_data_;
 void
 getsamples_start (int16_t approach_angle, uint8_t sample_bitfield)
 {
+    uint8_t count;
     /* Set parameters */
     getsamples_data_.approach_angle = approach_angle;
     getsamples_data_.sample_bitfield = sample_bitfield;
+
+    /* Remove unhandled traps */
+    /* garbage */
+    getsamples_data_.sample_bitfield &= ~_BV (garbage);
+    /* Trap upper than the trap_count */
+    for (count = 7; count >= trap_count; count--)
+      {
+	getsamples_data_.sample_bitfield &= ~_BV (count);
+      }
 
     /* Start the get samples FSM */
     fsm_init (&getsamples_fsm);
