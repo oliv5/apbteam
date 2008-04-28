@@ -65,13 +65,17 @@ pwm_mp_init (void)
 
 /** Send command using SPI. */
 static void
-pwm_mp_send (int16_t pwm1, int16_t pwm2)
+pwm_mp_send (int16_t pwm1, int16_t pwm2, uint8_t invert1, uint8_t invert2)
 {
     uint8_t v;
     uint8_t cks;
     /* Convert to 12 bits. */
     int16_t pwm1c = pwm1 << 1;
     int16_t pwm2c = pwm2 << 1;
+    if (invert1)
+	pwm1c = -pwm1c;
+    if (invert2)
+	pwm2c = -pwm2c;
     if (UTILS_ABS (pwm1c) < 0x10)
 	pwm1c = 0;
     if (UTILS_ABS (pwm2c) < 0x10)
@@ -105,14 +109,18 @@ pwm_mp_update (void)
 #if PWM1or2
     /* Chip enable. */
     PORTB &= ~_BV (0);
-    pwm_mp_send (PWM1c (PWM1), PWM2c (PWM2));
+    pwm_mp_send (PWM1c (PWM1), PWM2c (PWM2),
+		 PWM1c (pwm_reverse & PWM_REVERSE_BIT (PWM1)),
+		 PWM2c (pwm_reverse & PWM_REVERSE_BIT (PWM2)));
     /* Chip disable. */
     PORTB |= _BV (0);
 #endif
 #if PWM3or4
     /* Chip enable. */
     PORTE &= ~_BV (4);
-    pwm_mp_send (PWM3c (PWM3), PWM4c (PWM4));
+    pwm_mp_send (PWM3c (PWM3), PWM4c (PWM4),
+		 PWM3c (pwm_reverse & PWM_REVERSE_BIT (PWM3)),
+		 PWM4c (pwm_reverse & PWM_REVERSE_BIT (PWM4)));
     /* Chip disable. */
     PORTE |= _BV (4);
 #endif
