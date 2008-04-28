@@ -66,7 +66,7 @@ chrono_init (void)
 #ifndef HOST
     /* Presaler = 256 */
     TCCR1B = regv (ICNC1, ICES1, 5, WGM13, WGM12, CS12, CS11, CS10,
-		       0,     1, 0,     0,     0,    1,    0,    0);
+		       0,     0, 0,     0,     0,    1,    0,    0);
     /* Enable overflow interrupt */
     set_bit (TIMSK, TOIE1);
 #endif

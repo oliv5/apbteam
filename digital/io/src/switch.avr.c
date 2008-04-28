@@ -131,7 +131,10 @@ switch_get_color (void)
 static inline uint8_t
 switch_get_jack_raw (void)
 {
-    return bit_is_set (SWITCH_JACK_PIN, SWITCH_JACK_PIN_NUMBER);
+    if (bit_is_set (SWITCH_JACK_PIN, SWITCH_JACK_PIN_NUMBER))
+	return 1;
+    else
+	return 0;
 }
 
 /* Get the value of the jack with filtering. */
