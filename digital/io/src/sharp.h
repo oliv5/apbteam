@@ -36,8 +36,9 @@
 
 /**
  * Number of sharps.
+ * If you change it, you _must_ update the key of the eeprom module!
  */
-#define SHARP_NUMBER 4
+#define SHARP_NUMBER 5
 
 /**
  * Front left sharp.
@@ -45,19 +46,24 @@
 #define SHARP_FRONT_LEFT 0
 
 /**
+ * Front middle sharp.
+ */
+#define SHARP_FRONT_MIDDLE 1
+
+/**
  * Front right sharp.
  */
-#define SHARP_FRONT_RIGHT 1
+#define SHARP_FRONT_RIGHT 2
 
 /**
  * Back left sharp.
  */
-#define SHARP_BACK_LEFT 2
+#define SHARP_BACK_LEFT 3
 
 /**
  * Back right sharp.
  */
-#define SHARP_BACK_RIGHT 3
+#define SHARP_BACK_RIGHT 4
 
 /**
  * Low (0 index) and high (1 index) thresholds for interpreted sharp values.

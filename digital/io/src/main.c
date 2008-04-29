@@ -109,6 +109,8 @@ main_init (void)
     switch_init ();
     /* Start the top FSM */
     top_start ();
+    /* Sharp module */
+    sharp_init ();
 
     /* io initialization done */
     proto_send0 ('z');
