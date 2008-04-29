@@ -32,7 +32,7 @@
 
 /* No hardware on host. */
 # define ADCSRA 1
-# define ADIF 1
+# define ADIF 0
 
 extern uint16_t ADCW;
 
