@@ -27,16 +27,18 @@
 #include "move.h"
 #include "fsm.h"
 
+/**
+ * Internal data used by the move FSM.
+ */
 struct move_data_t move_data;
 
-/** Start a move FSM. */
+/* Go to a position with the start FSM. */
 void
-move_start (uint32_t position_x, uint32_t position_y)
+move_start (uint16_t position_x, uint16_t position_y)
 {
     /* Set parameters. */
-    move_data.position_x = position_x;
-    move_data.position_y = position_y;
-    move_data.nb_obstacle = 0;
+    move_data.final.x = position_x;
+    move_data.final.y = position_y;
     /* Start the FSM. */
     fsm_init (&move_fsm);
     fsm_handle_event (&move_fsm, MOVE_EVENT_start);

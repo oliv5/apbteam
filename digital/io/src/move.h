@@ -25,34 +25,41 @@
  *
  * }}} */
 
-#include "asserv.h"
+/**
+ * A position.
+ */
+typedef struct move_position_t
+{
+    /** X position. */
+    uint16_t x;
+    /** Y position. */
+    uint16_t y;
+} move_position_t;
 
-#define MOVE_OBSTACLE_RADIUS 100
-#define MOVE_OBSTACLE_VALIDITY 650
-
-/** move FSM associated data. */
+/**
+ * Move FSM associated data.
+ */
 struct move_data_t
 {
-    /* Desired x position to reached. */
-    uint16_t position_x;
-    /* Desired y position to reached. */
-    uint16_t position_y;
-    /* number of obstacles seen. */
-    uint8_t nb_obstacle;
-    /* Path finder position x. */
-    uint16_t path_pos_x;
-    /* Path finder position y. */
-    uint16_t path_pos_y;
-    /* Position blocked. */
-    asserv_position_t pos_blocked_or_failed;
+    /** Final position. */
+    move_position_t final;
+    /** Intermediate position. */
+    move_position_t intermediate;
+    /** Obstacle position. */
+    move_position_t obstacle;
 };
 
-
-/** move global. */
+/**
+ * Move global data.
+ */
 extern struct move_data_t move_data;
 
-/** Start a move FSM. */
+/**
+ * Go to a position with the start FSM.
+ * @param position_x the X position.
+ * @param position_y the Y position.
+ */
 void
-move_start (uint32_t position_x, uint32_t position_y);
+move_start (uint16_t position_x, uint16_t position_y);
 
 #endif /* move_h */

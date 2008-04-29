@@ -1,46 +1,67 @@
-#Move FSM.
+# Move FSM
+# This FSM is responsible to move the bot from the current position to the
+# desired one. It will try to avoid obstacle and manage the case when the
+# asserv is blocked.
 move
 
 States:
  IDLE
- DESIRED_POSITION
- BACKWARD
- GO_AWAY
- STOP_WAIT
+  waiting for the beginning of the move FSM
+ MOVING_TO_FINAL_POSITION
+  moving to the final position
+ MOVING_BACKWARD
+  moving backward to go away from what is blocking the bot
+ MOVING_TO_INTERMEDIATE_POSITION
+  moving to an intermediate position to try avoiding the obstacle
 
 Events:
  start
- bot_move_succeed
+  initialize the FSM
  bot_move_failed
+  the bot movement failed (blocked by something for example)
+ bot_move_succeed
+  the bot has finished to moved and arrived at the desired position
  bot_move_obstacle
- wait_finished
+  the bot has seen something (with the sharps)
 
 IDLE:
- start -> DESIRED_POSITION
-  Save the destination position and put obstacles number to 0.
+ start -> MOVING_TO_FINAL_POSITION
+  ask the asserv to go to the final position
 
-DESIRED_POSITION:
- bot_move_succeed-> IDLE
-  Destination position reached by the bot. Set the flag of the top event to inform it.
- bot_move_failed-> BACKWARD
-  Store the current position, initialise the path system i.e. provide the position of the obstacle and request the path system the next position.
- bot_move_obstacle-> STOP_WAIT
-  Stop the bot.
+MOVING_TO_FINAL_POSITION:
+ bot_move_succeed -> IDLE
+  post an event for the top FSM to tell we have finished
+ bot_move_failed -> MOVING_BACKWARD
+  store the current position of the obstacle
+  move backward to turn freely
+ bot_move_obstacle -> MOVING_TO_INTERMEDIATE_POSITION
+  compute the obstacle position
+  give the obstacle position to the path module
+  give the current position of the bot to the path module
+  get the intermediate position from path module
 
-BACKWARD:
- bot_move_succeed-> GO_AWAY
-  Launch the pathfinder and go to the next position.
+MOVING_BACKWARD:
+# TODO
+# We ignore obstacle when moving backward
+ bot_move_succeed -> MOVING_TO_INTERMEDIATE_POSITION
+  give the obstacle position to the path module
+  give the current position of the bot to the path module
+  get the intermediate position from path module
+ bot_move_failed -> MOVING_TO_INTERMEDIATE_POSITION
+  do the same as when we succeed
+  give the obstacle position to the path module
+  give the current position of the bot to the path module
+  get the intermediate position from path module
 
-STOP_WAIT:
- wait_finished-> GO_AWAY
-  Launch the pathfinder and go to the next position.
-
-GO_AWAY:
- bot_move_obstacle -> STOP_WAIT
-  Go to the stop wait event.
- bot_move_succeed: position_desired -> IDLE
-  The position desired provided on the FSM call had been reached.
- bot_move_succeed: position_intermediary -> GO_AWAY
-  Request the next step to reached to the path finder.
- bot_move_failed -> BACKWARD
-  Store the current position, and go backward.
+MOVING_TO_INTERMEDIATE_POSITION:
+ bot_move_obstacle -> .
+  compute the obstacle position
+  give the obstacle position to the path module
+  go to the next intermediate position computed by the path module
+ bot_move_succeed: final_position -> IDLE
+  post an event for the top FSM to tell we have finished
+ bot_move_succeed: position_intermediary -> .
+  go to the next intermediate position computed by the path module
+ bot_move_failed -> MOVING_BACKWARD
+  store the current position of the obstacle
+  move backward to turn freely

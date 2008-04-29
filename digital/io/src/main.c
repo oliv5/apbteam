@@ -46,6 +46,7 @@
 #include "chrono.h"	/* chrono_end_match */
 #include "gutter.h"	/* gutter_generate_wait_finished_event */
 #include "sharp.h"	/* sharp module */
+#include "path.h"	/* path module */
 
 #include "io.h"
 
@@ -68,6 +69,11 @@ enum team_color_e bot_color;
  * Post a event to the top FSM in the next iteration of main loop.
  */
 uint8_t main_post_event_for_top_fsm = 0xFF;
+
+/**
+ * Do not generate sharps event for FSM during a certain count of cycles.
+ */
+uint16_t main_sharp_ignore_event;
 
 /**
  * Sharps stats counters.
@@ -107,6 +113,8 @@ main_init (void)
     trap_init ();
     /* Switch module */
     switch_init ();
+    /* Path module */
+    path_init ();
     /* Start the top FSM */
     top_start ();
     /* Sharp module */
@@ -160,11 +168,18 @@ main_loop (void)
 	  }
 	else
 	  {
-	    /* First update modules */
+	    /* First, update modules */
 	    /* Update switch module */
 	    switch_update ();
+	    /* Update path module */
+	    path_decay ();
 	    /* Sharps module */
-	    if (++main_sharp_freq_counter_ == MAIN_SHARP_UPDATE_FREQ)
+	    /* Update the ignore sharp event flag */
+	    if (main_sharp_ignore_event)
+		main_sharp_ignore_event--;
+	    /* Update sharp module if required and only every
+	     * MAIN_SHARP_UPDATE_FREQ cycles */
+	    if ((main_sharp_ignore_event == 0) && (++main_sharp_freq_counter_ == MAIN_SHARP_UPDATE_FREQ))
 	      {
 		/* Update sharps */
 		sharp_update (0xff);
@@ -246,25 +261,34 @@ main_loop (void)
 		FSM_HANDLE_EVENT (&top_fsm, save_event);
 	      }
 	    /* Sharps event for move FSM */
-	    uint8_t moving_direction = asserv_get_moving_direction ();
-	    if (moving_direction)
+	    /* If we do not need to ignore sharp event */
+	    if (!main_sharp_ignore_event)
 	      {
-		if (moving_direction == 1)
+		/* Get the current direction of the bot */
+		uint8_t moving_direction = asserv_get_moving_direction ();
+		/* If we are moving */
+		if (moving_direction)
 		  {
-		    /* Front only */
-		    if (sharp_get_interpreted (SHARP_FRONT_LEFT) ||
-			sharp_get_interpreted (SHARP_FRONT_RIGHT))
-			/* Generate an event for move FSM */
-			FSM_HANDLE_EVENT (&move_fsm,
-					  MOVE_EVENT_bot_move_obstacle);
-		  }
-		else
-		  {
-		    /* Back only */
-		    if (sharp_get_interpreted (SHARP_BACK_LEFT) ||
-			sharp_get_interpreted (SHARP_BACK_RIGHT))
-			/* Generate an event for move FSM */
-			FSM_HANDLE_EVENT (&move_fsm, MOVE_EVENT_bot_move_obstacle);
+		    /* If we are moving forward */
+		    if (moving_direction == 1)
+		      {
+			/* Use only front sharps */
+			if (sharp_get_interpreted (SHARP_FRONT_LEFT) ||
+			    sharp_get_interpreted (SHARP_FRONT_MIDDLE) ||
+			    sharp_get_interpreted (SHARP_FRONT_RIGHT))
+			    /* Generate an event for move FSM */
+			    FSM_HANDLE_EVENT (&move_fsm,
+					      MOVE_EVENT_bot_move_obstacle);
+		      }
+		    /* If we are moving backward */
+		    else if (moving_direction == 2)
+		      {
+			/* Use only back sharps */
+			if (sharp_get_interpreted (SHARP_BACK_LEFT) ||
+			    sharp_get_interpreted (SHARP_BACK_RIGHT))
+			    /* Generate an event for move FSM */
+			    FSM_HANDLE_EVENT (&move_fsm, MOVE_EVENT_bot_move_obstacle);
+		      }
 		  }
 	      }
 	    /* TODO: Check other sensors */

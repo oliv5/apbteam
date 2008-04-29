@@ -33,4 +33,11 @@
  */
 extern uint8_t main_post_event_for_top_fsm;
 
+/**
+ * Do not generate sharps event for FSM during a certain count of cycles.
+ * This flag is used by the move FSM to prevent it from being alerted by the
+ * main loop that there is an object in from of the bot.
+ */
+extern uint16_t main_sharp_ignore_event;
+
 #endif /* main_h */
