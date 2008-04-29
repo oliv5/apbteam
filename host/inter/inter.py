@@ -30,6 +30,10 @@ from math import pi, cos, sin
 class Robot (Drawable):
     """The robot."""
 
+    def __init__ (self, onto):
+	Drawable.__init__ (self, onto)
+	self.drawn = [ ]
+
     def draw (self):
 	self.reset ()
 	self.trans_rotate (self.angle)
@@ -44,6 +48,22 @@ class Robot (Drawable):
 	self.draw_line ((0, +f / 2), (0, -f / 2), fill = axes_fill)
 	self.draw_line ((-wr, f / 2), (+wr, f / 2), fill = axes_fill)
 	self.draw_line ((-wr, -f / 2), (+wr, -f / 2), fill = axes_fill)
+	for i in self.drawn:
+	    i.draw ()
+
+class Obstacle (Drawable):
+    """An obstacle."""
+
+    def __init__ (self, onto, pos, radius):
+	Drawable.__init__ (self, onto)
+	self.pos = pos
+	self.radius = radius
+
+    def draw (self):
+	self.reset ()
+	self.trans_translate (self.pos)
+	self.draw_circle ((0, 0), self.radius, fill = '#31aa23')
+	self.draw_circle ((0, 0), self.radius + 250, outlinestipple = 'gray25')
 
 class Table (Drawable):
     """The table and its elements."""
@@ -128,9 +148,12 @@ class TableView (DrawableCanvas):
 	self.robot = Robot (self.table)
 	self.robot.angle = 0
 	self.robot.pos = (0, 0)
+	self.drawn = [ ]
 
     def draw (self):
 	self.table.draw ()
+	for i in self.drawn:
+	    i.draw ()
 	self.robot.draw ()
 
 class Arm (Drawable):
@@ -263,6 +286,12 @@ if __name__ == '__main__':
     app = Inter ()
     app.tableview.robot.angle = pi / 3
     app.tableview.robot.pos = (700, 700)
+    if 0:
+	from dist_sensor import DistSensor
+	ds = DistSensor (app.tableview.robot, (150, -127), -pi / 12, 800)
+	app.tableview.robot.drawn.append (ds)
+	app.tableview.drawn.append (Obstacle (app.tableview, (1300, 1200), 150))
+	ds.obstacles = app.tableview.drawn
     app.actuatorview.arm.angle = pi/6
     app.actuatorview.rear.traps[0].pos = 1
     app.actuatorview.rear.traps[1].pos = 0
