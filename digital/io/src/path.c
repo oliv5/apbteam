@@ -242,7 +242,8 @@ path_dijkstra (void)
 		wmin = path.points[u].w;
 	      }
 	  }
-	path.points[u].taken = 1;
+	if (u != 0xff)
+	    path.points[u].taken = 1;
 	/* Until the source point is found, or no solution. */
       } while (u != 1 && u != 0xff);
 }
