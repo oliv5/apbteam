@@ -414,14 +414,18 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		    /* Trap */
 		    for (compt = 0; compt < SERVO_NUMBER; compt++)
 		      {
-			proto_send2b ('t', trap_high_time_pos[0][compt],
+			proto_send3b ('t', compt, trap_high_time_pos[0][compt],
 				      trap_high_time_pos[1][compt]);
 		      }
 		    /* Sharp */
 		    for (compt = 0; compt < SHARP_NUMBER; compt++)
 		      {
-			proto_send2w ('h', sharp_threshold[0][compt],
-				      sharp_threshold[1][compt]);
+			proto_send5b
+			    ('h', compt,
+			     v16_to_v8 (sharp_threshold[compt][0], 1),
+			     v16_to_v8 (sharp_threshold[compt][0], 0),
+			     v16_to_v8 (sharp_threshold[compt][1], 1),
+			     v16_to_v8 (sharp_threshold[compt][1], 0));
 		      }
 		  }
 		break;
