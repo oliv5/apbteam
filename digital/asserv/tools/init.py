@@ -8,8 +8,8 @@ host = dict (
 	a0a = 0.5, a0sm = 0x10, a0ss = 0x05,
 	)
 target = dict (
-	scale = 0.0413359788359788, f = 0xcf9,
-	c = float (0x100adec) / (1 << 24),
+	scale = 0.0413530725332892, f = 0xcfa,
+	c = float (0xffefbe) / (1 << 24),
 	tkp = 1, tkd = 16, akp = 2, akd = 16,
 	a0p = 0.8, a0i = 0.05, a0d = 0.05,
 	E = 0x3ff, D = 0x1ff, I = 0x1fff,

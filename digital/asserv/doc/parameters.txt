@@ -13,6 +13,8 @@ Select a flat, clean and long (2 to 10 meters) surface, then position the
 robot precisely on a starting line.  Draw a parallel line at the other end and
 measure distance between the two lines.
 
+Be sure not to have any correction factor set.
+
 Now, reset the robot counters and start monitoring left counter value.  Drag
 the robot as linearly as possible until it reaches the final line.  While
 doing this, remember any counter overflow or try to calculate how many
@@ -75,7 +77,7 @@ by the two encoders to do the number of turns.
 
 The encoders footing is given by::
 
-  difference / 2 / pi
+  difference / number_of_turns / 2 / pi
 
 The ``2`` divider is there because we summed the distance traveled by both
 encoders.  Then we divide by ``pi`` to get the diameter.
