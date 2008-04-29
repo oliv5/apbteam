@@ -45,6 +45,7 @@
 #include "top.h"	/* top_* */
 #include "chrono.h"	/* chrono_end_match */
 #include "gutter.h"	/* gutter_generate_wait_finished_event */
+#include "sharp.h"
 
 #include "io.h"
 
@@ -67,6 +68,11 @@ enum team_color_e bot_color;
  * Post a event to the top FSM in the next iteration of main loop.
  */
 uint8_t main_post_event_for_top_fsm = 0xFF;
+
+/**
+ * Sharps stats counters.
+ */
+uint8_t main_stats_sharps, main_stats_sharps_cpt;
 
 /**
  * Initialize the main and all its subsystems.
@@ -218,6 +224,18 @@ main_loop (void)
 	      }
 	    /* TODO: Check other sensors */
 	  }
+
+	/* Send Sharps stats. */
+	if (main_stats_sharps && !--main_stats_sharps_cpt)
+	  {
+	    main_stats_sharps_cpt = main_stats_sharps;
+	    /* XXX: Temporary put here. */
+	    sharp_update (0xff);
+	    proto_send4w ('H', sharp_get_raw (0),
+			  sharp_get_raw (1),
+			  sharp_get_raw (2),
+			  sharp_get_raw (3));
+	  }
       }
 }
 
@@ -279,6 +297,10 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
       case c ('S', 0):
 	/* Report switch states. */
 	proto_send1b ('S', switch_get_color () << 1 | switch_get_jack ());
+	break;
+
+      case c ('H', 1):
+	main_stats_sharps_cpt = main_stats_sharps = args[0];
 	break;
 
 	/* EEPROM command */

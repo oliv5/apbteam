@@ -26,16 +26,19 @@
 #include "simu.host.h"
 
 #include "servo.h"
+#include "sharp.h"
 
 #include "modules/utils/utils.h"
 #include "modules/host/host.h"
 #include "modules/host/mex.h"
+#include "modules/adc/adc.h"
 
 enum
 {
     MSG_SIMU_IO_JACK = 0xb0,
     MSG_SIMU_IO_COLOR = 0xb1,
     MSG_SIMU_IO_SERVO = 0xb2,
+    MSG_SIMU_IO_SHARPS = 0xb3,
 };
 
 /** Requested servo position. */
@@ -51,6 +54,7 @@ uint8_t servo_high_time_current_[SERVO_NUMBER];
 /** Do not update too often, interface is too slow. */
 uint8_t simu_servo_update = 10, simu_servo_update_cpt;
 uint8_t simu_switch_update = 100, simu_switch_update_cpt;
+uint8_t simu_sharps_update = 100, simu_sharps_update_cpt;
 
 /** Sampled switches. */
 uint8_t simu_switches;
@@ -110,6 +114,17 @@ simu_step (void)
 	mex_msg_delete (m);
 	if (!r)
 	    simu_switches |= 2;
+      }
+    /* Update sharps. */
+    if (simu_sharps_update && !--simu_sharps_update_cpt)
+      {
+	simu_sharps_update_cpt = simu_sharps_update;
+	m = mex_msg_new (MSG_SIMU_IO_SHARPS);
+	m = mex_node_request (m);
+	uint8_t i;
+	for (i = 0; i < SHARP_NUMBER; i++)
+	    mex_msg_pop (m, "H", &adc_values[i]);
+	mex_msg_delete (m);
       }
 }
 

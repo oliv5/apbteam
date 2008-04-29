@@ -37,7 +37,7 @@
 /**
  * Number of sharps.
  */
-#define SHARP_NUMBER 6
+#define SHARP_NUMBER 4
 
 /**
  * Front left sharp.
