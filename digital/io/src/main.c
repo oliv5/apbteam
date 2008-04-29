@@ -45,7 +45,7 @@
 #include "top.h"	/* top_* */
 #include "chrono.h"	/* chrono_end_match */
 #include "gutter.h"	/* gutter_generate_wait_finished_event */
-#include "sharp.h"
+#include "sharp.h"	/* sharp module */
 
 #include "io.h"
 
@@ -73,6 +73,17 @@ uint8_t main_post_event_for_top_fsm = 0xFF;
  * Sharps stats counters.
  */
 uint8_t main_stats_sharps, main_stats_sharps_cpt;
+uint8_t main_stats_sharps_interpreted_, main_stats_sharps_interpreted_cpt_;
+
+/**
+ * Update frequency of sharps.
+ */
+#define MAIN_SHARP_UPDATE_FREQ 20
+
+/**
+ * Sharps frequency counter.
+ */
+uint8_t main_sharp_freq_counter_;
 
 /**
  * Initialize the main and all its subsystems.
@@ -139,9 +150,6 @@ main_loop (void)
 	/* Update TWI module to get new data from the asserv board */
 	asserv_update_status ();
 
-	/* Update switch module */
-	switch_update ();
-
 	/* Is last command has been acknowledged? */
 	if (asserv_last_cmd_ack () == 0)
 	  {
@@ -150,12 +158,25 @@ main_loop (void)
 	  }
 	else
 	  {
-	    /* Update */
+	    /* First update modules */
+	    /* Update switch module */
+	    switch_update ();
+	    /* Sharps module */
+	    if (++main_sharp_freq_counter_ == MAIN_SHARP_UPDATE_FREQ)
+	      {
+		/* Update sharps */
+		sharp_update (0xff);
+		/* Reset counter */
+		main_sharp_freq_counter_ = 0;
+	      }
+
+	    /* Update main */
 	    uint8_t main_asserv_arm_position_reached = asserv_arm_position_reached ();
 	    uint8_t main_top_generate_settings_ack_event = top_generate_settings_ack_event ();
 	    uint8_t main_gutter_generate_wait_finished_event = gutter_generate_wait_finished_event ();
 	    asserv_status_e move_status = asserv_last_cmd_ack ()
 		? asserv_move_cmd_status () : none;
+
 	    /* Check commands move status */
 	    if (move_status == success)
 	      {
@@ -225,16 +246,35 @@ main_loop (void)
 	    /* TODO: Check other sensors */
 	  }
 
-	/* Send Sharps stats. */
+	/* Send Sharps raw stats. */
 	if (main_stats_sharps && !--main_stats_sharps_cpt)
 	  {
+	    uint8_t count;
+	    uint8_t cache[SHARP_NUMBER * 2];
+	    /* Reset counter */
 	    main_stats_sharps_cpt = main_stats_sharps;
-	    /* XXX: Temporary put here. */
-	    sharp_update (0xff);
-	    proto_send4w ('H', sharp_get_raw (0),
-			  sharp_get_raw (1),
-			  sharp_get_raw (2),
-			  sharp_get_raw (3));
+	    for (count = 0; count < SHARP_NUMBER; count++)
+	      {
+		uint16_t tmp = sharp_get_raw (count);
+		cache[count * 2] = v16_to_v8 (tmp, 1);
+		cache[count * 2 + 1] = v16_to_v8 (tmp, 0);
+	      }
+	    proto_send ('H', 2 * SHARP_NUMBER, cache);
+	  }
+	/* Send Sharps interpreted stats. */
+	if (main_stats_sharps_interpreted_ &&
+	    !--main_stats_sharps_interpreted_cpt_)
+	  {
+	    uint8_t count;
+	    uint8_t cache[SHARP_NUMBER];
+	    /* Reset counter */
+	    main_stats_sharps_interpreted_cpt_ =
+		main_stats_sharps_interpreted_;
+	    for (count = 0; count < SHARP_NUMBER; count++)
+	      {
+		cache[count] = sharp_get_interpreted (count);
+	      }
+	    proto_send ('I', SHARP_NUMBER, cache);
 	  }
       }
 }
@@ -300,22 +340,70 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	break;
 
       case c ('H', 1):
+	/* Print raw stats for sharps.
+	 *   - 1b: frequency of sharp stats.
+	 */
 	main_stats_sharps_cpt = main_stats_sharps = args[0];
+	break;
+
+      case c ('I', 1):
+	/* Print interpreted stats for sharps.
+	 *   - 1b: frequency of sharp stats.
+	 */
+	main_stats_sharps_interpreted_cpt_ = main_stats_sharps_interpreted_ =
+	       args[0];
+	break;
+
+      case c ('h', 5):
+	/* Configure sharps threshold.
+	 *   - 1b: sharp id number;
+	 *   - 2b: sharp low threshold;
+	 *   - 2b: sharp high threshold.
+	 */
+	sharp_set_threshold (args[0], v8_to_v16 (args[1], args[2]),
+			     v8_to_v16 (args[3], args[4]));
 	break;
 
 	/* EEPROM command */
       case c ('e', 1):
-	/* Save/clear config
-	 *  - 1b:
-	 *    - 00: clear config
-	 *    - other values: save config
-	 */
-	if (args[0] == 0)
-	    eeprom_clear_param ();
-	else
-	    eeprom_save_param ();
-	break;
-
+	  {
+	    /* Save/clear config
+	     *  - 1b:
+	     *    - 00, 'c': clear config
+	     *    - 01, 's': save config
+	     *    - 02, 'd': dump config
+	     */
+	    switch (args[0])
+	      {
+	      case 0:
+	      case 'c':
+		eeprom_clear_param ();
+		break;
+	      case 1:
+	      case 's':
+		eeprom_save_param ();
+		break;
+	      case 2:
+	      case 'd':
+		  {
+		    uint8_t compt;
+		    /* Trap */
+		    for (compt = 0; compt < SERVO_NUMBER; compt++)
+		      {
+			proto_send2b ('t', trap_high_time_pos[0][compt],
+				      trap_high_time_pos[1][compt]);
+		      }
+		    /* Sharp */
+		    for (compt = 0; compt < SHARP_NUMBER; compt++)
+		      {
+			proto_send2w ('h', sharp_threshold[0][compt],
+				      sharp_threshold[1][compt]);
+		      }
+		  }
+		break;
+	      }
+	    break;
+	  }
 	/* FSM commands */
       case c ('g', 2):
 	/* Start the get samples FSM
