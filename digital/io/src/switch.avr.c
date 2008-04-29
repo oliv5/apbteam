@@ -124,7 +124,10 @@ switch_update (void)
 enum team_color_e
 switch_get_color (void)
 {
-    return bit_is_set (SWITCH_COLOR_PIN, SWITCH_COLOR_PIN_NUMBER);
+    if (bit_is_set (SWITCH_COLOR_PIN, SWITCH_COLOR_PIN_NUMBER))
+	return 1;
+    else
+	return 0;
 }
 
 /* Get the current state of the jack switch. */
