@@ -26,10 +26,12 @@ if __name__ == '__main__':
     import sys
     sys.path.append (sys.path[0] + '/../mex')
 
-from inter import Inter
+from inter import Inter, Obstacle
+from dist_sensor import DistSensor
 from Tkinter import *
 from mex.node import Node
 from mex.msg import Msg
+from math import pi
 import time
 
 class InterNode (Inter):
@@ -42,6 +44,7 @@ class InterNode (Inter):
     IO_JACK = 0xb0
     IO_COLOR = 0xb1
     IO_SERVO = 0xb2
+    IO_SHARPS = 0xb3
 
     def __init__ (self):
 	Inter.__init__ (self)
@@ -51,11 +54,23 @@ class InterNode (Inter):
 	self.node.register (self.IO_JACK, self.handle_IO_JACK)
 	self.node.register (self.IO_COLOR, self.handle_IO_COLOR)
 	self.node.register (self.IO_SERVO, self.handle_IO_SERVO)
+	self.node.register (self.IO_SHARPS, self.handle_IO_SHARPS)
 	self.tk.createfilehandler (self.node, READABLE, self.read)
 	self.date = 0
 	self.synced = True
 	self.step_after = None
 	self.step_time = None
+	self.obstacles = [ ]
+	self.dist_sensors = [
+		DistSensor (self.tableview.robot, (150, 127), 0, 800),
+		DistSensor (self.tableview.robot, (150, -127), 0, 800),
+		DistSensor (self.tableview.robot, (-70, -100), pi, 800),
+		DistSensor (self.tableview.robot, (-70, 100), pi, 800),
+		]
+	for s in self.dist_sensors:
+	    s.obstacles = self.obstacles
+	    s.hide = True
+	self.tableview.robot.drawn.extend (self.dist_sensors)
 
     def createWidgets (self):
 	Inter.createWidgets (self)
@@ -71,6 +86,12 @@ class InterNode (Inter):
 	self.playButton = Checkbutton (self.rightFrame, variable =
 		self.playVar, text = 'Play', command = self.play)
 	self.playButton.pack ()
+	self.tableview.bind ('<2>', self.place_obstacle)
+	self.showSensorsVar = IntVar ()
+	self.showSensorsButton = Checkbutton (self.sensorFrame, variable =
+		self.showSensorsVar, text = 'Show sensors', command =
+		self.show_sensors)
+	self.showSensorsButton.pack ()
 
     def step (self):
 	"""Do a step.  Signal to the Hub we are ready to wait to the next step
@@ -137,6 +158,38 @@ class InterNode (Inter):
 	for t in self.actuatorview.rear.traps:
 	    t.pos = float (msg.pop ('B')[0]) / 255
 	self.update (self.actuatorview.rear)
+
+    def handle_IO_SHARPS (self, msg):
+	m = Msg (self.IO_SHARPS)
+	for i in self.dist_sensors:
+	    d = i.distance or 800
+	    d /= 10
+	    if d > 10:
+		v = 0.000571429 * d*d + -0.0752381 * d + 2.89107
+	    else:
+		v = 2.2 / 10 * d
+	    v *= 1024 / 5
+	    m.push ('H', v)
+	    assert v >= 0 and v < 1024
+	self.node.response (m)
+
+    def place_obstacle (self, ev):
+	pos = self.tableview.screen_coord ((ev.x, ev.y))
+	if self.obstacles:
+	    self.obstacles[0].pos = pos
+	else:
+	    self.obstacles.append (Obstacle (self.tableview, pos, 150))
+	    self.tableview.drawn.append (self.obstacles[0])
+	self.update (*self.obstacles)
+	self.update (*self.dist_sensors)
+	self.update ()
+
+    def show_sensors (self):
+	hide = not self.showSensorsVar.get ()
+	for i in self.dist_sensors:
+	    i.hide = hide
+	self.update (*self.dist_sensors)
+	self.update ()
 
 if __name__ == '__main__':
     import mex.hub
