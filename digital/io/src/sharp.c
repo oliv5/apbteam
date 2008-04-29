@@ -77,7 +77,7 @@ sharp_update (uint8_t sharp_mask)
 	if (bit_is_set (sharp_mask, compt))
 	  {
 	    /* Start the capture */
-	    adc_start (compt + 1);
+	    adc_start (compt);
 	    /* Wait until ADC mesure is finished */
 	    while (!adc_checkf ())
 		;
