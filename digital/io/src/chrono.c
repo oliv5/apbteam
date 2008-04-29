@@ -30,6 +30,12 @@
 
 #include "io.h"				/* Registers for timer/counter 1 */
 
+#ifdef HOST
+#include <unistd.h>
+#include <signal.h>
+#include "modules/host/mex.h"
+#endif
+
 /**
  * Number of overflow of the timer/counter 1 before doing the last one.
  */
@@ -59,6 +65,12 @@ static volatile uint8_t chrono_match_over_ = 0;
  */
 static volatile uint8_t chrono_ov_count_;
 
+#ifdef HOST
+/** SIGALRM handler. */
+void
+signal_alarm (int signal);
+#endif
+
 /* Initialize the chrono timer/counter 1. */
 void
 chrono_init (void)
@@ -69,6 +81,11 @@ chrono_init (void)
 		       0,     0, 0,     0,     0,    1,    0,    0);
     /* Enable overflow interrupt */
     set_bit (TIMSK, TOIE1);
+#else
+    /* Set-up SIGALRM handler */
+    signal (SIGALRM, &signal_alarm);
+    /* Alarm in 90 seconds */
+    alarm (90);
 #endif
 }
 
@@ -88,7 +105,16 @@ SIGNAL (SIG_OVERFLOW1)
 	break;
       }
 }
+#else
+/* SIGALRM handler */
+void
+signal_alarm (int signal)
+{
+    /* End of match! */
+    chrono_match_over_ = 1;
+}
 #endif
+
 
 /* Match over? */
 uint8_t
@@ -140,5 +166,11 @@ chrono_end_match (uint8_t block)
     asserv_reset ();
     /* Block indefinitely */
     if (block)
-	while (42);
+	while (42)
+#ifdef HOST
+	  {
+	    mex_node_wait ();
+	  }
+#endif
+	    ;
 }
