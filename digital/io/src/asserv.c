@@ -307,6 +307,20 @@ asserv_get_arm_position (void)
     return asserv_status.arm_position;
 }
 
+/* Are we moving forward/backward? */
+uint8_t
+asserv_get_moving_direction (void)
+{
+    /* Foward move? */
+    if (asserv_status.status & _BV (4))
+	return 1;
+    /* Backward move? */
+    if (asserv_status.status & _BV (5))
+	return 2;
+    /* Not moving */
+    return 0;
+}
+
 /* Reset the asserv board. */
 void
 asserv_reset (void)

@@ -140,6 +140,16 @@ uint16_t
 asserv_get_arm_position (void);
 
 /**
+ * Are we moving forward/backward?
+ * @return
+ *   - 0 we are not moving;
+ *   - 1 we are moving forward;
+ *   - 2 we are moving backward.
+ */
+uint8_t
+asserv_get_moving_direction (void);
+
+/**
  * Reset the asserv board.
  * Other class command.
  */

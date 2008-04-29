@@ -243,6 +243,28 @@ main_loop (void)
 		/* Post the event */
 		FSM_HANDLE_EVENT (&top_fsm, save_event);
 	      }
+	    /* Sharps event for move FSM */
+	    uint8_t moving_direction = asserv_get_moving_direction ();
+	    if (moving_direction)
+	      {
+		if (moving_direction == 1)
+		  {
+		    /* Front only */
+		    if (sharp_get_interpreted (SHARP_FRONT_LEFT) ||
+			sharp_get_interpreted (SHARP_FRONT_RIGHT))
+			/* Generate an event for move FSM */
+			FSM_HANDLE_EVENT (&move_fsm,
+					  MOVE_EVENT_bot_move_obstacle);
+		  }
+		else
+		  {
+		    /* Back only */
+		    if (sharp_get_interpreted (SHARP_BACK_LEFT) ||
+			sharp_get_interpreted (SHARP_BACK_RIGHT))
+			/* Generate an event for move FSM */
+			FSM_HANDLE_EVENT (&move_fsm, MOVE_EVENT_bot_move_obstacle);
+		  }
+	      }
 	    /* TODO: Check other sensors */
 	  }
 
