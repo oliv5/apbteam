@@ -184,7 +184,7 @@ main_loop (void)
 		main_sharp_ignore_event--;
 	    /* Update sharp module if required and only every
 	     * MAIN_SHARP_UPDATE_FREQ cycles */
-	    if ((main_sharp_ignore_event == 0) && (++main_sharp_freq_counter_ == MAIN_SHARP_UPDATE_FREQ))
+	    if (++main_sharp_freq_counter_ == MAIN_SHARP_UPDATE_FREQ)
 	      {
 		/* Update sharps */
 		sharp_update (0xff);
