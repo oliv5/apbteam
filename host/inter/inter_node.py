@@ -182,7 +182,7 @@ class InterNode (Inter):
 
     def handle_IO_PATH (self, msg):
 	self.path.path = [ ]
-	while len (msg) > 4:
+	while len (msg) >= 4:
 	    self.path.path.append (msg.pop ('hh'))
 	self.update (self.path)
 
