@@ -49,6 +49,8 @@ struct move_data_t
     move_position_t obstacle;
     /** Backward direction allowed flag. */
     uint8_t backward_movement_allowed;
+    /** Cached moving direction of the bot when blocked. */
+    uint8_t cached_moving_direction;
 };
 
 /**

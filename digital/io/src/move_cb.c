@@ -30,6 +30,7 @@
 #include "asserv.h"
 #include "playground.h"
 #include "move.h"
+#include "sharp.h"
 
 #include "main.h"      /* main_post_event_for_top_fsm */
 #include "modules/math/fixed/fixed.h"	/* fixed_* */
@@ -75,10 +76,19 @@
 #define MOVE_MAIN_IGNORE_SHARP_EVENT (3 * 225)
 
 /**
+ * Number of cycles to wait before trying to read the sharps values again when
+ * we are stopped.
+ */
+#define MOVE_WAIT_TIME_FOR_POOLING_SHARP (50)
+
+/**
  * Easier function to get the next intermediate positon from the path module.
  * @param dst new destination position computed by the path module
+ * @return
+ *   - 0 if no path could be found ;
+ *   - 1 if a path has been found.
  */
-void
+uint8_t
 move_get_next_position (move_position_t *dst)
 {
     /* Get the current position */
@@ -94,12 +104,11 @@ move_get_next_position (move_position_t *dst)
     if (!path_get_next (&dst->x, &dst->y))
       {
 	DPRINTF ("Could not compute any path to avoid obstacle!\n");
-	/* If it failed, try original destination */
-	dst->x = move_data.final.x;
-	dst->y = move_data.final.y;
+	return 0;
       }
     main_sharp_ignore_event = MOVE_MAIN_IGNORE_SHARP_EVENT;
     DPRINTF ("Computed path is (%d ; %d)\n", dst->x, dst->y);
+    return 1;
 }
 
 /**
@@ -144,17 +153,52 @@ move_obstacle_here (void)
 
 /**
  * Unique function after moving backward to have unique code.
+ * @return the value of the move_get_next_position.
  */
-void
+uint8_t
 move_after_moving_backward (void)
 {
     /* Give the current position of the bot to the path module */
-    move_get_next_position (&move_data.intermediate);
-    /* Go to the next position */
-    if (move_data.backward_movement_allowed)
-	asserv_goto_back (move_data.intermediate.x, move_data.intermediate.y);
+    if (move_get_next_position (&move_data.intermediate))
+      {
+	/* Go to the next position */
+	if (move_data.backward_movement_allowed)
+	    asserv_goto_back (move_data.intermediate.x, move_data.intermediate.y);
+	else
+	    asserv_goto (move_data.intermediate.x, move_data.intermediate.y);
+	return 1;
+      }
     else
-	asserv_goto (move_data.intermediate.x, move_data.intermediate.y);
+	return 0;
+}
+
+/*
+ * WAIT_FOR_CLEAR_PATH =wait_finished=>
+ * no_obstacle => MOVING_TO_FINAL_POSITION
+ *   check for obstacle using stored moving direction
+ *   try to go the final position
+ * obstacle => WAIT_FOR_CLEAR_PATH
+ *   check for obstacle using stored moving direction
+ *   post an event for the top FSM to be waked up later
+ */
+fsm_branch_t
+move__WAIT_FOR_CLEAR_PATH__wait_finished (void)
+{
+    if (!sharp_path_obstrued (move_data.cached_moving_direction))
+      {
+	/* Try to go to the final position */
+	if (move_data.backward_movement_allowed)
+	    asserv_goto_back (move_data.final.x, move_data.final.y);
+	else
+	    asserv_goto (move_data.final.x, move_data.final.y);
+	return move_next_branch (WAIT_FOR_CLEAR_PATH, wait_finished, no_obstacle);
+      }
+    else
+      {
+	/* Post an event for the top FSM to be waked up later */
+	main_move_wait_cycle = MOVE_WAIT_TIME_FOR_POOLING_SHARP;
+	return move_next_branch (WAIT_FOR_CLEAR_PATH, wait_finished, obstacle);
+      }
 }
 
 /*
@@ -179,6 +223,10 @@ move__IDLE__start (void)
  *   post an event for the top FSM to tell we have finished
  * position_intermediary => MOVING_TO_INTERMEDIATE_POSITION
  *   go to the next intermediate position computed by the path module
+ * no_intermediate_path_found => WAIT_FOR_CLEAR_PATH
+ *   store current moving direction
+ *   stop the bot
+ *   post an event for the top FSM to be waked up later
  */
 fsm_branch_t
 move__MOVING_TO_INTERMEDIATE_POSITION__bot_move_succeed (void)
@@ -193,22 +241,40 @@ move__MOVING_TO_INTERMEDIATE_POSITION__bot_move_succeed (void)
     else
       {
 	/* Get next position */
-	move_get_next_position (&move_data.intermediate);
-	/* Go to the next intermediate position */
-	if (move_data.backward_movement_allowed)
-	    asserv_goto_back (move_data.intermediate.x, move_data.intermediate.y);
+	if (move_get_next_position (&move_data.intermediate))
+	  {
+	    /* Go to the next intermediate position */
+	    if (move_data.backward_movement_allowed)
+		asserv_goto_back (move_data.intermediate.x, move_data.intermediate.y);
+	    else
+		asserv_goto (move_data.intermediate.x, move_data.intermediate.y);
+	    return move_next_branch (MOVING_TO_INTERMEDIATE_POSITION, bot_move_succeed, position_intermediary);
+	  }
 	else
-	    asserv_goto (move_data.intermediate.x, move_data.intermediate.y);
-	return move_next_branch (MOVING_TO_INTERMEDIATE_POSITION, bot_move_succeed, position_intermediary);
+	  {
+	    /* Store current moving direction */
+	    move_data.cached_moving_direction = asserv_get_moving_direction ();
+	    /* Stop the bot */
+	    asserv_stop_motor ();
+	    /* Post an event for the top FSM to be waked up later */
+	    main_move_wait_cycle = MOVE_WAIT_TIME_FOR_POOLING_SHARP;
+	    return move_next_branch (MOVING_TO_INTERMEDIATE_POSITION, bot_move_succeed, no_intermediate_path_found);
+	  }
       }
 }
 
 /*
  * MOVING_TO_INTERMEDIATE_POSITION =bot_move_obstacle=>
- *  => MOVING_TO_INTERMEDIATE_POSITION
+ * intermediate_path_found => MOVING_TO_INTERMEDIATE_POSITION
  *   compute the obstacle position
- *   give the obstacle position to the path module
- *   go to the next intermediate position computed by the path module
+ *   get next intermediate position from path module
+ *   go to next intermediate position
+ * no_intermediate_path_found => WAIT_FOR_CLEAR_PATH
+ *   compute the obstacle position
+ *   get next intermediate position from path module failed
+ *   store current moving direction
+ *   stop the bot
+ *   post an event for the top FSM to be waked up later
  */
 fsm_branch_t
 move__MOVING_TO_INTERMEDIATE_POSITION__bot_move_obstacle (void)
@@ -216,13 +282,25 @@ move__MOVING_TO_INTERMEDIATE_POSITION__bot_move_obstacle (void)
     /* Compute obstacle position */
     move_obstacle_here ();
     /* Get next position */
-    move_get_next_position (&move_data.intermediate);
-    /* Go to the next intermediate position */
-    if (move_data.backward_movement_allowed)
-	asserv_goto_back (move_data.intermediate.x, move_data.intermediate.y);
+    if (move_get_next_position (&move_data.intermediate))
+      {
+	/* Go to the next intermediate position */
+	if (move_data.backward_movement_allowed)
+	    asserv_goto_back (move_data.intermediate.x, move_data.intermediate.y);
+	else
+	    asserv_goto (move_data.intermediate.x, move_data.intermediate.y);
+	return move_next_branch (MOVING_TO_INTERMEDIATE_POSITION, bot_move_obstacle, intermediate_path_found);
+      }
     else
-	asserv_goto (move_data.intermediate.x, move_data.intermediate.y);
-    return move_next (MOVING_TO_INTERMEDIATE_POSITION, bot_move_obstacle);
+      {
+	/* Store current moving direction */
+	move_data.cached_moving_direction = asserv_get_moving_direction ();
+	/* Stop the bot */
+	asserv_stop_motor ();
+	/* Post an event for the top FSM to be waked up later */
+	main_move_wait_cycle = MOVE_WAIT_TIME_FOR_POOLING_SHARP;
+	return move_next_branch (MOVING_TO_INTERMEDIATE_POSITION, bot_move_obstacle, no_intermediate_path_found);
+      }
 }
 
 /*
@@ -243,39 +321,63 @@ move__MOVING_TO_INTERMEDIATE_POSITION__bot_move_failed (void)
 
 /*
  * MOVING_BACKWARD =bot_move_failed=>
- *  => MOVING_TO_INTERMEDIATE_POSITION
- *   do the same as when we succeed
- *   give the obstacle position to the path module
- *   give the current position of the bot to the path module
- *   get the intermediate position from path module
+ * intermediate_path_found => MOVING_TO_INTERMEDIATE_POSITION
+ *   get next intermediate position from path module
+ * no_intermediate_path_found => WAIT_FOR_CLEAR_PATH
+ *   get next intermediate position from path module, failed
+ *   stop the bot
+ *   post an event for the top FSM to be waked up later
  */
 fsm_branch_t
 move__MOVING_BACKWARD__bot_move_failed (void)
 {
     /* Call generic function */
-    move_after_moving_backward ();
-    return move_next (MOVING_BACKWARD, bot_move_failed);
+    if (move_after_moving_backward ())
+      {
+	return move_next_branch (MOVING_BACKWARD, bot_move_failed, intermediate_path_found);
+      }
+    else
+      {
+	/* Stop the bot */
+	asserv_stop_motor ();
+	/* Post an event for the top FSM to be waked up later */
+	main_move_wait_cycle = MOVE_WAIT_TIME_FOR_POOLING_SHARP;
+	return move_next_branch (MOVING_BACKWARD, bot_move_failed, no_intermediate_path_found);
+      }
 }
 
 /*
  * MOVING_BACKWARD =bot_move_succeed=>
- *  => MOVING_TO_INTERMEDIATE_POSITION
- *   give the obstacle position to the path module
- *   give the current position of the bot to the path module
- *   get the intermediate position from path module
+ * intermediate_path_found => MOVING_TO_INTERMEDIATE_POSITION
+ *   get next intermediate position from path module
+ * no_intermediate_path_found => WAIT_FOR_CLEAR_PATH
+ *   get next intermediate position from path module, failed
+ *   stop the bot
+ *   post an event for the top FSM to be waked up later
  */
 fsm_branch_t
 move__MOVING_BACKWARD__bot_move_succeed (void)
 {
     /* Call generic function */
-    move_after_moving_backward ();
-    return move_next (MOVING_BACKWARD, bot_move_succeed);
+    if (move_after_moving_backward ())
+      {
+	return move_next_branch (MOVING_BACKWARD, bot_move_succeed, intermediate_path_found);
+      }
+    else
+      {
+	/* Stop the bot */
+	asserv_stop_motor ();
+	/* Post an event for the top FSM to be waked up later */
+	main_move_wait_cycle = MOVE_WAIT_TIME_FOR_POOLING_SHARP;
+	return move_next_branch (MOVING_BACKWARD, bot_move_succeed, no_intermediate_path_found);
+      }
 }
 
 /*
  * MOVING_TO_FINAL_POSITION =bot_move_failed=>
  *  => MOVING_BACKWARD
- *   store the current position of the obstacle
+ *   compute the obstacle position
+ *   store current moving direction (for possible failed of path module)
  *   move backward to turn freely
  */
 fsm_branch_t
@@ -283,6 +385,8 @@ move__MOVING_TO_FINAL_POSITION__bot_move_failed (void)
 {
     /* Compute obstacle position */
     move_obstacle_here ();
+    /* Store current moving direction */
+    move_data.cached_moving_direction = asserv_get_moving_direction ();
     /* Move backward to turn freely */
     asserv_move_linearly (-PG_MOVE_DISTANCE);
     return move_next (MOVING_TO_FINAL_POSITION, bot_move_failed);
@@ -303,11 +407,16 @@ move__MOVING_TO_FINAL_POSITION__bot_move_succeed (void)
 
 /*
  * MOVING_TO_FINAL_POSITION =bot_move_obstacle=>
- *  => MOVING_TO_INTERMEDIATE_POSITION
+ * intermediate_path_found => MOVING_TO_INTERMEDIATE_POSITION
  *   compute the obstacle position
- *   give the obstacle position to the path module
- *   give the current position of the bot to the path module
- *   get the intermediate position from path module
+ *   get next intermediate position from path module
+ *   go to next intermediate position
+ * no_intermediate_path_found => WAIT_FOR_CLEAR_PATH
+ *   compute the obstacle position
+ *   get next intermediate position from path module failed
+ *   store current moving direction
+ *   stop the bot
+ *   post an event for the top FSM to be waked up later
  */
 fsm_branch_t
 move__MOVING_TO_FINAL_POSITION__bot_move_obstacle (void)
@@ -315,12 +424,24 @@ move__MOVING_TO_FINAL_POSITION__bot_move_obstacle (void)
     /* Compute obstacle position */
     move_obstacle_here ();
     /* Get next position */
-    move_get_next_position (&move_data.intermediate);
-    /* Go to the next intermediate position */
-    if (move_data.backward_movement_allowed)
-	asserv_goto_back (move_data.intermediate.x, move_data.intermediate.y);
+    if (move_get_next_position (&move_data.intermediate))
+      {
+	/* Go to the next intermediate position */
+	if (move_data.backward_movement_allowed)
+	    asserv_goto_back (move_data.intermediate.x, move_data.intermediate.y);
+	else
+	    asserv_goto (move_data.intermediate.x, move_data.intermediate.y);
+	return move_next_branch (MOVING_TO_FINAL_POSITION, bot_move_obstacle, intermediate_path_found);
+      }
     else
-	asserv_goto (move_data.intermediate.x, move_data.intermediate.y);
-    return move_next (MOVING_TO_FINAL_POSITION, bot_move_obstacle);
+      {
+	/* Store current moving direction */
+	move_data.cached_moving_direction = asserv_get_moving_direction ();
+	/* Stop the bot */
+	asserv_stop_motor ();
+	/* Post an event for the top FSM to be waked up later */
+	main_move_wait_cycle = MOVE_WAIT_TIME_FOR_POOLING_SHARP;
+	return move_next_branch (MOVING_TO_FINAL_POSITION, bot_move_obstacle, no_intermediate_path_found);
+      }
 }
 

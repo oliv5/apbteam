@@ -40,4 +40,12 @@ extern uint8_t main_post_event_for_top_fsm;
  */
 extern uint16_t main_sharp_ignore_event;
 
+/**
+ * Post an event for the main loop to wake up the move FSM in a certain count
+ * of cycles.
+ * This flag is used by the move FSM to wait a certain amount of time before
+ * checking on the sharps again.
+ */
+extern uint16_t main_move_wait_cycle;
+
 #endif /* main_h */

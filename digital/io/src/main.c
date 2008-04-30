@@ -76,6 +76,12 @@ uint8_t main_post_event_for_top_fsm = 0xFF;
 uint16_t main_sharp_ignore_event;
 
 /**
+ * Post an event for the main loop to wake up the move FSM in a certain count
+ * of cycles.
+ */
+uint16_t main_move_wait_cycle;
+
+/**
  * Sharps stats counters.
  */
 uint8_t main_stats_sharps, main_stats_sharps_cpt;
@@ -182,6 +188,9 @@ main_loop (void)
 	    /* Update the ignore sharp event flag */
 	    if (main_sharp_ignore_event)
 		main_sharp_ignore_event--;
+	    /* Update wait flag for move FSM */
+	    if (main_move_wait_cycle)
+		main_move_wait_cycle--;
 	    /* Update sharp module if required and only every
 	     * MAIN_SHARP_UPDATE_FREQ cycles */
 	    if (++main_sharp_freq_counter_ == MAIN_SHARP_UPDATE_FREQ)
@@ -281,6 +290,11 @@ main_loop (void)
 					  MOVE_EVENT_bot_move_obstacle);
 		      }
 		  }
+	      }
+	    /* Wait flag for move FSM */
+	    if (!main_move_wait_cycle)
+	      {
+		FSM_HANDLE_EVENT (&move_fsm, MOVE_EVENT_wait_finished);
 	      }
 	    /* TODO: Check other sensors */
 	  }
