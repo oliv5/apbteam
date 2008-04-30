@@ -34,6 +34,8 @@
 #include "main.h"      /* main_post_event_for_top_fsm */
 #include "modules/math/fixed/fixed.h"	/* fixed_* */
 
+#include "debug.host.h"
+
 /**
  * The real radius of the obstacle.
  */
@@ -91,11 +93,13 @@ move_get_next_position (move_position_t *dst)
     /* Retrieve next path coordinate */
     if (!path_get_next (&dst->x, &dst->y))
       {
+	DPRINTF ("Could not compute any path to avoid obstacle!\n");
 	/* If it failed, try original destination */
 	dst->x = move_data.final.x;
 	dst->y = move_data.final.y;
       }
     main_sharp_ignore_event = MOVE_MAIN_IGNORE_SHARP_EVENT;
+    DPRINTF ("Computed path is (%d ; %d)\n", dst->x, dst->y);
 }
 
 /**
@@ -113,12 +117,14 @@ move_compute_obstacle_position (asserv_position_t cur,
     if (move_data.backward_movement_allowed)
 	angle += 0x8000;
     angle = angle << 8;
+    DPRINTF ("We are at (%d ; %d ; %x)\n", cur.x, cur.y, cur.a);
     /* X */
     obstacle->x = cur.x + fixed_mul_f824 (fixed_cos_f824 (angle),
 					  MOVE_OBSTACLE_DISTANCE);
     /* Y */
     obstacle->y = cur.y + fixed_mul_f824 (fixed_sin_f824 (angle),
 					  MOVE_OBSTACLE_DISTANCE);
+    DPRINTF ("Computed obstacle (%d ; %d)\n", obstacle->x, obstacle->y);
 }
 /**
  * Unique function to compute the obstacle position from here.
