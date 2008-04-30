@@ -172,3 +172,29 @@ sharp_get_interpreted (uint8_t sharp_id)
 {
     return sharp_cache_interpreted_[sharp_id];
 }
+
+/* Is there an obstacle in front of the bot? */
+uint8_t
+sharp_path_obstrued (uint8_t moving_direction)
+{
+    /* If we are moving forward */
+    if (moving_direction == 1)
+      {
+	/* Use only front sharps */
+	if (sharp_get_interpreted (SHARP_FRONT_LEFT) ||
+	    sharp_get_interpreted (SHARP_FRONT_MIDDLE) ||
+	    sharp_get_interpreted (SHARP_FRONT_RIGHT))
+	    /* Something in front */
+	    return 1;
+      }
+    /* If we are moving backward */
+    else if (moving_direction == 2)
+      {
+	/* Use only back sharps */
+	if (sharp_get_interpreted (SHARP_BACK_LEFT) ||
+	    sharp_get_interpreted (SHARP_BACK_RIGHT))
+	    /* Something in front */
+	    return 1;
+      }
+    return 0;
+}

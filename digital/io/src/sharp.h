@@ -110,4 +110,18 @@ void sharp_set_threshold (uint8_t sharp_id, uint16_t low, uint16_t high);
  */
 uint8_t sharp_get_interpreted (uint8_t sharp_id);
 
+/**
+ * Is there an obstacle in front of the bot?
+ * This function correctly handles the moving direction of the bot to check
+ * only the necessary sharps.
+ * @param moving_direction
+ *   - 1 when moving forward ;
+ *   - 2 when moving backward.
+ * @return
+ *   - 0 if there is nothing in front ;
+ *   - 1 if there is an obstacle in front of the bot.
+ */
+uint8_t
+sharp_path_obstrued (uint8_t moving_direction);
+
 #endif /* sharp_h */

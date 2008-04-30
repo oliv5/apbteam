@@ -274,25 +274,11 @@ main_loop (void)
 		/* If we are moving */
 		if (moving_direction)
 		  {
-		    /* If we are moving forward */
-		    if (moving_direction == 1)
+		    if (sharp_path_obstrued (moving_direction))
 		      {
-			/* Use only front sharps */
-			if (sharp_get_interpreted (SHARP_FRONT_LEFT) ||
-			    sharp_get_interpreted (SHARP_FRONT_MIDDLE) ||
-			    sharp_get_interpreted (SHARP_FRONT_RIGHT))
-			    /* Generate an event for move FSM */
-			    FSM_HANDLE_EVENT (&move_fsm,
-					      MOVE_EVENT_bot_move_obstacle);
-		      }
-		    /* If we are moving backward */
-		    else if (moving_direction == 2)
-		      {
-			/* Use only back sharps */
-			if (sharp_get_interpreted (SHARP_BACK_LEFT) ||
-			    sharp_get_interpreted (SHARP_BACK_RIGHT))
-			    /* Generate an event for move FSM */
-			    FSM_HANDLE_EVENT (&move_fsm, MOVE_EVENT_bot_move_obstacle);
+			/* Generate an event for move FSM */
+			FSM_HANDLE_EVENT (&move_fsm,
+					  MOVE_EVENT_bot_move_obstacle);
 		      }
 		  }
 	      }
