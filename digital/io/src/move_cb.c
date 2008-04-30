@@ -68,7 +68,7 @@
 /**
  * The generic validity time (in term of number of cyles).
  */
-#define MOVE_OBSTACLE_VALIDITY (5 * 225)
+#define MOVE_OBSTACLE_VALIDITY (4 * 225)
 
 /**
  * Cycles count to ignore sharp event in the main loop.
