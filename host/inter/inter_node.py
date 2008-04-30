@@ -63,9 +63,10 @@ class InterNode (Inter):
 	self.obstacles = [ ]
 	self.dist_sensors = [
 		DistSensor (self.tableview.robot, (150, 127), 0, 800),
+		DistSensor (self.tableview.robot, (150, 0), 0, 800),
 		DistSensor (self.tableview.robot, (150, -127), 0, 800),
-		DistSensor (self.tableview.robot, (-70, -100), pi, 800),
 		DistSensor (self.tableview.robot, (-70, 100), pi, 800),
+		DistSensor (self.tableview.robot, (-70, -100), pi, 800),
 		]
 	for s in self.dist_sensors:
 	    s.obstacles = self.obstacles
