@@ -26,9 +26,11 @@
 
 #include "path.h"
 #include "playground.h"
+#include "simu.host.h"
 
 #include "modules/math/fixed/fixed.h"
 #include "modules/utils/utils.h"
+#include "modules/host/mex.h"
 
 /** Number of possible obstacles. */
 #define PATH_OBSTACLES_NB 2
@@ -288,6 +290,17 @@ path_update (void)
     path_compute_points ();
     path_compute_arcs ();
     path_dijkstra ();
+#if defined (HOST)
+    uint8_t len, i;
+    uint16_t points[PATH_POINTS_NB * 2];
+    len = 0;
+    for (i = 1; i != 0xff; i = path.points[i].next)
+      {
+	points[len++] = path.points[i].x;
+	points[len++] = path.points[i].y;
+      }
+    simu_send_path (len, points);
+#endif
 }
 
 /** Retrieve first path point coordinates.  Return 0 on failure. */

@@ -51,6 +51,10 @@ switch_get_color (void);
 uint8_t
 switch_get_jack (void);
 
+/** Send computed path. */
+void
+simu_send_path (uint8_t len, uint16_t *points);
+
 #endif /* defined (HOST) */
 
 #endif /* simu_host_h */

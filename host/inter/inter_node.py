@@ -28,6 +28,7 @@ if __name__ == '__main__':
 
 from inter import Inter, Obstacle
 from dist_sensor import DistSensor
+from path import Path
 from Tkinter import *
 from mex.node import Node
 from mex.msg import Msg
@@ -45,6 +46,7 @@ class InterNode (Inter):
     IO_COLOR = 0xb1
     IO_SERVO = 0xb2
     IO_SHARPS = 0xb3
+    IO_PATH = 0xb4
 
     def __init__ (self):
 	Inter.__init__ (self)
@@ -55,6 +57,7 @@ class InterNode (Inter):
 	self.node.register (self.IO_COLOR, self.handle_IO_COLOR)
 	self.node.register (self.IO_SERVO, self.handle_IO_SERVO)
 	self.node.register (self.IO_SHARPS, self.handle_IO_SHARPS)
+	self.node.register (self.IO_PATH, self.handle_IO_PATH)
 	self.tk.createfilehandler (self.node, READABLE, self.read)
 	self.date = 0
 	self.synced = True
@@ -72,6 +75,9 @@ class InterNode (Inter):
 	    s.obstacles = self.obstacles
 	    s.hide = True
 	self.tableview.robot.drawn.extend (self.dist_sensors)
+	self.path = Path (self.tableview.table)
+	self.tableview.drawn.append (self.path)
+	self.tableview
 
     def createWidgets (self):
 	Inter.createWidgets (self)
@@ -174,12 +180,18 @@ class InterNode (Inter):
 	    assert v >= 0 and v < 1024
 	self.node.response (m)
 
+    def handle_IO_PATH (self, msg):
+	self.path.path = [ ]
+	while len (msg) > 4:
+	    self.path.path.append (msg.pop ('hh'))
+	self.update (self.path)
+
     def place_obstacle (self, ev):
 	pos = self.tableview.screen_coord ((ev.x, ev.y))
 	if self.obstacles:
 	    self.obstacles[0].pos = pos
 	else:
-	    self.obstacles.append (Obstacle (self.tableview, pos, 150))
+	    self.obstacles.append (Obstacle (self.tableview.table, pos, 150))
 	    self.tableview.drawn.append (self.obstacles[0])
 	self.update (*self.obstacles)
 	self.update (*self.dist_sensors)

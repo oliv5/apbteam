@@ -47,3 +47,8 @@ main (void)
     return 0;
 }
 
+void
+simu_send_path (uint8_t len, uint16_t *points)
+{
+}
+

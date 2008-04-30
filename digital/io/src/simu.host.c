@@ -39,6 +39,7 @@ enum
     MSG_SIMU_IO_COLOR = 0xb1,
     MSG_SIMU_IO_SERVO = 0xb2,
     MSG_SIMU_IO_SHARPS = 0xb3,
+    MSG_SIMU_IO_PATH = 0xb4,
 };
 
 /** Requested servo position. */
@@ -194,3 +195,16 @@ void
 eeprom_clear_param (void)
 {
 }
+
+/** Send computed path. */
+void
+simu_send_path (uint8_t len, uint16_t *points)
+{
+    int i;
+    mex_msg_t *m;
+    m = mex_msg_new (MSG_SIMU_IO_PATH);
+    for (i = 0; i < len; i++)
+	mex_msg_push (m, "h", points[i]);
+    mex_node_send (m);
+}
+
