@@ -90,7 +90,7 @@ move_compute_obstacle_position (asserv_position_t cur,
 {
     /* Convert the angle */
     uint32_t angle = cur.a;
-    angle = angle << 2;
+    angle = angle << 8;
     /* X */
     obstacle->x = cur.x + fixed_mul_f824 (fixed_cos_f824 (angle),
 					  MOVE_OBSTACLE_DISTANCE);
