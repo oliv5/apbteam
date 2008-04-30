@@ -549,6 +549,25 @@ asserv_goto (uint32_t x, uint32_t y)
     asserv_twi_send_command ('x', 6);
 }
 
+/* Go to an absolute position at (X, Y) with backward enabled. */
+void
+asserv_goto_back (uint32_t x, uint32_t y)
+{
+    x = fixed_mul_f824 (x, asserv_scale_inv);
+    y = fixed_mul_f824 (y, asserv_scale_inv);
+    /* Put X as parameter */
+    asserv_twi_buffer_param[0] = v32_to_v8 (x, 2);
+    asserv_twi_buffer_param[1] = v32_to_v8 (x, 1);
+    asserv_twi_buffer_param[2] = v32_to_v8 (x, 0);
+    /* Put Y as parameter */
+    asserv_twi_buffer_param[3] = v32_to_v8 (y, 2);
+    asserv_twi_buffer_param[4] = v32_to_v8 (y, 1);
+    asserv_twi_buffer_param[5] = v32_to_v8 (y, 0);
+    /* Send the goto to an absolute position with backward enabled command to
+     * the asserv board */
+    asserv_twi_send_command ('r', 6);
+}
+
 /* Notify get samples FSM when the arm reach desired position. */
 void
 asserv_arm_set_position_reached (uint16_t position)

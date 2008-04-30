@@ -286,6 +286,14 @@ void
 asserv_goto (uint32_t x, uint32_t y);
 
 /**
+ * Go to an absolute position at (X, Y) with backward enabled.
+ * @param x the x position on the table.
+ * @param y the y position on the table.
+ */
+void
+asserv_goto_back (uint32_t x, uint32_t y);
+
+/**
  * Set the notifier of get samples FSM when the arm reach desired position.
  * You should called this function from the get sample FSM to tell the asserv
  * module you want to be notified when the arm reached the desired position.
