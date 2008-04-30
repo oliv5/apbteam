@@ -85,7 +85,7 @@ chrono_init (void)
     /* Set-up SIGALRM handler */
     signal (SIGALRM, &signal_alarm);
     /* Alarm in 90 seconds */
-    alarm (90);
+//     alarm (90);
 #endif
 }
 
