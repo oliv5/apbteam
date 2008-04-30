@@ -55,7 +55,7 @@ uint8_t servo_high_time_current_[SERVO_NUMBER];
 /** Do not update too often, interface is too slow. */
 uint8_t simu_servo_update = 10, simu_servo_update_cpt;
 uint8_t simu_switch_update = 100, simu_switch_update_cpt;
-uint8_t simu_sharps_update = 100, simu_sharps_update_cpt;
+uint8_t simu_sharps_update = 9, simu_sharps_update_cpt;
 
 /** Sampled switches. */
 uint8_t simu_switches;
