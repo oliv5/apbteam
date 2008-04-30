@@ -35,7 +35,7 @@
  * The speed of the arm.
  * It is expressed in number of steps by asserv board cycle (4.44ms).
  */
-#define BOT_ARM_SPEED 3
+#define BOT_ARM_SPEED 8
 
 /**
  * The number of step of a whole rotation.
