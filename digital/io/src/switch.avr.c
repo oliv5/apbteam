@@ -38,32 +38,32 @@
 /**
  * Color selector switch port.
  */
-#define SWITCH_COLOR_PORT PORTC
+#define SWITCH_COLOR_PORT PORTD
 
 /**
  * Color selector read register port.
  */
-#define SWITCH_COLOR_PIN PINC
+#define SWITCH_COLOR_PIN PIND
 
 /**
  * Color selector switch pin number of the port.
  */
-#define SWITCH_COLOR_PIN_NUMBER 0
+#define SWITCH_COLOR_PIN_NUMBER 6
 
 /**
  * Jack switch port.
  */
-#define SWITCH_JACK_PORT PORTC
+#define SWITCH_JACK_PORT PORTD
 
 /**
  * Jack switch read register port.
  */
-#define SWITCH_JACK_PIN PINC
+#define SWITCH_JACK_PIN PIND
 
 /**
  * Jack switch pin number of the port.
  */
-#define SWITCH_JACK_PIN_NUMBER 1
+#define SWITCH_JACK_PIN_NUMBER 7
 
 /**
  * Number of iteration of 4.4 ms to have for the filter.
