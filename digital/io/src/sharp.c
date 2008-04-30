@@ -92,7 +92,7 @@ sharp_update_interpreted (uint8_t sharp_id)
       }
     /* Otherwise, check if this sharp value has been the same
      * SHARP_FILTER_NUMBER times */
-    else if (sharp_filter_[sharp_id]-- == 0)
+    else if (--sharp_filter_[sharp_id] == 0)
       {
 	/* Current value change (for SHARP_FILTER_NUMBER times)! */
 	/* Update previous value */
