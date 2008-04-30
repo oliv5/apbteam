@@ -67,7 +67,7 @@ top__DROP_OFF_BALLS_TO_GUTTER__gutter_fsm_finished (void)
     asserv_get_position (&position);
     /* FIXME: linear move is better? */
     /* Move away from the gutter */
-    move_start (position.x, position.y + BOT_MIN_DISTANCE_TURN_FREE);
+    move_start (position.x, position.y + BOT_MIN_DISTANCE_TURN_FREE, 0);
     return top_next (DROP_OFF_BALLS_TO_GUTTER, gutter_fsm_finished);
 }
 
@@ -102,7 +102,7 @@ fsm_branch_t
 top__MOVE_AWAY_FROM_START_BORDER__move_fsm_finished (void)
 {
     /* Start the move FSM to our samples distributor */
-    move_start (PG_DISTRIBUTOR_SAMPLE_OUR_X, PG_DISTRIBUTOR_SAMPLE_OUR_Y);
+    move_start (PG_DISTRIBUTOR_SAMPLE_OUR_X, PG_DISTRIBUTOR_SAMPLE_OUR_Y, 0);
     return top_next (MOVE_AWAY_FROM_START_BORDER, move_fsm_finished);
 }
 
@@ -116,7 +116,7 @@ fsm_branch_t
 top__GET_SAMPLES_FROM_SAMPLES_DISTRIBUTOR__get_samples_fsm_finished (void)
 {
     /* Start the move FSM to our ice distributor */
-    move_start (PG_DISTRIBUTOR_ICE_OUR_X, PG_DISTRIBUTOR_ICE_OUR_Y);
+    move_start (PG_DISTRIBUTOR_ICE_OUR_X, PG_DISTRIBUTOR_ICE_OUR_Y, 0);
     return top_next (GET_SAMPLES_FROM_SAMPLES_DISTRIBUTOR, get_samples_fsm_finished);
 }
 
@@ -230,13 +230,13 @@ top__GET_ICE_FROM_OUR_ICE_DISTRIBUTOR__get_samples_fsm_finished (void)
     if (0)
       {
 	/* Start the move FSM to the adverse ice distributor */
-	move_start (PG_DISTRIBUTOR_ICE_ADVERSE_X, PG_DISTRIBUTOR_ICE_ADVERSE_Y);
+	move_start (PG_DISTRIBUTOR_ICE_ADVERSE_X, PG_DISTRIBUTOR_ICE_ADVERSE_Y, 0);
 	return top_next_branch (GET_ICE_FROM_OUR_ICE_DISTRIBUTOR, get_samples_fsm_finished, not_full);
       }
     else
       {
 	/* Start the move FSM to go to the gutter */
-	move_start (PG_GUTTER_X, PG_GUTTER_Y);
+	move_start (PG_GUTTER_X, PG_GUTTER_Y, 1);
 	return top_next_branch (GET_ICE_FROM_OUR_ICE_DISTRIBUTOR, get_samples_fsm_finished, full);
       }
 }
@@ -261,14 +261,15 @@ top__MOVE_AWAY_FROM_GUTTER_BORDER__move_fsm_finished (void)
 	/* Two first loops, normal behaviour (our sample distributor, them
 	 * ice) */
 	/* Start the move FSM */
-	move_start (PG_DISTRIBUTOR_SAMPLE_OUR_X, PG_DISTRIBUTOR_SAMPLE_OUR_Y);
+	move_start (PG_DISTRIBUTOR_SAMPLE_OUR_X, PG_DISTRIBUTOR_SAMPLE_OUR_Y,
+		    0);
 	return top_next_branch (MOVE_AWAY_FROM_GUTTER_BORDER, move_fsm_finished, first_loop);
       }
     else
       {
 	/* Second loops, ice only */
 	/* Start the move FSM */
-	move_start (PG_DISTRIBUTOR_ICE_ADVERSE_X, PG_DISTRIBUTOR_ICE_ADVERSE_Y);
+	move_start (PG_DISTRIBUTOR_ICE_ADVERSE_X, PG_DISTRIBUTOR_ICE_ADVERSE_Y, 0);
 	return top_next_branch (MOVE_AWAY_FROM_GUTTER_BORDER, move_fsm_finished, second_loop);
       }
 }
@@ -283,7 +284,7 @@ fsm_branch_t
 top__GET_ICE_FROM_ADVERSE_ICE_DISTRIBUTOR__get_samples_fsm_finished (void)
 {
     /* Start the move FSM to go to the gutter */
-    move_start (PG_GUTTER_X, PG_GUTTER_Y);
+    move_start (PG_GUTTER_X, PG_GUTTER_Y, 1);
     return top_next (GET_ICE_FROM_ADVERSE_ICE_DISTRIBUTOR, get_samples_fsm_finished);
 }
 
@@ -312,7 +313,7 @@ top__CONFIGURE_ASSERV__settings_acknowledged (void)
     /* Clear the flag for the setting acknowleged */
     top_waiting_for_settings_ack_ = 0;
     /* Start the move FSM to move the the bot away from the border */
-    move_start (PG_X_START, PG_Y_START - BOT_MIN_DISTANCE_TURN_FREE);
+    move_start (PG_X_START, PG_Y_START - BOT_MIN_DISTANCE_TURN_FREE, 0);
     return top_next (CONFIGURE_ASSERV, settings_acknowledged);
 }
 

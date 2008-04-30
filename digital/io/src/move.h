@@ -47,6 +47,8 @@ struct move_data_t
     move_position_t intermediate;
     /** Obstacle position. */
     move_position_t obstacle;
+    /** Backward direction allowed flag. */
+    uint8_t backward_movement_allowed;
 };
 
 /**
@@ -58,8 +60,10 @@ extern struct move_data_t move_data;
  * Go to a position with the start FSM.
  * @param position_x the X position.
  * @param position_y the Y position.
+ * @param backward_movement_allowed do we allow backward movement?
  */
 void
-move_start (uint16_t position_x, uint16_t position_y);
+move_start (uint16_t position_x, uint16_t position_y, uint8_t
+	    backward_movement_allowed);
 
 #endif /* move_h */

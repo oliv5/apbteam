@@ -109,6 +109,9 @@ move_compute_obstacle_position (asserv_position_t cur,
 {
     /* Convert the angle */
     uint32_t angle = cur.a;
+    /* Change angle when going backward */
+    if (move_data.backward_movement_allowed)
+	angle += 0x8000;
     angle = angle << 8;
     /* X */
     obstacle->x = cur.x + fixed_mul_f824 (fixed_cos_f824 (angle),
@@ -142,7 +145,10 @@ move_after_moving_backward (void)
     /* Give the current position of the bot to the path module */
     move_get_next_position (&move_data.intermediate);
     /* Go to the next position */
-    asserv_goto (move_data.intermediate.x, move_data.intermediate.y);
+    if (move_data.backward_movement_allowed)
+	asserv_goto_back (move_data.intermediate.x, move_data.intermediate.y);
+    else
+	asserv_goto (move_data.intermediate.x, move_data.intermediate.y);
 }
 
 /*
@@ -154,7 +160,10 @@ fsm_branch_t
 move__IDLE__start (void)
 {
     /* Go to the destination position */
-    asserv_goto (move_data.final.x, move_data.final.y);
+    if (move_data.backward_movement_allowed)
+	asserv_goto_back (move_data.final.x, move_data.final.y);
+    else
+	asserv_goto (move_data.final.x, move_data.final.y);
     return move_next (IDLE, start);
 }
 
@@ -180,7 +189,10 @@ move__MOVING_TO_INTERMEDIATE_POSITION__bot_move_succeed (void)
 	/* Get next position */
 	move_get_next_position (&move_data.intermediate);
 	/* Go to the next intermediate position */
-	asserv_goto (move_data.intermediate.x, move_data.intermediate.y);
+	if (move_data.backward_movement_allowed)
+	    asserv_goto_back (move_data.intermediate.x, move_data.intermediate.y);
+	else
+	    asserv_goto (move_data.intermediate.x, move_data.intermediate.y);
 	return move_next_branch (MOVING_TO_INTERMEDIATE_POSITION, bot_move_succeed, position_intermediary);
       }
 }
@@ -200,7 +212,10 @@ move__MOVING_TO_INTERMEDIATE_POSITION__bot_move_obstacle (void)
     /* Get next position */
     move_get_next_position (&move_data.intermediate);
     /* Go to the next intermediate position */
-    asserv_goto (move_data.intermediate.x, move_data.intermediate.y);
+    if (move_data.backward_movement_allowed)
+	asserv_goto_back (move_data.intermediate.x, move_data.intermediate.y);
+    else
+	asserv_goto (move_data.intermediate.x, move_data.intermediate.y);
     return move_next (MOVING_TO_INTERMEDIATE_POSITION, bot_move_obstacle);
 }
 
@@ -296,7 +311,10 @@ move__MOVING_TO_FINAL_POSITION__bot_move_obstacle (void)
     /* Get next position */
     move_get_next_position (&move_data.intermediate);
     /* Go to the next intermediate position */
-    asserv_goto (move_data.intermediate.x, move_data.intermediate.y);
+    if (move_data.backward_movement_allowed)
+	asserv_goto_back (move_data.intermediate.x, move_data.intermediate.y);
+    else
+	asserv_goto (move_data.intermediate.x, move_data.intermediate.y);
     return move_next (MOVING_TO_FINAL_POSITION, bot_move_obstacle);
 }
 

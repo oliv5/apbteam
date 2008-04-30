@@ -34,11 +34,13 @@ struct move_data_t move_data;
 
 /* Go to a position with the start FSM. */
 void
-move_start (uint16_t position_x, uint16_t position_y)
+move_start (uint16_t position_x, uint16_t position_y,
+	    uint8_t backward_movement_allowed)
 {
     /* Set parameters. */
     move_data.final.x = position_x;
     move_data.final.y = position_y;
+    move_data.backward_movement_allowed = backward_movement_allowed;
     /* Start the FSM. */
     fsm_init (&move_fsm);
     fsm_handle_event (&move_fsm, MOVE_EVENT_start);
