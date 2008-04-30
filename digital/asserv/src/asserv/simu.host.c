@@ -30,6 +30,8 @@
 #include "modules/utils/utils.h"
 #include "modules/math/fixed/fixed.h"
 
+#include "io.h"
+
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -138,9 +140,10 @@ simu_sensor_update (void)
 	  { -70.0, -200.0 },
 	  { 170.0, 0.0 },
       };
+    static const uint8_t sensors_bit[] =
+      { _BV (0), _BV (1), _BV (3), };
     static const double table_width = 3000.0, table_height = 2100.0;
     PINC = 0;
-    uint8_t bit = 1;
     unsigned int i;
     double x, y;
     for (i = 0; i < UTILS_COUNT (sensors); i++)
@@ -151,14 +154,12 @@ simu_sensor_update (void)
 	y = simu_pos_y + sin (simu_pos_a) * sensors[i][0]
 	    + cos (simu_pos_a) * sensors[i][1];
 	if (x >= 0.0 && x < table_width && y >= 0.0 && y < table_height)
-	    PINC |= bit;
-	bit <<= 1;
+	    PINC |= sensors_bit[i];
       }
     /** Top zero sensor. */
     double aa = simu_aux0_model.th / simu_aux0_model.m.i_G * 3;
     if (!(cos (aa) > 0 && fabs (sin (aa)) * 80.0 < 7.5))
-	PINC |= bit;
-    bit <<= 1;
+	PINC |= _BV (5);
 }
 
 /** Do a simulation step. */

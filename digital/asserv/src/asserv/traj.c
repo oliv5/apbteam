@@ -149,7 +149,7 @@ traj_gtd (void)
     speed = speed_theta.slow;
     speed *= 256;
     speed_theta.use_pos = speed_alpha.use_pos = 0;
-    if (PINC & _BV (2))
+    if (PINC & _BV (3))
       {
 	speed_theta.cons = speed;
 	speed_alpha.cons = 0;
