@@ -45,6 +45,11 @@ uint16_t sharp_threshold[SHARP_NUMBER][2];
 uint8_t sharp_filter_[SHARP_NUMBER];
 
 /**
+ * Sharp cache interpreted.
+ */
+uint8_t sharp_cache_interpreted_[SHARP_NUMBER];
+
+/**
  * Filter number value before changing state.
  */
 #define SHARP_FILTER_NUMBER 3
@@ -53,6 +58,54 @@ uint8_t sharp_filter_[SHARP_NUMBER];
  * Previous sharp interpreted values.
  */
 uint8_t sharp_previous_values_[SHARP_NUMBER];
+
+/**
+ * Update the interpreted values.
+ * @param sharp_id the sharp id number
+ * @return the interpreted value of the sharp.
+ */
+uint8_t
+sharp_update_interpreted (uint8_t sharp_id)
+{
+    uint8_t current_state;
+    /* Check if sharp state is lower than the low threshold */
+    if (sharp_values_[sharp_id] < sharp_threshold[sharp_id][0])
+	/* Update current state seen by the sharp */
+	current_state = 0;
+    /* Check if sharp state is higher than the high threshold */
+    else if (sharp_values_[sharp_id] > sharp_threshold[sharp_id][1])
+	/* Update current state seen by the sharp */
+	current_state = 1;
+    /* In the middle */
+    else
+	/* Return the previous value */
+	return sharp_previous_values_[sharp_id];
+
+    /* Filter the value */
+    /* Check if previous value is the current state */
+    if (sharp_previous_values_[sharp_id] == current_state)
+      {
+	/* Reset filter counter */
+	sharp_filter_[sharp_id] = SHARP_FILTER_NUMBER;
+	/* Return current state */
+	return current_state;
+      }
+    /* Otherwise, check if this sharp value has been the same
+     * SHARP_FILTER_NUMBER times */
+    else if (sharp_filter_[sharp_id]-- == 0)
+      {
+	/* Current value change (for SHARP_FILTER_NUMBER times)! */
+	/* Update previous value */
+	sharp_previous_values_[sharp_id] = current_state;
+	/* Reset filter counter */
+	sharp_filter_[sharp_id] = SHARP_FILTER_NUMBER;
+	/* Return current state */
+	return current_state;
+      }
+    else
+	/* Return previous state */
+	return sharp_previous_values_[sharp_id];
+}
 
 /* Initialize sharp module. */
 void
@@ -83,6 +136,8 @@ sharp_update (uint8_t sharp_mask)
 		;
 	    /* Store the value */
 	    sharp_values_[compt] = adc_read ();
+	    /* Update interpreted cached value */
+	    sharp_cache_interpreted_[compt] = sharp_update_interpreted (compt);
 	  }
       }
 }
@@ -115,49 +170,5 @@ sharp_set_threshold (uint8_t sharp_id, uint16_t low, uint16_t high)
 uint8_t
 sharp_get_interpreted (uint8_t sharp_id)
 {
-    uint8_t current_state;
-
-    /* Sanity check */
-    if (sharp_id < SHARP_NUMBER)
-      {
-	/* Check if sharp state is lower than the low threshold */
-	if (sharp_values_[sharp_id] < sharp_threshold[sharp_id][0])
-	    /* Update current state seen by the sharp */
-	    current_state = 0;
-	/* Check if sharp state is higher than the high threshold */
-	else if (sharp_values_[sharp_id] > sharp_threshold[sharp_id][1])
-	    /* Update current state seen by the sharp */
-	    current_state = 1;
-	/* In the middle */
-	else
-	    /* Return the previous value */
-	    return sharp_previous_values_[sharp_id];
-
-	/* Filter the value */
-	/* Check if previous value is the current state */
-	if (sharp_previous_values_[sharp_id] == current_state)
-	  {
-	    /* Reset filter counter */
-	    sharp_filter_[sharp_id] = SHARP_FILTER_NUMBER;
-	    /* Return current state */
-	    return current_state;
-	  }
-	/* Otherwise, check if this sharp value has been the same
-	 * SHARP_FILTER_NUMBER times */
-	else if (sharp_filter_[sharp_id]-- == 0)
-	  {
-	    /* Current value change (for SHARP_FILTER_NUMBER times)! */
-	    /* Update previous value */
-	    sharp_previous_values_[sharp_id] = current_state;
-	    /* Reset filter counter */
-	    sharp_filter_[sharp_id] = SHARP_FILTER_NUMBER;
-	    /* Return current state */
-	    return current_state;
-	  }
-	else
-	    /* Return previous state */
-	    return sharp_previous_values_[sharp_id];
-      }
-    /* Error */
-    return 2;
+    return sharp_cache_interpreted_[sharp_id];
 }
