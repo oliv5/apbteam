@@ -38,4 +38,5 @@ class Path (Drawable):
     def draw (self):
 	self.reset ()
 	if len (self.path) > 2:
-	    self.draw_line (self.path, fill = 'green', arrow = LAST)
+	    fmt = dict (fill = 'green', arrow = LAST)
+	    self.draw_line (*self.path, **fmt)
