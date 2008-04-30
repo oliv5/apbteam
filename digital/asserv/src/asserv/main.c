@@ -108,6 +108,7 @@ main (int argc, char **argv)
     uart0_init ();
     twi_proto_init ();
     postrack_init ();
+    traj_init ();
     eeprom_read_params ();
     proto_send0 ('z');
     sei ();
@@ -583,6 +584,9 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		traj_eps = v8_to_v16 (args[1], args[2]);
 		traj_aeps = v8_to_v16 (args[3], args[4]);
 		break;
+	      case c ('l', 3):
+		traj_set_angle_limit (v8_to_v16 (args[1], args[2]));
+		break;
 	      case c ('w', 2):
 		/* Set PWM direction.
 		 * - b: bits: 0000[aux0][right][left]. */
@@ -616,7 +620,8 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		proto_send1w ('I', pos_i_sat);
 		proto_send1w ('D', pos_d_sat);
 		proto_send1w ('b', pos_blocked);
-		proto_send1w ('e', traj_eps);
+		proto_send2w ('e', traj_eps, traj_aeps);
+		proto_send1w ('l', traj_angle_limit);
 		proto_send1b ('w', pwm_reverse);
 		break;
 	      default:

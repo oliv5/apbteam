@@ -52,6 +52,7 @@ class Asserv:
 		ta = 1, aa = 1, a0a = 1,
 		tsm = 0, asm = 0, tss = 0, ass = 0, a0sm = 0, a0ss = 0,
 		c = 1, f = 0x1000,
+		l = 0x2000,
 		)
 	self.param.update (param)
 	self.send_param ()
@@ -198,6 +199,7 @@ class Asserv:
 		p['tss'], p['ass'])
 	self.proto.send ('p', 'BL', ord ('c'), p['c'] * 256 * 256 * 256)
 	self.proto.send ('p', 'BH', ord ('f'), p['f'])
+	self.proto.send ('p', 'BH', ord ('l'), p['l'])
 
     def write_eeprom (self):
 	self.proto.send ('p', 'BB', ord ('E'), 1)

@@ -76,6 +76,12 @@ int16_t traj_eps = 500;
 /** Angle epsilon, angle considered to be small enough (f0.16). */
 int16_t traj_aeps = 0x0100;
 
+/** Angle at which to start going forward (f0.16). */
+uint16_t traj_angle_limit = 0x2000;
+
+/** Angle at which to start going forward (rad, f8.24). */
+int32_t traj_angle_limit_rad;
+
 /** Go to position. */
 static uint32_t traj_goto_x, traj_goto_y;
 
@@ -84,6 +90,13 @@ static uint32_t traj_goto_a;
 
 /** Allow backward movements. */
 static uint8_t traj_backward_ok;
+
+/** Initialise computed factors. */
+void
+traj_init (void)
+{
+    traj_set_angle_limit (traj_angle_limit);
+}
 
 /** Angle offset.  Directly handled to speed layer. */
 void
@@ -207,7 +220,7 @@ traj_goto (void)
 	/* Compute consign. */
 	speed_alpha.pos_cons = pos_alpha.cur;
 	speed_alpha.pos_cons += arc;
-	if (UTILS_ABS (arad) < PI_F824 / 2)
+	if (UTILS_ABS (arad) < traj_angle_limit_rad)
 	  {
 	    speed_theta.pos_cons = pos_theta.cur;
 	    speed_theta.pos_cons += dt >> 8;
@@ -328,5 +341,13 @@ traj_update (void)
       case TRAJ_DONE:
 	break;
       }
+}
+
+/* Set angle limit. */
+void
+traj_set_angle_limit (uint16_t a)
+{
+    traj_angle_limit = a;
+    traj_angle_limit_rad = (uint32_t) a * (uint32_t) ((1 << 8) * M_PI * 2);
 }
 

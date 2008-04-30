@@ -28,6 +28,10 @@
 extern uint8_t traj_mode;
 extern int16_t traj_eps;
 extern int16_t traj_aeps;
+extern uint16_t traj_angle_limit;
+
+void
+traj_init (void);
 
 void
 traj_update (void);
@@ -50,5 +54,8 @@ traj_goto_angle_start (uint32_t a, uint8_t seq);
 void
 traj_goto_xya_start (uint32_t x, uint32_t y, uint32_t a, uint8_t backward_ok,
 		     uint8_t seq);
+
+void
+traj_set_angle_limit (uint16_t a);
 
 #endif /* traj_h */
