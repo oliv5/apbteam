@@ -155,6 +155,8 @@ path_compute_weight (uint8_t a, uint8_t b)
     dx = path.points[b].x - path.points[a].x;
     dy = path.points[b].y - path.points[a].y;
     ab = fixed_sqrt_ui32 (dx * dx + dy * dy);
+    if (ab == 0)
+	return 0;
     /* Is there an intersection with a circle. */
     for (i = 0; i < PATH_OBSTACLES_NB; i++)
       {
