@@ -89,7 +89,7 @@ static uint8_t main_stats_asserv_, main_stats_asserv_cpt_;
 /**
  * Update frequency of sharps.
  */
-#define MAIN_SHARP_UPDATE_FREQ 20
+#define MAIN_SHARP_UPDATE_FREQ 5
 
 /**
  * Sharps frequency counter.

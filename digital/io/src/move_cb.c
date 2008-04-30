@@ -35,23 +35,42 @@
 #include "modules/math/fixed/fixed.h"	/* fixed_* */
 
 /**
- * The standard distance of the obstacle.
+ * The real radius of the obstacle.
  */
-#define MOVE_OBSTACLE_DISTANCE 300
+#define MOVE_REAL_OBSTACLE_RADIUS 150
 
 /**
- * The generic radius of the obstacle.
+ * The sharp distance between the bot and the obstacle.
  */
-#define MOVE_OBSTACLE_RADIUS 150
+#define MOVE_SHARP_DISTANCE 300
+
+/**
+ * The distance between the axis of the bot and the front sharp.
+ */
+#define MOVE_AXIS_FRONT_SHARP 150
+
+/**
+ * The standard distance of the obstacle.
+ */
+#define MOVE_OBSTACLE_DISTANCE \
+    (MOVE_REAL_OBSTACLE_RADIUS + MOVE_SHARP_DISTANCE + MOVE_AXIS_FRONT_SHARP)
+
+/**
+ * The radius of the obstacle for the path module.
+ * It corresponds to the real radius of the obstacle plus the distance you
+ * want to add to avoid it.
+ */
+#define MOVE_OBSTACLE_RADIUS (MOVE_REAL_OBSTACLE_RADIUS + 250)
+
 /**
  * The generic validity time (in term of number of cyles).
  */
-#define MOVE_OBSTACLE_VALIDITY 2000
+#define MOVE_OBSTACLE_VALIDITY (5 * 225)
 
 /**
  * Cycles count to ignore sharp event in the main loop.
  */
-#define MOVE_MAIN_IGNORE_SHARP_EVENT 1250
+#define MOVE_MAIN_IGNORE_SHARP_EVENT (3 * 225)
 
 /**
  * Easier function to get the next intermediate positon from the path module.
