@@ -27,6 +27,8 @@
 #include "move.h"
 #include "fsm.h"
 
+#include "main.h"
+
 /**
  * Internal data used by the move FSM.
  */
@@ -41,6 +43,9 @@ move_start (uint16_t position_x, uint16_t position_y,
     move_data.final.x = position_x;
     move_data.final.y = position_y;
     move_data.backward_movement_allowed = backward_movement_allowed;
+    /* Reset move FSM flags */
+    main_sharp_ignore_event = 0;
+    main_move_wait_cycle = 0;
     /* Start the FSM. */
     fsm_init (&move_fsm);
     fsm_handle_event (&move_fsm, MOVE_EVENT_start);
