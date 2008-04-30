@@ -114,7 +114,7 @@ move_compute_obstacle_position (asserv_position_t cur,
     /* Convert the angle */
     uint32_t angle = cur.a;
     /* Change angle when going backward */
-    if (move_data.backward_movement_allowed)
+    if (asserv_get_moving_direction () == 2)
 	angle += 0x8000;
     angle = angle << 8;
     DPRINTF ("We are at (%d ; %d ; %x)\n", cur.x, cur.y, cur.a);
