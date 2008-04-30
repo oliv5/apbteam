@@ -82,6 +82,11 @@ uint8_t main_stats_sharps, main_stats_sharps_cpt;
 uint8_t main_stats_sharps_interpreted_, main_stats_sharps_interpreted_cpt_;
 
 /**
+ * Asserv stats counters.
+ */
+static uint8_t main_stats_asserv_, main_stats_asserv_cpt_;
+
+/**
  * Update frequency of sharps.
  */
 #define MAIN_SHARP_UPDATE_FREQ 20
@@ -324,6 +329,18 @@ main_loop (void)
 	      }
 	    proto_send ('I', SHARP_NUMBER, cache);
 	  }
+
+	/* Send asserv stats if needed */
+	if (main_stats_asserv_ && !--main_stats_asserv_cpt_)
+	  {
+	    /* Get current position */
+	    asserv_position_t cur_pos;
+	    asserv_get_position (&cur_pos);
+	    /* Send stats */
+	    proto_send3w ('A', cur_pos.x, cur_pos.y, cur_pos.a);
+	    /* Reset stats counter */
+	    main_stats_asserv_cpt_ = main_stats_asserv_;
+	  }
       }
 }
 
@@ -463,6 +480,15 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	 *   - 1b: how many and where to put collected samples ;
 	 */
 	getsamples_start (args[0] << 8, args[1]);
+	break;
+
+      case c ('A', 1):
+	  {
+	    /* Get position stats
+	     *   - 1b: frequency.
+	     */
+	    main_stats_asserv_ = main_stats_asserv_cpt_ = args[0];
+	  }
 	break;
 
 	/* Asserv/arm */
