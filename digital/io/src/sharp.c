@@ -52,7 +52,7 @@ uint8_t sharp_cache_interpreted_[SHARP_NUMBER];
 /**
  * Filter number value before changing state.
  */
-#define SHARP_FILTER_NUMBER 3
+#define SHARP_FILTER_NUMBER 5
 
 /**
  * Previous sharp interpreted values.
