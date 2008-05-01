@@ -92,12 +92,12 @@
  * \return  true if the position computed is in the table, false otherwise.
  */
 uint8_t
-move_obstacle_in_table (void)
+move_obstacle_in_table (move_position_t pos)
 {
-    if ((move_data.obstacle.x <= PG_WIDTH - MOVE_DETECTION_OFFSET) 
-	&& (move_data.obstacle.x > MOVE_DETECTION_OFFSET)
-	&& (move_data.obstacle.y <= PG_HEIGHT- MOVE_DETECTION_OFFSET)
-	&& (move_data.obstacle.y > MOVE_DETECTION_OFFSET))
+    if ((pos.x <= PG_WIDTH - MOVE_DETECTION_OFFSET) 
+	&& (pos.x > MOVE_DETECTION_OFFSET)
+	&& (pos.y <= PG_HEIGHT- MOVE_DETECTION_OFFSET)
+	&& (pos.y > MOVE_DETECTION_OFFSET))
 	return 0x1;
     else
 	return 0x0;
@@ -125,23 +125,24 @@ move_get_next_position (move_position_t *dst)
     /* If the path is found. */
     if (path_get_next (&dst->x, &dst->y) != 0)
       {
-	/* Position end. */
-	if (dst->x == move_data.final.x && dst->y == move_data.final.y)
-	    return 1;
-	else if (main_always_stop_for_obstacle)
+	if ((dst->x != move_data.final.x || dst->y != move_data.final.y)
+	    && main_always_stop_for_obstacle)
+	  {
+	    DPRINTF ("Ignore alternative path !\n");
 	    return 0;
+	  }
 	else
+	  {
+	    main_sharp_ignore_event = MOVE_MAIN_IGNORE_SHARP_EVENT;
+	    DPRINTF ("Computed path is (%d ; %d)\n", dst->x, dst->y);
 	    return 1;
+	  }
       }
-    /* Retrieve next path coordinate */
-    else if (main_always_stop_for_obstacle || !path_get_next (&dst->x, &dst->y))
+    else
       {
 	DPRINTF ("Could not compute any path to avoid obstacle!\n");
 	return 0;
       }
-    main_sharp_ignore_event = MOVE_MAIN_IGNORE_SHARP_EVENT;
-    DPRINTF ("Computed path is (%d ; %d)\n", dst->x, dst->y);
-    return 1;
 }
 
 /**
@@ -182,7 +183,7 @@ move_obstacle_here (void)
     move_compute_obstacle_position (current, &move_data.obstacle);
     /* Give it to the path module */
     /* only id the obstacle is in the table */
-    if (move_obstacle_in_table ())
+    if (move_obstacle_in_table (move_data.obstacle))
       {
 	path_obstacle (0, move_data.obstacle.x, move_data.obstacle.y,
 		       MOVE_OBSTACLE_RADIUS, MOVE_OBSTACLE_VALIDITY);
