@@ -68,6 +68,9 @@ trap_init (void)
 {
     /* Initialize servo module */
     servo_init ();
+
+    /* Ensure servo motor are in the right state */
+    trap_setup_path_to_box (out_left_box);
 }
 
 /* Configure traps to open a path to a box. */
