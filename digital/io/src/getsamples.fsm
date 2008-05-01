@@ -23,6 +23,8 @@ States:
   move the bot away from the distributor by going backward
  CLOSE_INPUT_HOLE
   put the arm back in front of the input hole to prevent sample to enter
+ MOVE_BACKWARD_FROM_DISTRIBUTOR
+  move a little bit backward from the distributor
 
 Events:
  start
@@ -51,6 +53,10 @@ OPEN_INPUT_HOLE:
   start approaching the distributor now
 
 APPROACH_DISTRIBUTOR:
+ bot_move_succeed -> MOVE_BACKWARD_FROM_DISTRIBUTOR
+  move a little bit backward from the distributor
+
+MOVE_BACKWARD_FROM_DISTRIBUTOR:
  bot_move_succeed -> TAKE_SAMPLES
   start taking some samples
 

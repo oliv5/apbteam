@@ -37,6 +37,11 @@
 #include "io.h"
 
 /**
+ * The distance to go backward from the distributor.
+ */
+#define GET_SAMPLES_MOVE_BACKWARD_DISTANCE 7
+
+/**
  * 'Private' get samples data used internaly by the FSM.
  */
 extern struct getsamples_data_t getsamples_data_;
@@ -80,6 +85,22 @@ getsamples_count_samples (void)
 	if (getsamples_data_.sample_bitfield & bit)
 	    count++;
     return count;
+}
+/*
+ * MOVE_BACKWARD_FROM_DISTRIBUTOR =bot_move_succeed=>
+ *  => TAKE_SAMPLES
+ *   start taking some samples
+ */
+fsm_branch_t
+getsamples__MOVE_BACKWARD_FROM_DISTRIBUTOR__bot_move_succeed (void)
+{
+    /* start taking some samples */
+    getsamples_data_.arm_noted_position = asserv_get_arm_position () +
+	BOT_ARM_NOTED_POSITION;
+    asserv_arm_set_position_reached (getsamples_data_.arm_noted_position);
+    asserv_move_arm (getsamples_count_samples () * BOT_ARM_THIRD_ROUND,
+		     BOT_ARM_SPEED);
+    return getsamples_next (MOVE_BACKWARD_FROM_DISTRIBUTOR, bot_move_succeed);
 }
 
 /*
@@ -179,17 +200,13 @@ getsamples__MOVE_AWAY_FROM_DISTRIBUTOR__bot_move_succeed (void)
 
 /*
  * APPROACH_DISTRIBUTOR =bot_move_succeed=>
- *  => TAKE_SAMPLES
- *   start taking some samples
+ *  => MOVE_BACKWARD_FROM_DISTRIBUTOR
+ *   move a little bit backward from the distributor
  */
 fsm_branch_t
 getsamples__APPROACH_DISTRIBUTOR__bot_move_succeed (void)
 {
-    /* start taking some samples */
-    getsamples_data_.arm_noted_position = asserv_get_arm_position () +
-	BOT_ARM_NOTED_POSITION;
-    asserv_arm_set_position_reached (getsamples_data_.arm_noted_position);
-    asserv_move_arm (getsamples_count_samples () * BOT_ARM_THIRD_ROUND,
-		     BOT_ARM_SPEED);
+    /* Move a little bit backward from the distributor */
+    asserv_move_linearly (-GET_SAMPLES_MOVE_BACKWARD_DISTANCE);
     return getsamples_next (APPROACH_DISTRIBUTOR, bot_move_succeed);
 }
