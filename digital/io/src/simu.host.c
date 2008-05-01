@@ -174,11 +174,12 @@ main_timer_init (void)
     simu_init ();
 }
 
-void
+uint8_t
 main_timer_wait (void)
 {
     mex_node_wait_date (mex_node_date () + 4);
     simu_step ();
+    return 0;
 }
 
 void

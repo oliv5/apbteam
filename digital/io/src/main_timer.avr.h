@@ -49,14 +49,18 @@ main_timer_init (void)
 /**
  * Wait until the main timer overflows.
  */
-static inline void
+static inline uint8_t
 main_timer_wait (void)
 {
+    uint8_t count_before_ov = 0;
     /* Loop until an overflow of the timer occurs */
     while (!(TIFR & _BV (TOV0)))
+	count_before_ov++;
 	;
     /* Write 1 to clear */
     TIFR = _BV (TOV0);
+
+    return count_before_ov;
 }
 
 #endif /* main_timer_avr_h */

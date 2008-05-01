@@ -32,7 +32,7 @@ void
 main_timer_init (void);
 
 /** Hooked, as before, wait for the next iteration. */
-void
+uint8_t
 main_timer_wait (void);
 
 /** Hooked, do nothing. */

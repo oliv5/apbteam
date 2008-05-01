@@ -99,6 +99,11 @@ uint8_t main_stats_sharps_interpreted_, main_stats_sharps_interpreted_cpt_;
 static uint8_t main_stats_asserv_, main_stats_asserv_cpt_;
 
 /**
+ * Main timer stats.
+ */
+static uint8_t main_stats_timer_;
+
+/**
  * Update frequency of sharps.
  */
 #define MAIN_SHARP_UPDATE_FREQ 5
@@ -158,7 +163,11 @@ main_loop (void)
     while (1)
       {
 	/* Wait for an overflow of the main timer (4.444ms) */
-	main_timer_wait ();
+	  {
+	    uint8_t timer_count = main_timer_wait ();
+	    if (main_stats_timer_)
+		proto_send1b('M', timer_count);
+	  }
 
 	/* Get the data from the UART */
 	while (uart0_poll ())
@@ -415,6 +424,13 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	 *   - 1b: frequency of sharp stats.
 	 */
 	main_stats_sharps_cpt = main_stats_sharps = args[0];
+	break;
+
+      case c ('M', 1):
+	/* Main stats timer.
+	 *   - 1b: 1 to enable, 0 to disable.
+	 */
+	main_stats_timer_ = args[0];
 	break;
 
       case c ('I', 1):
