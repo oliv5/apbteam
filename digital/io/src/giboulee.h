@@ -58,7 +58,7 @@
  * Steps number relative to the beginning of a third round for the 'noted'
  * position required by the get sample FSM.
  */
-#define BOT_ARM_NOTED_POSITION (BOT_ARM_THIRD_ROUND * 2 / 3)
+#define BOT_ARM_NOTED_POSITION (BOT_ARM_THIRD_ROUND - 100)
 
 /**
  * How to compute a angle for giboulee?
