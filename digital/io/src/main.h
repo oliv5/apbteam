@@ -48,4 +48,10 @@ extern uint16_t main_sharp_ignore_event;
  */
 extern uint16_t main_move_wait_cycle;
 
+/**
+ * Flag for homologation, to disable the path finding and always stop in front
+ * of an obstacle and wait.
+ */
+extern uint8_t main_always_stop_for_obstacle;
+
 #endif /* main_h */

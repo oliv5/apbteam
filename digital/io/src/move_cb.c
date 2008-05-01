@@ -101,7 +101,7 @@ move_get_next_position (move_position_t *dst)
     path_update ();
 
     /* Retrieve next path coordinate */
-    if (!path_get_next (&dst->x, &dst->y))
+    if (main_always_stop_for_obstacle || !path_get_next (&dst->x, &dst->y))
       {
 	DPRINTF ("Could not compute any path to avoid obstacle!\n");
 	return 0;

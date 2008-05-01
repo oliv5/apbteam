@@ -76,6 +76,12 @@ uint8_t main_post_event_for_top_fsm = 0xFF;
 uint16_t main_sharp_ignore_event;
 
 /**
+ * Flag for homologation, to disable the path finding and always stop in front
+ * of an obstacle and wait.
+ */
+uint8_t main_always_stop_for_obstacle;
+
+/**
  * Post an event for the main loop to wake up the move FSM in a certain count
  * of cycles.
  */
@@ -569,6 +575,15 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 			     v8_to_v32 (args[5], args[6], args[7], args[8]));
 		break;
 	      }
+	  }
+	break;
+      case c ('o', 1):
+	  {
+	    /* Omo-logo-ation flag, to prevent avoiding obstacle and stop
+	     * instead.
+	     *   - 1b: state of the flag (0 to disable, 1 to enable).
+	     */
+	    main_always_stop_for_obstacle = args[0];
 	  }
 	break;
       default:
