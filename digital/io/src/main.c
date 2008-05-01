@@ -79,7 +79,7 @@ uint16_t main_sharp_ignore_event;
  * Flag for homologation, to disable the path finding and always stop in front
  * of an obstacle and wait.
  */
-uint8_t main_always_stop_for_obstacle;
+uint8_t main_always_stop_for_obstacle = 1;
 
 /**
  * Post an event for the main loop to wake up the move FSM in a certain count
