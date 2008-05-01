@@ -239,6 +239,8 @@ main_loop (void)
 		/* Move failed */
 		FSM_HANDLE_EVENT (&getsamples_fsm,
 				  GETSAMPLES_EVENT_bot_move_failed);
+		FSM_HANDLE_EVENT (&getsamples_fsm,
+				  GETSAMPLES_EVENT_bot_move_succeed);
 		FSM_HANDLE_EVENT (&gutter_fsm,
 				  GUTTER_EVENT_bot_move_failed);
 		FSM_HANDLE_EVENT (&move_fsm,
