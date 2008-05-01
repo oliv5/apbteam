@@ -120,25 +120,33 @@ traj_ftw (void)
     speed = speed_theta.slow;
     speed *= 256;
     speed_theta.use_pos = speed_alpha.use_pos = 0;
+    speed_theta.cons = -speed;
+    speed_alpha.cons = 0;
+    state_main.variant = 0;
     if (PINC & _BV (0) && PINC & _BV (1))
       {
-	speed_theta.cons = -speed;
-	speed_alpha.cons = 0;
+	/* Backward. */
       }
-    else if (PINC & _BV (0))
+    else if (PINC & _BV (0) || PINC & _BV (1))
       {
+#ifndef HOST
+	/* No angular control. */
+	state_main.variant = 2;
+#else
+	/* On host, we must do the job. */
 	speed_theta.cons = -speed / 2;
-	speed_alpha.cons = speed / 2;
-      }
-    else if (PINC & _BV (1))
-      {
-	speed_theta.cons = -speed / 2;
-	speed_alpha.cons = -speed / 2;
+	if (PINC & _BV (0))
+	    speed_alpha.cons = speed / 2;
+	else
+	    speed_alpha.cons = -speed / 2;
+#endif
       }
     else
       {
-	speed_theta.cons = 0;
-	speed_alpha.cons = 0;
+	/* Stay here. */
+	speed_theta.use_pos = speed_alpha.use_pos = 1;
+	speed_theta.pos_cons = pos_theta.cur;
+	speed_alpha.pos_cons = pos_alpha.cur;
 	speed_theta.cur = 0;
 	speed_alpha.cur = 0;
 	state_finish (&state_main);
@@ -169,10 +177,13 @@ traj_gtd (void)
       }
     else
       {
-	speed_theta.cons = 0;
-	speed_alpha.cons = 0;
+	/* Stay here. */
+	speed_theta.use_pos = speed_alpha.use_pos = 1;
+	speed_theta.pos_cons = pos_theta.cur;
+	speed_alpha.pos_cons = pos_alpha.cur;
 	speed_theta.cur = 0;
 	speed_alpha.cur = 0;
+	state_main.variant = 0;
 	state_finish (&state_main);
 	traj_mode = TRAJ_DONE;
       }
