@@ -25,6 +25,7 @@
 #include "common.h"
 #include "aux.h"
 
+#include "modules/utils/utils.h"
 #include "io.h"
 
 #include "state.h"
@@ -43,6 +44,10 @@ struct aux_t aux0;
 /** Trajectory modes. */
 enum
 {
+    /* Goto position, with blocking detection. */
+    AUX_TRAJ_GOTO,
+    /* Goto position, try to unblock. */
+    AUX_TRAJ_GOTO_UNBLOCK,
     /* Find zero mode, first start at full speed to detect a arm... */
     AUX_TRAJ_FIND_ZERO_START,
     /* ...then go on until it is not seen any more... */
@@ -63,12 +68,43 @@ aux_pos_update (void)
 
 /** Goto position. */
 void
+aux_traj_goto (void)
+{
+    switch (aux0.traj_mode)
+      {
+      case AUX_TRAJ_GOTO:
+	if (pos_aux0.e_old > 500)
+	  {
+	    aux0.traj_mode = AUX_TRAJ_GOTO_UNBLOCK;
+	    speed_aux0.pos_cons = pos_aux0.cur;
+	    speed_aux0.pos_cons -= 250;
+	    aux0.wait = 225 / 2;
+	  }
+	else if (UTILS_ABS (speed_aux0.pos_cons - pos_aux0.cur) < 500)
+	  {
+	    state_aux0.mode = MODE_SPEED;
+	    aux0.traj_mode = AUX_TRAJ_DONE;
+	  }
+	break;
+      case AUX_TRAJ_GOTO_UNBLOCK:
+	if (!--aux0.wait)
+	  {
+	    aux0.traj_mode = AUX_TRAJ_GOTO;
+	    speed_aux0.pos_cons = aux0.goto_pos;
+	  }
+	break;
+      }
+}
+
+void
 aux_traj_goto_start (uint16_t pos, uint8_t seq)
 {
+    aux0.traj_mode = AUX_TRAJ_GOTO;
     speed_aux0.use_pos = 1;
     speed_aux0.pos_cons = pos_aux0.cur;
     speed_aux0.pos_cons += (int16_t) (pos - aux0.pos);
-    state_start (&state_aux0, MODE_SPEED, seq);
+    aux0.goto_pos = speed_aux0.pos_cons;
+    state_start (&state_aux0, MODE_TRAJ, seq);
 }
 
 /** Find zero mode. */
@@ -121,6 +157,10 @@ aux_traj_update (void)
 {
     switch (aux0.traj_mode)
       {
+      case AUX_TRAJ_GOTO:
+      case AUX_TRAJ_GOTO_UNBLOCK:
+	aux_traj_goto ();
+	break;
       case AUX_TRAJ_FIND_ZERO_START:
       case AUX_TRAJ_FIND_ZERO_SLOW:
       case AUX_TRAJ_FIND_ZERO_BACK:

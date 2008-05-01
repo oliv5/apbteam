@@ -32,6 +32,10 @@ struct aux_t
     int16_t pos;
     /** Trajectory mode. */
     uint8_t traj_mode;
+    /** Goto position position. */
+    uint32_t goto_pos;
+    /** Wait counter. */
+    uint16_t wait;
 };
 
 extern struct aux_t aux0;
