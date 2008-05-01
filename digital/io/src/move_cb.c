@@ -82,7 +82,29 @@
 #define MOVE_WAIT_TIME_FOR_POOLING_SHARP (50)
 
 /**
- * Easier function to get the next intermediate positon from the path module.
+ * A detection offset for the sharps.
+ */
+#define MOVE_DETECTION_OFFSET 250
+
+/**
+ * Verify after the computation of the obstacle, this shall only be called
+ * after the function move_compute_obstacle_position.
+ * \return  true if the position computed is in the table, false otherwise.
+ */
+uint8_t
+move_obstacle_in_table (void)
+{
+    if ((move_data.obstacle.x <= PG_WIDTH - MOVE_DETECTION_OFFSET) 
+	&& (move_data.obstacle.x > MOVE_DETECTION_OFFSET)
+	&& (move_data.obstacle.y <= PG_HEIGHT- MOVE_DETECTION_OFFSET)
+	&& (move_data.obstacle.y > MOVE_DETECTION_OFFSET))
+	return 0x1;
+    else
+	return 0x0;
+}
+
+/**
+ * Easier function to get the next intermediate position from the path module.
  * @param dst new destination position computed by the path module
  * @return
  *   - 0 if no path could be found ;
@@ -100,8 +122,19 @@ move_get_next_position (move_position_t *dst)
     /* Update the path module */
     path_update ();
 
+    /* If the path is found. */
+    if (path_get_next (&dst->x, &dst->y) != 0)
+      {
+	/* Position end. */
+	if (dst->x == move_data.final.x && dst->y == move_data.final.y)
+	    return 1;
+	else if (main_always_stop_for_obstacle)
+	    return 0;
+	else
+	    return 1;
+      }
     /* Retrieve next path coordinate */
-    if (main_always_stop_for_obstacle || !path_get_next (&dst->x, &dst->y))
+    else if (main_always_stop_for_obstacle || !path_get_next (&dst->x, &dst->y))
       {
 	DPRINTF ("Could not compute any path to avoid obstacle!\n");
 	return 0;
@@ -135,6 +168,7 @@ move_compute_obstacle_position (asserv_position_t cur,
 					  MOVE_OBSTACLE_DISTANCE);
     DPRINTF ("Computed obstacle (%d ; %d)\n", obstacle->x, obstacle->y);
 }
+
 /**
  * Unique function to compute the obstacle position from here.
  */
@@ -147,8 +181,21 @@ move_obstacle_here (void)
     /* Compute the obstacle position */
     move_compute_obstacle_position (current, &move_data.obstacle);
     /* Give it to the path module */
-    path_obstacle (0, move_data.obstacle.x, move_data.obstacle.y,
-		   MOVE_OBSTACLE_RADIUS, MOVE_OBSTACLE_VALIDITY);
+    /* only id the obstacle is in the table */
+    if (move_obstacle_in_table ())
+      {
+	path_obstacle (0, move_data.obstacle.x, move_data.obstacle.y,
+		       MOVE_OBSTACLE_RADIUS, MOVE_OBSTACLE_VALIDITY);
+	DPRINTF ("Obstacle pos x : %d, pos y : %d\n", move_data.obstacle.x,
+		 move_data.obstacle.y);
+      }
+    else
+      {
+	main_sharp_ignore_event = 0xFF;
+	DPRINTF ("Obstacle Ignored pos x : %d, pos y : %d\n",
+		 move_data.obstacle.x,
+		 move_data.obstacle.y);
+      }
 }
 
 /**
