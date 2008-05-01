@@ -40,6 +40,8 @@
 #include "getsamples.h"	/* getsamples_* */
 #include "gutter.h"	/* gutter_start */
 
+#include "main.h"
+
 #include "io.h"
 
 /**
@@ -133,6 +135,10 @@ top__GO_TO_ADVERSE_ICE_DISTRIBUTOR__move_fsm_finished (void)
      * samples. The problem is this should depend on the time we have until
      * the end of match */
     uint8_t bitfield = _BV (out_right_box) | _BV (middle_right_box);
+    if (main_always_stop_for_obstacle)
+      {
+	bitfield = _BV (middle_right_box);
+      }
     getsamples_start (PG_DISTRIBUTOR_ICE_ADVERSE_A, bitfield);
     return top_next (GO_TO_ADVERSE_ICE_DISTRIBUTOR, move_fsm_finished);
 }
@@ -157,6 +163,10 @@ top__GO_TO_OUR_ICE_DISTRIBUTOR__move_fsm_finished (void)
 	/* Second time we try to get our ice, let's took only three */
 	bitfield = _BV (out_left_box) | _BV (middle_box) | _BV
 	    (out_right_box);
+      }
+    if (main_always_stop_for_obstacle)
+      {
+	bitfield = _BV (middle_right_box);
       }
     getsamples_start (PG_DISTRIBUTOR_ICE_OUR_A, bitfield);
     return top_next (GO_TO_OUR_ICE_DISTRIBUTOR, move_fsm_finished);
@@ -183,6 +193,10 @@ top__GO_TO_SAMPLE_DISTRIBUTOR__move_fsm_finished (void)
 	/* Second time we try to get our samples, let's took only two of them
 	 */
 	bitfield = _BV (middle_left_box) | _BV (middle_right_box);
+      }
+    if (main_always_stop_for_obstacle)
+      {
+	bitfield = _BV (out_left_box);
       }
     getsamples_start (PG_DISTRIBUTOR_SAMPLE_OUR_A, bitfield);
     return top_next (GO_TO_SAMPLE_DISTRIBUTOR, move_fsm_finished);
@@ -236,7 +250,7 @@ top__GET_ICE_FROM_OUR_ICE_DISTRIBUTOR__get_samples_fsm_finished (void)
     else
       {
 	/* Start the move FSM to go to the gutter */
-	move_start (PG_GUTTER_X, PG_GUTTER_Y, 1);
+	move_start (PG_GUTTER_X, PG_GUTTER_Y, 0);
 	return top_next_branch (GET_ICE_FROM_OUR_ICE_DISTRIBUTOR, get_samples_fsm_finished, full);
       }
 }
@@ -284,7 +298,7 @@ fsm_branch_t
 top__GET_ICE_FROM_ADVERSE_ICE_DISTRIBUTOR__get_samples_fsm_finished (void)
 {
     /* Start the move FSM to go to the gutter */
-    move_start (PG_GUTTER_X, PG_GUTTER_Y, 1);
+    move_start (PG_GUTTER_X, PG_GUTTER_Y, 0);
     return top_next (GET_ICE_FROM_ADVERSE_ICE_DISTRIBUTOR, get_samples_fsm_finished);
 }
 
