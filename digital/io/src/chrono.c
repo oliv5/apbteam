@@ -39,7 +39,7 @@
 /**
  * Number of overflow of the timer/counter 1 before doing the last one.
  */
-#define CHRONO_OVERFLOW_MAX 78
+#define CHRONO_OVERFLOW_MAX 79
 
 /**
  * Number of TIC to restart from for the last overflow.
