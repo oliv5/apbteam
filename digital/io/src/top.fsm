@@ -82,9 +82,12 @@ GO_TO_SAMPLE_DISTRIBUTOR:
   we are now in front of our samples distributor, launch the get samples FSM
 
 GET_SAMPLES_FROM_SAMPLES_DISTRIBUTOR:
- get_samples_fsm_finished -> GO_TO_OUR_ICE_DISTRIBUTOR
+ get_samples_fsm_finished: not_near_end_of_match -> GO_TO_OUR_ICE_DISTRIBUTOR
   we have finished to get our samples, let's go to our ice distributor with
   the move FSM
+ get_samples_fsm_finished: near_end_of_match -> GO_TO_GUTTER
+  we have finished to get our samples, but there is no time, let's go to the
+  gutter with the move FSM
 
 GO_TO_OUR_ICE_DISTRIBUTOR:
  move_fsm_finished -> GET_ICE_FROM_OUR_ICE_DISTRIBUTOR

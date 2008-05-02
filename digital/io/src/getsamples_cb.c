@@ -33,6 +33,7 @@
 #include "giboulee.h"	/* BOT_ */
 #include "playground.h"	/* PG_* */
 #include "main.h"	/* main_post_event_for_top_fsm */
+#include "chrono.h"
 
 #include "io.h"
 
@@ -193,7 +194,7 @@ getsamples__TAKE_SAMPLES__arm_pass_noted_position (void)
     /* Prepare classification */
     getsamples_configure_classifier ();
     /* More samples? */
-    if (getsamples_data_.sample_bitfield)
+    if (getsamples_data_.sample_bitfield && !chrono_near_end_match ())
       {
 	/* Compute notifier */
 	getsamples_data_.arm_noted_position += BOT_ARM_THIRD_ROUND;

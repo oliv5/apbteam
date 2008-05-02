@@ -108,16 +108,28 @@ top__MOVE_AWAY_FROM_START_BORDER__move_fsm_finished (void)
 
 /*
  * GET_SAMPLES_FROM_SAMPLES_DISTRIBUTOR =get_samples_fsm_finished=>
- *  => GO_TO_OUR_ICE_DISTRIBUTOR
+ * not_near_end_of_match => GO_TO_OUR_ICE_DISTRIBUTOR
  *   we have finished to get our samples, let's go to our ice distributor with
  *   the move FSM
+ * near_end_of_match => GO_TO_GUTTER
+ *   we have finished to get our samples, but there is no time, let's go to the
+ *   gutter with the move FSM
  */
 fsm_branch_t
 top__GET_SAMPLES_FROM_SAMPLES_DISTRIBUTOR__get_samples_fsm_finished (void)
 {
-    /* Start the move FSM to our ice distributor */
-    move_start (PG_DISTRIBUTOR_ICE_OUR_X, PG_DISTRIBUTOR_ICE_OUR_Y, 0);
-    return top_next (GET_SAMPLES_FROM_SAMPLES_DISTRIBUTOR, get_samples_fsm_finished);
+    if (!chrono_near_end_match ())
+      {
+	/* Start the move FSM to our ice distributor */
+	move_start (PG_DISTRIBUTOR_ICE_OUR_X, PG_DISTRIBUTOR_ICE_OUR_Y, 0);
+	return top_next_branch (GET_SAMPLES_FROM_SAMPLES_DISTRIBUTOR, get_samples_fsm_finished, not_near_end_of_match);
+      }
+    else
+      {
+	/* Go to gutter */
+	move_start (PG_GUTTER_X, PG_GUTTER_Y, 0);
+	return top_next_branch (GET_SAMPLES_FROM_SAMPLES_DISTRIBUTOR, get_samples_fsm_finished, near_end_of_match);
+      }
 }
 
 /*
