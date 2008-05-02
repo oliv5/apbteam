@@ -64,4 +64,14 @@ chrono_is_match_over (void);
 void
 chrono_end_match (uint8_t block);
 
+/**
+ * Are we near the end of the match.
+ * This function tell you when there is not much time remaining.
+ * @return
+ *   - 0 not near the end of the match
+ *   - 1 near the end of the match
+ */
+uint8_t
+chrono_near_end_match (void);
+
 #endif /* chrono_h */

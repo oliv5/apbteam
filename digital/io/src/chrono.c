@@ -55,6 +55,14 @@
 #define CHRONO_WAIT_BEFORE_RESET 1000
 
 /**
+ * Number of overflow to count before saying we are near the end of the match.
+ * You can compute it using the following formula:
+ * CHRONO_OVERFLOW_MAX * seconds / 90
+ */
+#define CHRONO_OVERFLOW_COUNT_NEAR_END_MATCH \
+    ((uint8_t) (CHRONO_OVERFLOW_MAX * 65 / 90))
+
+/**
  * Match is finished.
  * This variable will be set to 1 when the match is over.
  */
@@ -173,4 +181,14 @@ chrono_end_match (uint8_t block)
 	  }
 #endif
 	    ;
+}
+
+/* Are we near the end of the match. */
+uint8_t
+chrono_near_end_match (void)
+{
+    /* If we have overflow a certain number of time */
+    if (chrono_ov_count_ >= CHRONO_OVERFLOW_COUNT_NEAR_END_MATCH)
+	return 1;
+    return 0;
 }
