@@ -95,6 +95,7 @@ getsamples_count_samples (void)
  * MOVE_BACKWARD_FROM_DISTRIBUTOR =bot_move_succeed=>
  *  => TAKE_SAMPLES
  *   start taking some samples
+ *   setup a timeout
  */
 fsm_branch_t
 getsamples__MOVE_BACKWARD_FROM_DISTRIBUTOR__bot_move_succeed (void)
@@ -105,6 +106,8 @@ getsamples__MOVE_BACKWARD_FROM_DISTRIBUTOR__bot_move_succeed (void)
     asserv_arm_set_position_reached (getsamples_data_.arm_noted_position);
     asserv_move_arm (getsamples_count_samples () * BOT_ARM_THIRD_ROUND,
 		     BOT_ARM_SPEED);
+    /* Post an event for the top FSM to be waked up later */
+    main_getsamples_wait_cycle = GET_SAMPLES_ARM_TIMEOUT;
     return getsamples_next (MOVE_BACKWARD_FROM_DISTRIBUTOR, bot_move_succeed);
 }
 
@@ -138,6 +141,7 @@ getsamples__OPEN_INPUT_HOLE__arm_move_succeed (void)
  * CLOSE_INPUT_HOLE =wait_finished=>
  *  => IDLE
  *   timed out, give up
+ *   tell the top FSM we have finished
  */
 fsm_branch_t
 getsamples__CLOSE_INPUT_HOLE__wait_finished (void)
@@ -158,6 +162,20 @@ getsamples__CLOSE_INPUT_HOLE__arm_move_succeed (void)
     /* Tell the top FSM we have finished */
     main_post_event_for_top_fsm = TOP_EVENT_get_samples_fsm_finished;
     return getsamples_next (CLOSE_INPUT_HOLE, arm_move_succeed);
+}
+
+/*
+ * TAKE_SAMPLES =wait_finished=>
+ *  => MOVE_AWAY_FROM_DISTRIBUTOR
+ *   timed out, give up
+ *   go backward
+ */
+fsm_branch_t
+getsamples__TAKE_SAMPLES__wait_finished (void)
+{
+    /* Go backward */
+    asserv_move_linearly (-PG_DISTANCE_DISTRIBUTOR);
+    return getsamples_next (TAKE_SAMPLES, wait_finished);
 }
 
 /*

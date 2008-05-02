@@ -61,12 +61,16 @@ APPROACH_DISTRIBUTOR:
 MOVE_BACKWARD_FROM_DISTRIBUTOR:
  bot_move_succeed -> TAKE_SAMPLES
   start taking some samples
+  setup a timeout
 
 TAKE_SAMPLES:
  arm_pass_noted_position: more -> .
   prepare the classification of the taken sample
   take a new one
  arm_pass_noted_position: no_more -> MOVE_AWAY_FROM_DISTRIBUTOR
+  go backward
+ wait_finished -> MOVE_AWAY_FROM_DISTRIBUTOR
+  timed out, give up
   go backward
 
 MOVE_AWAY_FROM_DISTRIBUTOR:
@@ -79,3 +83,4 @@ CLOSE_INPUT_HOLE:
   tell the top FSM we have finished
  wait_finished -> IDLE
   timed out, give up
+  tell the top FSM we have finished
