@@ -39,6 +39,8 @@ Events:
   the arm has reached the desired position
  arm_pass_noted_position
   the arm has just passed the 'noted' position
+ wait_finished
+  we have wait the desired time
 
 IDLE:
  start -> FACE_DISTRIBUTOR
@@ -70,7 +72,10 @@ TAKE_SAMPLES:
 MOVE_AWAY_FROM_DISTRIBUTOR:
  bot_move_succeed -> CLOSE_INPUT_HOLE
   close input hole
+  setup a close timeout
 
 CLOSE_INPUT_HOLE:
  arm_move_succeed -> IDLE
   tell the top FSM we have finished
+ wait_finished -> IDLE
+  timed out, give up

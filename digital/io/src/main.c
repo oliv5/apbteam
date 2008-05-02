@@ -88,6 +88,11 @@ uint8_t main_always_stop_for_obstacle = 1;
 uint16_t main_move_wait_cycle;
 
 /**
+ * Get samples timeout.
+ */
+uint16_t main_getsamples_wait_cycle;
+
+/**
  * Sharps stats counters.
  */
 uint8_t main_stats_sharps, main_stats_sharps_cpt;
@@ -206,6 +211,9 @@ main_loop (void)
 	    /* Update wait flag for move FSM */
 	    if (main_move_wait_cycle)
 		main_move_wait_cycle--;
+	    /* Update wait flag for getsamples FSM */
+	    if (main_getsamples_wait_cycle)
+		main_getsamples_wait_cycle--;
 	    /* Update sharp module if required and only every
 	     * MAIN_SHARP_UPDATE_FREQ cycles */
 	    if (++main_sharp_freq_counter_ == MAIN_SHARP_UPDATE_FREQ)
@@ -312,6 +320,12 @@ main_loop (void)
 	    if (!main_move_wait_cycle)
 	      {
 		FSM_HANDLE_EVENT (&move_fsm, MOVE_EVENT_wait_finished);
+	      }
+	    /* Wait flag for getsamples FSM */
+	    if (!main_getsamples_wait_cycle)
+	      {
+		FSM_HANDLE_EVENT (&getsamples_fsm,
+				  GETSAMPLES_EVENT_wait_finished);
 	      }
 	    /* TODO: Check other sensors */
 	  }

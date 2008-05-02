@@ -42,6 +42,11 @@
 #define GET_SAMPLES_MOVE_BACKWARD_DISTANCE 7
 
 /**
+ * Arm time out.
+ */
+#define GET_SAMPLES_ARM_TIMEOUT (12 * 225 + 225 / 2)
+
+/**
  * 'Private' get samples data used internaly by the FSM.
  */
 extern struct getsamples_data_t getsamples_data_;
@@ -130,6 +135,19 @@ getsamples__OPEN_INPUT_HOLE__arm_move_succeed (void)
 }
 
 /*
+ * CLOSE_INPUT_HOLE =wait_finished=>
+ *  => IDLE
+ *   timed out, give up
+ */
+fsm_branch_t
+getsamples__CLOSE_INPUT_HOLE__wait_finished (void)
+{
+    /* Give up, tell the top FSM we have finished */
+    main_post_event_for_top_fsm = TOP_EVENT_get_samples_fsm_finished;
+    return getsamples_next (CLOSE_INPUT_HOLE, wait_finished);
+}
+
+/*
  * CLOSE_INPUT_HOLE =arm_move_succeed=>
  *  => IDLE
  *   tell the top FSM we have finished
@@ -189,12 +207,15 @@ getsamples__IDLE__start (void)
  * MOVE_AWAY_FROM_DISTRIBUTOR =bot_move_succeed=>
  *  => CLOSE_INPUT_HOLE
  *   close input hole
+ *   setup a close timeout
  */
 fsm_branch_t
 getsamples__MOVE_AWAY_FROM_DISTRIBUTOR__bot_move_succeed (void)
 {
     /* Move the arm to close the input hole */
     asserv_move_arm (BOT_ARM_MIN_TO_OPEN + BOT_ARM_THIRD_ROUND, BOT_ARM_SPEED);
+    /* Post an event for the top FSM to be waked up later */
+    main_getsamples_wait_cycle = GET_SAMPLES_ARM_TIMEOUT;
     return getsamples_next (MOVE_AWAY_FROM_DISTRIBUTOR, bot_move_succeed);
 }
 
