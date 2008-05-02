@@ -44,7 +44,7 @@
 /**
  * Arm time out.
  */
-#define GET_SAMPLES_ARM_TIMEOUT (12 * 225 + 225 / 2)
+#define GET_SAMPLES_ARM_TIMEOUT (5 * 225)
 
 /**
  * 'Private' get samples data used internaly by the FSM.
@@ -185,6 +185,7 @@ getsamples__TAKE_SAMPLES__wait_finished (void)
  * more => TAKE_SAMPLES
  *   prepare the classification of the taken sample
  *   take a new one
+ *   reset the timeout
  */
 fsm_branch_t
 getsamples__TAKE_SAMPLES__arm_pass_noted_position (void)
@@ -197,6 +198,8 @@ getsamples__TAKE_SAMPLES__arm_pass_noted_position (void)
 	/* Compute notifier */
 	getsamples_data_.arm_noted_position += BOT_ARM_THIRD_ROUND;
 	asserv_arm_set_position_reached (getsamples_data_.arm_noted_position);
+	/* Post an event for the top FSM to be waked up later */
+	main_getsamples_wait_cycle = GET_SAMPLES_ARM_TIMEOUT;
 	/* Continue to take sample */
 	return getsamples_next_branch (TAKE_SAMPLES, arm_pass_noted_position, more);
       }

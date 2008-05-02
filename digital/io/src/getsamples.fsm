@@ -67,6 +67,7 @@ TAKE_SAMPLES:
  arm_pass_noted_position: more -> .
   prepare the classification of the taken sample
   take a new one
+  reset the timeout
  arm_pass_noted_position: no_more -> MOVE_AWAY_FROM_DISTRIBUTOR
   go backward
  wait_finished -> MOVE_AWAY_FROM_DISTRIBUTOR
