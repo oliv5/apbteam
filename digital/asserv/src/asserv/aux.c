@@ -80,10 +80,10 @@ aux_traj_goto (void)
 	    speed_aux0.pos_cons -= 250;
 	    aux0.wait = 225 / 2;
 	  }
-	else if (UTILS_ABS (speed_aux0.pos_cons - pos_aux0.cur) < 500)
+	else if (UTILS_ABS (speed_aux0.pos_cons - pos_aux0.cur) < 300)
 	  {
-	    state_aux0.mode = MODE_SPEED;
 	    aux0.traj_mode = AUX_TRAJ_DONE;
+	    state_finish (&state_aux0);
 	  }
 	break;
       case AUX_TRAJ_GOTO_UNBLOCK:
