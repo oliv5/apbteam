@@ -36,8 +36,12 @@
 #include "chrono.h"
 
 #include "modules/proto/proto.h"
+#include "modules/utils/utils.h"
 
 #include "io.h"
+
+
+uint16_t originate_position_;
 
 /**
  * The distance to go backward from the distributor.
@@ -48,6 +52,11 @@
  * Arm time out.
  */
 #define GET_SAMPLES_ARM_TIMEOUT (5 * 225)
+
+/**
+ * Move back timeout.
+ */
+#define GET_SAMPLES_MOVE_AWAY_TIMEOUT (225)
 
 /**
  * 'Private' get samples data used internaly by the FSM.
@@ -160,19 +169,6 @@ getsamples__CLOSE_INPUT_HOLE__wait_finished (void)
 }
 
 /*
- * CLOSE_INPUT_HOLE =arm_pass_noted_position=>
- *  => CLOSE_INPUT_HOLE
- *   prepare the classification of the taken sample
- */
-fsm_branch_t
-getsamples__CLOSE_INPUT_HOLE__arm_pass_noted_position (void)
-{
-    /* Prepare the classification of the taken sample */
-    getsamples_configure_classifier ();
-    return getsamples_next (CLOSE_INPUT_HOLE, arm_pass_noted_position);
-}
-
-/*
  * CLOSE_INPUT_HOLE =arm_move_succeed=>
  *  => IDLE
  *   tell the top FSM we have finished
@@ -186,14 +182,75 @@ getsamples__CLOSE_INPUT_HOLE__arm_move_succeed (void)
 }
 
 /*
+ * CLOSE_INPUT_HOLE =arm_pass_noted_position=>
+ *  => CLOSE_INPUT_HOLE
+ *   prepare the classification of the taken sample
+ */
+fsm_branch_t
+getsamples__CLOSE_INPUT_HOLE__arm_pass_noted_position (void)
+{
+    /* Prepare the classification of the taken sample */
+    getsamples_configure_classifier ();
+    return getsamples_next (CLOSE_INPUT_HOLE, arm_pass_noted_position);
+}
+
+/*
+ * WAIT_AND_TRY_AGAIN =wait_finished=>
+ *  => MOVE_AWAY_FROM_DISTRIBUTOR
+ *   compute remaining distance (protection agains 0 & 300)
+ *   try to move away again
+ */
+fsm_branch_t
+getsamples__WAIT_AND_TRY_AGAIN__wait_finished (void)
+{
+    /* Get position */
+    asserv_position_t position;
+    asserv_get_position (&position);
+
+    uint16_t remaining_distance;
+
+    if (getsamples_data_.direction == 0)
+      {
+	/* Horizontal */
+	remaining_distance = UTILS_ABS (position.x - originate_position_);
+      }
+    else
+      {
+	/* Vertical */
+	remaining_distance = UTILS_ABS (position.y - originate_position_);
+      }
+    /* Compute real remaining */
+    remaining_distance = PG_DISTANCE_DISTRIBUTOR - remaining_distance;
+    /* Bound */
+    UTILS_BOUND (remaining_distance, 1, PG_DISTANCE_DISTRIBUTOR);
+    /* Move away */
+    asserv_move_linearly (-remaining_distance);
+    return getsamples_next (WAIT_AND_TRY_AGAIN, wait_finished);
+}
+
+/*
  * TAKE_SAMPLES =wait_finished=>
  *  => MOVE_AWAY_FROM_DISTRIBUTOR
+ *   store current position
  *   timed out, give up
  *   go backward
  */
 fsm_branch_t
 getsamples__TAKE_SAMPLES__wait_finished (void)
 {
+    /* Get position */
+    asserv_position_t position;
+    asserv_get_position (&position);
+    if (getsamples_data_.direction == 0)
+      {
+	/* Horizontal */
+	originate_position_ = position.x;
+      }
+    else
+      {
+	/* Vertical */
+	originate_position_ = position.y;
+      }
     /* Go backward */
     asserv_move_linearly (-PG_DISTANCE_DISTRIBUTOR);
     proto_send1b ('M', 1);
@@ -203,6 +260,7 @@ getsamples__TAKE_SAMPLES__wait_finished (void)
 /*
  * TAKE_SAMPLES =arm_pass_noted_position=>
  * no_more => MOVE_AWAY_FROM_DISTRIBUTOR
+ *   store current position
  *   go backward
  * more => TAKE_SAMPLES
  *   prepare the classification of the taken sample
@@ -228,6 +286,19 @@ getsamples__TAKE_SAMPLES__arm_pass_noted_position (void)
       }
     else
       {
+	/* Get position */
+	asserv_position_t position;
+	asserv_get_position (&position);
+	if (getsamples_data_.direction == 0)
+	  {
+	    /* Horizontal */
+	    originate_position_ = position.x;
+	  }
+	else
+	  {
+	    /* Vertical */
+	    originate_position_ = position.y;
+	  }
 	/* Go backward */
 	asserv_move_linearly (-PG_DISTANCE_DISTRIBUTOR);
 	proto_send1b ('M', 0);
@@ -250,16 +321,16 @@ getsamples__IDLE__start (void)
 }
 
 /*
- * MOVE_AWAY_FROM_DISTRIBUTOR =arm_pass_noted_position=>
- *  => MOVE_AWAY_FROM_DISTRIBUTOR
- *   prepare the classification of the taken sample
+ * MOVE_AWAY_FROM_DISTRIBUTOR =bot_move_failed=>
+ *  => WAIT_AND_TRY_AGAIN
+ *   ask to be wake up in a certain time
  */
 fsm_branch_t
-getsamples__MOVE_AWAY_FROM_DISTRIBUTOR__arm_pass_noted_position (void)
+getsamples__MOVE_AWAY_FROM_DISTRIBUTOR__bot_move_failed (void)
 {
-    /* Prepare the classification of the taken sample */
-    getsamples_configure_classifier ();
-    return getsamples_next (MOVE_AWAY_FROM_DISTRIBUTOR, arm_pass_noted_position);
+    /* Post an event for the top FSM to be waked up later */
+    main_getsamples_wait_cycle = GET_SAMPLES_MOVE_AWAY_TIMEOUT;
+    return getsamples_next (MOVE_AWAY_FROM_DISTRIBUTOR, bot_move_failed);
 }
 
 /*
@@ -277,6 +348,19 @@ getsamples__MOVE_AWAY_FROM_DISTRIBUTOR__bot_move_succeed (void)
     main_getsamples_wait_cycle = GET_SAMPLES_ARM_TIMEOUT;
     proto_send0 ('C');
     return getsamples_next (MOVE_AWAY_FROM_DISTRIBUTOR, bot_move_succeed);
+}
+
+/*
+ * MOVE_AWAY_FROM_DISTRIBUTOR =arm_pass_noted_position=>
+ *  => MOVE_AWAY_FROM_DISTRIBUTOR
+ *   prepare the classification of the taken sample
+ */
+fsm_branch_t
+getsamples__MOVE_AWAY_FROM_DISTRIBUTOR__arm_pass_noted_position (void)
+{
+    /* Prepare the classification of the taken sample */
+    getsamples_configure_classifier ();
+    return getsamples_next (MOVE_AWAY_FROM_DISTRIBUTOR, arm_pass_noted_position);
 }
 
 /*

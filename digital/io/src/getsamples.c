@@ -35,11 +35,13 @@ struct getsamples_data_t getsamples_data_;
 
 /* Start the get samples FSM. */
 void
-getsamples_start (int16_t approach_angle, uint8_t sample_bitfield)
+getsamples_start (int16_t approach_angle, uint8_t sample_bitfield, uint8_t
+		  direction)
 {
     /* Set parameters */
     getsamples_data_.approach_angle = approach_angle;
     getsamples_data_.sample_bitfield = sample_bitfield;
+    getsamples_data_.direction = direction;
 
     /* Remove unhandled traps */
     getsamples_data_.sample_bitfield &= (_BV (trap_count) - 1) & ~_BV (garbage);

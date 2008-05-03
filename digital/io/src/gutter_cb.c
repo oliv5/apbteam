@@ -42,6 +42,11 @@ uint16_t gutter_wait_cycle_;
  */
 #define GUTTER_WAIT_FOR_BALLS_TO_DROP 300
 
+/**
+ * Time to wait before trying the go to the wall again.
+ */
+#define GUTTER_WAIT_BEFORE_TRY_AGAIN (225)
+
 /*
  * ROTATE_REAR_SIDE_TO_GUTTER =bot_move_succeed=>
  *  => GO_TO_THE_GUTTER_WALL
@@ -53,6 +58,19 @@ gutter__ROTATE_REAR_SIDE_TO_GUTTER__bot_move_succeed (void)
     /* Make the bot reversing against the gutter */
     asserv_go_to_the_wall ();
     return gutter_next (ROTATE_REAR_SIDE_TO_GUTTER, bot_move_succeed);
+}
+
+/*
+ * WAIT_AND_TRY_AGAIN =wait_finished=>
+ *  => GO_TO_THE_GUTTER_WALL
+ *   try the fuck the wall again
+ */
+fsm_branch_t
+gutter__WAIT_AND_TRY_AGAIN__wait_finished (void)
+{
+    /* Make the bot reversing against the gutter */
+    asserv_go_to_the_wall ();
+    return gutter_next (WAIT_AND_TRY_AGAIN, wait_finished);
 }
 
 /*
@@ -68,6 +86,18 @@ gutter__IDLE__start (void)
     /* Put the bot back to the gutter */
     asserv_goto_angle (PG_GUTTER_A);
     return gutter_next (IDLE, start);
+}
+
+/*
+ * GO_TO_THE_GUTTER_WALL =bot_move_failed=>
+ *  => WAIT_AND_TRY_AGAIN
+ *   ask the top FSM to wake us up in a few times
+ */
+fsm_branch_t
+gutter__GO_TO_THE_GUTTER_WALL__bot_move_failed (void)
+{
+    main_getsamples_wait_cycle = GUTTER_WAIT_BEFORE_TRY_AGAIN;
+    return gutter_next (GO_TO_THE_GUTTER_WALL, bot_move_failed);
 }
 
 /*
@@ -91,6 +121,7 @@ gutter__GO_TO_THE_GUTTER_WALL__bot_move_succeed (void)
  * DROP_BALLS =wait_finished=>
  *  => IDLE
  *   close the rear panel
+ *   tell the top FSM we have finished
  */
 fsm_branch_t
 gutter__DROP_BALLS__wait_finished (void)

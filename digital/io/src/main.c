@@ -518,7 +518,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	 *   - 1b: the approach angle to face the distributor ;
 	 *   - 1b: how many and where to put collected samples ;
 	 */
-	getsamples_start (args[0] << 8, args[1]);
+	getsamples_start (args[0] << 8, args[1], 0);
 	break;
 
       case c ('A', 1):

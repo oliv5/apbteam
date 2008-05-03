@@ -157,7 +157,7 @@ move_compute_obstacle_position (asserv_position_t cur,
     /* Convert the angle */
     uint32_t angle = cur.a;
     /* Change angle when going backward */
-    if (asserv_get_moving_direction () == 2)
+    if (0)
 	angle += 0x8000;
     angle = angle << 8;
     DPRINTF ("We are at (%d ; %d ; %x)\n", cur.x, cur.y, cur.a);
@@ -236,7 +236,8 @@ move_after_moving_backward (void)
 fsm_branch_t
 move__WAIT_FOR_CLEAR_PATH__wait_finished (void)
 {
-    if (!sharp_path_obstrued (move_data.cached_moving_direction))
+///     if (!sharp_path_obstrued (move_data.cached_moving_direction))
+    if (!sharp_path_obstrued (1))
       {
 	/* Try to go to the final position */
 	if (move_data.backward_movement_allowed)
@@ -264,12 +265,12 @@ move__WAIT_FOR_CLEAR_PATH__wait_finished (void)
 	else
 	  {
 	    /* Store current moving direction */
-	    move_data.cached_moving_direction = asserv_get_moving_direction ();
+ 	    move_data.cached_moving_direction = asserv_get_moving_direction ();
 	    /* Stop the bot */
 	    asserv_stop_motor ();
 	    /* Post an event for the top FSM to be waked up later */
 	    main_move_wait_cycle = MOVE_WAIT_TIME_FOR_POOLING_SHARP;
-	    return move_next_branch (WAIT_FOR_CLEAR_PATH, wait_finished, obstacle_and_intermediate_path_found);
+	    return move_next_branch (WAIT_FOR_CLEAR_PATH, wait_finished, obstacle_and_no_intermediate_path_found);
 	  }
       }
 }
@@ -411,6 +412,8 @@ move__MOVING_BACKWARD__bot_move_failed (void)
       }
     else
       {
+	/* Store current moving direction */
+	move_data.cached_moving_direction = 2;
 	/* Stop the bot */
 	asserv_stop_motor ();
 	/* Post an event for the top FSM to be waked up later */
@@ -438,6 +441,8 @@ move__MOVING_BACKWARD__bot_move_succeed (void)
       }
     else
       {
+	/* Store current moving direction */
+	move_data.cached_moving_direction = asserv_get_moving_direction ();
 	/* Stop the bot */
 	asserv_stop_motor ();
 	/* Post an event for the top FSM to be waked up later */
@@ -459,7 +464,8 @@ move__MOVING_TO_FINAL_POSITION__bot_move_failed (void)
     /* Compute obstacle position */
     move_obstacle_here ();
     /* Store current moving direction */
-    move_data.cached_moving_direction = asserv_get_moving_direction ();
+    move_data.cached_moving_direction = move_data.backward_movement_allowed ?
+	2 : 1;
     /* Move backward to turn freely */
     asserv_move_linearly (-PG_MOVE_DISTANCE);
     return move_next (MOVING_TO_FINAL_POSITION, bot_move_failed);

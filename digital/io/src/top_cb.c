@@ -145,7 +145,7 @@ top__GO_TO_ADVERSE_ICE_DISTRIBUTOR__move_fsm_finished (void)
      * samples. The problem is this should depend on the time we have until
      * the end of match */
     uint8_t bitfield = 0x3E;
-    getsamples_start (PG_DISTRIBUTOR_ICE_ADVERSE_A, bitfield);
+    getsamples_start (PG_DISTRIBUTOR_ICE_ADVERSE_A, bitfield, 0);
     return top_next (GO_TO_ADVERSE_ICE_DISTRIBUTOR, move_fsm_finished);
 }
 
@@ -170,7 +170,7 @@ top__GO_TO_OUR_ICE_DISTRIBUTOR__move_fsm_finished (void)
 	/* Second time we try to get our ice, let's took only two */
 	bitfield = _BV (middle_left_box) | _BV (middle_right_box);
       }
-    getsamples_start (PG_DISTRIBUTOR_ICE_OUR_A, bitfield);
+    getsamples_start (PG_DISTRIBUTOR_ICE_OUR_A, bitfield, 0);
     return top_next (GO_TO_OUR_ICE_DISTRIBUTOR, move_fsm_finished);
 }
 
@@ -195,7 +195,7 @@ top__GO_TO_SAMPLE_DISTRIBUTOR__move_fsm_finished (void)
 	bitfield = _BV (out_left_box) | _BV (middle_box) | _BV
 	    (out_right_box);
       }
-    getsamples_start (PG_DISTRIBUTOR_SAMPLE_OUR_A, bitfield);
+    getsamples_start (PG_DISTRIBUTOR_SAMPLE_OUR_A, bitfield, 1);
     return top_next (GO_TO_SAMPLE_DISTRIBUTOR, move_fsm_finished);
 }
 

@@ -25,6 +25,8 @@ States:
   put the arm back in front of the input hole to prevent sample to enter
  MOVE_BACKWARD_FROM_DISTRIBUTOR
   move a little bit backward from the distributor
+ WAIT_AND_TRY_AGAIN
+  wait and try again
 
 Events:
  start
@@ -69,8 +71,10 @@ TAKE_SAMPLES:
   take a new one
   reset the timeout
  arm_pass_noted_position: no_more -> MOVE_AWAY_FROM_DISTRIBUTOR
+  store current position
   go backward
  wait_finished -> MOVE_AWAY_FROM_DISTRIBUTOR
+  store current position
   timed out, give up
   go backward
 
@@ -78,6 +82,8 @@ MOVE_AWAY_FROM_DISTRIBUTOR:
  bot_move_succeed -> CLOSE_INPUT_HOLE
   close input hole
   setup a close timeout
+ bot_move_failed -> WAIT_AND_TRY_AGAIN
+  ask to be wake up in a certain time
  arm_pass_noted_position -> .
   prepare the classification of the taken sample
 
@@ -89,3 +95,8 @@ CLOSE_INPUT_HOLE:
   tell the top FSM we have finished
  arm_pass_noted_position -> .
   prepare the classification of the taken sample
+
+WAIT_AND_TRY_AGAIN:
+ wait_finished -> MOVE_AWAY_FROM_DISTRIBUTOR
+  compute remaining distance (protection agains 0 & 300)
+  try to move away again

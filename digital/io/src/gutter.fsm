@@ -11,6 +11,8 @@ States:
   make the bot reversing against the gutter
  DROP_BALLS
   open the collector to let the balls fall into the gutter
+ WAIT_AND_TRY_AGAIN
+  ask the top FSM to wake us up in a few times
 
 Events:
  start
@@ -38,9 +40,14 @@ GO_TO_THE_GUTTER_WALL:
 # preventing from fucking the wall
 # The best way is probably to abort this FSM with an error, tell the upper one
 # (top) we need to try at another place (the gutter is quite long).
-# bot_move_failed
+ bot_move_failed -> WAIT_AND_TRY_AGAIN
+  ask the top FSM to wake us up in a few times
 
 DROP_BALLS:
  wait_finished -> IDLE
   close the rear panel
   tell the top FSM we have finished
+
+WAIT_AND_TRY_AGAIN:
+ wait_finished -> GO_TO_THE_GUTTER_WALL
+  try the fuck the wall again

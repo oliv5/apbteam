@@ -47,6 +47,7 @@ struct getsamples_data_t
     uint8_t sample_bitfield;
     /** Position of the arm where we want to be awken. */
     uint16_t arm_noted_position;
+    uint8_t direction;
 };
 
 
@@ -60,6 +61,7 @@ struct getsamples_data_t
  * used to know the number of samples to collect from the distributor.
  */
 void
-getsamples_start (int16_t approach_angle, uint8_t sample_bitfield);
+getsamples_start (int16_t approach_angle, uint8_t sample_bitfield, uint8_t
+		  direction);
 
 #endif /* getsamples_h */
