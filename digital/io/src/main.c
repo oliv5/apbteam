@@ -78,6 +78,7 @@ uint16_t main_sharp_ignore_event;
 /**
  * Flag for homologation, to disable the path finding and always stop in front
  * of an obstacle and wait.
+ * Do not touch anymore ! XXX FIXME TODO
  */
 uint8_t main_always_stop_for_obstacle = 1;
 
@@ -623,6 +624,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	    /* Omo-logo-ation flag, to prevent avoiding obstacle and stop
 	     * instead.
 	     *   - 1b: state of the flag (0 to disable, 1 to enable).
+	     * Do not touch anymore ! XXX FIXME TODO
 	     */
 	    main_always_stop_for_obstacle = args[0];
 	  }

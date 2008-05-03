@@ -144,7 +144,7 @@ top__GO_TO_ADVERSE_ICE_DISTRIBUTOR__move_fsm_finished (void)
     /* Start the get samples FSM with the correct angle to get only two
      * samples. The problem is this should depend on the time we have until
      * the end of match */
-    uint8_t bitfield = _BV (out_right_box) | _BV (middle_right_box);
+    uint8_t bitfield = 0x3E;
     getsamples_start (PG_DISTRIBUTOR_ICE_ADVERSE_A, bitfield);
     return top_next (GO_TO_ADVERSE_ICE_DISTRIBUTOR, move_fsm_finished);
 }
@@ -161,14 +161,14 @@ top__GO_TO_OUR_ICE_DISTRIBUTOR__move_fsm_finished (void)
     uint8_t bitfield = 0;
     if (top_fsm_loop_count_ == 0)
       {
-	/* First time we try to get our ice, let's took two */
-	bitfield = _BV (middle_left_box) | _BV (middle_right_box);
+	/* First time we try to get our ice, let's took three */
+	bitfield = _BV (out_left_box) | _BV (middle_box) | _BV
+	    (out_right_box);
       }
     else
       {
-	/* Second time we try to get our ice, let's took only three */
-	bitfield = _BV (out_left_box) | _BV (middle_box) | _BV
-	    (out_right_box);
+	/* Second time we try to get our ice, let's took only two */
+	bitfield = _BV (middle_left_box) | _BV (middle_right_box);
       }
     getsamples_start (PG_DISTRIBUTOR_ICE_OUR_A, bitfield);
     return top_next (GO_TO_OUR_ICE_DISTRIBUTOR, move_fsm_finished);
@@ -186,15 +186,14 @@ top__GO_TO_SAMPLE_DISTRIBUTOR__move_fsm_finished (void)
     uint8_t bitfield = 0;
     if (top_fsm_loop_count_ == 0)
       {
-	/* First time we try to get our samples, let's took three of them */
-	bitfield = _BV (out_left_box) | _BV (middle_box) | _BV
-	    (out_right_box);
+	/* First time we try to get our samples, let's took only two of them */
+	bitfield = _BV (middle_left_box) | _BV (middle_right_box);
       }
     else
       {
-	/* Second time we try to get our samples, let's took only two of them
-	 */
-	bitfield = _BV (middle_left_box) | _BV (middle_right_box);
+	/* Second time we try to get our samples, let's took three of them */
+	bitfield = _BV (out_left_box) | _BV (middle_box) | _BV
+	    (out_right_box);
       }
     getsamples_start (PG_DISTRIBUTOR_SAMPLE_OUR_A, bitfield);
     return top_next (GO_TO_SAMPLE_DISTRIBUTOR, move_fsm_finished);

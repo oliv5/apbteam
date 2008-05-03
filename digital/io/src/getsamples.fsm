@@ -78,6 +78,8 @@ MOVE_AWAY_FROM_DISTRIBUTOR:
  bot_move_succeed -> CLOSE_INPUT_HOLE
   close input hole
   setup a close timeout
+ arm_pass_noted_position -> .
+  prepare the classification of the taken sample
 
 CLOSE_INPUT_HOLE:
  arm_move_succeed -> IDLE
@@ -85,3 +87,5 @@ CLOSE_INPUT_HOLE:
  wait_finished -> IDLE
   timed out, give up
   tell the top FSM we have finished
+ arm_pass_noted_position -> .
+  prepare the classification of the taken sample

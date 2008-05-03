@@ -68,7 +68,7 @@
 /**
  * The generic validity time (in term of number of cyles).
  */
-#define MOVE_OBSTACLE_VALIDITY (4 * 225)
+#define MOVE_OBSTACLE_VALIDITY (6 * 225)
 
 /**
  * Cycles count to ignore sharp event in the main loop.
@@ -79,7 +79,7 @@
  * Number of cycles to wait before trying to read the sharps values again when
  * we are stopped.
  */
-#define MOVE_WAIT_TIME_FOR_POOLING_SHARP (50)
+#define MOVE_WAIT_TIME_FOR_POOLING_SHARP (MOVE_MAIN_IGNORE_SHARP_EVENT)
 
 /**
  * A detection offset for the sharps.
@@ -223,11 +223,15 @@ move_after_moving_backward (void)
 /*
  * WAIT_FOR_CLEAR_PATH =wait_finished=>
  * no_obstacle => MOVING_TO_FINAL_POSITION
- *   check for obstacle using stored moving direction
- *   try to go the final position
- * obstacle => WAIT_FOR_CLEAR_PATH
- *   check for obstacle using stored moving direction
+ *   ask the asserv to go to the final position
+ * obstacle_and_no_intermediate_path_found => WAIT_FOR_CLEAR_PATH
+ *   compute the obstacle position
+ *   get next intermediate position from path module failed
  *   post an event for the top FSM to be waked up later
+ * obstacle_and_intermediate_path_found => MOVING_TO_INTERMEDIATE_POSITION
+ *   compute the obstacle position
+ *   get next intermediate position from path module
+ *   go to next intermediate position
  */
 fsm_branch_t
 move__WAIT_FOR_CLEAR_PATH__wait_finished (void)
@@ -243,9 +247,30 @@ move__WAIT_FOR_CLEAR_PATH__wait_finished (void)
       }
     else
       {
-	/* Post an event for the top FSM to be waked up later */
-	main_move_wait_cycle = MOVE_WAIT_TIME_FOR_POOLING_SHARP;
-	return move_next_branch (WAIT_FOR_CLEAR_PATH, wait_finished, obstacle);
+	/* Enable path finding */
+	main_always_stop_for_obstacle = 0;
+	/* Get next position */
+	if (path_get_next (&move_data.intermediate.x, &move_data.intermediate.y))
+	  {
+	    /* Ignore sharps */
+	    main_sharp_ignore_event = MOVE_MAIN_IGNORE_SHARP_EVENT;
+	    /* Go to the next intermediate position */
+	    if (move_data.backward_movement_allowed)
+		asserv_goto_back (move_data.intermediate.x, move_data.intermediate.y);
+	    else
+		asserv_goto (move_data.intermediate.x, move_data.intermediate.y);
+	    return move_next_branch (WAIT_FOR_CLEAR_PATH, wait_finished, obstacle_and_intermediate_path_found);
+	  }
+	else
+	  {
+	    /* Store current moving direction */
+	    move_data.cached_moving_direction = asserv_get_moving_direction ();
+	    /* Stop the bot */
+	    asserv_stop_motor ();
+	    /* Post an event for the top FSM to be waked up later */
+	    main_move_wait_cycle = MOVE_WAIT_TIME_FOR_POOLING_SHARP;
+	    return move_next_branch (WAIT_FOR_CLEAR_PATH, wait_finished, obstacle_and_intermediate_path_found);
+	  }
       }
 }
 

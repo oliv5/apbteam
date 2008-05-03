@@ -35,6 +35,8 @@
 #include "main.h"	/* main_post_event_for_top_fsm */
 #include "chrono.h"
 
+#include "modules/proto/proto.h"
+
 #include "io.h"
 
 /**
@@ -92,6 +94,7 @@ getsamples_count_samples (void)
 	    count++;
     return count;
 }
+
 /*
  * MOVE_BACKWARD_FROM_DISTRIBUTOR =bot_move_succeed=>
  *  => TAKE_SAMPLES
@@ -109,6 +112,7 @@ getsamples__MOVE_BACKWARD_FROM_DISTRIBUTOR__bot_move_succeed (void)
 		     BOT_ARM_SPEED);
     /* Post an event for the top FSM to be waked up later */
     main_getsamples_wait_cycle = GET_SAMPLES_ARM_TIMEOUT;
+    proto_send1b ('T', 0);
     return getsamples_next (MOVE_BACKWARD_FROM_DISTRIBUTOR, bot_move_succeed);
 }
 
@@ -122,6 +126,7 @@ getsamples__FACE_DISTRIBUTOR__bot_move_succeed (void)
 {
     /* Move the arm to open the input hole to be able to take some samples */
     asserv_move_arm (-BOT_ARM_MIN_TO_OPEN, BOT_ARM_SPEED);
+    proto_send0 ('O');
     return getsamples_next (FACE_DISTRIBUTOR, bot_move_succeed);
 }
 
@@ -135,6 +140,7 @@ getsamples__OPEN_INPUT_HOLE__arm_move_succeed (void)
 {
     /* Approach the distributor */
     asserv_go_to_distributor ();
+    proto_send0 ('A');
     return getsamples_next (OPEN_INPUT_HOLE, arm_move_succeed);
 }
 
@@ -149,7 +155,21 @@ getsamples__CLOSE_INPUT_HOLE__wait_finished (void)
 {
     /* Give up, tell the top FSM we have finished */
     main_post_event_for_top_fsm = TOP_EVENT_get_samples_fsm_finished;
+    proto_send0 ('I');
     return getsamples_next (CLOSE_INPUT_HOLE, wait_finished);
+}
+
+/*
+ * CLOSE_INPUT_HOLE =arm_pass_noted_position=>
+ *  => CLOSE_INPUT_HOLE
+ *   prepare the classification of the taken sample
+ */
+fsm_branch_t
+getsamples__CLOSE_INPUT_HOLE__arm_pass_noted_position (void)
+{
+    /* Prepare the classification of the taken sample */
+    getsamples_configure_classifier ();
+    return getsamples_next (CLOSE_INPUT_HOLE, arm_pass_noted_position);
 }
 
 /*
@@ -176,6 +196,7 @@ getsamples__TAKE_SAMPLES__wait_finished (void)
 {
     /* Go backward */
     asserv_move_linearly (-PG_DISTANCE_DISTRIBUTOR);
+    proto_send1b ('M', 1);
     return getsamples_next (TAKE_SAMPLES, wait_finished);
 }
 
@@ -202,12 +223,14 @@ getsamples__TAKE_SAMPLES__arm_pass_noted_position (void)
 	/* Post an event for the top FSM to be waked up later */
 	main_getsamples_wait_cycle = GET_SAMPLES_ARM_TIMEOUT;
 	/* Continue to take sample */
+	proto_send1b ('T', 1);
 	return getsamples_next_branch (TAKE_SAMPLES, arm_pass_noted_position, more);
       }
     else
       {
 	/* Go backward */
 	asserv_move_linearly (-PG_DISTANCE_DISTRIBUTOR);
+	proto_send1b ('M', 0);
 	return getsamples_next_branch (TAKE_SAMPLES, arm_pass_noted_position, no_more);
       }
 }
@@ -222,7 +245,21 @@ getsamples__IDLE__start (void)
 {
     /* Face the distributor */
     asserv_goto_angle (getsamples_data_.approach_angle);
+    proto_send0 ('F');
     return getsamples_next (IDLE, start);
+}
+
+/*
+ * MOVE_AWAY_FROM_DISTRIBUTOR =arm_pass_noted_position=>
+ *  => MOVE_AWAY_FROM_DISTRIBUTOR
+ *   prepare the classification of the taken sample
+ */
+fsm_branch_t
+getsamples__MOVE_AWAY_FROM_DISTRIBUTOR__arm_pass_noted_position (void)
+{
+    /* Prepare the classification of the taken sample */
+    getsamples_configure_classifier ();
+    return getsamples_next (MOVE_AWAY_FROM_DISTRIBUTOR, arm_pass_noted_position);
 }
 
 /*
@@ -238,6 +275,7 @@ getsamples__MOVE_AWAY_FROM_DISTRIBUTOR__bot_move_succeed (void)
     asserv_move_arm (BOT_ARM_MIN_TO_OPEN + BOT_ARM_THIRD_ROUND, BOT_ARM_SPEED);
     /* Post an event for the top FSM to be waked up later */
     main_getsamples_wait_cycle = GET_SAMPLES_ARM_TIMEOUT;
+    proto_send0 ('C');
     return getsamples_next (MOVE_AWAY_FROM_DISTRIBUTOR, bot_move_succeed);
 }
 
@@ -251,5 +289,6 @@ getsamples__APPROACH_DISTRIBUTOR__bot_move_succeed (void)
 {
     /* Move a little bit backward from the distributor */
     asserv_move_linearly (-GET_SAMPLES_MOVE_BACKWARD_DISTANCE);
+    proto_send0 ('m');
     return getsamples_next (APPROACH_DISTRIBUTOR, bot_move_succeed);
 }

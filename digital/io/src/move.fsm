@@ -91,9 +91,13 @@ MOVING_TO_INTERMEDIATE_POSITION:
   move backward to turn freely
 
 WAIT_FOR_CLEAR_PATH:
- wait_finished: obstacle -> .
-  check for obstacle using stored moving direction 
-  post an event for the top FSM to be waked up later
  wait_finished: no_obstacle -> MOVING_TO_FINAL_POSITION
-  check for obstacle using stored moving direction 
-  try to go the final position
+  ask the asserv to go to the final position
+ wait_finished: obstacle_and_intermediate_path_found -> MOVING_TO_INTERMEDIATE_POSITION
+  compute the obstacle position
+  get next intermediate position from path module
+  go to next intermediate position
+ wait_finished: obstacle_and_no_intermediate_path_found -> .
+  compute the obstacle position
+  get next intermediate position from path module failed
+  post an event for the top FSM to be waked up later

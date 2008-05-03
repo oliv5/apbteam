@@ -40,7 +40,7 @@ uint16_t gutter_wait_cycle_;
  * Count of cycles to wait before we estimate all the balls have been dropped
  * into the gutter. A cycle normally last 4.4ms.
  */
-#define GUTTER_WAIT_FOR_BALLS_TO_DROP 1126
+#define GUTTER_WAIT_FOR_BALLS_TO_DROP 300
 
 /*
  * ROTATE_REAR_SIDE_TO_GUTTER =bot_move_succeed=>

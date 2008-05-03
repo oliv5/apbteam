@@ -60,7 +60,7 @@
  * CHRONO_OVERFLOW_MAX * seconds / 90
  */
 #define CHRONO_OVERFLOW_COUNT_NEAR_END_MATCH \
-    ((uint8_t) (CHRONO_OVERFLOW_MAX * 65 / 90))
+    ((uint8_t) (CHRONO_OVERFLOW_MAX * 83 / 90))
 
 /**
  * Match is finished.

@@ -110,7 +110,7 @@
 /**
  * The position of the gutter.
  */
-#define PG_GUTTER_X (PG_X_VALUE_COMPUTING (2250))
+#define PG_GUTTER_X (PG_X_VALUE_COMPUTING (2600))
 #define PG_GUTTER_Y (300)
 #define PG_GUTTER_A (90 * BOT_ANGLE_DEGREE)
 
