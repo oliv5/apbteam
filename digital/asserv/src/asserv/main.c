@@ -577,8 +577,10 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	      case c ('D', 3):
 		pos_d_sat = v8_to_v16 (args[1], args[2]);
 		break;
-	      case c ('b', 3):
-		pos_blocked = v8_to_v16 (args[1], args[2]);
+	      case c ('b', 7):
+		pos_blocked_error_limit = v8_to_v16 (args[1], args[2]);
+		pos_blocked_speed_limit = v8_to_v16 (args[3], args[4]);
+		pos_blocked_counter_limit = v8_to_v16 (args[5], args[6]);
 		break;
 	      case c ('e', 5):
 		traj_eps = v8_to_v16 (args[1], args[2]);
@@ -619,7 +621,9 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		proto_send1w ('E', pos_e_sat);
 		proto_send1w ('I', pos_i_sat);
 		proto_send1w ('D', pos_d_sat);
-		proto_send1w ('b', pos_blocked);
+		proto_send3w ('b', pos_blocked_error_limit,
+			      pos_blocked_speed_limit,
+			      pos_blocked_counter_limit);
 		proto_send2w ('e', traj_eps, traj_aeps);
 		proto_send1w ('l', traj_angle_limit);
 		proto_send1b ('w', pwm_reverse);

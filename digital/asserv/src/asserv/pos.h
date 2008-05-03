@@ -38,13 +38,18 @@ struct pos_t
     int32_t i;
     /** Last error value. */
     int32_t e_old;
+    /** Old current position. */
+    uint32_t cur_old;
+    /** Count the number of blocked detection. */
+    uint8_t blocked_counter;
 };
 
 extern struct pos_t pos_theta, pos_alpha;
 extern struct pos_t pos_aux0;
 
 extern int32_t pos_e_sat, pos_i_sat, pos_d_sat;
-extern int32_t pos_blocked;
+extern int32_t pos_blocked_error_limit, pos_blocked_speed_limit,
+       pos_blocked_counter_limit;
 
 void
 pos_update (void);

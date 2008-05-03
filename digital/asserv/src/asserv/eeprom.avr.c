@@ -96,7 +96,9 @@ eeprom_read_params (void)
     pos_e_sat = eeprom_read_word (p16++);
     pos_i_sat = eeprom_read_word (p16++);
     pos_d_sat = eeprom_read_word (p16++);
-    pos_blocked = eeprom_read_word (p16++);
+    pos_blocked_error_limit = eeprom_read_word (p16++);
+    pos_blocked_speed_limit = eeprom_read_word (p16++);
+    pos_blocked_counter_limit = eeprom_read_word (p16++);
     traj_eps = eeprom_read_word (p16++);
     traj_aeps = eeprom_read_word (p16++);
     traj_set_angle_limit (eeprom_read_word (p16++));
@@ -134,7 +136,9 @@ eeprom_write_params (void)
     eeprom_write_word (p16++, pos_e_sat);
     eeprom_write_word (p16++, pos_i_sat);
     eeprom_write_word (p16++, pos_d_sat);
-    eeprom_write_word (p16++, pos_blocked);
+    eeprom_write_word (p16++, pos_blocked_error_limit);
+    eeprom_write_word (p16++, pos_blocked_speed_limit);
+    eeprom_write_word (p16++, pos_blocked_counter_limit);
     eeprom_write_word (p16++, traj_eps);
     eeprom_write_word (p16++, traj_aeps);
     eeprom_write_word (p16++, traj_angle_limit);

@@ -52,9 +52,12 @@ int32_t pos_e_sat = 1023;
 int32_t pos_i_sat = 1023;
 /** Differential saturation. */
 int32_t pos_d_sat = 1023;
-/** Blocked value.  If error is greater than this value, stop the robot and
- * report blocked state. */
-int32_t pos_blocked = 15000L;
+/** Blocking detection: error limit. */
+int32_t pos_blocked_error_limit = 2048;
+/** Blocking detection: speed limit. */
+int32_t pos_blocked_speed_limit = 0x10;
+/** Blocking detection: counter limit. */
+int32_t pos_blocked_counter_limit = 20;
 
 /** Compute a PID.
  * How to compute maximum numbers size:
@@ -108,8 +111,23 @@ pos_update (void)
 	/* Compute PID. */
 	diff_theta = pos_theta.cons - pos_theta.cur;
 	diff_alpha = pos_alpha.cons - pos_alpha.cur;
-	if (diff_theta < -pos_blocked || pos_blocked < diff_theta
-	    || diff_alpha < -pos_blocked || pos_blocked < diff_alpha)
+	/* Compute actual speed and test for blocking. */
+	int32_t cur_speed_theta = pos_theta.cur - pos_theta.cur_old;
+	pos_theta.cur_old = pos_theta.cur;
+	int32_t cur_speed_alpha = pos_alpha.cur - pos_alpha.cur_old;
+	pos_alpha.cur_old = pos_alpha.cur;
+	if ((UTILS_ABS (diff_theta) > pos_blocked_error_limit
+	     && UTILS_ABS (cur_speed_theta) < pos_blocked_speed_limit))
+	    pos_theta.blocked_counter++;
+	else
+	    pos_theta.blocked_counter = 0;
+	if ((UTILS_ABS (diff_alpha) > pos_blocked_error_limit
+	     && UTILS_ABS (cur_speed_alpha) < pos_blocked_speed_limit))
+	    pos_alpha.blocked_counter++;
+	else
+	    pos_alpha.blocked_counter = 0;
+	if (pos_theta.blocked_counter > pos_blocked_counter_limit
+	    || pos_alpha.blocked_counter > pos_blocked_counter_limit)
 	  {
 	    /* Blocked. */
 	    pos_reset (&pos_theta);
@@ -135,7 +153,7 @@ pos_update (void)
 	pos_aux0.cur += counter_aux0_diff;
 	/* Compute PID. */
 	diff = pos_aux0.cons - pos_aux0.cur;
-	if (diff < -pos_blocked || pos_blocked < diff)
+	if (UTILS_ABS (diff) > 5000)
 	  {
 	    /* Blocked. */
 	    pos_reset (&pos_aux0);
@@ -160,5 +178,7 @@ pos_reset (struct pos_t *pos)
     pos->cur = 0;
     pos->cons = 0;
     pos->e_old = 0;
+    pos->cur_old = 0;
+    pos->blocked_counter = 0;
 }
 
