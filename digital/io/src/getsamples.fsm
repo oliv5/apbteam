@@ -59,6 +59,8 @@ OPEN_INPUT_HOLE:
 APPROACH_DISTRIBUTOR:
  bot_move_succeed -> MOVE_BACKWARD_FROM_DISTRIBUTOR
   move a little bit backward from the distributor
+ bot_move_failed -> .
+  try to move again
 
 MOVE_BACKWARD_FROM_DISTRIBUTOR:
  bot_move_succeed -> TAKE_SAMPLES

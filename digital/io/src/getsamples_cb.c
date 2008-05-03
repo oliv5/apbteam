@@ -364,6 +364,19 @@ getsamples__MOVE_AWAY_FROM_DISTRIBUTOR__arm_pass_noted_position (void)
 }
 
 /*
+ * APPROACH_DISTRIBUTOR =bot_move_failed=>
+ *  => APPROACH_DISTRIBUTOR
+ *   try to move again
+ */
+fsm_branch_t
+getsamples__APPROACH_DISTRIBUTOR__bot_move_failed (void)
+{
+    /* Approach the distributor */
+    asserv_go_to_distributor ();
+    return getsamples_next (APPROACH_DISTRIBUTOR, bot_move_failed);
+}
+
+/*
  * APPROACH_DISTRIBUTOR =bot_move_succeed=>
  *  => MOVE_BACKWARD_FROM_DISTRIBUTOR
  *   move a little bit backward from the distributor
