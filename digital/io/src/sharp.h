@@ -65,6 +65,9 @@
  */
 #define SHARP_BACK_RIGHT 4
 
+/** Sharps conversion table number of elements. */
+#define SHARP_NB_ELEMENT_TABLE_CONV 12
+
 /**
  * Low (0 index) and high (1 index) thresholds for interpreted sharp values.
  */
@@ -90,6 +93,15 @@ void sharp_update (uint8_t sharp_mask);
  * @return the raw data read from the sharps (0 is a non valid value).
  */
 uint16_t sharp_get_raw (uint8_t sharp_id);
+
+/** 
+ * Get the distance of the sharp computed on the value. It does a search in the
+ * table.
+ * @param  sharp_value  the value of the seen by the sharp.
+ * @return  the value in mm of the object seen.
+ */
+uint16_t
+sharp_get_distance_mm (uint16_t sharp_value);
 
 /**
  * Configure the thresholds of a sharp.

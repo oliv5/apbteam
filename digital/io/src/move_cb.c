@@ -154,6 +154,9 @@ void
 move_compute_obstacle_position (asserv_position_t cur,
 				move_position_t *obstacle)
 {
+    uint8_t i;
+    uint16_t dist;
+
     /* Convert the angle */
     uint32_t angle = cur.a;
     /* Change angle when going backward */
@@ -161,12 +164,42 @@ move_compute_obstacle_position (asserv_position_t cur,
 	angle += 0x8000;
     angle = angle << 8;
     DPRINTF ("We are at (%d ; %d ; %x)\n", cur.x, cur.y, cur.a);
+
+    // Forward moving.
+    if (asserv_get_moving_direction () == 1)
+      {
+	uint16_t dist_computed;
+	dist = 0xFFFF;
+	for (i = 0; i < 3; i ++)
+	  {
+	    if (dist > 
+		(dist_computed = sharp_get_distance_mm (sharp_get_raw(i))))
+		{
+		    dist = dist_computed;
+		}
+	  }
+      }
+    // Backward moving.
+    else
+      {
+	uint16_t dist_computed;
+	dist = 0xFFFF;
+	for (i = 3; i < 5; i ++)
+	  {
+	    if (dist > 
+		(dist_computed = sharp_get_distance_mm (sharp_get_raw(i))))
+		{
+		    dist = dist_computed;
+		}
+	  }
+      }
+
     /* X */
     obstacle->x = cur.x + fixed_mul_f824 (fixed_cos_f824 (angle),
-					  MOVE_OBSTACLE_DISTANCE);
+					  dist);
     /* Y */
     obstacle->y = cur.y + fixed_mul_f824 (fixed_sin_f824 (angle),
-					  MOVE_OBSTACLE_DISTANCE);
+					  dist);
     DPRINTF ("Computed obstacle (%d ; %d)\n", obstacle->x, obstacle->y);
 }
 

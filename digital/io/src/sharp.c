@@ -29,6 +29,17 @@
 #include "modules/adc/adc.h"	/* ADC functions */
 #include "io.h"
 
+/** Sharp conversion table. 
+ * The first value is the distance in millimeters, the second on the distance
+ * returned by the sharps.
+ */
+uint16_t sharp_conv_table[SHARP_NB_ELEMENT_TABLE_CONV][2] = 
+     {{650, 100}, {550, 120}, {450, 140},
+      {400, 160}, {350, 180}, {300, 200},
+      {250, 220}, {200, 280}, {140, 400},
+      {100, 480}, {90, 500}, {80, 500}};
+
+
 /**
  * Cached array of raw sharp values.
  */
@@ -198,3 +209,26 @@ sharp_path_obstrued (uint8_t moving_direction)
       }
     return 0;
 }
+
+/** 
+ * Get the distance of the sharp computed on the value. It does a search in the
+ * table.
+ * @param  sharp_value  the value of the seen by the sharp.
+ * @return  the value in mm of the object seen.
+ */
+uint16_t
+sharp_get_distance_mm (uint16_t sharp_value)
+{
+    uint8_t index;
+
+    for (index = 1; index < SHARP_NB_ELEMENT_TABLE_CONV; index++)
+      {
+	if (sharp_conv_table[index][1] > sharp_value)
+	  {
+	    return sharp_conv_table[index - 1][0];
+	  }
+      }
+
+    return 0;
+}
+
