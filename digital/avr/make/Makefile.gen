@@ -48,6 +48,13 @@ $(foreach prog,$(ALL_PROGS),$(eval $(call MODULES_template,$(prog))))
 vpath %.c $(ALL_MODULES:%=$(BASE)/modules/%)
 vpath %.S $(ALL_MODULES:%=$(BASE)/modules/%)
 
+# Objects directory.
+
+OBJDIR := obj
+
+$(OBJDIR):
+	mkdir -p $(OBJDIR)
+
 # Compilation test rules.
 
 define TEST_MCU_template
@@ -99,4 +106,5 @@ doc: $(DOC)
 
 clean: clean.avr clean.simu clean.host
 	rm -f *.bak *~ $(DOC) *.exd $(EXTRA_CLEAN_FILES)
+	rmdir $(OBJDIR) || true
 

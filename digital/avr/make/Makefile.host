@@ -21,12 +21,12 @@ host: exe
 HOST_PROGS += $(PROGS)
 HOST_EXES := $(HOST_PROGS:%=%.host)
 HOST_SOURCES := $(filter-out %.avr.c %.avr.S,$(ALL_SOURCES))
-HOST_OBJECTS := $(HOST_SOURCES:%.c=%.host.o)
+HOST_OBJECTS := $(HOST_SOURCES:%.c=$(OBJDIR)/%.host.o)
 
 exe: $(HOST_EXES)
 
 define HOST_PROG_template
-$(1).host: $$(patsubst %.c,%.host.o,\
+$(1).host: $$(patsubst %.c,$(OBJDIR)/%.host.o,\
 	$$(filter-out %.avr.c %.avr.S,$$($(1)_SOURCES)))
 endef
 
@@ -35,7 +35,7 @@ $(foreach prog,$(HOST_PROGS),$(eval $(call HOST_PROG_template,$(prog))))
 $(HOST_EXES):
 	$(HOST_LINK.o) $^ $(HOST_LDLIBS) -o $@
 
-%.host.o: %.c
+$(OBJDIR)/%.host.o: %.c | $(OBJDIR)
 	$(HOST_COMPILE.c) -o $@ $<
 
 # Dependency checking.
@@ -44,5 +44,5 @@ $(HOST_EXES):
 # Cleaning.
 
 clean.host:
-	rm -f *.host.o *.host.d $(HOST_EXES)
+	rm -f $(OBJDIR)/*.host.o $(OBJDIR)/*.host.d $(HOST_EXES)
 

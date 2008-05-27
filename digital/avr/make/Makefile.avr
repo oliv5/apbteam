@@ -35,7 +35,8 @@ AVR_SIMU_ELFS := $(SIMU_PROGS:%=%.avr.simu.elf)
 AVR_SOURCES := $(filter-out %.host.c,$(ALL_SOURCES))
 AVR_C_SOURCES := $(filter %.c,$(AVR_SOURCES))
 AVR_S_SOURCES := $(filter %.S,$(AVR_SOURCES))
-AVR_OBJECTS := $(AVR_C_SOURCES:%.c=%.avr.o) $(AVR_S_SOURCES:%.S=%.avr.o)
+AVR_OBJECTS := $(AVR_C_SOURCES:%.c=$(OBJDIR)/%.avr.o) \
+	       $(AVR_S_SOURCES:%.S=$(OBJDIR)/%.avr.o)
 AVR_SIMU_OBJECTS := $(AVR_OBJECTS:%.avr.o=%.avr.simu.o)
 
 elf: $(AVR_ELFS)
@@ -43,9 +44,11 @@ simuelf: $(AVR_SIMU_ELFS)
 lst: $(AVR_PROGS:%=%.avr.lst)
 
 define AVR_PROG_template
-$(1).avr.elf: $$(patsubst %.S,%.avr.o,$$(patsubst %.c,%.avr.o,\
+$(1).avr.elf: $$(patsubst %.S,$(OBJDIR)/%.avr.o,\
+	$$(patsubst %.c,$(OBJDIR)/%.avr.o,\
 	$$(filter-out %.host.c,$$($(1)_SOURCES))))
-$(1).avr.simu.elf: $$(patsubst %.S,%.avr.simu.o,$$(patsubst %.c,%.avr.simu.o,\
+$(1).avr.simu.elf: $$(patsubst %.S,$(OBJDIR)/%.avr.simu.o,\
+	$$(patsubst %.c,$(OBJDIR)/%.avr.simu.o,\
 	$$(filter-out %.host.c,$$($(1)_SOURCES))))
 endef
 
@@ -57,16 +60,16 @@ $(AVR_ELFS) $(AVR_SIMU_ELFS):
 %.avr.lst: %.avr.elf
 	$(AVR_OBJDUMP) -h -S $< > $@
 
-%.avr.o: %.c
+$(OBJDIR)/%.avr.o: %.c | $(OBJDIR)
 	$(AVR_COMPILE.c) -o $@ $<
 
-%.avr.simu.o: %.c
+$(OBJDIR)/%.avr.simu.o: %.c | $(OBJDIR)
 	$(AVR_COMPILE.c) -DSIMU=1 -o $@ $<
 
-%.avr.o: %.S
+$(OBJDIR)/%.avr.o: %.S | $(OBJDIR)
 	$(AVR_COMPILE.S) -o $@ $<
 
-%.avr.simu.o: %.S
+$(OBJDIR)/%.avr.simu.o: %.S | $(OBJDIR)
 	$(AVR_COMPILE.S) -DSIMU=1 -o $@ $<
 
 # Dependency checking.
@@ -115,9 +118,9 @@ esrec: $(AVR_PROGS:%=%_eeprom.srec)
 # Cleaning.
 
 clean.avr:
-	rm -f *.avr.o *.avr.d $(AVR_ELFS) \
+	rm -f $(OBJDIR)/*.avr.o $(OBJDIR)/*.avr.d $(AVR_ELFS) \
 		*.avr.lst *.avr.map $(TEXTS) $(EEPROMS)
 
 clean.simu:
-	rm -f *.avr.simu.o *.avr.simu.d $(AVR_SIMU_ELFS)
+	rm -f $(OBJDIR)/*.avr.simu.o *.avr.simu.d $(AVR_SIMU_ELFS)
 
