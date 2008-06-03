@@ -1,5 +1,5 @@
 import sys
-sys.path.append (sys.path[0] + '/../../../../../host/mex')
+sys.path.append (sys.path[0] + '/../../../../../host')
 
 from mex.hub import Hub
 from mex.msg import Msg

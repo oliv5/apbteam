@@ -1,10 +1,10 @@
 import sys
-sys.path.append (sys.path[0] + '/../../../../../host/mex')
+sys.path.append (sys.path[0] + '/../../../../../host')
 
 from mex.hub import Hub
 from mex.msg import Msg
 from mex.node import Node
-from mex.forked import Forked
+from utils.forked import Forked
 
 import os, signal, time
 

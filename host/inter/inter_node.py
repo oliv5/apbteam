@@ -24,7 +24,7 @@
 """Inter, coupled with a mex Node."""
 if __name__ == '__main__':
     import sys
-    sys.path.append (sys.path[0] + '/../mex')
+    sys.path.append (sys.path[0] + '/..')
 
 from inter import Inter, Obstacle
 from dist_sensor import DistSensor
@@ -206,9 +206,9 @@ class InterNode (Inter):
 
 if __name__ == '__main__':
     import mex.hub
-    import mex.forked
+    import utils.forked
     h = mex.hub.Hub (min_clients = 1)
-    fh = mex.forked.Forked (h.wait)
+    fh = utils.forked.Forked (h.wait)
     try:
 	app = InterNode ()
 	app.mainloop()

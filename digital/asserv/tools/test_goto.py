@@ -1,18 +1,18 @@
 import sys
-sys.path.append (sys.path[0] + '/../../../host/proto')
+sys.path.append (sys.path[0] + '/../../../host')
 
 from asserv import Asserv
-import init
-import popen_io
+import asserv.init
+import proto.popen_io
 import serial
 import random
 
 if sys.argv[1] == '!':
-    io = popen_io.PopenIO (sys.argv[2:])
-    init = init.host
+    io = proto.popen_io.PopenIO (sys.argv[2:])
+    init = asserv.init.host
 else:
     io = serial.Serial (sys.argv[1])
-    init = init.target
+    init = asserv.init.target
 a = Asserv (io, **init)
 for i in xrange (10):
     x = random.randrange (2000)

@@ -23,17 +23,16 @@
 # }}}
 """Inter, communicating with the asserv board."""
 import sys
-sys.path.append (sys.path[0] + '/../../../host/proto')
-sys.path.append (sys.path[0] + '/../../../host/inter')
+sys.path.append (sys.path[0] + '/../../../host')
 
 from asserv import Asserv
-import init
-import popen_io
+import asserv.init
+import proto.popen_io
 import serial
 
 import math
 
-from inter import Inter
+from inter.inter import Inter
 from Tkinter import *
 
 
@@ -43,11 +42,11 @@ class InterAsserv (Inter):
     def __init__ (self, argv):
 	# Asserv.
 	if argv[0] == '!':
-	    io = popen_io.PopenIO (argv[1:])
-	    i = init.host
+	    io = proto.popen_io.PopenIO (argv[1:])
+	    i = asserv.init.host
 	else:
 	    io = serial.Serial (argv[0])
-	    i = init.target
+	    i = asserv.init.target
 	self.a = Asserv (io, **i)
 	self.a.async = True
 	self.a.register_pos (self.pos)

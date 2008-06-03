@@ -1,10 +1,10 @@
 import sys
-sys.path.append (sys.path[0] + '/..')
+sys.path.append (sys.path[0] + '/../..')
 
 from mex.hub import Hub
 from mex.node import Node
 from mex.msg import Msg
-from mex.forked import Forked
+from utils.forked import Forked
 import select
 
 def log (x):

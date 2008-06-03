@@ -24,7 +24,6 @@
 """mex Hub."""
 import mex
 from msg import Msg
-import msg
 import socket, select
 from struct import pack, unpack, calcsize
 

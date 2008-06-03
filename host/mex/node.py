@@ -24,7 +24,6 @@
 """mex Node."""
 import mex
 from msg import Msg
-import msg
 import socket
 from struct import pack, unpack, calcsize
 

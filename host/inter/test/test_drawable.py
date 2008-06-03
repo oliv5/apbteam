@@ -1,7 +1,7 @@
 import sys
-sys.path.append (sys.path[0] + '/..')
+sys.path.append (sys.path[0] + '/../..')
 
-from drawable import *
+from inter.drawable import *
 from math import pi
 
 class Test (Drawable):

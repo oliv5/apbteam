@@ -1,14 +1,14 @@
 import sys
-sys.path.append (sys.path[0] + '/../../../host/proto')
+sys.path.append (sys.path[0] + '/../../../host')
 
 from asserv import Asserv
-import popen_io
+import proto.popen_io
 import serial
 import Gnuplot
 
 def step (name, offset, kp, ki, kd, plots, **param):
     if sys.argv[1] == '!':
-	io = popen_io.PopenIO (sys.argv[2:])
+	io = proto.popen_io.PopenIO (sys.argv[2:])
     else:
 	io = serial.Serial (sys.argv[1])
     p = { name + 'kp': kp, name + 'ki': ki, name + 'kd': kd}
