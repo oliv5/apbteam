@@ -35,8 +35,10 @@ class Asserv:
     def __init__ (self, file, **param):
 	self.proto = proto.Proto (file, time.time, 0.1)
 	self.async = False
-	self.seq = 0
-	self.seq_ack = 0
+	self.mseq = 0
+	self.mseq_ack = 0
+	self.a0seq = 0
+	self.a0seq_ack = 0
 	self.proto.register ('A', 'BB', self.handle_ack)
 	def make_handle (s):
 	    return lambda *args: self.handle_stats (s, *args)
@@ -128,14 +130,16 @@ class Asserv:
 
     def speed_pos (self, w, offset):
 	"""Speed controlled position consign."""
-	self.seq += 1
 	if w == 't':
-	    self.proto.send ('s', 'LLB', offset, 0, self.seq)
+	    self.mseq += 1
+	    self.proto.send ('s', 'LLB', offset, 0, self.mseq)
 	elif w == 'a':
-	    self.proto.send ('s', 'LLB', 0, offset, self.seq)
+	    self.mseq += 1
+	    self.proto.send ('s', 'LLB', 0, offset, self.mseq)
 	else:
 	    assert w == 'a0'
-	    self.proto.send ('s', 'LB', offset, self.seq)
+	    self.a0seq += 1
+	    self.proto.send ('s', 'LB', offset, self.a0seq)
 	self.wait (self.finished, auto = True)
 
     def set_pos (self, x = None, y = None, a = None):
@@ -151,25 +155,25 @@ class Asserv:
 
     def goto (self, x, y, backward_ok = False):
 	"""Go to position."""
-	self.seq += 1
+	self.mseq += 1
 	self.proto.send (backward_ok and 'r' or 'x', 'LLB',
 		256 * x / self.param['scale'],
-		256 * y / self.param['scale'], self.seq)
+		256 * y / self.param['scale'], self.mseq)
 	self.wait (self.finished, auto = True)
 
     def goto_angle (self, a):
 	"""Go to angle."""
-	self.seq += 1
-	self.proto.send ('x', 'HB', a * (1 << 16) / 360, self.seq)
+	self.mseq += 1
+	self.proto.send ('x', 'HB', a * (1 << 16) / 360, self.mseq)
 	self.wait (self.finished, auto = True)
 
     def goto_xya (self, x, y, a, backward_ok = False):
 	"""Go to position, then angle."""
-	self.seq += 1
+	self.mseq += 1
 	self.proto.send (backward_ok and 'r' or 'x', 'LLHB',
 		256 * x / self.param['scale'],
 		256 * y / self.param['scale'],
-		a * (1 << 16) / 360, self.seq)
+		a * (1 << 16) / 360, self.mseq)
 	self.wait (self.finished, auto = True)
 
     def register_pos (self, func, interval = 225 / 4):
@@ -217,7 +221,9 @@ class Asserv:
 		self.stats_count += 1
 
     def handle_ack (self, mseq, a0seq):
-	self.seq_ack = mseq & 0x7f
+	self.mseq_ack = mseq & 0x7f
+	self.a0seq_ack = a0seq & 0x7f
+	self.proto.send ('a', 'BB', mseq, a0seq)
 
     def handle_pos (self, x, y, a):
 	x = x / 256 * self.param['scale']
@@ -236,7 +242,7 @@ class Asserv:
 	self.proto.wait (cond)
 
     def finished (self):
-	return self.seq == self.seq_ack
+	return self.mseq == self.mseq_ack and self.a0seq == self.a0seq_ack
 
     def free (self):
 	self.proto.send ('w')
