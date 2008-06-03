@@ -48,7 +48,8 @@ class Asserv:
 		tkp = 0, tki = 0, tkd = 0,
 		akp = 0, aki = 0, akd = 0,
 		a0kp = 0, a0ki = 0, a0kd = 0,
-		E = 1023, I = 1023, D = 1023, b = 15000,
+		E = 1023, I = 1023, D = 1023,
+		be = 2048, bs = 0x10, bc = 20,
 		ta = 1, aa = 1, a0a = 1,
 		tsm = 0, asm = 0, tss = 0, ass = 0, a0sm = 0, a0ss = 0,
 		c = 1, f = 0x1000,
@@ -191,7 +192,7 @@ class Asserv:
 	self.proto.send ('p', 'BH', ord ('E'), p['E'])
 	self.proto.send ('p', 'BH', ord ('I'), p['I'])
 	self.proto.send ('p', 'BH', ord ('D'), p['D'])
-	self.proto.send ('p', 'BH', ord ('b'), p['b'])
+	self.proto.send ('p', 'BHHH', ord ('b'), p['be'], p['bs'], p['bc'])
 	self.proto.send ('p', 'BHH', ord ('a'), p['ta'] * 256,
 		p['aa'] * 256)
 	self.proto.send ('p', 'BH', ord ('a'), p['a0a'] * 256)
