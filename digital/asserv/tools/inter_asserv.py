@@ -53,6 +53,7 @@ class InterAsserv (Inter):
 	# Inter.
 	Inter.__init__ (self)
 	self.tk.createfilehandler (self.a, READABLE, self.read)
+	self.timeout ()
 
     def createWidgets (self):
 	Inter.createWidgets (self)
@@ -82,6 +83,10 @@ class InterAsserv (Inter):
 	"""Handle asserv events."""
 	self.a.proto.read ()
 	self.a.proto.sync ()
+
+    def timeout (self):
+	self.a.proto.sync ()
+	self.after (100, self.timeout)
 
     def pos (self, x, y, a):
 	self.tableview.robot.pos = (x, y)
