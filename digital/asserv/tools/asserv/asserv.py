@@ -1,5 +1,6 @@
 import proto, time
 import numpy
+import math
 
 class Asserv:
 
@@ -175,6 +176,11 @@ class Asserv:
 		256 * y / self.param['scale'],
 		a * (1 << 16) / 360, self.mseq)
 	self.wait (self.finished, auto = True)
+
+    def set_simu_pos (self, x, y, a):
+	"""Set simulated position."""
+	self.proto.send ('h', 'BHHH', ord ('X'), x, y,
+		math.radians (a) * 1024)
 
     def register_pos (self, func, interval = 225 / 4):
 	"""Will call func each time a position is received."""
