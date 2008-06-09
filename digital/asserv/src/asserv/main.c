@@ -645,7 +645,8 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		 * - w: angle (rad) * 1024. */
 		simu_pos_x = (double) v8_to_v16 (args[1], args[2]);
 		simu_pos_y = (double) v8_to_v16 (args[3], args[4]);
-		simu_pos_a = (double) v8_to_v16 (args[5], args[6]) / 1024;
+		simu_pos_a = (double) (int16_t) v8_to_v16 (args[5], args[6])
+		    / 1024;
 		break;
 	      }
 	  }
