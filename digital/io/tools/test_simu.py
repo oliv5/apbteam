@@ -7,6 +7,8 @@ import utils.forked
 
 from asserv import Asserv
 import asserv.init
+from io import Io
+import io.init
 from proto.popen_io import PopenIO
 
 from inter.inter_node import InterNode
@@ -30,6 +32,10 @@ class TestSimu (InterNode):
 	self.asserv = Asserv (PopenIO (asserv_cmd), time, **asserv.init.host)
 	self.asserv.async = True
 	self.tk.createfilehandler (self.asserv, READABLE, self.asserv_read)
+	# Io.
+	self.io = Io (PopenIO (io_cmd), time, **io.init.host)
+	self.io.async = True
+	self.tk.createfilehandler (self.io, READABLE, self.io_read)
 	# Color switch.
 	self.change_color ()
 	self.colorVar.trace_variable ('w', self.change_color)
@@ -38,17 +44,23 @@ class TestSimu (InterNode):
 	self.forked_hub.kill ()
 	import time
 	time.sleep (1)
-	app.asserv.close ()
+	self.asserv.close ()
+	self.io.close ()
 
     def asserv_read (self, file, mask):
 	self.asserv.proto.read ()
 	self.asserv.proto.sync ()
+
+    def io_read (self, file, mask):
+	self.io.proto.read ()
+	self.io.proto.sync ()
 
     def step (self):
 	"""Overide step to handle retransmissions, could be made cleaner using
 	simulated time."""
 	InterNode.step (self)
 	self.asserv.proto.sync ()
+	self.io.proto.sync ()
 
     def change_color (self, *dummy):
 	i = self.colorVar.get ()
