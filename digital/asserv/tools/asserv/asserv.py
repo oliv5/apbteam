@@ -32,8 +32,8 @@ class Asserv:
 	    'a0w': ('W', 2),
 	    }
 
-    def __init__ (self, file, **param):
-	self.proto = proto.Proto (file, time.time, 0.1)
+    def __init__ (self, file, time = time.time, **param):
+	self.proto = proto.Proto (file, time, 0.1)
 	self.async = False
 	self.mseq = 0
 	self.mseq_ack = 0
