@@ -30,7 +30,7 @@ class PopenIO:
 
     def __init__ (self, cmd):
 	"""Initialise and start the given commande line."""
-	fout, fin = os.popen2 (cmd, 'b', 1)
+	fout, fin = os.popen2 (cmd, 'b', 0)
 	time.sleep (0.2)
 	self.fin = fin
 	self.fout = fout
