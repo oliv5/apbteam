@@ -145,7 +145,7 @@ flash_init (void)
 
     /* If flash read status id not correct disable the flash */
     if (flash_read_status())
-	flash_global.status = FLASH_DISABLE;
+	flash_global.flash_status = FLASH_DISABLE;
 
     /* Search for the next address to start writting. */
     

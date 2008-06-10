@@ -63,7 +63,7 @@ struct flash_t
     /** Current Address in the flash memory. */
     uint32_t addr;
     /** Indicate the status of the flash memory. */
-    bool flash_status;
+    uint8_t flash_status;
 };
 typedef struct flash_t flash_t;
 
