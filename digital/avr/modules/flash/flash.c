@@ -71,6 +71,18 @@ flash_erase (uint8_t cmd, uint32_t start_addr)
     while (flash_is_busy());
 }
 
+/* Send a flash command to the flash memory (only a command).
+ * \param  cmd  the command to send.
+ */
+void
+flash_send_command (uint8_t cmd)
+{
+    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
+    spi_send (cmd);
+    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
+}
+
+
 /** Poll the busy bit in the Software Status Register of the flash memory.
   * \return  the status register.
   */
@@ -131,7 +143,9 @@ flash_init (void)
     /* Read the flash status. */
     proto_send1b ('s', flash_read_status());
 
-    /* TODO: disable flash usage if no flash is found? */
+    /* If flash read status id not correct disable the flash */
+    if (flash_read_status())
+	flash_global.status = FLASH_DISABLE;
 
     /* Search for the next address to start writting. */
     
@@ -151,16 +165,6 @@ flash_init (void)
     return &flash_global;
 }
 
-/* Send a flash command to the flash memory (only a command).
- * \param  cmd  the command to send.
- */
-void
-flash_send_command (uint8_t cmd)
-{
-    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
-    spi_send (cmd);
-    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
-}
 
 /** Write in the flash byte provided in parameter.
   * \param  data  the buffer to store the data.
@@ -204,6 +208,8 @@ flash_read (uint32_t addr)
  * \param  address at wich the data should be read.
  * \param  buffer  the buffer to fill with the read data.
  * \param  length  the length of the data to read.
+ *
+ * TODO find why the read_array does not work.
  */
 void
 flash_read_array (uint32_t addr, uint8_t *buffer, uint32_t length)
@@ -246,36 +252,4 @@ flash_write_array (uint32_t addr, uint8_t *data, uint32_t length)
 	proto_send2b ('w', data[i], flash_read (addr + i));
       }
 }
-
-/** Read the memory from the address automaticaly managed, the offset of the
- * data shall be provided to get the data.
- * \param offset  the offset from the current address managed.
- * \return data  read from the memory.
- */
-uint8_t
-flash_read_managed (uint32_t offset);
-
-/** Read an array of data from the memory starting at the address less the
- * offset provided in parameters. The data read will be stored in the buffer
- * provided in memory too. The buffer shall have at list the length of the
- * offset provided.
- * \param  offset  the offset of the current position to read the data.
- * \param  buffer  the buffer to store the data.
- */
-void
-flash_read_managed_array (uint32_t offset, uint8_t *buffer);
-
-/** Write a data with a managed array.
-  * \param  data to store in the memory.
-  */
-void
-flash_write_managed (uint8_t data);
-
-/** Write an array of data to the flash memory. The length of the array shall
- * be provided.
- * \param  buffer  the buffer containing the data to write.
- * \param  length  the data length to write.
- */
-void
-flash_write_managed_array (uint8_t *buffer, uint8_t length);
 

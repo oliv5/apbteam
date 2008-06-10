@@ -51,18 +51,21 @@
 
 #define FLASH_TBP_US 10
 
+enum flash_statu_t
+{
+    FLASH_DISABLE,
+    FLASH_ENABLE,
+    FLASH_ASSERT
+};
+
 struct flash_t
 {
     /** Current Address in the flash memory. */
     uint32_t addr;
+    /** Indicate the status of the flash memory. */
+    bool flash_status;
 };
 typedef struct flash_t flash_t;
-
-/** Initialise the flsah memory.
-  * \return the flash context usefull to access to the addr for debug.
-  */
-flash_t *
-flash_init (void);
 
 /** Flash access.
   * The flash contains an address of 21 bits in a range from 0x0-0x1fffff.
@@ -71,14 +74,6 @@ flash_init (void);
   */
 void
 flash_address (uint32_t addr);
-
-/** Flash init page.
-  * Initialise the page by write an value different of 0xFF to indicate that
-  * the page is use.
-  * \param addr
-  */
-void
-flash_init_page (uint32_t addr);
 
 /** Erase the memory.
   * \param  erase_type  the erase type..
@@ -117,6 +112,12 @@ flash_status_aai (void)
     return flash_read_status () >> 6;
 }
 
+/** Initialise the flsah memory.
+  * \return the flash context usefull to access to the addr for debug.
+  */
+flash_t *
+flash_init (void);
+
 /** Write in the flash byte provided in parameter.
   * \param  data  the buffer to store the data.
   */
@@ -146,37 +147,5 @@ flash_read_array (uint32_t addr, uint8_t *buffer, uint32_t length);
   */
 void
 flash_write_array (uint32_t addr, uint8_t *data, uint32_t length);
-
-/** Read the memory from the address automaticaly managed, the offset of the
- * data shall be provided to get the data.
- * \param offset  the offset from the current address managed.
- * \return data  read from the memory.
- */
-uint8_t
-flash_read_managed (uint32_t offset);
-
-/** Read an array of data from the memory starting at the address less the
- * offset provided in parameters. The data read will be stored in the buffer
- * provided in memory too. The buffer shall have at list the length of the
- * offset provided.
- * \param  offset  the offset of the current position to read the data.
- * \param  buffer  the buffer to store the data.
- */
-void
-flash_read_managed_array (uint32_t offset, uint8_t *buffer);
-
-/** Write a data with a managed array.
-  * \param  data to store in the memory.
-  */
-void
-flash_write_managed (uint8_t data);
-
-/** Write an array of data to the flash memory. The length of the array shall
- * be provided.
- * \param  buffer  the buffer containing the data to write.
- * \param  length  the data length to write.
- */
-void
-flash_write_managed_array (uint8_t *buffer, uint8_t length);
 
 #endif /* flash_h */
