@@ -112,8 +112,8 @@ flash_status_aai (void)
     return flash_read_status () >> 6;
 }
 
-/** Initialise the flsah memory.
-  * \return the flash context usefull to access to the addr for debug.
+/** Initialise the flash memory.
+  * \return the flash context useful to access to the addr for debug.
   */
 flash_t *
 flash_init (void);
@@ -133,7 +133,7 @@ flash_read (uint32_t addr);
 
 /** Read a data from the flash memory from the address provided and for a
  * length of the number of bytes provided.
- * \param  address at wich the data should be read.
+ * \param  address at which the data should be read.
  * \param  buffer  the buffer to fill with the read data.
  * \param  length  the length of the data to read.
  */

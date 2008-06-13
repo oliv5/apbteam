@@ -27,7 +27,7 @@
 #include "modules/spi/spi.h"
 #include "modules/utils/utils.h"
 
-static flash_t flash_global; 
+static flash_t flash_global;
 
 /** Flash access.
   * The flash contains an address of 21 bits in a range from 0x0-0x1fffff.
@@ -99,8 +99,8 @@ flash_read_status (void)
     return res;
 }
 
-/** Initialise the flsah memory.
-  * \return the flash context usefull to access to the addr for debug.
+/** Initialise the flash memory.
+  * \return the flash context useful to access to the addr for debug.
   */
 flash_t *
 flash_init (void)
@@ -118,7 +118,7 @@ flash_init (void)
 	      | SPI_FOSC_DIV16);
 
     AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
-    spi_send (FLASH_READ_ID); 
+    spi_send (FLASH_READ_ID);
     rsp[0] = spi_recv ();
     rsp[1] = spi_recv ();
     rsp[2] = spi_recv ();
@@ -139,7 +139,7 @@ flash_init (void)
     spi_send (FLASH_WRSR);
     spi_send (0);
     AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
-    
+
     /* Read the flash status. */
     proto_send1b ('s', flash_read_status());
 
@@ -147,8 +147,8 @@ flash_init (void)
     if (flash_read_status())
 	flash_global.flash_status = FLASH_DISABLE;
 
-    /* Search for the next address to start writting. */
-    
+    /* Search for the next address to start writing. */
+
     for (addr = 0;
 	 (rsp[0] != 0xFF) && (addr < 0x200000);
 	 addr += FLASH_PAGE_SIZE - 1)
@@ -205,7 +205,7 @@ flash_read (uint32_t addr)
 
 /** Read a data from the flash memory from the address provided and for a
  * length of the number of bytes provided.
- * \param  address at wich the data should be read.
+ * \param  address at which the data should be read.
  * \param  buffer  the buffer to fill with the read data.
  * \param  length  the length of the data to read.
  *
