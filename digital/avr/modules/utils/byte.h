@@ -27,7 +27,7 @@
 
 /** WARNING: Theses functions only works on little endian processor, do not
  * use them on other processors, prefer the portable bit shifts and or.  This
- * file only exist to overide bad code production with avr-gcc in the bit
+ * file only exist to override bad code production with avr-gcc in the bit
  * shifts idiom. */
 
 /* Union needed for byte access. */

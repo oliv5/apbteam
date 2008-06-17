@@ -27,10 +27,10 @@
 
 #include <avr/wdt.h>
 
-/** Helper macro to build register value.  Call it like this :
- * 
- * TCCR0 = regv (FOC0, WGM00, COM01, COM0, WGM01, CS02, CS01, CS00,
- *               0,     0,     0,    0,     0,    1,    1,    1);
+/** Helper macro to build register value.  Call it like this::
+ *
+ *  TCCR0 = regv (FOC0, WGM00, COM01, COM0, WGM01, CS02, CS01, CS00,
+ *                0,    0,     0,     0,    0,     1,    1,    1);
  *
  * The macro check that the bits are given in the right order and compute the
  * register value.  If the bits are false, the compiler will generate an

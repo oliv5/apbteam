@@ -1,6 +1,30 @@
-*Title: Module AVR Utilitaires
-*Author: Ni
+==================
+ Utils AVR module
+==================
+:Author: Nicolas Schodet
 
-* Doc
+Introduction
+============
 
-*File: utils.exd
+This module provides general purpose utilities.
+
+Byte packing/unpacking
+======================
+
+Theses functions are here to override bad code production with avr-gcc with the
+classic shift idiom.
+
+Functions which unpack from a large type to a smaller type take a ``pos``
+parameter which is the position of the byte or word to extract from the large
+type.  Small values are for LSB.  For example, ``v32_to_v8 (a, 0)`` will
+extract the least significant byte from ``a``.
+
+Functions which pack from a small type to a larger type take as many small
+type values as needed to fill the large type number.  The first argument is
+the MSB.  For example, ``v8_to_v32 (0x12, 0x34, 0x56, 0x78)`` will return
+``0x12345678``.
+
+API
+===
+
+.. include:: utils.exd
