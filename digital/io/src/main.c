@@ -27,6 +27,7 @@
 #include "modules/uart/uart.h"
 #include "modules/proto/proto.h"
 #include "modules/utils/utils.h"
+#include "modules/path/path.h"
 
 /* AVR include, non HOST */
 #ifndef HOST
@@ -46,7 +47,6 @@
 #include "chrono.h"	/* chrono_end_match */
 #include "gutter.h"	/* gutter_generate_wait_finished_event */
 #include "sharp.h"	/* sharp module */
-#include "path.h"	/* path module */
 #include "playground.h"
 
 #include "io.h"

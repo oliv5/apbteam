@@ -1,7 +1,7 @@
 #ifndef path_h
 #define path_h
 /* path.h */
-/* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
+/* avr.path - Path finding module. {{{
  *
  * Copyright (C) 2008 Nicolas Schodet
  *
@@ -61,5 +61,23 @@ path_update (void);
 /** Retrieve first path point coordinates.  Return 0 on failure. */
 uint8_t
 path_get_next (uint16_t *x, uint16_t *y);
+
+#if AC_PATH_REPORT
+
+/** Report computed path. */
+void
+AC_PATH_REPORT_CALLBACK (uint16_t *points, uint8_t len,
+			 struct path_obstacle_t *obstacles,
+			 uint8_t obstacles_nb);
+
+#endif
+
+#ifdef HOST
+
+/** Output graph in Graphviz format. */
+void
+path_print_graph (void);
+
+#endif
 
 #endif /* path_h */

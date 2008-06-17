@@ -1,5 +1,7 @@
-/* test_path.c */
-/* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
+#ifndef avrconfig_h
+#define avrconfig_h
+/* avrconfig.h - Path module configuration template. */
+/* avr.path - Path finding module. {{{
  *
  * Copyright (C) 2008 Nicolas Schodet
  *
@@ -22,35 +24,16 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
-#include "common.h"
-#include "path.h"
-#include "simu.host.h"
 
-#include <stdio.h>
+/* path - Path finding module. */
+/** Report path found for debug. */
+#define AC_PATH_REPORT defined (HOST)
+/** Report function name. */
+#define AC_PATH_REPORT_CALLBACK path_report
+/** Number of possible obstacles. */
+#define AC_PATH_OBSTACLES_NB 2
+/** Number of points per obstacle. */
+#define AC_PATH_OBSTACLES_POINTS_NB 8
 
-void
-path_print_graph (void);
 
-int
-main (void)
-{
-    path_init (0, 0, 3000, 2100);
-    path_endpoints (300, 1000, 1200, 1000);
-    path_obstacle (0, 600, 930, 100, 1);
-    path_obstacle (1, 900, 1070, 100, 1);
-    path_update ();
-    path_print_graph ();
-    uint16_t x, y;
-    if (path_get_next (&x, &y))
-	printf ("// Next point: %d, %d\n", x, y);
-    else
-	printf ("// Failure\n");
-    return 0;
-}
-
-void
-simu_send_path (uint16_t *points, uint8_t len,
-		struct path_obstacle_t *obstacles, uint8_t obstacles_nb)
-{
-}
-
+#endif /* avrconfig_h */

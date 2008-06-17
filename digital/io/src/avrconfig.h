@@ -89,6 +89,16 @@
 /** Activate slave part. */
 #define AC_TWI_SLAVE_ENABLE 0
 
+/* path - Path finding module. */
+/** Report path found for debug. */
+#define AC_PATH_REPORT defined (HOST)
+/** Report function name. */
+#define AC_PATH_REPORT_CALLBACK simu_send_path
+/** Number of possible obstacles. */
+#define AC_PATH_OBSTACLES_NB 2
+/** Number of points per obstacle. */
+#define AC_PATH_OBSTACLES_POINTS_NB 8
+
 /* io - io/ai board. */
 /** TWI address of the io board. */
 #define AC_IO_TWI_ADDRESS 2

@@ -26,7 +26,6 @@
 #include "fsm.h"
 #include "move_cb.h"
 
-#include "path.h"
 #include "asserv.h"
 #include "playground.h"
 #include "move.h"
@@ -34,6 +33,7 @@
 
 #include "main.h"      /* main_post_event_for_top_fsm */
 #include "modules/math/fixed/fixed.h"	/* fixed_* */
+#include "modules/path/path.h"
 
 #include "debug.host.h"
 

@@ -32,6 +32,7 @@
 #include "modules/host/host.h"
 #include "modules/host/mex.h"
 #include "modules/adc/adc.h"
+#include "modules/path/path.h"
 
 enum
 {

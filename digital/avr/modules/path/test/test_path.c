@@ -1,7 +1,5 @@
-#ifndef simu_host_h
-#define simu_host_h
-/* simu.host.h - Host simulation. */
-/* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
+/* test_path.c */
+/* avr.path - Path finding module. {{{
  *
  * Copyright (C) 2008 Nicolas Schodet
  *
@@ -24,33 +22,31 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "common.h"
+#include "modules/path/path.h"
 
-#ifdef HOST
+#include <stdio.h>
 
-/** Hooked, initialise the host simulation. */
+int
+main (void)
+{
+    path_init (0, 0, 3000, 2100);
+    path_endpoints (300, 1000, 1200, 1000);
+    path_obstacle (0, 600, 930, 100, 1);
+    path_obstacle (1, 900, 1070, 100, 1);
+    path_update ();
+    path_print_graph ();
+    uint16_t x, y;
+    if (path_get_next (&x, &y))
+	printf ("// Next point: %d, %d\n", x, y);
+    else
+	printf ("// Failure\n");
+    return 0;
+}
+
 void
-main_timer_init (void);
+path_report (uint16_t *points, uint8_t len,
+	     struct path_obstacle_t *obstacles, uint8_t obstacles_nb)
+{
+}
 
-/** Hooked, as before, wait for the next iteration. */
-uint8_t
-main_timer_wait (void);
-
-/** Hooked, do nothing. */
-void
-switch_init (void);
-
-/** Hooked, do nothing. */
-void
-switch_update (void);
-
-/** Hooked, request via mex. */
-uint8_t
-switch_get_color (void);
-
-/** Hooked, request via mex. */
-uint8_t
-switch_get_jack (void);
-
-#endif /* defined (HOST) */
-
-#endif /* simu_host_h */

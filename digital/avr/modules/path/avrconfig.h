@@ -1,7 +1,7 @@
-#ifndef simu_host_h
-#define simu_host_h
-/* simu.host.h - Host simulation. */
-/* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
+#ifndef avrconfig_h
+#define avrconfig_h
+/* avrconfig.h - Path module configuration template. */
+/* avr.path - Path finding module. {{{
  *
  * Copyright (C) 2008 Nicolas Schodet
  *
@@ -25,32 +25,14 @@
  *
  * }}} */
 
-#ifdef HOST
+/* path - Path finding module. */
+/** Report path found for debug. */
+#define AC_PATH_REPORT defined (HOST)
+/** Report function name. */
+#define AC_PATH_REPORT_CALLBACK path_report
+/** Number of possible obstacles. */
+#define AC_PATH_OBSTACLES_NB 2
+/** Number of points per obstacle. */
+#define AC_PATH_OBSTACLES_POINTS_NB 8
 
-/** Hooked, initialise the host simulation. */
-void
-main_timer_init (void);
-
-/** Hooked, as before, wait for the next iteration. */
-uint8_t
-main_timer_wait (void);
-
-/** Hooked, do nothing. */
-void
-switch_init (void);
-
-/** Hooked, do nothing. */
-void
-switch_update (void);
-
-/** Hooked, request via mex. */
-uint8_t
-switch_get_color (void);
-
-/** Hooked, request via mex. */
-uint8_t
-switch_get_jack (void);
-
-#endif /* defined (HOST) */
-
-#endif /* simu_host_h */
+#endif /* avrconfig_h */

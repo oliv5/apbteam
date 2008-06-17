@@ -1,5 +1,5 @@
 /* path.c - Find a path between obstables. */
-/* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
+/* avr.path - Path finding module. {{{
  *
  * Copyright (C) 2008 Nicolas Schodet
  *
@@ -24,17 +24,20 @@
  * }}} */
 #include "common.h"
 
-#include "path.h"
-#include "simu.host.h"
-
 #include "modules/math/fixed/fixed.h"
 #include "modules/utils/utils.h"
 
+#include "path.h"
+
+#ifdef HOST
+# include <stdio.h>
+#endif
+
 /** Number of possible obstacles. */
-#define PATH_OBSTACLES_NB 2
+#define PATH_OBSTACLES_NB AC_PATH_OBSTACLES_NB
 
 /** Number of points per obstacle. */
-#define PATH_OBSTACLES_POINTS_NB 8
+#define PATH_OBSTACLES_POINTS_NB AC_PATH_OBSTACLES_POINTS_NB
 
 /** Angle between obstacles points. */
 #define PATH_OBSTACLES_POINTS_ANGLE ((1L << 24) / PATH_OBSTACLES_POINTS_NB)
@@ -287,7 +290,7 @@ path_update (void)
     path_compute_points ();
     path_compute_arcs ();
     path_dijkstra ();
-#if defined (HOST)
+#if AC_PATH_REPORT
     uint8_t len, i;
     uint16_t points[PATH_POINTS_NB * 2];
     len = 0;
@@ -296,8 +299,8 @@ path_update (void)
 	points[len++] = path.points[i].x;
 	points[len++] = path.points[i].y;
       }
-    simu_send_path (points, len, path.obstacles, PATH_OBSTACLES_NB);
-#endif
+    AC_PATH_REPORT_CALLBACK (points, len, path.obstacles, PATH_OBSTACLES_NB);
+#endif /* AC_PATH_REPORT */
 }
 
 /** Retrieve first path point coordinates.  Return 0 on failure. */
