@@ -25,7 +25,6 @@
 #include "common.h"
 
 #include "path.h"
-#include "playground.h"
 #include "simu.host.h"
 
 #include "modules/math/fixed/fixed.h"
@@ -71,6 +70,8 @@ struct path_obstacle_t
 /** Path finding context. */
 struct path_t
 {
+    /** Borders, any point outside borders is eliminated. */
+    int16_t border_xmin, border_ymin, border_xmax, border_ymax;
     /** Complex number used to position obstacles points.
      * The obstacles points are placed evenly on a circle around the center
      * point.  Complex multiplication is used to make a point rotate around
@@ -94,8 +95,14 @@ struct path_t path;
 
 /** Initialise path finder. */
 void
-path_init (void)
+path_init (int16_t border_xmin, int16_t border_ymin,
+	   int16_t border_xmax, int16_t border_ymax)
 {
+    /** Save borders. */
+    path.border_xmin = border_xmin;
+    path.border_ymin = border_ymin;
+    path.border_xmax = border_xmax;
+    path.border_ymax = border_ymax;
     /** Complex number of modulus 1 and rotation angle. */
     path.rot_a = fixed_cos_f824 (PATH_OBSTACLES_POINTS_ANGLE);
     path.rot_b = fixed_sin_f824 (PATH_OBSTACLES_POINTS_ANGLE);
@@ -131,10 +138,10 @@ path_compute_points (void)
 		path.points[p].x = path.obstacles[i].x + (uint16_t) x;
 		path.points[p].y = path.obstacles[i].y + (uint16_t) y;
 		/* Check it is in playground. */
-		if (path.points[p].x > PG_BORDER_DISTANCE
-		    && path.points[p].y > PG_BORDER_DISTANCE
-		    && path.points[p].x < PG_WIDTH - PG_BORDER_DISTANCE
-		    && path.points[p].y < PG_HEIGHT - PG_BORDER_DISTANCE)
+		if (path.points[p].x >= path.border_xmin
+		    && path.points[p].y >= path.border_ymin
+		    && path.points[p].x < path.border_xmax
+		    && path.points[p].y < path.border_ymax)
 		    /* Accept point. */
 		    p++;
 	      }

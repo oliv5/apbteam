@@ -47,6 +47,7 @@
 #include "gutter.h"	/* gutter_generate_wait_finished_event */
 #include "sharp.h"	/* sharp module */
 #include "path.h"	/* path module */
+#include "playground.h"
 
 #include "io.h"
 
@@ -142,7 +143,8 @@ main_init (void)
     /* Switch module */
     switch_init ();
     /* Path module */
-    path_init ();
+    path_init (PG_BORDER_DISTANCE, PG_BORDER_DISTANCE,
+	       PG_WIDTH - PG_BORDER_DISTANCE, PG_HEIGHT - PG_BORDER_DISTANCE);
     /* Start the top FSM */
     top_start ();
     /* Sharp module */

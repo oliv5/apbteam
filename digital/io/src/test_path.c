@@ -33,7 +33,7 @@ path_print_graph (void);
 int
 main (void)
 {
-    path_init ();
+    path_init (0, 0, 3000, 2100);
     path_endpoints (300, 1000, 1200, 1000);
     path_obstacle (0, 600, 930, 100, 1);
     path_obstacle (1, 900, 1070, 100, 1);

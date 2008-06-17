@@ -27,7 +27,8 @@
 
 /** Initialise path finder. */
 void
-path_init (void);
+path_init (int16_t border_xmin, int16_t border_ymin,
+	   int16_t border_xmax, int16_t border_ymax);
 
 /** Setup end points (source and destination coordinates). */
 void
