@@ -97,10 +97,12 @@ endif
 doc: $(DOC)
 
 %.html: %.txt %.exd
-	aft $<
+	rst2html $< $@
 
-%.exd: $(EXTRACTDOC)
-	test -n "$^" && extractdoc $^ > $@ || true
+EXTRACTDOC_BIN = $(BASE)/../../tools/extractdoc/extractdoc
+
+%.exd: $(EXTRACTDOC:+%=%)
+	test -n "$^" && $(EXTRACTDOC_BIN) $(EXTRACTDOC) > $@ || true
 
 # Cleaning.
 

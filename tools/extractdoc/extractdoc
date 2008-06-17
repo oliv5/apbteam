@@ -1,0 +1,130 @@
+#!/usr/bin/perl
+#
+# extractdoc - extract documentation blocks from source files
+#
+# Public domain.
+#
+# See end of file for documentation.
+#
+# Man page can be generated using:
+#
+# $ pod2man -c '' -r '' extractdoc > extractdoc.1
+#
+use strict;
+use warnings;
+
+use Getopt::Long qw(:config gnu_getopt prefix_pattern=--|-);
+use Pod::Usage;
+
+my $help = 0;
+my $man = 0;
+GetOptions ('help|h' => \$help, 'man' => \$man) or pod2usage (2);
+pod2usage (1) if $help;
+pod2usage(-exitstatus => 0, -verbose => 2) if $man;
+
+my %inc;
+for my $f (@ARGV)
+{
+    $inc{$f} = 1 if $f =~ s/^\+//;
+}
+
+while (<>)
+{
+    if (/^\/\* (\w+\.h) (?:- .*)?\*\/\n$/)
+    {
+	my $file = $1;
+	next if exists $inc{$file};
+	print "$file\n";
+	$file =~ s/./-/g;
+	print "$file\n\n";
+    }
+    elsif (/^\/\*\*/)
+    {
+	my @doc;
+	my @def;
+	my $stop;
+	# Capture comments.
+	INNER: {
+	    do {
+		chomp;
+		last INNER if /^[ \t]*\*\/[ \t]*$/;
+		$stop = 1 if /\*\//;
+		s/^\/?[ \t]*\*+ ?//;
+		s/^ - *([^:-]+) *:/\n$1\n  /;
+		s/^ - /\n-  /;
+		s/[ \t]*\*\///;
+		push @doc, $_;
+		last INNER if defined $stop;
+	    } while (<>);
+	}
+	# Capture definition.
+	$_ = <>;
+	if (/^\s*$/)
+	{
+	}
+	elsif (/(^# *define \w+(?:\(.*?\))?)/)
+	{
+	    push @def, $1;
+	}
+	else
+	{
+	    INNER: {
+		do {
+		    chomp;
+		    s/\)[^)]*$/);/;
+		    push @def, $_;
+		    last if /\)/;
+		} while (<>);
+	    }
+	}
+	@def = map { '  ' . $_ } @def;
+	print join "\n", @doc, '', '::', '', @def, '', '' if @def;
+	print join "\n", @doc, '', '' unless @def;
+    }
+}
+
+__END__
+
+=head1 NAME
+
+extractdoc - extract documentation blocks from source files
+
+=head1 SYNOPSIS
+
+B<extractdoc> [B<--help|-h>] [B<--man>] [I<files...>]
+
+=head1 DESCRIPTION
+
+B<extractdoc> read source files and generate reStructuredText format
+documentation on standard output.
+
+=head1 OPTIONS AND ARGUMENTS
+
+=over 8
+
+=item B<--help>, B<-h>
+
+Print a brief help message and exit.
+
+=item B<--man>
+
+Print this command manual page and exit.
+
+=item I<files>
+
+List of input files.  If the file name is preceded by a B<+> character, no
+heading is generated for this file.  Use this for a file which is included in
+another public header file and therefore should not be made public.
+
+=back
+
+=head1 SEE ALSO
+
+L<reStructuredText user manual>
+
+=head1 AUTHOR
+
+Nicolas Schodet, http://apbteam.org/
+
+=cut
+
