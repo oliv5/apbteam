@@ -29,7 +29,6 @@
 
 #include "modules/math/fixed/fixed.h"
 #include "modules/utils/utils.h"
-#include "modules/host/mex.h"
 
 /** Number of possible obstacles. */
 #define PATH_OBSTACLES_NB 2
@@ -54,17 +53,6 @@ struct path_point_t
     uint8_t next;
     /** Is this point taken yet? */
     uint8_t taken;
-};
-
-/** Obstacle. */
-struct path_obstacle_t
-{
-    /** Center. */
-    int16_t x, y;
-    /** Radius. */
-    uint16_t r;
-    /** Validity counter, when this is zero, the obstacle is ignored. */
-    uint16_t valid;
 };
 
 /** Path finding context. */
@@ -308,7 +296,7 @@ path_update (void)
 	points[len++] = path.points[i].x;
 	points[len++] = path.points[i].y;
       }
-    simu_send_path (len, points);
+    simu_send_path (points, len, path.obstacles, PATH_OBSTACLES_NB);
 #endif
 }
 

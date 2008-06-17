@@ -24,6 +24,7 @@
  * }}} */
 #include "common.h"
 #include "path.h"
+#include "simu.host.h"
 
 #include <stdio.h>
 
@@ -48,7 +49,8 @@ main (void)
 }
 
 void
-simu_send_path (uint8_t len, uint16_t *points)
+simu_send_path (uint16_t *points, uint8_t len,
+		struct path_obstacle_t *obstacles, uint8_t obstacles_nb)
 {
 }
 

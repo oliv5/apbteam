@@ -199,7 +199,8 @@ eeprom_clear_param (void)
 
 /** Send computed path. */
 void
-simu_send_path (uint8_t len, uint16_t *points)
+simu_send_path (uint16_t *points, uint8_t len,
+		struct path_obstacle_t *obstacles, uint8_t obstacles_nb)
 {
     int i;
     mex_msg_t *m;

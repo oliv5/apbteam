@@ -27,6 +27,8 @@
 
 #ifdef HOST
 
+#include "path.h"
+
 /** Hooked, initialise the host simulation. */
 void
 main_timer_init (void);
@@ -53,7 +55,8 @@ switch_get_jack (void);
 
 /** Send computed path. */
 void
-simu_send_path (uint8_t len, uint16_t *points);
+simu_send_path (uint16_t *points, uint8_t len,
+		struct path_obstacle_t *obstacles, uint8_t obstacles_nb);
 
 #endif /* defined (HOST) */
 

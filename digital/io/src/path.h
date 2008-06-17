@@ -25,6 +25,17 @@
  *
  * }}} */
 
+/** Obstacle. */
+struct path_obstacle_t
+{
+    /** Center. */
+    int16_t x, y;
+    /** Radius. */
+    uint16_t r;
+    /** Validity counter, when this is zero, the obstacle is ignored. */
+    uint16_t valid;
+};
+
 /** Initialise path finder. */
 void
 path_init (int16_t border_xmin, int16_t border_ymin,
