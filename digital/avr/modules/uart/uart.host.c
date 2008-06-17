@@ -153,7 +153,7 @@ uart_putc (uint8_t c)
     write (uart_pt_fd_out, &c, 1);
 }
 
-/** Retrieve availlable chars. */
+/** Retrieve available chars. */
 uint8_t
 uart_poll (void)
 {

@@ -37,7 +37,7 @@ uart0_getc (void);
 void
 uart0_putc (uint8_t c);
 
-/** Retrieve availlable chars. */
+/** Retrieve available chars. */
 uint8_t
 uart0_poll (void);
 
@@ -53,7 +53,7 @@ uart1_getc (void);
 void
 uart1_putc (uint8_t c);
 
-/** Retrieve availlable chars. */
+/** Retrieve available chars. */
 uint8_t
 uart1_poll (void);
 

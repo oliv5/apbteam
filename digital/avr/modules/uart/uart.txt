@@ -1,26 +1,46 @@
-*Title: Module AVR UART
-*Author: Ni
+=================
+ UART AVR module
+=================
+:Author: Nicolas Schodet
 
-* Utilisation
+Introduction
+============
 
-Rien de plus simple. Appeler la fonction |uart0_init| au démarrage, puis
-|uart0_putc| pour envoyer un caractère, |uart0_getc| pour en recevoir. La
-fonction |uart0_poll| permet de connaître à l'avance si des caractère sont
-disponibles.
+This module provides easy access to embedded AVR UART(s).  If the device offers
+two UARTs, they can be configured independently and two sets of functions are
+provided.  The first one starts with ``uart0`` and the second one with
+``uart1``.
 
-En cas d'erreur de réception, la fonction |uart0_getc| renvois 0xff. Ce n'est
-pas forcément adapté à une transmission binaire car on ne peut pas distinguer
-un 0xff légitime d'une erreur de transmission.
+Two modes of operation are available, polling mode, with no interruption
+usage, and ring mode, in which characters are stored and retrieved from a ring
+buffer using interruptions.
 
-On peut configurer deux uarts, dans ce cas les fonctions sont en double.
+Usage
+=====
 
-Comme pour tous les modules, copier la partie concernant l'uart depuis
-|avrconfig.h|.
+It can not be easier.  Call the ``uartN_init`` at startup, then ``uartN_putc``
+to send a character and ``uartN_getc`` to receive a character. The
+``uartN_poll`` gives the number of available characters (which is at most 1 if
+not using interrupts).
 
-Dans le cas de la compilation en host, un pseudo-terminal est ouvert pour les
-communications, un lien vers le pseudo-terminal est crée en |uart0.pts|. Dans
-le futur, on pourra peut-être configurer ce fichier par la ligne de commande.
+In case of transmission errors, ``uartN_getc`` will return 0xff.  This is
+returned for example for framing error or parity error.  This is easy to use
+with text transmission as this is not an ASCII character, but this is not
+suitable for binary as a legitimate 0xff will be seen as a transmission error.
 
-* Doc
+As all modules, set the configuration in the ``avrconfig.h`` file.
 
-*File: uart.exd
+In host compilation, you can configure two different modes.  In the PTS mode,
+the program will open a pseudo-terminal which can be used like a regular
+serial port.  A link will be created in the program directory (``uartN.pts``)
+to ease locating the pseudo-terminal.
+
+In the STDIO mode, the standard input/output are used as the serial port.
+Only one port can be configured to be used in the STDIO mode.  In this mode,
+there is an automatic conversion between carriage returns and line feeds (this
+is also not good if you plan to use it for binary transfers.
+
+API
+===
+
+.. include:: uart.exd

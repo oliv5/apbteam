@@ -241,7 +241,7 @@ uart_putc (uint8_t c)
 #endif
 }
 
-/** Retrieve availlable chars. */
+/** Retrieve available chars. */
 uint8_t
 uart_poll (void)
 {
