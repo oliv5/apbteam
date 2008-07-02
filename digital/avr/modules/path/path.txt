@@ -47,6 +47,11 @@ list of obstacles.  The callback is defined in the ``avrconfig.h`` file.
 The number of possible obstacles and the number of points per obstacle used in
 the algorithm are defined at compile time.
 
+Borders are used to eliminate path points outside the area.  They are ignored
+for the source and destination points.  This is done on purpose, as it would
+not be convenient to forbid any path computation as long as the mobile is too
+close from the area borders.
+
 How does it work?
 =================
 
