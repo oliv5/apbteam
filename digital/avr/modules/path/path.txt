@@ -1,0 +1,62 @@
+=====================
+ Path finding module
+=====================
+:Author: Nicolas Schodet
+
+Introduction
+============
+
+This module will find a path for a mobile point between obstacles on a
+rectangular area.
+
+Obstacles are represented as circles in which the mobile can not enter.  The
+mobile point does not have a size, therefore, obstacles must be larger by the
+real mobile radius, and the area on which the mobile evolves should be
+shrunken by this same radius.
+
+The module can also handle obstacles life time, to make them disappear after a
+defined time.
+
+Usage
+=====
+
+First initialise the module with the area border (shrunken by the mobile
+radius) using ``path_init``.
+
+You can place obstacles using the ``path_obstacle`` function.  Give it the
+obstacle index, its position and radius, and its life time.  Use a life time
+of 0xffff for infinite duration.  Call ``path_decay`` regularly to make
+obstacles disappear after the given delay.
+
+You can also set the source and destination position using the
+``path_endpoints`` function.
+
+Once you want to compute a path, call ``path_update``.  It will use the
+currently set positions and obstacles to compute the path.  Once the update is
+done, you can call ``path_get_next`` to get the first point of the found path.
+If no path was found, this function returns 0.
+
+This interface only gives you the first point of the path because it is
+assumed that the path will not be up to date any more once the mobile arrives
+at the first point.  This will change in the future.
+
+when the path is updated, a user callback can be called by the path module to
+report the found path.  It receives the list of points of the path and the
+list of obstacles.  The callback is defined in the ``avrconfig.h`` file.
+
+The number of possible obstacles and the number of points per obstacle used in
+the algorithm are defined at compile time.
+
+How does it work?
+=================
+
+The base of the path finding algorithm is the Dijstra algorithm.  This
+algorithm is able to find the shortest path between two nodes in a graph,
+taking into account arc weight.
+
+To be continued...
+
+API
+===
+
+.. include:: path.exd
