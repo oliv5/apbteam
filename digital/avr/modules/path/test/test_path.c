@@ -26,14 +26,59 @@
 #include "modules/path/path.h"
 
 #include <stdio.h>
+#include <stdlib.h>
+
+void
+syntax (void)
+{
+    fprintf (stderr,
+	     "test_path borders source destination [obstacles (0-%d)]\n"
+	     "  borders: xmin,ymin,xmax,ymax\n"
+	     "  source, destination: x,y\n"
+	     "  obstacles: x,y,r\n",
+	     AC_PATH_OBSTACLES_NB);
+    exit (1);
+}
+
+/** Read a comma separated list of N integers into TAB from S.  Exit on
+ * error. */
+void
+read_tab (const char *s, int *tab, int n)
+{
+    assert (n > 0);
+    while (n)
+      {
+	char *sp;
+	int v;
+	v = strtol (s, &sp, 10);
+	if (sp == s)
+	    syntax ();
+	if ((n > 1 && *sp != ',')
+	    || (n == 1 && *sp != '\0'))
+	    syntax ();
+	s = sp + 1;
+	*tab++ = v;
+	n--;
+      }
+}
 
 int
-main (void)
+main (int argc, char **argv)
 {
-    path_init (0, 0, 3000, 2100);
-    path_endpoints (300, 1000, 1200, 1000);
-    path_obstacle (0, 600, 930, 100, 1);
-    path_obstacle (1, 900, 1070, 100, 1);
+    if (argc < 4 || argc > 4 + AC_PATH_OBSTACLES_NB)
+	syntax ();
+    int tab[4];
+    read_tab (argv[1], tab, 4);
+    path_init (tab[0], tab[1], tab[2], tab[3]);
+    read_tab (argv[2], tab, 2);
+    read_tab (argv[3], tab + 2, 2);
+    path_endpoints (tab[0], tab[1], tab[2], tab[3]);
+    int i;
+    for (i = 0; i + 4 < argc; i++)
+      {
+	read_tab (argv[4 + i], tab, 3);
+	path_obstacle (i, tab[0], tab[1], tab[2], 1);
+      }
     path_update ();
     path_print_graph ();
     uint16_t x, y;
