@@ -34,6 +34,9 @@ class Obstacle:
 	self.pos = pos
 	self.radius = radius
 
+    def move (self, pos):
+	self.pos = pos
+
 class Area (Drawable):
 
     def __init__ (self, onto, border_min, border_max):
@@ -50,9 +53,12 @@ class Area (Drawable):
 	self.reset ()
 	self.draw_rectangle (self.border_min, self.border_max, fill = 'white')
 	for o in self.obstacles:
-	    self.draw_circle (o.pos, o.radius, fill = 'gray25')
-	self.draw_circle (self.src, 10, fill = 'green')
-	self.draw_circle (self.dst, 10, fill = 'red')
+	    if o.pos is not None:
+		self.draw_circle (o.pos, o.radius, fill = 'gray25')
+	if self.src is not None:
+	    self.draw_circle (self.src, 10, fill = 'green')
+	if self.dst is not None:
+	    self.draw_circle (self.dst, 10, fill = 'red')
 	if len (self.path) > 1:
 	    fmt = dict (fill = 'blue', arrow = LAST)
 	    self.draw_line (*self.path, **fmt)
@@ -93,6 +99,8 @@ class AreaView (DrawableCanvas):
 		master, borderwidth = 1, relief = 'sunken',
 		background = 'white')
 	self.area = Area (self, border_min, border_max)
+	self.area.test ()
+	self.area.update ()
 
     def draw (self):
 	self.area.draw ()
@@ -103,23 +111,50 @@ class TestPath (Frame):
 	Frame.__init__ (self, master)
         self.pack (expand = 1, fill = 'both')
         self.createWidgets (border_min, border_max)
+	self.move = None
 
     def createWidgets (self, border_min, border_max):
 	self.rightFrame = Frame (self)
 	self.rightFrame.pack (side = 'right', fill = 'y')
 	self.quitButton = Button (self.rightFrame, text = 'Quit', command = self.quit)
 	self.quitButton.pack (side = 'top', fill = 'x')
-	self.updateButton = Button (self.rightFrame, text = 'Update', command
-		= self.update)
-	self.updateButton.pack (side  ='top', fill = 'x')
 	self.areaview = AreaView (border_min, border_max, self)
 	self.areaview.pack (expand = True, fill = 'both')
+	self.areaview.bind ('<1>', self.click)
+
+    def clear (self):
+	self.areaview.area.path = [ ]
+	self.areaview.area.draw ()
 
     def update (self):
 	self.areaview.area.update ()
 	self.areaview.area.draw ()
 
+    def click (self, ev):
+	pos = self.areaview.screen_coord ((ev.x, ev.y))
+	pos = tuple (int (i) for i in pos)
+	if self.move is None:
+	    def move_src (pos):
+		self.areaview.area.src = pos
+	    def move_dst (pos):
+		self.areaview.area.dst = pos
+	    objs = [ [ self.areaview.area.src, 10, move_src ],
+		    [ self.areaview.area.dst, 10, move_dst ] ]
+	    for o in self.areaview.area.obstacles:
+		objs.append ([ o.pos, o.radius, o.move ])
+	    for obj in objs:
+		dx = obj[0][0] - pos[0]
+		dy = obj[0][1] - pos[1]
+		if dx * dx + dy * dy < obj[1] * obj[1]:
+		    self.move = obj[2]
+	    if self.move is not None:
+		self.move (None)
+		self.clear ()
+	else:
+	    self.move (pos)
+	    self.update ()
+	    self.move = None
+
 if __name__ == '__main__':
     app = TestPath ((0, 0), (1500, 1500))
-    app.areaview.area.test ()
     app.mainloop ()
