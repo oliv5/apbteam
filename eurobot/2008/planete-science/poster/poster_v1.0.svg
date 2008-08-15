@@ -1,0 +1,771 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="2979.9211"
+   height="2104.7244"
+   id="svg2"
+   sodipodi:version="0.32"
+   inkscape:version="0.46"
+   version="1.0"
+   sodipodi:docname="poster_v0.5.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape">
+  <defs
+     id="defs4">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="-102.53082 : 837.53421 : 1"
+       inkscape:vp_y="6.1230318e-14 : 1000 : 0"
+       inkscape:vp_z="2150.1352 : 506.10564 : 1"
+       inkscape:persp3d-origin="275.23071 : 622.14051 : 1"
+       id="perspective10" />
+    <inkscape:perspective
+       id="perspective3258"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective3271"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective3284"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective3297"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective3320"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective3545"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective3607"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective2578"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective2751"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective2761"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective2795"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective2808"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective2821"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       sodipodi:type="inkscape:persp3d" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.2502987"
+     inkscape:cx="1621.1263"
+     inkscape:cy="1084.9439"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1024"
+     inkscape:window-height="708"
+     inkscape:window-x="0"
+     inkscape:window-y="26"
+     showguides="true"
+     inkscape:guide-bbox="true" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Calque 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g3231"
+       transform="translate(1034.2857,62.857143)">
+      <g
+         transform="matrix(0.6666667,0,0,0.6666667,-951.85931,-1152.6523)"
+         id="g3159">
+        <rect
+           style="fill:#0000ff;fill-rule:evenodd;stroke:#000000;stroke-width:0.98238015px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           id="rect2383"
+           width="199.01761"
+           height="399.01761"
+           x="0.49119008"
+           y="1705.2156" />
+        <rect
+           style="fill:#ff0000;fill-rule:evenodd;stroke:#000000;stroke-width:0.98238015px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           id="rect2385"
+           width="199.01762"
+           height="399.01764"
+           x="400.49118"
+           y="1705.2156" />
+        <rect
+           style="fill:#ffffff;fill-rule:evenodd;stroke:#000000;stroke-width:0.98238015px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           id="rect2387"
+           width="199.01761"
+           height="399.01761"
+           x="200.4912"
+           y="1705.2156" />
+      </g>
+      <flowRoot
+         transform="translate(-1320,-662.85714)"
+         style="font-size:72px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         id="flowRoot3164"
+         xml:space="preserve"><flowRegion
+           id="flowRegion3166"><rect
+             style="font-size:72px"
+             y="721.86725"
+             x="445.71429"
+             height="171.42857"
+             width="525.71429"
+             id="rect3168" /></flowRegion><flowPara
+           id="flowPara3170">France</flowPara></flowRoot>    </g>
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot3172"
+       style="font-size:144px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Lucida Handwriting;-inkscape-font-specification:Lucida Handwriting"><flowRegion
+         id="flowRegion3174"><rect
+           id="rect3176"
+           width="800"
+           height="228.57143"
+           x="702.85712"
+           y="739.01007"
+           style="font-size:144px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lucida Handwriting;-inkscape-font-specification:Lucida Handwriting" /></flowRegion><flowPara
+         id="flowPara3178">GGgdfdf</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot3180"
+       style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"><flowRegion
+         id="flowRegion3182"><rect
+           id="rect3184"
+           width="480"
+           height="245.71428"
+           x="954.28571"
+           y="441.86722" /></flowRegion><flowPara
+         id="flowPara3186" /></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot3188"
+       style="fill:black;stroke:none;stroke-opacity:1;stroke-width:1px;stroke-linejoin:miter;stroke-linecap:butt;fill-opacity:1;font-family:Lucida Handwriting;font-style:normal;font-weight:normal;font-size:40px;-inkscape-font-specification:Lucida Handwriting;font-stretch:normal;font-variant:normal"><flowRegion
+         id="flowRegion3190"><rect
+           id="rect3192"
+           width="982.85712"
+           height="514.28571"
+           x="577.14288"
+           y="641.86725"
+           style="-inkscape-font-specification:Lucida Handwriting;font-family:Lucida Handwriting;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal" /></flowRegion><flowPara
+         id="flowPara3194" /></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot3196"
+       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Lucida Handwriting;-inkscape-font-specification:Lucida Handwriting"><flowRegion
+         id="flowRegion3198"><rect
+           id="rect3200"
+           width="662.85712"
+           height="325.71429"
+           x="651.42859"
+           y="721.86725"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lucida Handwriting;-inkscape-font-specification:Lucida Handwriting" /></flowRegion><flowPara
+         id="flowPara3202">sdfsdfsdfsdfqsfqfds</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot3212"
+       style="font-size:100px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       transform="translate(36.365492,218.19295)"><flowRegion
+         id="flowRegion3214"><rect
+           id="rect3216"
+           width="355.5737"
+           height="153.54318"
+           x="1175.8175"
+           y="549.08948"
+           style="font-size:100px" /></flowRegion><flowPara
+         id="flowPara3218"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Comic Sans MS;-inkscape-font-specification:Comic Sans MS">APBTeamA</flowPara></flowRoot>    <g
+       id="g2716">
+      <flowRoot
+         transform="matrix(1.0811717,0,0,1.1786676,-199.83315,-499.87025)"
+         style="font-size:144px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:French Script MT;-inkscape-font-specification:French Script MT"
+         id="flowRoot3204"
+         xml:space="preserve"><flowRegion
+           id="flowRegion3206"><rect
+             style="font-size:144px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:French Script MT;-inkscape-font-specification:French Script MT"
+             y="447.58151"
+             x="897.14288"
+             height="423.58313"
+             width="744.69739"
+             id="rect3208" /></flowRegion><flowPara
+           style="font-size:144px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Kristen ITC;-inkscape-font-specification:Kristen ITC"
+           id="flowPara3210">Giboulée</flowPara><flowPara
+           id="flowPara3225"
+           style="font-size:144px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Kristen ITC;-inkscape-font-specification:Kristen ITC" /></flowRoot>      <flowRoot
+         inkscape:transform-center-y="24.243661"
+         transform="matrix(0.8361925,0.548436,-0.548436,0.8361925,867.47227,-1004.5104)"
+         style="font-size:100px;font-style:normal;font-weight:normal;fill:#0000ff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         id="flowRoot3220"
+         xml:space="preserve"><flowRegion
+           id="flowRegion3222"><rect
+             style="font-size:100px;fill:#0000ff"
+             y="549.08948"
+             x="1175.8175"
+             height="153.54318"
+             width="355.5737"
+             id="rect3224" /></flowRegion><flowPara
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#0000ff;font-family:Comic Sans MS;-inkscape-font-specification:Comic Sans MS Bold"
+           id="flowPara3226">By</flowPara></flowRoot>      <flowRoot
+         transform="matrix(1.5544974,0,0,1.5544974,-199.53476,-707.5299)"
+         style="font-size:100px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         id="flowRoot3228"
+         xml:space="preserve"><flowRegion
+           id="flowRegion3230"><rect
+             style="font-size:100px"
+             y="549.08948"
+             x="1175.8175"
+             height="133.34013"
+             width="913.17792"
+             id="rect3232" /></flowRegion><flowPara
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Comic Sans MS;-inkscape-font-specification:Comic Sans MS"
+           id="flowPara3234">APBTeam</flowPara></flowRoot>      <text
+         transform="matrix(3.1205127e-2,-0.999513,0.999513,3.1205127e-2,0,0)"
+         id="text3227"
+         y="1476.7771"
+         x="-143.36983"
+         style="font-size:29.19844818px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Kristen ITC;-inkscape-font-specification:Kristen ITC"
+           y="1476.7771"
+           x="-143.36983"
+           id="tspan3229"
+           sodipodi:role="line">de mars</tspan></text>
+    </g>
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot3243"
+       style="fill:black;stroke:none;stroke-opacity:1;stroke-width:1px;stroke-linejoin:miter;stroke-linecap:butt;fill-opacity:1;font-family:Bitstream Vera Sans;font-style:normal;font-weight:normal;font-size:40px"><flowRegion
+         id="flowRegion3245"><rect
+           id="rect3247"
+           width="422.85715"
+           height="1148.5714"
+           x="182.85715"
+           y="756.15295" /></flowRegion><flowPara
+         id="flowPara3249" /></flowRoot>    <rect
+       style="fill:#ffffff;stroke:#000000;stroke-width:1.69929457;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect3205"
+       width="1371.0157"
+       height="281.62595"
+       x="804.97949"
+       y="1718.2603"
+       rx="37.010689"
+       ry="44.73518" />
+    <g
+       id="g3332"
+       transform="translate(-839.21831,12.980416)">
+      <rect
+         ry="89.035316"
+         rx="31.361115"
+         y="1607.9092"
+         x="2164.9355"
+         height="124.9505"
+         width="338.30716"
+         id="rect3215"
+         style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <flowRoot
+         transform="matrix(1.0933169,0,0,1.0933169,1423.5269,179.77923)"
+         style="font-size:51.22028351px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Comic Sans MS;-inkscape-font-specification:Comic Sans MS"
+         id="flowRoot3207"
+         xml:space="preserve"><flowRegion
+           id="flowRegion3209"><rect
+             style="font-size:51.22028351px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-opacity:1;font-family:Comic Sans MS;-inkscape-font-specification:Comic Sans MS"
+             y="1333.2958"
+             x="714.28571"
+             height="262.85715"
+             width="1000"
+             id="rect3211" /></flowRegion><flowPara
+           id="flowPara3213">Sponsors</flowPara></flowRoot>    </g>
+    <image
+       y="1795.9207"
+       x="867.80011"
+       id="image3273"
+       height="114.64809"
+       width="261.14285"
+       sodipodi:absref="C:\Documents and Settings\pedro\Bureau\pastedpic_04212008_213645.png"
+       xlink:href="pastedpic_04212008_213645.png" />
+    <image
+       y="1753.0637"
+       x="1548.3248"
+       id="image3286"
+       height="189.17902"
+       width="207.57143"
+       sodipodi:absref="C:\Documents and Settings\pedro\Bureau\pastedpic_04212008_213656.png"
+       xlink:href="pastedpic_04212008_213656.png" />
+    <image
+       y="1756.4739"
+       x="1194.4944"
+       id="image3299"
+       height="179.32132"
+       width="258.43497"
+       sodipodi:absref="C:\Documents and Settings\pedro\Bureau\pastedpic_04212008_213703.png"
+       xlink:href="pastedpic_04212008_213703.png" />
+    <image
+       y="1753.5254"
+       x="1786.2921"
+       id="image3322"
+       height="169.49068"
+       width="379"
+       sodipodi:absref="C:\Documents and Settings\pedro\Bureau\pastedpic_04212008_213736.png"
+       xlink:href="pastedpic_04212008_213736.png" />
+    <image
+       y="692.25562"
+       x="1176.5266"
+       id="image2580"
+       height="752.61151"
+       width="633.50256"
+       sodipodi:absref="C:\Documents and Settings\pedro\Bureau\pastedpic_04212008_230904.png"
+       xlink:href="pastedpic_04212008_230904.png" />
+    <g
+       id="g3473"
+       transform="translate(-1749.5901,539.49257)">
+      <rect
+         ry="27.389212"
+         rx="22.83766"
+         y="624.3562"
+         x="2552.4893"
+         height="524.60876"
+         width="402.16489"
+         id="rect3339"
+         style="fill:#ffffff;stroke:#000000;stroke-width:1.26366377;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <image
+         xlink:href="pastedpic_04212008_213440.png"
+         sodipodi:absref="C:\Documents and Settings\pedro\Bureau\pastedpic_04212008_213440.png"
+         width="282.85715"
+         height="212.14285"
+         id="image3260"
+         x="2617.425"
+         y="912.56866" />
+      <flowRoot
+         transform="translate(-116.89775,-994.89486)"
+         style="font-size:18px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         id="flowRoot3388"
+         xml:space="preserve"><flowRegion
+           id="flowRegion3390"><rect
+             style="font-size:18px"
+             y="1664.7244"
+             x="2691.4285"
+             height="537.14282"
+             width="834.28571"
+             id="rect3392" /></flowRegion><flowPara
+           id="flowPara3394">Guillaume Chevillot (Elec)</flowPara><flowPara
+           id="flowPara3396">Marie-Ève Combis Schlumberger (orga)</flowPara><flowPara
+           id="flowPara3398">Romain Dalmais (méca)</flowPara><flowPara
+           id="flowPara3400">Clement Demonchy (méca)</flowPara><flowPara
+           id="flowPara3402">Frederic Denis (méca)</flowPara><flowPara
+           id="flowPara3404">Jeremy Dufour (info)</flowPara><flowPara
+           id="flowPara3406">Nélio Laranjeiro (info)</flowPara><flowPara
+           id="flowPara3408">Pierre-André Galmes (orga)</flowPara><flowPara
+           id="flowPara3410">Pierre Prot (Elec)</flowPara><flowPara
+           id="flowPara3416">Nicolas Schodet (multitâche)</flowPara><flowPara
+           id="flowPara3412" /><flowPara
+           id="flowPara3414" /></flowRoot>      <rect
+         ry="22.79236"
+         rx="21.575756"
+         y="595.57678"
+         x="2650.5793"
+         height="68.690369"
+         width="206.07112"
+         id="rect3471"
+         style="opacity:1;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <flowRoot
+         transform="translate(125.25892,270.72089)"
+         style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         id="flowRoot3463"
+         xml:space="preserve"><flowRegion
+           id="flowRegion3465"><rect
+             y="330.89648"
+             x="2535.4829"
+             height="96.974648"
+             width="361.63461"
+             id="rect3467" /></flowRegion><flowPara
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Comic Sans MS;-inkscape-font-specification:Comic Sans MS"
+           id="flowPara3469">The Team</flowPara></flowRoot>    </g>
+    <rect
+       style="fill:#ffffff;stroke:#000000;stroke-width:1.91422534;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect3353"
+       width="683.16638"
+       height="708.65723"
+       x="58.035194"
+       y="438.93228"
+       rx="37.946945"
+       ry="36.998165" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot3355"
+       style="font-size:28px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       transform="translate(-739.28221,-112.19152)"><flowRegion
+         id="flowRegion3357"><rect
+           id="rect3359"
+           width="628.57141"
+           height="960"
+           x="828.57141"
+           y="596.15295"
+           style="font-size:28px" /></flowRegion><flowPara
+         id="flowPara3375">Le principe de la mécanique :</flowPara><flowPara
+         id="flowPara2537" /><flowPara
+         id="flowPara3363">1 - Récupérer les balles : une ouverture verticale dans le robot lui permet de se caler sur le distributeur. Ensuite, un bras mécanique rotatif va pousser la balle, la faire sortir du distributeur et venir la stocker dans le robot.</flowPara><flowPara
+         id="flowPara3369" /><flowPara
+         id="flowPara3365">2 - Trier les balles pour la réalisation des motifs :À l'arrière, un système à servo-moteurs associé à des trappes fait le tri afin de placer les balles directement dans la position d'éjection sur une ligne de 5 balles.</flowPara><flowPara
+         id="flowPara3371" /><flowPara
+         id="flowPara3367">3 - Libérer les balles : L'éjection se fait par ouvertures de portes coulissantes à l'arrière du robot. </flowPara></flowRoot>    <g
+       id="g2528"
+       transform="translate(-476.87323,-68.690377)">
+      <rect
+         ry="36.998165"
+         rx="34.54871"
+         y="456.1554"
+         x="763.67535"
+         height="80.812202"
+         width="246.47722"
+         id="rect2526"
+         style="opacity:1;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <flowRoot
+         transform="translate(-1349.5638,-290.92393)"
+         style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Comic Sans MS;-inkscape-font-specification:Comic Sans MS"
+         id="flowRoot3510"
+         xml:space="preserve"><flowRegion
+           id="flowRegion3512"><rect
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Comic Sans MS;-inkscape-font-specification:Comic Sans MS"
+             y="767.28241"
+             x="2141.5234"
+             height="88.893425"
+             width="351.53308"
+             id="rect3514" /></flowRegion><flowPara
+           id="flowPara3516">Mécanique</flowPara></flowRoot>    </g>
+    <image
+       y="479.17487"
+       x="791.80096"
+       id="image3547"
+       height="579.09003"
+       width="355.27408"
+       sodipodi:absref="C:\Documents and Settings\pedro\Bureau\pastedpic_04212008_222311.png"
+       xlink:href="pastedpic_04212008_222311.png" />
+    <g
+       id="g2679"
+       transform="translate(12.121831,281.94929)">
+      <rect
+         ry="22.674868"
+         rx="37.970009"
+         y="578.75159"
+         x="2232.2402"
+         height="434.31094"
+         width="683.5816"
+         id="rect3528"
+         style="fill:#ffffff;stroke:#000000;stroke-width:1.4990195;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <g
+         transform="translate(8.0812205,-496.99506)"
+         id="g2654">
+        <rect
+           style="opacity:1;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           id="rect2652"
+           width="525.27936"
+           height="56.568542"
+           x="2303.1479"
+           y="1050.1251"
+           rx="37.970009"
+           ry="22.674868" />
+        <flowRoot
+           xml:space="preserve"
+           id="flowRoot3530"
+           style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Comic Sans MS;-inkscape-font-specification:Comic Sans MS"
+           transform="translate(189.35226,289.66652)"><flowRegion
+             id="flowRegion3532"><rect
+               id="rect3534"
+               width="541.44177"
+               height="88.893425"
+               x="2141.5234"
+               y="767.28241"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Comic Sans MS;-inkscape-font-specification:Comic Sans MS" /></flowRegion><flowPara
+             id="flowPara3536">Electronique de puissance</flowPara></flowRoot>      </g>
+      <flowRoot
+         transform="translate(1432.2802,72.598696)"
+         style="font-size:28px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         id="flowRoot3551"
+         xml:space="preserve"><flowRegion
+           id="flowRegion3553"><rect
+             style="font-size:28px"
+             y="596.15295"
+             x="828.57141"
+             height="960"
+             width="628.57141"
+             id="rect3555" /></flowRegion><flowPara
+           id="flowPara3615">L'alimentation des moteurs est pilotée par une carte intelligente. Intélligente ? En effet, c'est un microcontrolleur qui se charge d'alimenter les moteurs, et il les soigne ! Il va surveiller la température, controller la tension d'alimentation, limiter le courant si celui ci devient trop important... On ne prend pas de risque !</flowPara></flowRoot>    </g>
+    <g
+       id="g2558"
+       transform="matrix(1,0,0,1.0862842,42.649764,-196.54932)">
+      <rect
+         ry="36.998165"
+         rx="37.946945"
+         y="1318.0504"
+         x="13.990503"
+         height="708.65723"
+         width="683.16638"
+         id="rect2524"
+         style="fill:#ffffff;stroke:#000000;stroke-width:1.91422534;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <g
+         transform="translate(-4.0406105,-90.934035)"
+         id="g2517">
+        <rect
+           style="opacity:1;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           id="rect2515"
+           width="270.72089"
+           height="76.771591"
+           x="197.98991"
+           y="1369.3334"
+           rx="90.683823"
+           ry="31.045156" />
+        <flowRoot
+           xml:space="preserve"
+           id="flowRoot3617"
+           style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Comic Sans MS;-inkscape-font-specification:Comic Sans MS"
+           transform="translate(-1924.931,614.4577)"><flowRegion
+             id="flowRegion3619"><rect
+               id="rect3621"
+               width="351.53308"
+               height="88.893425"
+               x="2141.5234"
+               y="767.28241"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Comic Sans MS;-inkscape-font-specification:Comic Sans MS" /></flowRegion><flowPara
+             id="flowPara3623">l'Association</flowPara></flowRoot>      </g>
+    </g>
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot2604"
+       style="font-size:56px;font-style:normal;font-weight:normal;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       transform="translate(-143.25892,-1078.4368)"><flowRegion
+         id="flowRegion2606"><rect
+           id="rect2608"
+           width="1313.1984"
+           height="185.86807"
+           x="1014.1932"
+           y="1417.8207"
+           style="font-size:56px;text-align:center;text-anchor:middle" /></flowRegion><flowPara
+         id="flowPara2610">Viendez sur notre site http://apbteam.org</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot2629"
+       style="font-size:28px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       transform="translate(-751.60873,679.42119)"><flowRegion
+         id="flowRegion2631"><rect
+           id="rect2633"
+           width="644.73383"
+           height="1097.3807"
+           x="828.57141"
+           y="596.15295"
+           style="font-size:28px" /></flowRegion><flowPara
+         id="flowPara2647"
+         style="font-weight:bold;-inkscape-font-specification:Bitstream Vera Sans Bold">Génèse</flowPara><flowPara
+         id="flowPara2676">L'association APBTeam est née de la volonté de quelques amis de continuer l'aventure Eurobot. Après avoir représenté notre école pendant plus de 5 années, nous avons eu envie de continuer à vivre notre passion. La décision de créer une association s'est donc imposée naturellement.</flowPara><flowPara
+         id="flowPara2678" /><flowPara
+         id="flowPara2680"
+         style="font-weight:bold;-inkscape-font-specification:Bitstream Vera Sans Bold">Une ouverture vers les autres</flowPara><flowPara
+         style="font-weight:normal;-inkscape-font-specification:Bitstream Vera Sans"
+         id="flowPara2684">Au travers de nos participations à la coupe, nous avons acquis de nombreuses connaissances et compétences. Nous partageons cette expérience sous deux formes :</flowPara><flowPara
+         style="font-weight:normal;-inkscape-font-specification:Bitstream Vera Sans"
+         id="flowPara2686">1 - La création d'un site donnant accès à tout notre travail (méca, élec, info) sous licence OpenSource.</flowPara><flowPara
+         style="font-weight:normal;-inkscape-font-specification:Bitstream Vera Sans"
+         id="flowPara2688">2 - La formation d'étudiants au développement de robots. </flowPara></flowRoot>    <g
+       id="g2661"
+       transform="translate(0,62)">
+      <rect
+         ry="33.578232"
+         rx="37.951973"
+         y="1293.7615"
+         x="2244.5247"
+         height="643.15234"
+         width="683.25684"
+         id="rect3518"
+         style="fill:#ffffff;stroke:#000000;stroke-width:1.82373047;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <g
+         transform="translate(-20.203051,80.812205)"
+         id="g2636">
+        <rect
+           style="opacity:1;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           id="rect2631"
+           width="480.83261"
+           height="52.527931"
+           x="2373.7976"
+           y="1179.4246"
+           rx="36.416828"
+           ry="36.998165" />
+        <flowRoot
+           xml:space="preserve"
+           id="flowRoot3520"
+           style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Comic Sans MS;-inkscape-font-specification:Comic Sans MS"
+           transform="translate(258.04278,418.62573)"><flowRegion
+             id="flowRegion3522"><rect
+               id="rect3524"
+               width="496.99506"
+               height="80.812202"
+               x="2141.5234"
+               y="767.28241"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Comic Sans MS;-inkscape-font-specification:Comic Sans MS" /></flowRegion><flowPara
+             id="flowPara3526">Electronique numérique</flowPara></flowRoot>      </g>
+      <flowRoot
+         transform="translate(1444.2396,751.4212)"
+         style="font-size:28px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         id="flowRoot2529"
+         xml:space="preserve"><flowRegion
+           id="flowRegion2531"><rect
+             style="font-size:28px"
+             y="596.15295"
+             x="828.57141"
+             height="960"
+             width="628.57141"
+             id="rect2533" /></flowRegion><flowPara
+           id="flowPara2587">L'intelligence du robot, est contenue par des micro-contrôleurs AVR de chez Atmel. Grâce à ces composants, nous pouvons facilement programmer le robot comme s'il s'agissait d'un ordinateur.</flowPara><flowPara
+           id="flowPara2616"></flowPara><flowPara
+           id="flowPara2618">Un microcontrolleur est utilisé pour définir le comportement du robot, un autre permet de contrôler les moteurs. Faire rouler un robot droit, c'est tout une affaire !</flowPara><flowPara
+           id="flowPara2620"></flowPara><flowPara
+           id="flowPara2622">L'intelligence du robot est programmée à l'aide d'une machine à état. C'est une technique de programmation qui permet d'adapter le comportement du robot à l'action qu'il est en train d'effectuer.</flowPara><flowPara
+           id="flowPara2624" /></flowRoot>    </g>
+    <g
+       id="g2827"
+       transform="translate(0,52)">
+      <rect
+         ry="19.759861"
+         rx="37.97554"
+         y="371.95468"
+         x="2248.1907"
+         height="378.47733"
+         width="683.68115"
+         id="rect2694"
+         style="fill:#ffffff;stroke:#000000;stroke-width:1.39945352;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <g
+         transform="translate(24.081344,-703.74218)"
+         id="g2696">
+        <rect
+           style="opacity:1;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           id="rect2698"
+           width="525.27936"
+           height="56.568542"
+           x="2303.1479"
+           y="1050.1251"
+           rx="37.970009"
+           ry="22.674868" />
+        <flowRoot
+           xml:space="preserve"
+           id="flowRoot2700"
+           style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Comic Sans MS;-inkscape-font-specification:Comic Sans MS"
+           transform="translate(189.35226,289.66652)"><flowRegion
+             id="flowRegion2702"><rect
+               id="rect2704"
+               width="541.44177"
+               height="88.893425"
+               x="2141.5234"
+               y="767.28241"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Comic Sans MS;-inkscape-font-specification:Comic Sans MS" /></flowRegion><flowPara
+             id="flowPara2706">informatique, Simulation</flowPara></flowRoot>      </g>
+      <flowRoot
+         transform="translate(1448.2803,-162.11501)"
+         style="font-size:28px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         id="flowRoot2708"
+         xml:space="preserve"><flowRegion
+           id="flowRegion2710"><rect
+             style="font-size:28px"
+             y="596.15295"
+             x="828.57141"
+             height="960"
+             width="628.57141"
+             id="rect2712" /></flowRegion><flowPara
+           id="flowPara2714">Comme nous n'habitons pas au même endroit, nous avons aussi dévellopé un simulateur de robot qui permet de tester nos programmes chez soi. C'est un système très simple mais qui permet néanmois de faire fonctionner le même programme que celui qui fonctionnera sur le vrai robot.</flowPara></flowRoot>    </g>
+    <image
+       y="1359.743"
+       x="1914.941"
+       id="image2797"
+       height="321.4425"
+       width="260.79297"
+       sodipodi:absref="F:\data\projets\hobbies\robot\eurobot-2008\planete-science\poster\images\electronic-architecture.png"
+       xlink:href="F:\data\projets\hobbies\robot\eurobot-2008\planete-science\poster\images\electronic-architecture.png" />
+    <image
+       y="883.35657"
+       x="1903.9681"
+       id="image2810"
+       height="406.33212"
+       width="296.09525"
+       sodipodi:absref="F:\data\projets\hobbies\robot\eurobot-2008\planete-science\poster\images\getsamples.png"
+       xlink:href="F:\data\projets\hobbies\robot\eurobot-2008\planete-science\poster\images\getsamples.png" />
+    <image
+       y="479.89505"
+       x="1788.9296"
+       id="image2823"
+       height="264.52725"
+       width="423.36041"
+       sodipodi:absref="F:\data\projets\hobbies\robot\eurobot-2008\planete-science\poster\images\inter_node.png"
+       xlink:href="F:\data\projets\hobbies\robot\eurobot-2008\planete-science\poster\images\inter_node.png" />
+  </g>
+</svg>
