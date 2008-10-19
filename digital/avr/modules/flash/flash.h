@@ -51,7 +51,7 @@
 
 #define FLASH_TBP_US 10
 
-enum flash_statu_t
+enum flash_status_t
 {
     FLASH_DISABLE,
     FLASH_ENABLE,
@@ -60,10 +60,10 @@ enum flash_statu_t
 
 struct flash_t
 {
-    /** Current Address in the flash memory. */
-    uint32_t addr;
-    /** Indicate the status of the flash memory. */
-    uint8_t flash_status;
+    /* The next address to write the data. */
+    uint32_t write_addr;
+    /* Status. */
+    enum flash_status_t status;
 };
 typedef struct flash_t flash_t;
 

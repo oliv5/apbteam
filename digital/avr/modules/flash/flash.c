@@ -64,7 +64,7 @@ flash_erase (uint8_t cmd, uint32_t start_addr)
       }
     else
       {
-	flash_global.addr = 0x0;
+	flash_global.write_addr = 0x0;
       }
     AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
 
@@ -108,7 +108,7 @@ flash_init (void)
     uint8_t rsp[3];
     uint32_t addr;
 
-    flash_global.addr = 0x0;
+    flash_global.write_addr = 0x0;
     AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
     AC_FLASH_DDR |= _BV(AC_FLASH_BIT_SS);
 
@@ -145,7 +145,7 @@ flash_init (void)
 
     /* If flash read status id not correct disable the flash */
     if (flash_read_status())
-	flash_global.flash_status = FLASH_DISABLE;
+	flash_global.status = FLASH_DISABLE;
 
     /* Search for the next address to start writing. */
 
@@ -160,7 +160,7 @@ flash_init (void)
 	AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
       }
 
-    flash_global.addr = addr - FLASH_PAGE_SIZE + 1;
+    flash_global.write_addr = addr - FLASH_PAGE_SIZE + 1;
 
     return &flash_global;
 }
@@ -209,37 +209,26 @@ flash_read (uint32_t addr)
  * \param  buffer  the buffer to fill with the read data.
  * \param  length  the length of the data to read.
  *
- * TODO find why the read_array does not work.
  */
 void
 flash_read_array (uint32_t addr, uint8_t *buffer, uint32_t length)
 {
     uint8_t i;
 
-/*    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
+    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
     spi_send (FLASH_READ);
     flash_address (addr);
     for (i = 0; i < length; i++)
     {
 	buffer[i] = spi_recv ();
-	while (flash_is_busy());
-	proto_send1b ('r', buffer[i]);
     }
     AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
-    */
-
-    for (i = 0; i < length; i++)
-      {
-	buffer[i] = flash_read (addr + i);
-	while (flash_is_busy());
-      }
 }
 
 /** Write in the flash byte provided in parameter.
   * \param  addr  the address to store the data.
   * \param  data  the array to store.
   * \param  length  the array length
-  * TODO : Fix this function.
   */
 void
 flash_write_array (uint32_t addr, uint8_t *data, uint32_t length)
@@ -249,7 +238,6 @@ flash_write_array (uint32_t addr, uint8_t *data, uint32_t length)
     for (i = 0; i < length; i++)
       {
 	flash_write (addr + i, data[i]);
-	proto_send2b ('w', data[i], flash_read (addr + i));
       }
 }
 
