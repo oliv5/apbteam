@@ -53,9 +53,16 @@ fsm.c: fsm.h
 main.c: fsm.h
 fsm.h: getsamples_fsm.h gutter_fsm.h move_fsm.h top_fsm.h
 
-DFAGEN = python $(BASE)/../../tools/dfagen/dfagen.py
+DFAGEN_DIR := $(BASE)/../../tools/dfagen
+DFAGEN_DEPS := $(DFAGEN_DIR)/dfagen.py
+DFAGEN := python $(DFAGEN_DIR)/dfagen.py
 
-%_fsm.h %_fsm.c %_cb.h %_cb_skel.c: %.fsm fsm.conf $(FSM_TEMPLATES)
+$(DFAGEN_DIR)/dfagen.py: $(DFAGEN_DIR)/dfagen/parser.py
+$(DFAGEN_DIR)/dfagen/parser.py: $(DFAGEN_DIR)/dfagen/parser.g
+	yapps $<
+
+%_fsm.h %_fsm.c %_cb.h %_cb_skel.c: %.fsm fsm.conf $(FSM_TEMPLATES) \
+	$(DFAGEN_DEPS)
 	$(DFAGEN) -o c -d $< -c fsm.conf -p $(<:%.fsm=%)
 
 .PRECIOUS: getsamples_cb.c gutter_cb.c move_cb.c top_cb.c
@@ -94,5 +101,5 @@ png: getsamples.png gutter.png move.png top.png
 %.png: %.dot
 	dot -Tpng -o $@ $<
 
-%.dot: %.fsm
+%.dot: %.fsm $(DFAGEN_DEPS)
 	$(DFAGEN) -o dot -d $< -p $(<:%.fsm=%)
