@@ -86,6 +86,11 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	 *  - 1b: byte. */
 	flash_write (addr, args[3]);
 	break;
+      case c ('p', 0):
+	/* Find the next page to write. */
+	addr = flash_sector_next ();
+	proto_send3b ('p', addr >> 16, addr >> 8, addr);
+	break;
       default:
 	if (cmd == 'w' && size > 4)
 	  {

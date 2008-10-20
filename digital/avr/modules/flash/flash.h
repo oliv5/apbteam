@@ -27,7 +27,8 @@
 #include "common.h"
 #include "io.h"
 
-#define FLASH_HIGH_ADDRESS 0x1FFFFF
+#define FLASH_ADDRESS_HIGH 0x1FFFFF
+#define FLASH_ADDRESS_ERROR 0xFFFFFF
 #define FLASH_ADDRESS_INC_MASK(val) (val = (val+1) & FLASH_HIGH_ADDRESS)
 
 #define FLASH_PAGE_SIZE  0x1000
@@ -50,22 +51,6 @@
 #define FLASH_AAI 0xAD
 
 #define FLASH_TBP_US 10
-
-enum flash_status_t
-{
-    FLASH_DISABLE,
-    FLASH_ENABLE,
-    FLASH_ASSERT
-};
-
-struct flash_t
-{
-    /* The next address to write the data. */
-    uint32_t write_addr;
-    /* Status. */
-    enum flash_status_t status;
-};
-typedef struct flash_t flash_t;
 
 /** Flash access.
   * The flash contains an address of 21 bits in a range from 0x0-0x1fffff.
@@ -113,10 +98,16 @@ flash_status_aai (void)
 }
 
 /** Initialise the flash memory.
-  * \return the flash context useful to access to the addr for debug.
+  * \return true if the flash is present, false otherwise.
   */
-flash_t *
+uint8_t
 flash_init (void);
+
+/** Find the next sector to write.
+  * \return  the address of the next sector.
+  */
+uint32_t
+flash_sector_next (void);
 
 /** Write in the flash byte provided in parameter.
   * \param  data  the buffer to store the data.

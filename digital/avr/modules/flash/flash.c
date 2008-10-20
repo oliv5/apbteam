@@ -27,8 +27,6 @@
 #include "modules/spi/spi.h"
 #include "modules/utils/utils.h"
 
-static flash_t flash_global;
-
 /** Flash access.
   * The flash contains an address of 21 bits in a range from 0x0-0x1fffff.
   * This function shall access the memory directly by the SPI.
@@ -61,10 +59,6 @@ flash_erase (uint8_t cmd, uint32_t start_addr)
       {
 	/* Send the start address */
 	flash_address (start_addr);
-      }
-    else
-      {
-	flash_global.write_addr = 0x0;
       }
     AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
 
@@ -100,15 +94,13 @@ flash_read_status (void)
 }
 
 /** Initialise the flash memory.
-  * \return the flash context useful to access to the addr for debug.
+  * \return true if the flash is present, false otherwise.
   */
-flash_t *
+uint8_t
 flash_init (void)
 {
     uint8_t rsp[3];
-    uint32_t addr;
 
-    flash_global.write_addr = 0x0;
     AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
     AC_FLASH_DDR |= _BV(AC_FLASH_BIT_SS);
 
@@ -124,8 +116,10 @@ flash_init (void)
     rsp[2] = spi_recv ();
     AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
 
+    if (rsp[0] != 0xBF)
+	return 0;
+
     proto_send3b ('f',rsp[0], rsp[1], rsp[2]);
-    proto_send1b ('s', flash_read_status());
 
     if (flash_status_aai())
       {
@@ -143,28 +137,28 @@ flash_init (void)
     /* Read the flash status. */
     proto_send1b ('s', flash_read_status());
 
-    /* If flash read status id not correct disable the flash */
-    if (flash_read_status())
-	flash_global.status = FLASH_DISABLE;
-
-    /* Search for the next address to start writing. */
-
-    for (addr = 0;
-	 (rsp[0] != 0xFF) && (addr < 0x200000);
-	 addr += FLASH_PAGE_SIZE - 1)
-      {
-	AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
-	spi_send (FLASH_READ);
-	flash_address (addr);
-	rsp[0] = spi_recv();
-	AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
-      }
-
-    flash_global.write_addr = addr - FLASH_PAGE_SIZE + 1;
-
-    return &flash_global;
+    return 1;
 }
 
+/** Find the next sector to write.
+  * \return  the address of the next sector.
+  */
+uint32_t
+flash_sector_next (void)
+{
+    uint32_t addr;
+    uint8_t rsp = 0;
+
+    /* Search for the next address to start writing. */
+    for (addr = 0;
+	 (rsp != 0xFF) && (addr < FLASH_ADDRESS_HIGH);
+	 addr += FLASH_PAGE_SIZE - 1)
+      {
+	rsp = flash_read (addr);
+      }
+
+    return addr < (FLASH_ADDRESS_HIGH + 1) ? addr : FLASH_ADDRESS_ERROR;
+}
 
 /** Write in the flash byte provided in parameter.
   * \param  data  the buffer to store the data.
