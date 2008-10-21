@@ -141,16 +141,16 @@ flash_init (void)
 }
 
 /** Find the next sector to write.
-  * \return  the address of the next sector.
-  */
+ * \param  addr  the address to start the research.
+ * \return  the address of the next sector.
+ */
 uint32_t
-flash_sector_next (void)
+flash_sector_next (uint32_t addr)
 {
-    uint32_t addr;
     uint8_t rsp = 0;
 
     /* Search for the next address to start writing. */
-    for (addr = 0;
+    for (addr = FLASH_PAGE (addr);
 	 (rsp != 0xFF) && (addr < FLASH_ADDRESS_HIGH);
 	 addr += FLASH_PAGE_SIZE - 1)
       {

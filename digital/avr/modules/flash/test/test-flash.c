@@ -88,7 +88,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	break;
       case c ('p', 0):
 	/* Find the next page to write. */
-	addr = flash_sector_next ();
+	addr = flash_sector_next (0);
 	proto_send3b ('p', addr >> 16, addr >> 8, addr);
 	break;
       default:

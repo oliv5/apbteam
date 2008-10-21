@@ -29,11 +29,11 @@
 
 #define FLASH_ADDRESS_HIGH 0x1FFFFF
 #define FLASH_ADDRESS_ERROR 0xFFFFFF
-#define FLASH_ADDRESS_INC_MASK(val) (val = (val+1) & FLASH_HIGH_ADDRESS)
+#define FLASH_ADDRESS_INC_MASK(val) ((val) = (val+1) & FLASH_HIGH_ADDRESS)
 
 #define FLASH_PAGE_SIZE  0x1000
-#define FLASH_PAGE_MASK (0xFFF)
-#define FLASH_PAGE(val) (val & FLASH_PAGE_MASK)
+#define FLASH_PAGE_MASK (FLASH_ADDRESS_HIGH & FLASH_PAGE_SIZE)
+#define FLASH_PAGE(val) ((val) & FLASH_PAGE_MASK)
 
 #define FLASH_ERASE_FULL 0x60
 #define FLASH_ERASE_4K 0x20
@@ -104,10 +104,11 @@ uint8_t
 flash_init (void);
 
 /** Find the next sector to write.
-  * \return  the address of the next sector.
-  */
+ * \param  addr  the address to start the research.
+ * \return  the address of the next sector.
+ */
 uint32_t
-flash_sector_next (void);
+flash_sector_next (uint32_t addr);
 
 /** Write in the flash byte provided in parameter.
   * \param  data  the buffer to store the data.
