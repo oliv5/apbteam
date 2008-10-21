@@ -86,9 +86,10 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	 *  - 1b: byte. */
 	flash_write (addr, args[3]);
 	break;
-      case c ('p', 0):
-	/* Find the next page to write. */
-	addr = flash_sector_next (0);
+      case c ('p', 3):
+	/* Find the next page to write.
+	 *  - 3b: the start address. */
+	addr = flash_sector_next (addr);
 	proto_send3b ('p', addr >> 16, addr >> 8, addr);
 	break;
       default:
@@ -114,11 +115,12 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 int
 main (void)
 {
+    uint8_t status;
     uart0_init ();
     proto_send0 ('z');
     proto_send0 ('c');
-    flash_init ();
-    proto_send0 ('f');
+    status = flash_init ();
+    proto_send1b ('f', status);
 
     while (1)
 	proto_accept (uart0_getc ());

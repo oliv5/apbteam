@@ -152,7 +152,7 @@ flash_sector_next (uint32_t addr)
     /* Search for the next address to start writing. */
     for (addr = FLASH_PAGE (addr);
 	 (rsp != 0xFF) && (addr < FLASH_ADDRESS_HIGH);
-	 addr += FLASH_PAGE_SIZE - 1)
+	 addr += FLASH_PAGE_SIZE)
       {
 	rsp = flash_read (addr);
       }
