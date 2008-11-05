@@ -45,6 +45,18 @@ main (void)
     printf ("Third trace\n");
     TRACE (val3);
 
+    printf ("Fourth trace\n");
+    TRACE (val1, val2);
+
+    printf ("Fifth trace\n");
+    TRACE (val1, val3);
+
+    printf ("sixth one\n");
+    TRACE (val1, val2, val3);
+
+    printf ("last one\n");
+    TRACE (val3, val1, val2);
+
     return 0;
 }
 
