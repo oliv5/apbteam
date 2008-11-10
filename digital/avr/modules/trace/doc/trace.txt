@@ -1,0 +1,49 @@
+Trace module
+============
+
+The trace module is in charge to store data in the flash memory.
+
+Description
+-----------
+
+The flash memory used is a 16 Mbit SPI flash memory SST25VF016B.
+The objective of this module is to use the flash memory as circular buffer to
+store events which had occurred in the robot during the match by storing data
+with a unique identifier for each event and the data following this id.
+
+Depends
+-------
+
+This module depends on the following ones:
+
+  * Flash
+  * SPI
+  * Utils
+
+Module
+------
+
+1. The Trace module start to initialise the flash memory and read the status of this one.
+
+  1.1  It gets the address of the first sector available of the flash.
+
+  1.2  Gets the next sector address of the flash memory, and erase it if it is not empty.
+
+  1.3  Store a start code useful to know the beginning of last traces.
+
+2. TRACE macro.
+
+The trace macro as for job to compute for each parameter it as the length of
+those ones (1, 2, 4 bytes) and store it in the flash memory.
+
+The only thing the actor as to do is to call the TRACE macro as follow:
+
+uint8_t val1;
+
+uint16_t val2;
+
+...
+
+TRACE (val1, val2, ...)
+
+3. The uninitialise function of the trace module shall be called to store the end code of traces.
