@@ -157,7 +157,8 @@ flash_sector_next (uint32_t addr)
 	rsp = flash_read (addr);
       }
 
-    return addr < (FLASH_ADDRESS_HIGH + 1) ? addr : FLASH_ADDRESS_ERROR;
+    return addr < (FLASH_ADDRESS_HIGH + 1) ?
+	addr - FLASH_PAGE_SIZE : FLASH_ADDRESS_ERROR;
 }
 
 /** Write in the flash byte provided in parameter.
