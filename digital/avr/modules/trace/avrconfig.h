@@ -1,7 +1,7 @@
 #ifndef avrconfig_h
 #define avrconfig_h
 /* avrconfig.h */
-/* avr.flash - Flash SPI AVR module. {{{
+/* avr.flash - Trace AVR module. {{{
  *
  * Copyright (C) 2008 Nélio Laranjeiro
  *
@@ -25,7 +25,7 @@
  *
  * }}} */
 
-/* flash - Flash SPI AVR module. */
+/* trace - Trace AVR module. */
 
 /** Flash PORT used. */
 #define AC_FLASH_PORT PORTX

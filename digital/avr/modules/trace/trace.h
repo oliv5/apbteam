@@ -80,46 +80,60 @@
 #define TRACE_PRINT_ARG_TYPE(arg)\
     do\
     {\
-      if (sizeof(arg) == sizeof(uint8_t)) TRACE_PRINT_ARG_1(arg);\
-      else if (sizeof(arg) == sizeof(uint16_t)) TRACE_PRINT_ARG_2(arg);\
-      else if (sizeof(arg) == sizeof(uint32_t)) TRACE_PRINT_ARG_4(arg);\
+      if (sizeof(arg) == sizeof(uint8_t)) trace_print_arg_1(arg);\
+      else if (sizeof(arg) == sizeof(uint16_t)) trace_print_arg_2(arg);\
+      else if (sizeof(arg) == sizeof(uint32_t)) trace_print_arg_4(arg);\
     }while (0)
 
 
-#define TRACE_PRINT_ARG_1(arg)\
-    ({trace_print_word(arg);})
+/** Print an argument of one byte.
+  * \param  arg  the one byte argument to print.
+  */
+void
+trace_print_arg_1(uint8_t arg);
 
-#define TRACE_PRINT_ARG_2(arg)\
-    ({ trace_print_word(arg >> 8);\
-     trace_print_word(arg);})
+/** Print an argument of two bytes.
+  * \param  arg  the two bytes argument.
+  */
+void
+trace_print_arg_2(uint16_t arg);
 
-#define TRACE_PRINT_ARG_4(arg)\
-    ({ trace_print_word (arg >> 24);\
-     trace_print_word (arg >> 16); \
-     trace_print_word (arg >> 8); \
-     trace_print_word (arg);})
-
-
-struct trace_t
-{
-    /** Flash status. */
-    uint8_t flash_status;
-    /** Flash address. */
-    uint32_t flash_addr;
-    /** Flash next sector */
-    uint32_t flash_next_sector;
-};
-typedef struct trace_t trace_t;
+/** Print an argument of four bytes.
+  * \param  arg  the four bytes argument.
+  */
+void
+trace_print_arg_4(uint32_t arg);
 
 /** Initialise the trace module.
+  * Find the first sector writable and store the following start code
+  * 0xF33FF22F this indicate the beginning of traces.
   */
 void
 trace_init (void);
+
+/** Ends the trace.
+  * Store at the next address the following ending code 0xF44FF55F to end
+  * traces.
+  */
+void
+trace_uninit (void);
 
 /** Print the trace.
   * \param  arg  the argument to print.
   */
 void
-trace_print_word (uint8_t arg);
+trace_print (uint8_t arg);
+
+/** Get the current status of the trace module.
+  * \return  0x1 if the module is activate, 0x0 if the module is not active.
+  */
+uint8_t
+trace_status (void);
+
+/** Get the current address.
+  * \return  addr  the current address managed by the trace module.
+  */
+uint32_t
+trace_addr_current (void);
 
 #endif /* trace_h */
