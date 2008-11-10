@@ -1,7 +1,8 @@
 BASE = ../../../..
-AVR_PROGS = test-trace
+AVR_PROGS = test-trace flood
 
 test-trace_SOURCES = test-trace.c
+flood_SOURCES = flood.c
 
 MODULES = utils spi flash proto uart trace
 CONFIGFILE = avrconfig.h
