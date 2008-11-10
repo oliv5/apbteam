@@ -24,10 +24,9 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
-/** File based on work done by Neil Booth <NeilB at earthling dot net>
+/**
   * You can find the example on the website :
   * http://gcc.gnu.org/ml/gcc-patches/2000-11/msg00016.html
-  * Thanks to him.
   */
 #define PASTE_EXPAND(a, b) PASTE(a, b)
 
