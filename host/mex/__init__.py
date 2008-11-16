@@ -24,16 +24,16 @@
 """mex - Messages exchange library."""
 
 IDLE = 0
-"""IDLE message, send by nodes to the hub to signal it had handled all
-messages.  It can have an optionnal parameter: the date at which the node will
+"""IDLE message, sent by nodes to the hub to signal it had handled all
+messages.  It can have an optional parameter: the date at which the node will
 not be idle anymore."""
 
 DATE = 1
-"""DATE message, send by the hub to the nodes to update the current date
-value."""
+"""DATE message, sent by the hub to the nodes to update the current date
+value, sent by a node to request the current date (useful at startup)."""
 
 REQ = 2
-"""REQ (request) message, send from a node to other nodes to request a
+"""REQ (request) message, sent from a node to other nodes to request a
 response message."""
 
 RSP = 3

@@ -1,0 +1,177 @@
+=================================
+ mex - Message Exchange library.
+=================================
+:Author: Ni
+
+This library is a scheduler and message exchange system between several nodes
+connected to a central hub using TCP.  Every nodes can exchange messages
+easily, and share a common virtual date which is incremented only when all the
+nodes are idle.  This is the basis for a simulated environment composed of
+several processes.
+
+Overview
+========
+
+In a simulated environment, messages are used to exchange information about
+each node state and their environment.  As timings in the simulated
+environment do not match real ones (the host computer is usually faster than
+the real hardware, but it will usually suffer for more latency, it is not a
+real time system), the hub maintains a shared virtual date representing the
+simulated time.  This virtual date has the particularity to be updated only
+when every processes are idle, jumping directly to the next interesting date.
+
+Once a node receives a message, it is considered not to be idle.  The node
+must handle the message and once it has nothing to do any more, signal its
+idle state to the hub.  It can become idle for an unspecified time, or it can
+tell the hub its own vision of the next interesting date.  Once every nodes
+will be idle, the hub will update the date to the nearest interesting date,
+signal the update to the nodes, and wait again for nodes to become idle.
+
+Message exchange
+================
+
+To keep things simple, messages sent by nodes are broadcasted to all other
+nodes.  Each node can examine the message to decide if it must handle it.  In
+any cases, each node must signal its idle state to the hub once the message has
+been handled (or discarded).
+
+The minimum required information in a message is the message type.  This is a
+single byte (with some reserved values) which should be sufficient to decode
+the rest of the message.  There is for the moment no central message type
+identifier repository, the developer is responsible to ensure no collision
+occurs.
+
+When the message is sent to another process, it is prepended with its size and
+sequence number (which are not part of the message, neither its size).  The
+usage of the size is obvious, the usage of sequence number is detailed below.
+
+A node can also send a request.  A request is a special form of message for
+which an other node (and only one) will send a response message.  The response
+message will not be broadcasted, it will only be received by the requesting
+node.  The request mechanism simplifies node task as it do not have to keep a
+list of pending requests and it can simplify its execution flow.
+
+When a node is waiting for a response, it will continue to handle messages or
+requests sent by the other nodes.
+
+Sequence number
+---------------
+
+As the TCP protocol is full duplex and can introduce latencies, there must be
+a mechanism to synchronise message exchange.
+
+Just imagine a node is sent two different messages.  Once it has handled the
+first message, it will signal its idle state (suppose it has not received the
+second one yet).  As the hub has sent the second message yet, it could think
+that the node is idle, which is false because it is now handling the second
+message.
+
+To solve this problem, every time the hub sends a message to a node, it
+increments the node sequence number and sends it in front of the message.
+Once the node receives this sequence number, it should store it and send it
+back with every messages it sends to the hub.  Thanks to this mechanism, the
+hub can now determine whether the idle message it has just received is
+outdated or not.
+
+Message format
+--------------
+
+In this document, I will use *b* for a byte (8 bits), *h* for a half-word (16
+bits), and *l* for a long word (32 bits), uppercase for unsigned, following
+the python struct module convention.  Every data is send big endian (the
+so-called network byte order).
+
+Here is the message header, sent before the message:
+
++----------+---------+
+| size (H) | seq (B) |
++----------+---------+
+
+Every messages should follow this format:
+
++-----------+---------+
+| mtype (B) | payload |
++-----------+---------+
+
+Message type (mtype) values from 0 to 15 included are reserved for system
+messages.  Payload format is free.
+
+System messages
+---------------
+
+The sixteenth first message type identifiers are reserved for system messages.
+For the moment, there is only four system message types.
+
+IDLE
+  This message is sent by a node to the hub to signal it has handle every
+  received message.  It has an optional argument: the next interesting date
+  according to this node.
+
+  Without date:
+
+  +-------------+
+  | IDLE (B: 0) |
+  +-------------+
+
+  Or with date:
+
+  +-------------+----------+
+  | IDLE (B: 0) | date (L) |
+  +-------------+----------+
+
+DATE
+  When sent by the hub to a node, this message must include the current date.
+  As usual, the node must signal its idle state when the message is handled.
+
+  +-------------+----------+
+  | DATE (B: 1) | date (L) |
+  +-------------+----------+
+
+  When sent to the hub by a node, this is a request for the current date.
+
+  +-------------+
+  | DATE (B: 1) |
+  +-------------+
+
+REQ
+  This message is sent by a node to make a request.
+
+  When sent to the hub, it will replace the *reqid* (request identifier) with
+  the identifier of the source node and will broadcast the message to every
+  other nodes.
+
+  +------------+-----------+----------------------+
+  | REQ (B: 2) | reqid (B) | encapsulated message |
+  +------------+-----------+----------------------+
+
+  The encapsulated message is a complete message with its message type.
+
+  The received *reqid* is ignored by the hub.
+
+  Nodes receiving the message will store the *reqid* to use it for a eventual
+  response, decapsulate the contained message, and handle it as a normal
+  message.
+
+RSP
+  This is a response to a request.
+
+  When sent to the hub, it will replace the *reqid* with zero and will forward
+  the message to the node identified by the received *reqid*.
+
+  +------------+-----------+----------------------+
+  | RSP (B: 3) | reqid (B) | encapsulated message |
+  +------------+-----------+----------------------+
+
+  The encapsulated message is a complete message with its message type.
+
+  The receiving node will decapsulate the message and will use it as a
+  response to its request.
+
+Programmer interface
+====================
+
+There is a python implementation of the hub and node part, interface is
+documented in the source code.
+
+There is also a C implementation of the node part in the AVR host module,
+documented in the header file.

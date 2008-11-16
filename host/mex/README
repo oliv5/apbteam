@@ -1,7 +1,10 @@
 mex - Message Exchange library.
 
-This library permit exchange of messages between several nodes using a central
-hub, and maintain a virtual date, synchronised between all nodes.
+This library is a scheduler and message exchange system between several nodes
+connected to a central hub using TCP.  Every nodes can exchange messages
+easily, and share a common virtual date which is incremented only when all the
+nodes are idle.  This is the basis for a simulated environment composed of
+several processes.
 
 
 Copyright (C) 2008 Nicolas Schodet
