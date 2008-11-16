@@ -1,0 +1,214 @@
+=================
+ Robot simulator
+=================
+:Author: Ni
+
+This document tries to introduce the APBTeam robot simulator system to
+curious and new developers.
+
+Do not try to find a simulator program, there is none.  The simulator system
+is assembled from different components communicating together.
+
+What makes this simulator system really useful is that the program which runs
+in the simulated environment is really the one running on the real robot.
+
+This document is biased toward our robotic system, but with small
+modifications, each component can easily be reused for another system.
+
+Even if you do not reuse any component, the system architecture can be
+interesting if you plan to implement a simulator.
+
+Overview
+========
+
+The real robotic system is composed of several microcontrollers communicating
+directly using hardware buses and indirectly by the environment (for example,
+if a microcontroller makes the robot move, an other one may "see" the movement
+using a sensor staring at the floor).
+
+In the simulated system, the programs which are supposed to be run on the
+microcontrollers are compiled for the host [#]_ computer.  Code accessing the
+real world or microcontroller special peripherals is replaced with code
+simulating this part.
+
+This replacement should be done at the lowest level.  For example, a code
+accessing a distance sensor will be replaced, but the code processing the
+distance sensor measures should stay unchanged.  The less is replaced, the
+better.  The replacement code is called a stub.
+
+The complexity of this stub will vary.
+
+One of the simplest stub: a switch that the user can manipulate.  The
+stub will return the value of an internal variable to the program which
+believes to get the real switch state.  This variable must be accessible in
+the simulator environment to simulate a person manipulating the switch.
+
+One of the most complicated stub: a motor used in the robot motion.  In this
+case, the stub should simulate the electric and mechanical behaviour of the
+motor and compute the robot movements resulting from the electric command.
+
+Apart from the microcontroller programs and their replacement code, the
+simulated system needs more code to be useful.  This includes test scripts,
+user interfaces, environment simulation (other robots, playground, manipulable
+elements, etc...).
+
+All those components communicate using *mex*, a message exchange system and
+scheduler.
+
+.. [#] The host system, as opposed to the target system, is the system used
+for compilation and simulation.
+
+Details of each component
+=========================
+
+Here is a presentation of the components used in the Eurobot 2008 competition.
+
+Asserv
+------
+
+This program controls motors used for robot motion or other controlled
+actuators.
+
+The ``motor_model`` files contain the code used to simulate a motor, taking
+into account electric and mechanical characteristics.  It is an approximated
+model anyway, as it models one motor isolated from its environment.  Motors
+used for motion will be affected differently if the robot is going forward or
+rotating. Other motors may need a variable torque depending of the charge of
+the actuator.  Nevertheless, this model is (more than) sufficient to be used
+in whole system simulation, or early motor control development.
+
+The ``models`` files defines several robot models which can be simulated with
+this code.
+
+The ``simu`` files glue everything together.  It stubs the motors, external
+counters, microcontroller timers, micro-switch contacts (depending of the
+robot position), it computes robot position, and sends everything as message
+to the other components.
+
+As code replacement is done at the lowest level, the simulated system will
+really runs the code used to control the motors, as on the real system.
+
+Here are the sent messages formats (see *mex* documentation for more details):
+
++---------------+-----------+-----------+-----------+
+| POS (B: 0xa0) | pos_x (h) | pos_y (h) | pos_a (l) |
++---------------+-----------+-----------+-----------+
+
+The pos_x and pos_y are the coordinates of the robot center, computed by the
+simulation code.  This is not connected to position computed by the code which
+should run on the real microcontroller.  Unit is millimeter.
+
+The pos_a is the computed robot angle, relative to robot forward direction.
+Unit is 1/1024 radian.  Rotation is accumulated over program time.  If the
+robot makes ten turns on itself, the angle will be 20 pi radian.
+
++---------------+--------------+---------------+--------------+
+| PWM (B: 0xa1) | pwm_left (h) | pwm_right (h) | pwm_aux0 (h) |
++---------------+--------------+---------------+--------------+
+
+Those are PWM values, in the unit of microcontroller hardware.
+
++---------------+------------+
+| AUX (B: 0xa8) | aux0_a (l) |
++---------------+------------+
+
+The aux0_a is the angle of the first auxiliary motor (the robot arm), which
+unit is 1/1024 radian.
+
+Of course, all of this may be slightly modified next year, for example to take
+into account an additional motor.
+
+Asserv tools
+~~~~~~~~~~~~
+
+In the tools directory, you will find:
+
+step.py:
+  to test motor control with a consign step.
+inter_asserv.py:
+  to manually control asserv using a graphic user interface.
+test_goto.py:
+  make random goto commands.
+
+All of these can be executed in the simulated environment or on the real
+system.  They send commands to the asserv program using the serial line (for
+the real robot) or standard input/output (for the simulated one).
+
+IO
+--
+
+This program controls actuators and sensors, and contains the artificial
+intelligence of the robot.
+
+The ``simu`` files handle simulation of every hardware components: startup
+jack, color switch, servo motors, distance sensors, and hardware timers.
+
+Here are the messages formats (see *mex* documentation for more details):
+
++----------------+--------------+
+| JACK (B: 0xb0) | inserted (B) |
++----------------+--------------+
+
+This is sent as request, without the inserted argument.  There must be a
+component which responds and sets inserted to 0 for jack not inserted and 1
+for jack inserted.
+
++-----------------+------------+
+| COLOR (B: 0xb1) | switch (B) |
++-----------------+------------+
+
+This is sent as request, without the switch argument.  There must be a
+component which responds and sets switch to 0 for blue and 1 for red.
+
++-----------------+------------+------------+-----+
+| SERVO (B: 0xb2) | servo0 (B) | servo1 (B) | ... |
++-----------------+------------+------------+-----+
+
+The servoN are the value used to control each servo motor.
+
++------------------+----------+----------+-----+
+| SHARPS (B: 0xb3) | adc0 (H) | adc1 (H) | ... |
++------------------+----------+----------+-----+
+
+This is sent as request without any parameters.  There must be a component
+which responds and gives hardware ADC values corresponding to each distance
+sensor (Sharps is the brand of our distance sensors).
+
++----------------+--------+--------+-----+
+| PATH (B: 0xb4) | x0 (h) | y0 (h) | ... |
++----------------+--------+--------+-----+
+
+This is sent when the program computes a path to avoid an obstacle.  This is a
+list of path coordinates. Unit is millimeter.
+
+As the io program uses requests, it is unable to run without an other program
+to respond.
+
+Interface
+---------
+
+Today, the user interface and the environment simulation is done in the same
+program, this will change.
+
+In the inter directory, you will find:
+
+trans_matrix.py:
+  utility to scale, translate and/or rotate vectors.
+drawable.py:
+  extend TkInter to scale, translate, rotate...
+path.py
+  draw a path with an arrow.
+dist_sensor.py:
+  compute distance to an obstacle and draw an arrow to represent this
+  distance.
+inter.py:
+  complete interface to draw the robot, without any control logic.
+inter_node.py:
+  glue everything together and provide the user interface and the environment
+  simulation.
+
+The inter.py can be reused with other programs.  It is used for example in the
+inter_asserv.py tool.
+
+The inter_node.py analyses messages from asserv and io, and responds to io
+requests.
