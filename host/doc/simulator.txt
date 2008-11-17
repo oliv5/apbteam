@@ -56,7 +56,7 @@ All those components communicate using *mex*, a message exchange system and
 scheduler.
 
 .. [#] The host system, as opposed to the target system, is the system used
-for compilation and simulation.
+   for compilation and simulation.
 
 Details of each component
 =========================
