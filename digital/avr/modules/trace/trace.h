@@ -110,13 +110,6 @@ trace_print_arg_4(uint32_t arg);
 void
 trace_init (void);
 
-/** Ends the trace.
-  * Store at the next address the following ending code 0xF44FF55F to end
-  * traces.
-  */
-void
-trace_uninit (void);
-
 /** Print the trace.
   * \param  arg  the argument to print.
   */

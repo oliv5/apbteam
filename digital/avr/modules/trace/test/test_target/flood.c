@@ -58,9 +58,6 @@ flood (void)
 	TRACE (val1, val2, val3);
       }
 
-    /* Stop trace module. */
-    trace_uninit ();
-
     /* Print the end of the address. */
     addr = trace_addr_current ();
     proto_send3b ('a', addr >> 16, addr >> 8, addr);

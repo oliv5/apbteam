@@ -28,7 +28,6 @@
 #include "trace.h"
 
 #define TRACE_CODE_START 0xF33FF22F
-#define TRACE_CODE_END 0xF44FF55F
 
 #define TRACE_ARGS_MAX 6
 #define TRACE_MAX_ARGS (TRACE_ARGS_MAX * TRACE_ARGS_MAX)
@@ -115,24 +114,6 @@ trace_init (void)
 	  }
       }
 }
-
-void
-trace_uninit (void)
-{
-    uint8_t i;
-    if (trace_global.flash_status)
-      {
-	/* Store the end code of traces. */
-	for (i = 0; i < 4; i ++)
-	  {
-	    flash_write (trace_global.flash_addr,
-			 v32_to_v8 (TRACE_CODE_END, i));
-	    trace_global.flash_addr =
-		FLASH_ADDRESS_INC(trace_global.flash_addr);
-	  }
-      }
-}
-
 
 void
 trace_print (uint8_t arg)

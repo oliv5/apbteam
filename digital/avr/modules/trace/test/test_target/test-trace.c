@@ -60,13 +60,6 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	addr = trace_addr_current ();
 	proto_send3b ('a', addr >> 16, addr >> 8, addr);
 	break;
-      case c ('u', 0):
-	/* Uninitialise the trace module. */
-	trace_uninit ();
-	proto_send1b ('u', trace_status ());
-	addr = trace_addr_current ();
-	proto_send3b ('a', addr >> 16, addr >> 8, addr);
-	break;
       case c ('t', 2):
 	/* Trace data:
 	 *  - 1b: id.
