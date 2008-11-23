@@ -1,0 +1,33 @@
+Trace system
+============
+
+The trace system has for job:
+
+  * Create a enumerator with unique identifier to store traces in the flash memory.
+  * Dump the flash memory data and print the traces using the string provided by the user in the trace file definition.
+
+Use
+---
+
+The trace tool is divided in two parts, the one which generate the enumerator
+and the one which interpret the memory data to print it on screen.
+
+To generate the enumerator
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+python trace.py create [Options] <file in>
+
+Options:
+
+  * -e <enum_id> : enumerator identifier for the source files.
+  * -o <outfile> : The output file to write the enumerator.
+
+To interpret the memory data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+python trace.py inter <file in>
+
+Trace definition file
+---------------------
+
+A trace source example is provided in the example directory.
