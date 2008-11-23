@@ -1,0 +1,3 @@
+EVENT asserv__right_motor speed 4 position 4 acceleration 2 "Right motor speed : %d, position : %d, acceleration : %d"
+EVENT asserv__left_motor speed 4 position 4 acceleration 2 "Left motor speed : %d, position : %d, acceleration : %d"
+EVENT ia__ia_cmd arg1 2 arg2 1 arg3 4 "IA cmd, arg1 : %d, arg2 : %d, arg3 : %d"
