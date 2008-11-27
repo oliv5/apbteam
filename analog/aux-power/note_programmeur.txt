@@ -1,0 +1,10 @@
+SIGNAL TRANSITION REQUIREMENTS
+To ensure proper internal logic performance, it is good prac-
+tice to avoid aligning the falling and rising edges of input sig-
+nals. A delay of at least 1 µsec should be incorporated be-
+tween transitions of the Direction, Brake, and/or PWM input
+signals. A conservative approach is be sure there is at least
+500ns delay between the end of the first transition and the
+beginning of the second transition.
+
+

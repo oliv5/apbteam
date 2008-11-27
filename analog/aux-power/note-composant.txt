@@ -1,0 +1,8 @@
+Code composant 
+a/puiss-barillet/puiss-barillet.sch at  3/18/2006 13:07:11 
+
+Qty Value         Device        Parts                  Farnell Code
+-----------------------------------------------------------------------------
+1   1µF           C-EUC1206     C101                   757-652 (0,2UHT x10)
+1   470µF         CPOL-EUE5-6   C4                     334-7692 (0,59UHT x10)
+1   4011D         4011D         IC100                  505-183 (0,32UHT x1)

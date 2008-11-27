@@ -1,0 +1,5 @@
+Rotor		Volts(V)	Amps(A)	Power(W)
+EDF2020x3	9,6		1,35	12.96
+EDF2020x3	10,8		1,5	16,20
+
+GWS EDF 50H series for 9,6V-10,8V
