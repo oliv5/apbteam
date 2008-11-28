@@ -97,21 +97,21 @@ trace_init (void)
     /* Get the first sector to write. */
     if (trace_global.flash_status)
       {
-	trace_global.flash_addr = flash_sector_next (0);
-	trace_global.flash_next_sector =
-	    FLASH_PAGE (trace_global.flash_addr + FLASH_PAGE_SIZE);
+        trace_global.flash_addr = flash_first_sector();
+        trace_global.flash_next_sector =
+            FLASH_PAGE (trace_global.flash_addr + FLASH_PAGE_SIZE);
 
-	/* If the next sector is not empty erase it. */
-	trace_next_sector_prepare ();
+        /* If the next sector is not empty erase it. */
+        trace_next_sector_prepare ();
 
-	/* Store the start code. */
-	for (i = 0; i < 4; i ++)
-	  {
-	    flash_write (trace_global.flash_addr,
-			 v32_to_v8(TRACE_CODE_START, i));
-	    trace_global.flash_addr =
-		FLASH_ADDRESS_INC(trace_global.flash_addr);
-	  }
+        /* Store the start code. */
+        for (i = 0; i < 4; i ++)
+          {
+            flash_write (trace_global.flash_addr,
+                         v32_to_v8(TRACE_CODE_START, i));
+            trace_global.flash_addr =
+                FLASH_ADDRESS_INC(trace_global.flash_addr);
+          }
       }
 }
 

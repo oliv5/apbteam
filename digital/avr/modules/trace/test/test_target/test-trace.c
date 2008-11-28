@@ -22,6 +22,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#define BUFFER_SIZE 128
+
 #include "common.h"
 #include "io.h"
 #include "modules/flash/flash.h"
@@ -30,6 +32,51 @@
 #include "modules/utils/utils.h"
 #include "modules/utils/byte.h"
 #include "modules/uart/uart.h"
+
+void
+flash_dump_full (void)
+{
+    uint8_t buffer [BUFFER_SIZE];
+    uint32_t i;
+    uint8_t state;
+
+    /* Initialise the flash memory to read .*/
+    state = flash_init ();
+    proto_send1b ('s', state);
+
+    if (state)
+      {
+        for (i = 0; i < FLASH_ADDRESS_HIGH + 1;
+             i += sizeof (buffer))
+          {
+            flash_read_array (i, buffer, sizeof (buffer));
+            proto_send ('r', sizeof(buffer), buffer);
+          }
+      }
+}
+
+
+void
+flash_dump_sector (uint32_t addr)
+{
+    uint8_t buffer [BUFFER_SIZE];
+    uint32_t i;
+    uint8_t state;
+
+    /* Initialise the flash memory to read .*/
+    state = flash_init ();
+    proto_send1b ('s', state);
+
+    if (state)
+      {
+        for (i = FLASH_PAGE (addr); i < FLASH_PAGE (addr) + FLASH_PAGE_SIZE;
+             i += sizeof (buffer))
+          {
+            flash_read_array (i, buffer, sizeof (buffer));
+            proto_send ('r', sizeof(buffer), buffer);
+          }
+      }
+}
 
 void
 proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
@@ -60,6 +107,14 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	addr = trace_addr_current ();
 	proto_send3b ('a', addr >> 16, addr >> 8, addr);
 	break;
+      case c ('d', 0):
+    /* Dump full memory. */
+    flash_dump_full ();
+    break;
+      case c ('d', 3):
+    /* Dump a full sector. */
+    flash_dump_sector (addr);
+    break;
       case c ('t', 2):
 	/* Trace data:
 	 *  - 1b: id.
@@ -100,11 +155,8 @@ main (void)
 {
     uart0_init ();
     proto_send0 ('z');
-    proto_send0 ('c');
-
-    proto_send1b ('o', sizeof (uint8_t));
 
     while (1)
-	proto_accept (uart0_getc ());
+        proto_accept (uart0_getc ());
 }
 

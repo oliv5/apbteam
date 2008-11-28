@@ -31,15 +31,20 @@
 #include "modules/utils/byte.h"
 #include "modules/uart/uart.h"
 
+#include "events.h"
+
 void
 flood (void)
 {
     uint32_t addr;
     uint32_t count;
 
-    uint8_t val1;
-    uint16_t val2;
-    uint32_t val3;
+    uint32_t speed;
+    uint32_t position;
+    uint16_t acc;
+    uint16_t arg1;
+    uint16_t arg2;
+    uint32_t arg3;
 
     /* Initialise the trace module. */
     trace_init ();
@@ -52,10 +57,16 @@ flood (void)
     /* A little more than 3 memory sectors, a sector is 4 kbytes. */
     for (count = 0; count < 2000; count ++)
       {
-	val1 = count;
-	val2 = count + 1;
-	val3 = count + 3;
-	TRACE (val1, val2, val3);
+        /* Right motor. */
+        speed = count;
+        position = count + 1;
+        acc = count + 2;
+        arg1 = count;
+        arg2 = count + 1;
+        arg3 = count + 3;
+        TRACE (TRACE_ASSERV__RIGHT_MOTOR, speed, position, acc);
+        TRACE (TRACE_ASSERV__LEFT_MOTOR, speed, position, acc);
+        TRACE (TRACE_IA__IA_CMD, arg1, arg2, arg3);
       }
 
     /* Print the end of the address. */
@@ -73,47 +84,47 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
     switch (c (cmd, size))
       {
       case c ('z', 0):
-	/* Reset */
-	utils_reset ();
-	break;
+        /* Reset */
+        utils_reset ();
+        break;
       case c ('e', 0):
-	/* Erase full */
-	flash_erase (FLASH_ERASE_FULL, 0);
-	break;
+        /* Erase full */
+        flash_erase (FLASH_ERASE_FULL, 0);
+        break;
       case c ('e', 3):
-	/* Erase 4k:
-	 *  - 3b: address. */
-	flash_erase (FLASH_ERASE_4K, addr);
-	break;
+        /* Erase 4k:
+         *  - 3b: address. */
+        flash_erase (FLASH_ERASE_4K, addr);
+        break;
       case c ('r', 3):
-	/* Read one byte:
-	 *  - 3b: address. */
-	proto_send1b ('r', flash_read (addr));
-	break;
+        /* Read one byte:
+         *  - 3b: address. */
+        proto_send1b ('r', flash_read (addr));
+        break;
       case c ('r', 4):
-	/* Read several bytes:
-	 *  - 3b: address.
-	 *  - 1b: number of bytes. */
-	if (args[3] > sizeof (buf))
-	  {
-	    proto_send0 ('?');
-	    return;
-	  }
-	else
-	  {
-	    flash_read_array (addr, buf, args[3]);
-	    proto_send ('r', args[3], buf);
-	  }
-	break;
+        /* Read several bytes:
+         *  - 3b: address.
+         *  - 1b: number of bytes. */
+        if (args[3] > sizeof (buf))
+        {
+          proto_send0 ('?');
+          return;
+        }
+        else
+          {
+            flash_read_array (addr, buf, args[3]);
+            proto_send ('r', args[3], buf);
+          }
+        break;
       case c ('f', 0):
-	/* Flood the memory with 3 sectors.
-	 */
-	flood ();
-	break;
+        /* Flood the memory with 3 sectors.
+        */
+        flood ();
+        break;
       default:
-	/* Error */
-	proto_send0 ('?');
-	return;
+        /* Error */
+        proto_send0 ('?');
+        return;
       }
     /* Acknowledge what has been done */
     proto_send (cmd, size, args);
@@ -125,6 +136,6 @@ main (void)
     uart0_init ();
     proto_send0 ('z');
 
-   while (1)
-	proto_accept (uart0_getc ());
+    while (1)
+        proto_accept (uart0_getc ());
 }
