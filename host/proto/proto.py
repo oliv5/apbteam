@@ -33,7 +33,14 @@ class Proto:
 
     def __init__ (self, file, date, timeout, log = None):
 	"""Initialise and set file (serial port, pty, socket...), date
-	function and timeout value."""
+	function and timeout value.
+
+	- file: open file connected to the slave device.
+	- date: when called, should return the current time.
+	- timeout: time after which retransmission is done.
+	- log: if defined, will be called with a log string.
+
+	"""
 	self.file = file
 	self.date = date
 	self.last_send = None
@@ -70,7 +77,7 @@ class Proto:
 
     def wait (self, cond = None):
 	"""Wait forever or until cond () is True."""
-	while not (self.sync () and (cond is None or cond ())):
+	while not (self.sync () and (cond is not None or cond ())):
 	    fds = select.select ((self,), (), (), self.timeout)[0]
 	    for i in fds:
 		assert i is self

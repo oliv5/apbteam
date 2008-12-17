@@ -1,0 +1,128 @@
+=======================================
+ proto - Host proto communication API.
+=======================================
+:Author: Nicolas Schodet
+
+Introduction
+============
+
+This module handles the communication protocol defined in the *proto* AVR
+module.  It can be used to communicate through a read serial port with an
+embedded program running on an AVR, or using a pseudo-terminal or standard
+input/output to communicate with a program compiled for the host system.
+
+This module also handles the master part of the protocol:
+
+- Acknowledgement from the slave device.
+- Retransmission if no acknowledgement is received.
+- Retransmission if the slave signals an error.
+
+This module does not handle higher level protocols, such as duplicates
+handling or frame sequence number.
+
+To understand this documentation, you should be familiar with the protocol,
+which is explained in the AVR module documentation.
+
+Usage
+=====
+
+Initialisation
+--------------
+
+First, create a Proto instance.  For example to connect with a real serial
+port::
+
+  proto = Proto (serial.Serial ('/dev/ttyS0'), time.time, 0.1)
+
+To connect to a program running on host, with a logging output::
+
+  def log (text):
+      print text
+  proto = Proto (proto.popen_io.PopenIO ('test_program.host'), time.time, 0.1,
+                 log = log)
+
+Synchronisation
+---------------
+
+You need to synchronise regularly with the remote program.  You have two
+options.
+
+The first one can be used if you have nothing else to execute apart from the
+protocol handling.  In this case, just call the wait function.  If a argument
+is given, this should be a callable object which will return True to stop
+waiting.
+
+The wait function will only return if all frames have been sent and the
+condition argument returns True.
+
+Example, wait forever::
+
+  proto.wait ()
+
+Or, wait until an internal counter has reached a value::
+
+  proto.wait (lambda: my_counter == 3)
+
+The second option should be used if you need concurrent access to several
+sources (GUI interface, several proto, other events...).  In this case, the
+sync function should be called regularly (at least every timeout period), and
+the read function should be called if data is available on the proto file
+descriptor which can be retrieved as usual using the fileno function.
+
+Example::
+
+  while not proto.sync ():
+    fds = select.select ((proto, other_input), (), (), 0.1)[0]
+    for fd in fds:
+      fd.read ()
+
+Sending a frame
+---------------
+
+To send a frame, use the send function.
+
+First argument is the command character.  Then comes the frame arguments format
+followed by the frame arguments.  The format follows the struct module fmt
+string.
+
+Examples::
+
+  proto.send ('z')  # Send !z
+  proto.send ('a', 'b', 1)  # Send !a01
+  proto.send ('b', 'bhl', 1, 2, 84942856)  # Send !b01000205102008
+
+The frame is not sent immediately, but once wait or sync is called and all the
+previously enqueued frames are acknowledged.
+
+Receiving a frame
+-----------------
+
+When a frame is received, a user callback will be called if it has been
+registered.
+
+To register a callback, use the register function.  The first argument is the
+frame command to bind to this callback, the second one is the frame arguments
+format, and the last one is the callback.
+
+Here, the distinction between signed and unsigned arguments is important.
+
+If a frame is received with the registered command and a number of bytes
+matching the frame arguments format, the callback is called with arguments
+decoded.
+
+For example::
+
+  def my_callback1 (a, b):
+    print "callback1", a, b
+  def my_callback2 (a):
+    print "callback2", a
+  proto.register ('x', 'bB', my_callback1)
+  proto.register ('y', 'l', my_callback2)
+
+  # If !xffff is received, this will print:
+  # callback1 255 -1
+  # If !y05102008 is received, this will print:
+  # callback2 84942856
+
+Keep in mind that the protocol can not make the distinction between the format
+'bbbb' and 'l' as it uses the same number of bytes.
