@@ -1,0 +1,11 @@
+Flash Stub
+==========
+
+The flash stub is a source file which emulate the flash memory of the bot in
+a simple text file.
+
+To use the stub a default file shall be create in the current directory using
+touch for example.
+
+The source stub memory use a file flash.apb, to use it correctly create the 
+file with this name.
