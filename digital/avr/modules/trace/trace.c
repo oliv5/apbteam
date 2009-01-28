@@ -32,36 +32,45 @@
 #define TRACE_ARGS_MAX 6
 #define TRACE_MAX_ARGS (TRACE_ARGS_MAX * TRACE_ARGS_MAX)
 
+enum trace_status_t
+{
+    TRACE_STATUS_OFF,
+    TRACE_STATUS_ON
+};
+
 struct trace_t
 {
     /** Flash status. */
-    uint8_t flash_status;
+    trace_status_t status;
+    /** Flash start address */
+    const uint32_t addr_start;
     /** Flash address. */
-    uint32_t flash_addr;
+    uint32_t addr;
     /** Flash next sector */
-    uint32_t flash_next_sector;
+    uint32_t next_sector;
 };
 typedef struct trace_t trace_t;
 
 static trace_t trace_global;
 
-
-/** Verify the stat of the next sector.
-  * If the next sector is not empty it shall send an erase command on the
-  * sector of the flash memory.
+/** Erase the next sector on the Flash memory.
   */
 static void
-trace_next_sector_prepare (void)
+trace_erase_next_sector (void)
 {
-    uint32_t addr_next;
-    uint8_t data;
-    if (trace_global.flash_status)
+    /* If the flash is enable and the start sector is not reached yet erase
+     * the sector. */
+    if (trace_global.status
+	&& (flash_read (trace_global.next_sector) != 0xFF))
       {
-	addr_next = FLASH_PAGE(trace_global.flash_addr) + FLASH_PAGE_SIZE;
-	data = flash_read (addr_next);
-
-	if (data != 0XFF)
-	    flash_erase (FLASH_ERASE_4K, addr_next);
+	if (trace_global.next_sector != trace_global.addr_start)
+	  {
+	    /* Flash page size is equal to 4k. */
+	    flash_erase (FLASH_ERASE_4K, trace_global.next_sector);
+	  }
+	else
+	    /* Disable the flash. */
+	    trace_global.status = TRACE_STATUS_OFF;
       }
 }
 
@@ -91,27 +100,29 @@ trace_print_arg_4(uint32_t arg)
 void
 trace_init (void)
 {
-    uint8_t i;
-    trace_global.flash_status = flash_init ();
+    int8_t i;
+    trace_global.status = flash_init ();
 
     /* Get the first sector to write. */
-    if (trace_global.flash_status)
+    if (trace_global.status)
       {
-        trace_global.flash_addr = flash_first_sector();
-        trace_global.flash_next_sector =
-            FLASH_PAGE (trace_global.flash_addr + FLASH_PAGE_SIZE);
+        trace_global.addr = flash_first_sector();
+	*((uint32_t *) &trace_global.addr_start) =
+	    FLASH_PAGE(trace_global.addr);
+        trace_global.next_sector =
+            FLASH_PAGE (trace_global.addr + FLASH_PAGE_SIZE);
 
-        /* If the next sector is not empty erase it. */
-        trace_next_sector_prepare ();
+        /* If the next sector is the first one in the memory erase it. */
+	trace_erase_next_sector ();
 
         /* Store the start code. */
-        for (i = 0; i < 4; i ++)
-          {
-            flash_write (trace_global.flash_addr,
-                         v32_to_v8(TRACE_CODE_START, i));
-            trace_global.flash_addr =
-                FLASH_ADDRESS_INC(trace_global.flash_addr);
-          }
+	for (i = 24; i >= 0; i -= 8)
+	  {
+	    flash_write (trace_global.addr,
+			 TRACE_CODE_START >> i);
+	    trace_global.addr =
+		FLASH_ADDRESS_INC(trace_global.addr);
+	  }
       }
 }
 
@@ -119,24 +130,28 @@ void
 trace_print (uint8_t arg)
 {
     /* Store the arg on flash */
-    if (trace_global.flash_status)
+    if (trace_global.status)
       {
-	flash_write (trace_global.flash_addr, arg);
-	trace_global.flash_addr = FLASH_ADDRESS_INC(trace_global.flash_addr);
-      }
+	uint32_t curr_sector;
+	flash_write (trace_global.addr, arg);
+	trace_global.addr = FLASH_ADDRESS_INC(trace_global.addr);
 
-    if ((trace_global.flash_next_sector - trace_global.flash_addr)
-	< TRACE_MAX_ARGS)
-	trace_next_sector_prepare ();
+	/* Compute the next sector address. */
+	curr_sector = trace_global.next_sector;
+	trace_global.next_sector = FLASH_PAGE (trace_global.addr +
+						   FLASH_PAGE_SIZE);
+	if (curr_sector != trace_global.next_sector)
+	    trace_erase_next_sector ();
+      }
 }
 
 /** Get the current status of the trace module.
   * \return  0x1 if the module is activate, 0x0 if the module is not active.
   */
-uint8_t
+trace_status_t
 trace_status (void)
 {
-    return trace_global.flash_status;
+    return trace_global.status;
 }
 
 /** Get the current address.
@@ -145,5 +160,5 @@ trace_status (void)
 uint32_t
 trace_addr_current (void)
 {
-    return trace_global.flash_addr;
+    return trace_global.addr;
 }

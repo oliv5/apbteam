@@ -1,7 +1,9 @@
-/* flash_stub.c */
-/* avr.trace - AVR TRACE use. {{{
+#ifndef events_h
+#define events_h
+/* events_h */
+/*  {{{
  *
- * Copyright (C) 2008 Nélio Laranjeiro
+ * Copyright (C) 2008 APBTeam
  *
  * APBTeam:
  *        Web: http://apbteam.org/
@@ -22,35 +24,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
-#include "modules/flash/flash.h"
-#include <stdio.h>
 
-uint8_t
-flash_init (void)
+enum events_t
 {
-    return 0x1;
-}
+    TRACE_ASSERV__RIGHT_MOTOR,
+    TRACE_ASSERV__LEFT_MOTOR,
+    TRACE_IA__IA_CMD,
+    TRACE_NB
+};
 
-uint32_t
-flash_sector_next(uint32_t addr)
-{
-    return 0;
-}
-
-void
-flash_write (uint32_t addr, uint8_t arg)
-{
-    printf ("%s -- %x\n", __FUNCTION__, arg);
-    printf ("addr : %x\n", addr);
-}
-
-uint8_t
-flash_read (uint32_t addr)
-{
-    return 0;
-}
-
-void
-flash_erase (uint8_t cmd, uint32_t addr)
-{
-}
+#endif /* events_h */

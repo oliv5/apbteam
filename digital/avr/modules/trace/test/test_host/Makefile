@@ -2,9 +2,13 @@ BASE = ../../../..
 
 HOST_PROGS = test-trace
 
-test-trace_SOURCES = test-trace.c flash_stub.c 
+test-trace_SOURCES = test-trace.c 
 
-MODULES = trace
-OPTIMIZE = -O2
+MODULES = trace flash/stub
+#OPTIMIZE = -O2
+OPTIMIZE = 
 
 include $(BASE)/make/Makefile.gen
+
+all: 
+	touch flash.apb

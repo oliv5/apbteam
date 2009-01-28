@@ -84,6 +84,8 @@
       else if (sizeof(arg) == sizeof(uint32_t)) trace_print_arg_4(arg);\
     }while (0)
 
+/* Forward declaration. */
+typedef enum trace_status_t trace_status_t;
 
 /** Print an argument of one byte.
   * \param  arg  the one byte argument to print.
@@ -119,7 +121,7 @@ trace_print (uint8_t arg);
 /** Get the current status of the trace module.
   * \return  0x1 if the module is activate, 0x0 if the module is not active.
   */
-uint8_t
+trace_status_t
 trace_status (void);
 
 /** Get the current address.

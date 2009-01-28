@@ -24,39 +24,72 @@
  * }}} */
 #include "common.h"
 #include "../../trace.h"
+#include "modules/flash/flash.h"
 
 #include <stdio.h>
+#include "events.h"
+
+void
+flood (void)
+{
+    uint8_t cmd;
+    uint32_t addr;
+    uint32_t count;
+
+    uint32_t speed;
+    uint32_t position;
+    uint16_t acc;
+
+    uint16_t arg1;
+    uint8_t arg2;
+    uint32_t arg3;
+
+    trace_init ();
+
+    /* Flood the flash memory with traces. */
+    /* A little more than 3 memory sectors, a sector is 4 kbytes. */
+    for (count = 0; count < 2000; count ++)
+      {
+        /* Right motor. */
+        speed = 10;
+        position = 11;
+        acc = 12;
+        arg1 = 10;
+        arg2 = 11;
+        arg3 = 12;
+
+	cmd = TRACE_ASSERV__RIGHT_MOTOR;
+        TRACE (cmd, speed, position, acc);
+	cmd = TRACE_ASSERV__LEFT_MOTOR;
+        TRACE (cmd, speed, position, acc);
+	cmd = TRACE_IA__IA_CMD;
+        TRACE (cmd, arg1, arg2, arg3);
+      }
+}
+
+void
+dump (void)
+{
+    uint8_t status;
+    uint32_t addr;
+
+    status = flash_init ();
+
+    for (addr = 0; addr < FLASH_ADDRESS_HIGH; addr ++)
+      {
+	printf ("%02x", flash_read (addr));
+      }
+}
 
 int
 main (void)
 {
-    uint8_t val1 = 0xEF;
-    uint16_t val2 = 0x1234;
-    uint32_t val3 = 0x456789AB;
+    uint8_t i;
 
-    trace_init ();
+    for (i = 0; i < 30; i++)
+	flood ();
 
-    printf ("First trace\n");
-    TRACE (val1);
-
-    printf ("Second trace\n");
-    TRACE (val2);
-
-    printf ("Third trace\n");
-    TRACE (val3);
-
-    printf ("Fourth trace\n");
-    TRACE (val1, val2);
-
-    printf ("Fifth trace\n");
-    TRACE (val1, val3);
-
-    printf ("sixth one\n");
-    TRACE (val1, val2, val3);
-
-    printf ("last one\n");
-    TRACE (val3, val1, val2);
-
+    dump();
     return 0;
 }
 
