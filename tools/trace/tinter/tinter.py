@@ -20,7 +20,7 @@ class TInter:
 
         def __event_print (self, events, memory):
                 if len(memory) > 0:
-                        cmd = int (memory[0:2])
+                        cmd = int (memory[0:2], 16)
                         e = events[cmd]
                         string = e.string_get()
                         memory = memory[2:len(memory)]
@@ -32,9 +32,22 @@ class TInter:
                                 string = string.replace('%d', str(int(val, 16)), 1) 
                         return [memory, string]
 
-        def trace_print (self):
+	def __get_last_trace (self, data):
+		while len (data):
+			memory = data.split('f33ff22f')
+			memory = memory[len(memory) - 1]
+			return memory
+			
+        def trace_print (self, file=None):
                 events = self.__events_get ()
-                memory = thost_dump_memory()
+
+		if file == None:
+			memory = thost_dump_memory()
+		else:
+			file = open (file, 'r')
+			memory = file.read()
+			file.close()
+			memory = self.__get_last_trace (memory)
 
                 while len(memory) > 0:
                         data = self.__event_print(events, memory)

@@ -1,4 +1,4 @@
-#!/bin/usr/pythonenv
+#!/bin/usr/env python
 
 import sys
 from tcreator.tcreator import *
@@ -23,30 +23,23 @@ def create_parse_args(list = None):
 
 print "Trace System v1.0 by APBTeam\n"
 
-try:
-        if len(sys.argv) > 1:
-                argc = len(sys.argv)
-                if sys.argv[1] == "create":
-                        if (argc >= 2) and (argc <= 7):
-                                data = create_parse_args(sys.argv)
-                                cre = TCreator (data[0], data[1], data[2])
-                                cre.create ()
-                        else:
-                                raise Exception ("Not enough arguments")
-                if sys.argv[1] == "inter":
-                        if argc == 3:
-                                inter = TInter (sys.argv[2])
-                                inter.trace_print()
-                        else:
-                                raise Exception ("Not enough arguments")
-        else:
-                raise Exception ("Not enough arguments")
-except:
-        print "Trace system use..."
-        print "python trace.py create [options] <file in>"
-        print "  Options : "
-        print "     -e enum name"
-        print "     -o file out name"
-        print ""
-        print "python trace.py inter <file in>"
-        print ""
+if len(sys.argv) > 1:
+	argc = len(sys.argv)
+	if sys.argv[1] == "create":
+		if (argc >= 2) and (argc <= 7):
+			data = create_parse_args(sys.argv)
+			cre = TCreator (data[0], data[1], data[2])
+			cre.create ()
+		else:
+			raise Exception ("Not enough arguments")
+	if sys.argv[1] == "inter":
+		if argc >= 2:
+			inter = TInter (sys.argv[2])
+			if argc == 2:
+				inter.trace_print(None)
+			else:
+				inter.trace_print(sys.argv[3])
+		else:
+			raise Exception ("Not enough arguments")
+else:
+	raise Exception ("Not enough arguments")
