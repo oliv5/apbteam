@@ -60,6 +60,16 @@ function! APBTeamProg()
    nmap <buffer> <Leader>h :GHPH p<CR>
 endfunction
 
+function! APBTeamPython()
+   " Programming options.
+   setlocal tabstop=4
+   setlocal shiftwidth=4
+   setlocal smarttab
+   setlocal expandtab
+   setlocal softtabstop=4
+endfunction
+
+
 " If you do not want automatic execution.
 if exists('g:no_apbteam') | finish | endif
 
@@ -67,5 +77,6 @@ call APBTeam()
 
 au FileType c call APBTeamProg()
 au FileType cpp call APBTeamProg()
+au FileType python call APBTeamPython()
 au BufNewFile README Template README
 au BufNewFile *.c,*.cc,*.tcc,*.icc,*.h,*.hh,*.hpp,*.C,*.cxx TemplateHeader
