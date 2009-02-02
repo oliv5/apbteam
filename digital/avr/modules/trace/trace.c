@@ -32,12 +32,6 @@
 #define TRACE_ARGS_MAX 6
 #define TRACE_MAX_ARGS (TRACE_ARGS_MAX * TRACE_ARGS_MAX)
 
-enum trace_status_t
-{
-    TRACE_STATUS_OFF,
-    TRACE_STATUS_ON
-};
-
 struct trace_t
 {
     /** Flash status. */
@@ -97,7 +91,7 @@ trace_print_arg_4(uint32_t arg)
 }
 
 
-void
+uint8_t
 trace_init (void)
 {
     int8_t i;
@@ -123,7 +117,9 @@ trace_init (void)
 	    trace_global.addr =
 		FLASH_ADDRESS_INC(trace_global.addr);
 	  }
+	return TRACE_STATUS_ON;
       }
+    return TRACE_STATUS_OFF;
 }
 
 void

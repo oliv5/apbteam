@@ -27,13 +27,13 @@
 #include "modules/flash/flash.h"
 
 #include <stdio.h>
+#include <string.h>
 #include "events.h"
 
 void
 flood (void)
 {
     uint8_t cmd;
-    uint32_t addr;
     uint32_t count;
 
     uint32_t speed;
@@ -45,9 +45,9 @@ flood (void)
     uint32_t arg3;
 
     trace_init ();
+    flash_erase (FLASH_ERASE_FULL, 0);
 
     /* Flood the flash memory with traces. */
-    /* A little more than 3 memory sectors, a sector is 4 kbytes. */
     for (count = 0; count < 2000; count ++)
       {
         /* Right motor. */
@@ -64,8 +64,67 @@ flood (void)
         TRACE (cmd, speed, position, acc);
 	cmd = TRACE_IA__IA_CMD;
         TRACE (cmd, arg1, arg2, arg3);
+
+	if (trace_status () == TRACE_STATUS_OFF)
+	    return;
       }
 }
+
+uint8_t
+flood_overflow (void)
+{
+    uint8_t cmd;
+    uint32_t count;
+    uint32_t i;
+
+    uint32_t speed;
+    uint32_t position;
+    uint16_t acc;
+
+    uint16_t arg1;
+    uint8_t arg2;
+    uint32_t arg3;
+    uint32_t addr;
+
+    if (trace_init () == TRACE_STATUS_OFF)
+	return TRACE_STATUS_OFF;
+    addr = trace_addr_current ();
+    printf ("Addr begin : %x\n", addr);
+
+    for (i = 0; i < FLASH_ADDRESS_HIGH; i++)
+      {
+	/* Flood the flash memory with traces. */
+	for (count = 0; count < 2000; count ++)
+	  {
+	    /* Right motor. */
+	    speed = 10;
+	    position = 11;
+	    acc = 12;
+	    arg1 = 10;
+	    arg2 = 11;
+	    arg3 = 12;
+
+	    cmd = TRACE_ASSERV__RIGHT_MOTOR;
+	    TRACE (cmd, speed, position, acc);
+	    cmd = TRACE_ASSERV__LEFT_MOTOR;
+	    TRACE (cmd, speed, position, acc);
+	    cmd = TRACE_IA__IA_CMD;
+	    TRACE (cmd, arg1, arg2, arg3);
+	  }
+
+	if (trace_status () == TRACE_STATUS_OFF)
+	  {
+	    addr = trace_addr_current ();
+	    printf ("End address : %x\n", addr);
+	    return TRACE_STATUS_OFF;
+	  }
+      }
+
+    addr = trace_addr_current ();
+    printf ("End address : %x\n", addr);
+    return TRACE_STATUS_ON;
+}
+
 
 void
 dump (void)
@@ -74,6 +133,8 @@ dump (void)
     uint32_t addr;
 
     status = flash_init ();
+    if (status == TRACE_STATUS_OFF)
+	return;
 
     for (addr = 0; addr < FLASH_ADDRESS_HIGH; addr ++)
       {
@@ -82,14 +143,22 @@ dump (void)
 }
 
 int
-main (void)
+main (int argc, char **argv)
 {
     uint8_t i;
 
-    for (i = 0; i < 30; i++)
-	flood ();
+    if (strcmp (argv[1], "trace") == 0)
+      {
+	for (i = 0; i < 30; i++)
+	    flood ();
+      }
+    else if (strcmp (argv[1], "overflow") == 0)
+      {
+	return flood_overflow ();
+      }
+    else if (strcmp (argv[1], "dump") == 0)
+	dump();
 
-    dump();
     return 0;
 }
 

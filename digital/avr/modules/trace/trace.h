@@ -84,7 +84,11 @@
       else if (sizeof(arg) == sizeof(uint32_t)) trace_print_arg_4(arg);\
     }while (0)
 
-/* Forward declaration. */
+enum trace_status_t
+{
+    TRACE_STATUS_OFF,
+    TRACE_STATUS_ON
+};
 typedef enum trace_status_t trace_status_t;
 
 /** Print an argument of one byte.
@@ -106,10 +110,11 @@ void
 trace_print_arg_4(uint32_t arg);
 
 /** Initialise the trace module.
+  * \return   the status of the trace module.
   * Find the first sector writable and store the following start code
   * 0xF33FF22F this indicate the beginning of traces.
   */
-void
+uint8_t
 trace_init (void);
 
 /** Print the trace.
