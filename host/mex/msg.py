@@ -84,64 +84,64 @@ class Msg:
     """
 
     def __init__ (self, f):
-	"""Initialise a new message, see class documentation for
-	signatures."""
-	try:
-	    f[0]
-	except TypeError:
-	    # New empty message.
-	    self.mtype = f
-	    self.header = pack ('!B', self.mtype)
-	    self.payload = ''
-	else:
-	    # Read from a buffer.
-	    self.header = f[0:1]
-	    self.payload = f[1:]
-	    self.mtype = unpack ('!B', self.header)[0]
+        """Initialise a new message, see class documentation for
+        signatures."""
+        try:
+            f[0]
+        except TypeError:
+            # New empty message.
+            self.mtype = f
+            self.header = pack ('!B', self.mtype)
+            self.payload = ''
+        else:
+            # Read from a buffer.
+            self.header = f[0:1]
+            self.payload = f[1:]
+            self.mtype = unpack ('!B', self.header)[0]
 
     def data (self):
-	"""Get the message data, ready to be sent."""
-	return self.header + self.payload
+        """Get the message data, ready to be sent."""
+        return self.header + self.payload
 
     def __str__ (self):
-	"""Return an text representation."""
-	payload = ' '.join (['%02x' % ord (i) for i in self.payload])
-	return '<Msg %02x: %s>' % (self.mtype, payload)
+        """Return an text representation."""
+        payload = ' '.join (['%02x' % ord (i) for i in self.payload])
+        return '<Msg %02x: %s>' % (self.mtype, payload)
 
     def push (self, fmt, *args):
-	"""
-	Add data to the payload.
-	
-	msg.push (string) -> None.  Add the given string to the payload.
+        """
+        Add data to the payload.
 
-	msg.push (fmt, values...) -> None.  Add the given values to the
-	payload, using a struct.pack format string.
-	"""
-	if args:
-	    self.payload += pack ('!' + fmt, *args)
-	else:
-	    self.payload += fmt
+        msg.push (string) -> None.  Add the given string to the payload.
+
+        msg.push (fmt, values...) -> None.  Add the given values to the
+        payload, using a struct.pack format string.
+        """
+        if args:
+            self.payload += pack ('!' + fmt, *args)
+        else:
+            self.payload += fmt
 
     def pop (self, fmt = None):
-	"""
-	Get data from the payload.
+        """
+        Get data from the payload.
 
-	msg.pop () -> payload.  Get all the remaining payload.
+        msg.pop () -> payload.  Get all the remaining payload.
 
-	msg.pop (fmt) -> (values, ...).  Get values extracted according to a
-	struct.unpack format string.
-	"""
-	if fmt:
-	    nb = calcsize (fmt)
-	    ex, self.payload = self.payload[0:nb], self.payload[nb:]
-	    return unpack ('!' + fmt, ex)
-	else:
-	    ex, self.payload = self.payload, ''
-	    return ex
+        msg.pop (fmt) -> (values, ...).  Get values extracted according to a
+        struct.unpack format string.
+        """
+        if fmt:
+            nb = calcsize (fmt)
+            ex, self.payload = self.payload[0:nb], self.payload[nb:]
+            return unpack ('!' + fmt, ex)
+        else:
+            ex, self.payload = self.payload, ''
+            return ex
 
     def __len__ (self):
-	"""Get payload remaining length."""
-	return len (self.payload)
+        """Get payload remaining length."""
+        return len (self.payload)
 
 def _test ():
     import doctest

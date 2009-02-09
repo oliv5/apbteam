@@ -35,14 +35,14 @@ class Forked:
     """
 
     def __init__ (self, function):
-	"""Initialise, fork, and call the given function in the children
-	process."""
-	self.pid = os.fork ()
-	if self.pid == 0:
-	    function ()
-	    sys.exit (0)
+        """Initialise, fork, and call the given function in the children
+        process."""
+        self.pid = os.fork ()
+        if self.pid == 0:
+            function ()
+            sys.exit (0)
 
     def kill (self):
-	"""Kill the forked function."""
-	os.kill (self.pid, signal.SIGTERM)
-	os.waitpid (self.pid, 0)
+        """Kill the forked function."""
+        os.kill (self.pid, signal.SIGTERM)
+        os.waitpid (self.pid, 0)

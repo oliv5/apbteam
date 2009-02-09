@@ -29,22 +29,22 @@ class PopenIO:
     convert from and to \r and \n."""
 
     def __init__ (self, cmd):
-	"""Initialise and start the given commande line."""
-	fout, fin = os.popen2 (cmd, 'b', 0)
-	time.sleep (0.2)
-	self.fin = fin
-	self.fout = fout
+        """Initialise and start the given commande line."""
+        fout, fin = os.popen2 (cmd, 'b', 0)
+        time.sleep (0.2)
+        self.fin = fin
+        self.fout = fout
 
     def read (self, *args):
-	buf = self.fin.read (*args).replace ('\n', '\r')
-	return buf
+        buf = self.fin.read (*args).replace ('\n', '\r')
+        return buf
 
     def write (self, *args):
-	return self.fout.write (*[i.replace ('\r', '\n') for i in args])
+        return self.fout.write (*[i.replace ('\r', '\n') for i in args])
 
     def fileno (self):
-	return self.fin.fileno ()
+        return self.fin.fileno ()
 
     def close (self):
-	self.fin.close ()
-	self.fout.close ()
+        self.fin.close ()
+        self.fout.close ()

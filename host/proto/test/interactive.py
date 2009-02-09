@@ -26,4 +26,4 @@ while True:
     p.sync ()
     fds = select.select ((p,), (), (), 0.1)[0]
     for i in fds:
-	i.read ()
+        i.read ()

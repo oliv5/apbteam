@@ -10,13 +10,13 @@ from optparse import OptionParser
 def run ():
     opt = OptionParser ()
     opt.add_option ('-d', '--dfa', dest='dfa',
-	    help='read DFA description from FILE', metavar='FILE')
+            help='read DFA description from FILE', metavar='FILE')
     opt.add_option ('-o', '--output', dest='output',
-	    help='choose output format', metavar='OUTPUT')
+            help='choose output format', metavar='OUTPUT')
     opt.add_option ('-c', '--config', dest='config',
-	    help='read output configuration from FILE', metavar='FILE')
+            help='read output configuration from FILE', metavar='FILE')
     opt.add_option ('-p', '--prefix', dest='prefix',
-	    help='use PREFIX for generated output', metavar='PREFIX')
+            help='use PREFIX for generated output', metavar='PREFIX')
     # TODO add more error checking.
     (options, args) = opt.parse_args ()
     # Read automaton.

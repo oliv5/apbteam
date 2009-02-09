@@ -32,51 +32,51 @@ class DistSensor (Drawable):
     """A distance sensor."""
 
     def __init__ (self, onto, pos, angle, range):
-	Drawable.__init__ (self, onto)
-	self.pos = pos
-	self.angle = angle
-	self.range = range
-	self.target = (pos[0] + cos (angle) * range,
-		pos[1] + sin (angle) * range)
-	self.obstacles = [ ]
-	self.distance = None
-	self.hide = False
+        Drawable.__init__ (self, onto)
+        self.pos = pos
+        self.angle = angle
+        self.range = range
+        self.target = (pos[0] + cos (angle) * range,
+                pos[1] + sin (angle) * range)
+        self.obstacles = [ ]
+        self.distance = None
+        self.hide = False
 
     def compute (self):
-	# Could do better by trans_applying until on the same drawable as the
-	# obstacle.
-	pos = self.onto.trans_apply (self.pos)
-	target = self.onto.trans_apply (self.target)
-	n = ((target[0] - pos[0]) / self.range,
-		(target[1] - pos[1]) / self.range)
-	self.distance = None
-	for o in self.obstacles:
-	    # Does the line intersect with the obstacle?
-	    ao = (o.pos[0] - pos[0], o.pos[1] - pos[1])
-	    doc = abs (ao[0] * -n[1] + ao[1] * n[0])
-	    if doc < o.radius:
-		# Does the segment intersect?
-		m = ao[0] * n[0] + ao[1] * n[1]
-		f = sqrt (o.radius ** 2 - doc ** 2)
-		if m - f > 0 and m - f < self.range:
-		    d = m - f
-		    if self.distance is None or self.distance > d:
-			self.distance = d
-		elif m + f > 0 and m + f < self.range:
-		    d = m + f
-		    if self.distance is None or self.distance > d:
-			self.distance = d
-	return self.distance
+        # Could do better by trans_applying until on the same drawable as the
+        # obstacle.
+        pos = self.onto.trans_apply (self.pos)
+        target = self.onto.trans_apply (self.target)
+        n = ((target[0] - pos[0]) / self.range,
+                (target[1] - pos[1]) / self.range)
+        self.distance = None
+        for o in self.obstacles:
+            # Does the line intersect with the obstacle?
+            ao = (o.pos[0] - pos[0], o.pos[1] - pos[1])
+            doc = abs (ao[0] * -n[1] + ao[1] * n[0])
+            if doc < o.radius:
+                # Does the segment intersect?
+                m = ao[0] * n[0] + ao[1] * n[1]
+                f = sqrt (o.radius ** 2 - doc ** 2)
+                if m - f > 0 and m - f < self.range:
+                    d = m - f
+                    if self.distance is None or self.distance > d:
+                        self.distance = d
+                elif m + f > 0 and m + f < self.range:
+                    d = m + f
+                    if self.distance is None or self.distance > d:
+                        self.distance = d
+        return self.distance
 
     def draw (self):
-	self.compute ()
-	self.reset ()
-	if self.hide:
-	    return
-	if self.distance is None:
-	    self.draw_line (self.pos, self.target, fill = 'blue', arrow = LAST)
-	else:
-	    inter = (self.pos[0] + cos (self.angle) * self.distance,
-		    self.pos[1] + sin (self.angle) * self.distance)
-	    self.draw_line (self.pos, inter, fill = 'red', arrow = LAST)
-	    self.draw_line (inter, self.target, fill = 'blue', arrow = LAST)
+        self.compute ()
+        self.reset ()
+        if self.hide:
+            return
+        if self.distance is None:
+            self.draw_line (self.pos, self.target, fill = 'blue', arrow = LAST)
+        else:
+            inter = (self.pos[0] + cos (self.angle) * self.distance,
+                    self.pos[1] + sin (self.angle) * self.distance)
+            self.draw_line (self.pos, inter, fill = 'red', arrow = LAST)
+            self.draw_line (inter, self.target, fill = 'blue', arrow = LAST)

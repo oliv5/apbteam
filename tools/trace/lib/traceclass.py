@@ -4,7 +4,7 @@ class TraceParam:
         self.__name = name
 
         if (length == 0) or (length == 3) or (length > 4):
-	    self.__length = 0 
+            self.__length = 0
             raise Exception ("Length not permitted")
         else:
             self.__length = length
@@ -18,12 +18,12 @@ class TraceParam:
 # Defines the Events of the trace module.
 class TraceEvent:
     def __init__(self, name = ''):
-	self.__name = name
+        self.__name = name
         self.__param_list = list()
         self.__string = ""
 
     def name (self):
-	return self.__name
+        return self.__name
 
     def param_add (self, name, length):
         param = TraceParam (name, length)

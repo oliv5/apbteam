@@ -15,12 +15,12 @@ h = Hub (min_clients = 2, log = log)
 def c1 ():
     n = Node ()
     def a (msg):
-	print 'oucouc'
-	nb, = msg.pop ('B')
-	nb += 1
-	m = Msg (msg.mtype)
-	m.push ('B', nb)
-	n.response (m)
+        print 'oucouc'
+        nb, = msg.pop ('B')
+        nb += 1
+        m = Msg (msg.mtype)
+        m.push ('B', nb)
+        n.response (m)
     n.register (0x82, a)
     m = Msg (0x81)
     n.send (m)
@@ -31,7 +31,7 @@ f1 = Forked (c1)
 def c2 ():
     n = Node ()
     def a (msg):
-	print 'coucou'
+        print 'coucou'
     n.register (0x81, a)
     m = Msg (0x82)
     m.push ('B', 42)
@@ -40,9 +40,9 @@ def c2 ():
     assert r.pop ('B') == (43,)
     n.wait_async (42)
     while not n.sync ():
-	fds = select.select ((n, ), (), ())[0]
-	for i in fds:
-	    i.read ()
+        fds = select.select ((n, ), (), ())[0]
+        for i in fds:
+            i.read ()
     n.wait ()
 
 f2 = Forked (c2)

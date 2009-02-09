@@ -32,149 +32,149 @@ ARG = 3
 class Proto:
 
     def __init__ (self, file, date, timeout, log = None):
-	"""Initialise and set file (serial port, pty, socket...), date
-	function and timeout value.
+        """Initialise and set file (serial port, pty, socket...), date
+        function and timeout value.
 
-	- file: open file connected to the slave device.
-	- date: when called, should return the current time.
-	- timeout: time after which retransmission is done.
-	- log: if defined, will be called with a log string.
+        - file: open file connected to the slave device.
+        - date: when called, should return the current time.
+        - timeout: time after which retransmission is done.
+        - log: if defined, will be called with a log string.
 
-	"""
-	self.file = file
-	self.date = date
-	self.last_send = None
-	self.timeout = timeout
-	self.send_queue = [ ]
-	self.state = START
-	self.log = log
-	self.handlers = { }
+        """
+        self.file = file
+        self.date = date
+        self.last_send = None
+        self.timeout = timeout
+        self.send_queue = [ ]
+        self.state = START
+        self.log = log
+        self.handlers = { }
 
     def send (self, *frame):
-	"""Queue a frame to send."""
-	if not self.send_queue:
-	    self.last_send = None
-	self.send_queue.append (Frame (*frame))
+        """Queue a frame to send."""
+        if not self.send_queue:
+            self.last_send = None
+        self.send_queue.append (Frame (*frame))
 
     def read (self):
-	"""Read from file and receive frames."""
-	for f in self.recv ():
-	    if self.log:
-		self.log ('recv %s' % f)
-	    if self.send_queue and f == self.send_queue[0]:
-		del self.send_queue[0]
-		if self.send_queue:
-		    self.send_head ()
-	    else:
-		self.dispatch (f)
+        """Read from file and receive frames."""
+        for f in self.recv ():
+            if self.log:
+                self.log ('recv %s' % f)
+            if self.send_queue and f == self.send_queue[0]:
+                del self.send_queue[0]
+                if self.send_queue:
+                    self.send_head ()
+            else:
+                self.dispatch (f)
 
     def sync (self):
-	"""Send frames, return True if all is sent."""
-	if self.send_queue and (self.last_send is None
-		or self.last_send + self.timeout < self.date ()):
-	    self.send_head ()
-	return not self.send_queue
+        """Send frames, return True if all is sent."""
+        if self.send_queue and (self.last_send is None
+                or self.last_send + self.timeout < self.date ()):
+            self.send_head ()
+        return not self.send_queue
 
     def wait (self, cond = None):
-	"""Wait forever or until cond () is True."""
-	while not (self.sync () and (cond is not None or cond ())):
-	    fds = select.select ((self,), (), (), self.timeout)[0]
-	    for i in fds:
-		assert i is self
-		i.read ()
+        """Wait forever or until cond () is True."""
+        while not (self.sync () and (cond is not None or cond ())):
+            fds = select.select ((self,), (), (), self.timeout)[0]
+            for i in fds:
+                assert i is self
+                i.read ()
 
     def register (self, command, fmt, handler):
-	"""Register a handler for the specified command and format.  The
-	handler will receive decoded arguments."""
-	key = (command, struct.calcsize ('!' + fmt))
-	assert key not in self.handlers
-	self.handlers[key] = (handler, fmt)
+        """Register a handler for the specified command and format.  The
+        handler will receive decoded arguments."""
+        key = (command, struct.calcsize ('!' + fmt))
+        assert key not in self.handlers
+        self.handlers[key] = (handler, fmt)
 
     def fileno (self):
-	"""Return file descriptor, for use with select."""
-	return self.file.fileno ()
+        """Return file descriptor, for use with select."""
+        return self.file.fileno ()
 
     def send_head (self):
-	"""Send first frame from the send queue."""
-	if self.log:
-	    self.log ('send %s' % self.send_queue[0])
-	self.file.write (self.send_queue[0].data ())
-	self.last_send = self.date ()
+        """Send first frame from the send queue."""
+        if self.log:
+            self.log ('send %s' % self.send_queue[0])
+        self.file.write (self.send_queue[0].data ())
+        self.last_send = self.date ()
 
     def recv (self):
-	"""Receive a frame, used as a generator."""
-	for c in self.file.read (1):
-	    if c == '!':
-		self.state = BANG
-	    else:
-		if self.state == START:
-		    pass
-		elif self.state == BANG:
-		    if c.isalpha ():
-			self.recv_command = c
-			self.recv_args = ''
-			self.state = CMD
-		    else:
-			self.recv_error ()
-		elif self.state == CMD:
-		    if c == '\r':
-			f = Frame (self.recv_command)
-			f.args = binascii.unhexlify (self.recv_args)
-			yield f
-		    elif (c >= '0' and c <= '9') or (c >= 'a' and c <= 'f'):
-			self.recv_args += c
-			self.state = ARG
-		    else:
-			self.recv_error ()
-		else:
-		    assert self.state == ARG
-		    if (c >= '0' and c <= '9') or (c >= 'a' and c <= 'f'):
-			self.recv_args += c
-			self.state = CMD
-		    else:
-			self.recv_error ()
+        """Receive a frame, used as a generator."""
+        for c in self.file.read (1):
+            if c == '!':
+                self.state = BANG
+            else:
+                if self.state == START:
+                    pass
+                elif self.state == BANG:
+                    if c.isalpha ():
+                        self.recv_command = c
+                        self.recv_args = ''
+                        self.state = CMD
+                    else:
+                        self.recv_error ()
+                elif self.state == CMD:
+                    if c == '\r':
+                        f = Frame (self.recv_command)
+                        f.args = binascii.unhexlify (self.recv_args)
+                        yield f
+                    elif (c >= '0' and c <= '9') or (c >= 'a' and c <= 'f'):
+                        self.recv_args += c
+                        self.state = ARG
+                    else:
+                        self.recv_error ()
+                else:
+                    assert self.state == ARG
+                    if (c >= '0' and c <= '9') or (c >= 'a' and c <= 'f'):
+                        self.recv_args += c
+                        self.state = CMD
+                    else:
+                        self.recv_error ()
 
     def recv_error (self):
-	"""Handle reception errors."""
-	self.state = START
-	if self.log:
-	    self.log ('error')
-	# Resend now.
-	if self.send_queue:
-	    self.send_head ()
+        """Handle reception errors."""
+        self.state = START
+        if self.log:
+            self.log ('error')
+        # Resend now.
+        if self.send_queue:
+            self.send_head ()
 
     def dispatch (self, frame):
-	"""Pass a received frame to the correct handler."""
-	key = (frame.command, len (frame.args))
-	if key in self.handlers:
-	    h = self.handlers[key]
-	    h[0] (*(frame.decode (h[1])))
+        """Pass a received frame to the correct handler."""
+        key = (frame.command, len (frame.args))
+        if key in self.handlers:
+            h = self.handlers[key]
+            h[0] (*(frame.decode (h[1])))
 
 class Frame:
 
     def __init__ (self, command = None, fmt = '', *args):
-	"""Initiliase a frame.  If command is given, the frame is constructed
-	using a struct.pack like fmt string."""
-	if command:
-	    assert len (command) == 1 and command.isalpha ()
-	    self.command = command
-	    self.args = struct.pack ('!' + fmt, *args)
-	else:
-	    self.command = None
-	    self.args = ''
+        """Initiliase a frame.  If command is given, the frame is constructed
+        using a struct.pack like fmt string."""
+        if command:
+            assert len (command) == 1 and command.isalpha ()
+            self.command = command
+            self.args = struct.pack ('!' + fmt, *args)
+        else:
+            self.command = None
+            self.args = ''
     
     def data (self):
-	"""Get a frame representation ready to send."""
-	return '!' + self.command + binascii.hexlify (self.args) + '\r'
+        """Get a frame representation ready to send."""
+        return '!' + self.command + binascii.hexlify (self.args) + '\r'
 
     def decode (self, fmt):
-	"""Decode using a struct.unpack like fmt string."""
-	return struct.unpack ('!' + fmt, self.args)
+        """Decode using a struct.unpack like fmt string."""
+        return struct.unpack ('!' + fmt, self.args)
 
     def __eq__ (self, other):
-	"""Compare for equality."""
-	return self.command == other.command and self.args == other.args
+        """Compare for equality."""
+        return self.command == other.command and self.args == other.args
 
     def __str__ (self):
-	"""Convert to string."""
-	return '!' + self.command + binascii.hexlify (self.args)
+        """Convert to string."""
+        return '!' + self.command + binascii.hexlify (self.args)

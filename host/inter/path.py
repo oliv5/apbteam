@@ -32,11 +32,11 @@ class Path (Drawable):
     """Computed path drawing."""
 
     def __init__ (self, onto):
-	Drawable.__init__ (self, onto)
-	self.path = [ ]
+        Drawable.__init__ (self, onto)
+        self.path = [ ]
 
     def draw (self):
-	self.reset ()
-	if len (self.path) > 2:
-	    fmt = dict (fill = 'green', arrow = LAST)
-	    self.draw_line (*self.path, **fmt)
+        self.reset ()
+        if len (self.path) > 2:
+            fmt = dict (fill = 'green', arrow = LAST)
+            self.draw_line (*self.path, **fmt)

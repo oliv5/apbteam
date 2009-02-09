@@ -17,8 +17,8 @@ fh = Forked (h.wait)
 n = Node ()
 def nf ():
     while True:
-	time.sleep (1)
-	n.wait (n.date + 1)
+        time.sleep (1)
+        n.wait (n.date + 1)
 fn = Forked (nf)
 
 slave = os.popen ('./test_twi_sl.host', 'w')

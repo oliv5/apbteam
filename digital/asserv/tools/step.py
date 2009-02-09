@@ -8,9 +8,9 @@ import Gnuplot
 
 def step (name, offset, kp, ki, kd, plots, **param):
     if sys.argv[1] == '!':
-	io = proto.popen_io.PopenIO (sys.argv[2:])
+        io = proto.popen_io.PopenIO (sys.argv[2:])
     else:
-	io = serial.Serial (sys.argv[1])
+        io = serial.Serial (sys.argv[1])
     p = { name + 'kp': kp, name + 'ki': ki, name + 'kd': kd}
     p.update (param)
     a = Asserv (io, **p)
