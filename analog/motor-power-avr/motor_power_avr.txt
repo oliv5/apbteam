@@ -54,7 +54,6 @@
     * de 60°C à 70° : limit = descend linéairement de 15A à 4A
     * au delà de 70° : pont coupé
 
-
 - La carte monitore la tension de batterie filtrée à 2,5ms. Elle peut par
   exemple limiter le courant dans les ponts en cas de baisse trop forte de la
   tension de batterie, ou renvoyer un signal "low batt" à la carte-mère.
@@ -82,8 +81,9 @@
 - La référence des drivers de MOS est MAX5063AASA. Ce sont d'excellents
   drivers (rapides, fort courant, délais précis).
 
-En cas de difficultés d'appro pour ce composant, on pourra prendre des IR2010,
-de moins bonne facture, mais qui feront l'affaire.
+En cas de difficultés d'appro pour ce composant, on pourra prendre des IR2101,
+ou HIP2101, de moins bonne facture, mais qui feront l'affaire. On peut aussi
+prendre des UCC27201, qui sont meilleurs que les IR2101.
 
 Il faudra peut-etre modifier le soft de manière à alonger le dead time, et il
 faudra limiter le courant un peu plus bas (30% environ) pour limiter la

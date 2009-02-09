@@ -13,10 +13,10 @@
   battery state
 
 **It is composed of the following elements :
-- 5V bucks
-- a switch controled by a switching circuitry for input power selection (Nestor
+- two 5V bucks
+- a relay controled by a detection circuitry for input power selection (Nestor
   or Battery)
-- a SEPIC controler for battery charge
+- a SEPIC controler for battery charge from Nestor input
 - a 4-leds voltmeter
 
 
