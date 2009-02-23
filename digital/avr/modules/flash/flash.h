@@ -53,6 +53,13 @@
 
 #define FLASH_TBP_US 10
 
+enum
+{
+    FLASH_CMD_INIT,
+    FLASH_CMD_READ,
+    FLASH_CMD_NB
+};
+
 /** Flash access.
   * The flash contains an address of 21 bits in a range from 0x0-0x1fffff.
   * This function shall access the memory directly by the SPI.
@@ -140,5 +147,13 @@ flash_read_array (uint32_t addr, uint8_t *buffer, uint32_t length);
   */
 void
 flash_write_array (uint32_t addr, uint8_t *data, uint32_t length);
+
+/** Process the logs
+  * \param  size  the number of arguments.
+  * \param  an array of arguments.
+  * \return  true on success.
+  */
+uint8_t
+flash_log (uint8_t size, uint8_t *args);
 
 #endif /* flash_h */

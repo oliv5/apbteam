@@ -237,3 +237,39 @@ flash_write_array (uint32_t addr, uint8_t *data, uint32_t length)
       }
 }
 
+uint8_t
+flash_log (uint8_t size, uint8_t *args)
+{
+    uint8_t buf[128];
+    uint8_t status = 0x0;
+    uint32_t addr;
+
+    if (size >= 4)
+	addr = (((uint32_t) args[1]) << 16)
+	    | (((uint32_t) args[2]) << 8) | args[3];
+
+    switch (args[0])
+      {
+      case FLASH_CMD_INIT:
+	status = flash_init ();
+	break;
+      case FLASH_CMD_READ:
+	if ((size == 5)
+	    && (args[4] < sizeof(buf)))
+	  {
+	    flash_read_array (addr, buf, args[4]);
+	    proto_send ('r', args[4], buf);
+	    status = 0x1;
+	  }
+	else if (size == 4)
+	  {
+	    proto_send1b ('r', flash_read (addr));
+	    status = 0x1;
+	  }
+	break;
+      default:
+	status = 0x0;
+      }
+
+    return status;
+}
