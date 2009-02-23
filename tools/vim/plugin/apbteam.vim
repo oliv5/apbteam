@@ -67,6 +67,10 @@ function! APBTeamPython()
    setlocal smarttab
    setlocal expandtab
    setlocal softtabstop=4
+
+   " Show trailing whitespace:
+   highlight ExtraWhitespace ctermbg=red guibg=red
+   match ExtraWhitespace /\s\+$/
 endfunction
 
 
