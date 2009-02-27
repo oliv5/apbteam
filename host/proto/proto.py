@@ -77,7 +77,7 @@ class Proto:
 
     def wait (self, cond = None):
         """Wait forever or until cond () is True."""
-        while not (self.sync () and (cond is not None or cond ())):
+        while not (self.sync () and cond is not None and cond ()):
             fds = select.select ((self,), (), (), self.timeout)[0]
             for i in fds:
                 assert i is self
