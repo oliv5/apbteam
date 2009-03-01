@@ -27,7 +27,7 @@
 #include "modules/flash/flash.h"
 #include "trace.h"
 
-#define TRACE_CODE_START 0xF33FF22F
+#define TRACE_CODE_START FLASH_LOG_CODE
 
 #define TRACE_ARGS_MAX 6
 #define TRACE_MAX_ARGS (TRACE_ARGS_MAX * TRACE_ARGS_MAX)

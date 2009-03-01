@@ -53,6 +53,9 @@
 
 #define FLASH_TBP_US 10
 
+#define FLASH_LOG_CODE 0xF33FF22F
+#define FLASH_LOG_CODE_READ 0x2FF23FF3
+
 enum
 {
     FLASH_CMD_INIT,

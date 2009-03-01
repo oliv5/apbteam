@@ -34,7 +34,6 @@ void
 proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 {
     /* May be unused. */
-    uint32_t addr = v8_to_v32 (0, args[0], args[1], args[2]);
     uint8_t status;
 #define c(cmd, size) (cmd << 8 | size)
     switch (c (cmd, size))
@@ -45,14 +44,21 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	break;
       default:
 	if (cmd == 'l')
+	  {
 	    status = flash_log (size, args);
 	    if (!status)
+	      {
 		/* Error */
 		proto_send0('?');
+		return;
+	      }
+	  }
 	else
+	  {
 	    /* Error */
 	    proto_send0 ('?');
-	return;
+	    return;
+	  }
       }
     /* Acknowledge what has been done */
     proto_send (cmd, size, args);

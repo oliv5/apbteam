@@ -244,9 +244,9 @@ flash_write_array (uint32_t addr, uint8_t *data, uint32_t length)
 uint8_t
 flash_log (uint8_t size, uint8_t *args)
 {
-    uint8_t buf[128];
+    uint8_t buf[128+1];
     uint8_t status = 0x0;
-    uint32_t addr;
+    uint32_t addr = 0;
 
     if (size >= 4)
 	addr = (((uint32_t) args[1]) << 16)
@@ -256,10 +256,41 @@ flash_log (uint8_t size, uint8_t *args)
       {
       case FLASH_CMD_INIT:
 	status = flash_init ();
+	if (status)
+	  {
+	    uint32_t res;
+	    uint32_t ended = 0;
+	    for (addr = 0; addr < FLASH_ADDRESS_HIGH; addr += FLASH_PAGE_SIZE)
+	      {
+		flash_read_array (addr, (uint8_t *) &res, 4);
+		if (res == 0xFFFFFFFF)
+		  {
+		    ended = addr;
+		    proto_send3b ('e', addr >> 16, addr >> 8, addr);
+		    /* The sector is empty. */
+		    break;
+		  }
+	      }
+
+	    for (addr = FLASH_PAGE (ended - FLASH_PAGE_SIZE);
+		 addr != ended;
+		 addr = FLASH_PAGE (addr - FLASH_PAGE_SIZE))
+	      {
+		uint32_t res;
+		uint32_t toto = FLASH_LOG_CODE_READ;
+		flash_read_array (addr, (uint8_t *) &res, 4);
+		if (res == FLASH_LOG_CODE_READ)
+		  {
+		    proto_send3b ('i', addr >> 16, addr >> 8, addr);
+		    break;
+		  }
+	      }
+	  }
+	proto_send1b ('s', status);
 	break;
       case FLASH_CMD_READ:
 	if ((size == 5)
-	    && (args[4] < sizeof(buf)))
+	    && (args[4] <= sizeof(buf)))
 	  {
 	    flash_read_array (addr, buf, args[4]);
 	    proto_send ('r', args[4], buf);

@@ -1,7 +1,8 @@
 BASE = ../../..
-AVR_PROGS = test-flash
+AVR_PROGS = test-flash flash_dump
 
 test-flash_SOURCES = test-flash.c
+flash_dump_SOURCES = flash-dump.c
 
 MODULES = utils spi flash proto uart
 CONFIGFILE = avrconfig.h
