@@ -168,8 +168,8 @@ flash_first_sector (void)
 void
 flash_write (uint32_t addr, uint8_t data)
 {
-    flash_send_command (FLASH_WREN);
     while (flash_is_busy ());
+    flash_send_command (FLASH_WREN);
 
     AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
     /* Write instruction. */
@@ -190,12 +190,14 @@ flash_read (uint32_t addr)
 {
     uint8_t data;
 
+    while (flash_is_busy ());
     AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
     /* Send the read instruction. */
     spi_send (FLASH_READ);
     flash_address (addr);
     data = spi_recv ();
     AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
+    while (flash_is_busy ());
     return data;
 }
 
@@ -211,6 +213,7 @@ flash_read_array (uint32_t addr, uint8_t *buffer, uint32_t length)
 {
     uint8_t i;
 
+    while (flash_is_busy ());
     AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
     spi_send (FLASH_READ);
     flash_address (addr);
@@ -219,6 +222,7 @@ flash_read_array (uint32_t addr, uint8_t *buffer, uint32_t length)
         buffer[i] = spi_recv ();
       }
     AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
+    while (flash_is_busy ());
 }
 
 /** Write in the flash byte provided in parameter.
