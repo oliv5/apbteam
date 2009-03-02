@@ -54,7 +54,7 @@ class Mex:
 
         def __handle (self, msg):
             assert self.state is not None
-            m = Msg (msg.mtype)
+            m = msg
             m.push ('B', self.state)
             self.__node.response (m)
 
@@ -102,7 +102,7 @@ class Mex:
                 node.register (ID_ADC, self.__handle)
 
             def __handle (self, msg):
-                m = Msg (msg.mtype)
+                m = msg
                 for adc in self.__list:
                     assert adc.value is not None
                     m.push ('H', adc.value)
