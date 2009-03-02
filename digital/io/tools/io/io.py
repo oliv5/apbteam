@@ -23,7 +23,7 @@
 # }}} */
 import proto, time
 
-class Io:
+class Proto:
 
     def __init__ (self, file, time = time.time, **param):
         self.proto = proto.Proto (file, time, 0.1)

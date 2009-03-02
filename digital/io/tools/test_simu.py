@@ -28,7 +28,7 @@ import utils.forked
 
 import asserv
 import asserv.init
-from io import Io
+import io
 import io.init
 from proto.popen_io import PopenIO
 
@@ -55,7 +55,7 @@ class TestSimu (InterNode):
         self.asserv.async = True
         self.tk.createfilehandler (self.asserv, READABLE, self.asserv_read)
         # Io.
-        self.io = Io (PopenIO (io_cmd), time, **io.init.host)
+        self.io = io.Proto (PopenIO (io_cmd), time, **io.init.host)
         self.io.async = True
         self.tk.createfilehandler (self.io, READABLE, self.io_read)
         # Color switch.
