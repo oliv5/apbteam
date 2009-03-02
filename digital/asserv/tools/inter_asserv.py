@@ -45,7 +45,8 @@ class InterAsserv (Inter):
             i = asserv.init.target
         self.a = asserv.Proto (io, **i)
         self.a.async = True
-        self.a.register_pos (self.pos)
+        self.a.register_pos ()
+        self.a.position.register (self.pos)
         # Inter.
         Inter.__init__ (self)
         self.tk.createfilehandler (self.a, READABLE, self.read)
@@ -84,9 +85,10 @@ class InterAsserv (Inter):
         self.a.proto.sync ()
         self.after (100, self.timeout)
 
-    def pos (self, x, y, a):
-        self.tableview.robot.pos = (x, y)
-        self.tableview.robot.angle = a
+    def pos (self):
+        p = self.a.position
+        self.tableview.robot.pos = p.pos
+        self.tableview.robot.angle = p.angle
         self.update (self.tableview.robot)
         self.update ()
 
