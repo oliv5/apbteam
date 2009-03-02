@@ -1,4 +1,4 @@
-# mex - Messages exchange library. {{{
+# host/utils - Host utilities. {{{
 #
 # Copyright (C) 2008 Nicolas Schodet
 #
