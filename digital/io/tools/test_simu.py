@@ -1,6 +1,7 @@
 import sys
 sys.path.append (sys.path[0] + '/../../../host')
 sys.path.append (sys.path[0] + '/../../asserv/tools')
+import math
 
 import mex.hub
 import utils.forked
@@ -17,8 +18,8 @@ from Tkinter import *
 class TestSimu (InterNode):
     """Inter, with simulated programs."""
 
-    robot_start_pos = ((200, 2100 - 70, -90),
-            (3000 - 200, 2100 - 70, -90))
+    robot_start_pos = ((200, 2100 - 70, math.radians (-90)),
+            (3000 - 200, 2100 - 70, math.radians (-90)))
 
     def __init__ (self, asserv_cmd, io_cmd):
         # Hub.

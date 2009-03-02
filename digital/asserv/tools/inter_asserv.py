@@ -90,7 +90,7 @@ class InterAsserv (Inter):
 
     def pos (self, x, y, a):
         self.tableview.robot.pos = (x, y)
-        self.tableview.robot.angle = float (a) / 180 * math.pi
+        self.tableview.robot.angle = a
         self.update (self.tableview.robot)
         self.update ()
 
@@ -106,8 +106,8 @@ class InterAsserv (Inter):
 
     def button3 (self, ev):
         x, y = self.tableview.screen_coord ((ev.x, ev.y))
-        a = math.degrees (math.atan2 (y - self.tableview.robot.pos[1],
-            x - self.tableview.robot.pos[0]))
+        a = math.atan2 (y - self.tableview.robot.pos[1],
+                x - self.tableview.robot.pos[0])
         action = self.actionVar.get ()
         if action == 'set_pos':
             self.a.set_pos (a = a)

@@ -152,7 +152,8 @@ class Asserv:
             self.proto.send ('p', 'BL', ord ('Y'),
                     256 * y / self.param['scale'])
         if a is not None:
-            self.proto.send ('p', 'BL', ord ('A'), a * (1 << 24) / 360)
+            self.proto.send ('p', 'BL', ord ('A'),
+                    a * (1 << 24) / (2 * math.pi))
 
     def goto (self, x, y, backward_ok = False):
         """Go to position."""
@@ -165,7 +166,7 @@ class Asserv:
     def goto_angle (self, a):
         """Go to angle."""
         self.mseq += 1
-        self.proto.send ('x', 'HB', a * (1 << 16) / 360, self.mseq)
+        self.proto.send ('x', 'HB', a * (1 << 16) / (2 * math.pi), self.mseq)
         self.wait (self.finished, auto = True)
 
     def goto_xya (self, x, y, a, backward_ok = False):
@@ -174,13 +175,12 @@ class Asserv:
         self.proto.send (backward_ok and 'r' or 'x', 'LLHB',
                 256 * x / self.param['scale'],
                 256 * y / self.param['scale'],
-                a * (1 << 16) / 360, self.mseq)
+                a * (1 << 16) / (2 * math.pi), self.mseq)
         self.wait (self.finished, auto = True)
 
     def set_simu_pos (self, x, y, a):
         """Set simulated position."""
-        self.proto.send ('h', 'BHHH', ord ('X'), x, y,
-                math.radians (a) * 1024)
+        self.proto.send ('h', 'BHHH', ord ('X'), x, y, a * 1024)
 
     def register_pos (self, func, interval = 225 / 4):
         """Will call func each time a position is received."""
@@ -234,7 +234,7 @@ class Asserv:
     def handle_pos (self, x, y, a):
         x = x / 256 * self.param['scale']
         y = y / 256 * self.param['scale']
-        a = a * 360 / (1 << 24)
+        a = a * 2 * math.pi / (1 << 24)
         self.pos_func (x, y, a)
 
     def wait (self, cond = None, auto = False):
