@@ -22,17 +22,18 @@
 #
 # }}}
 """Distance sensor."""
+from math import pi, cos, sin, sqrt
 
 from Tkinter import *
 from drawable import *
+from utils.observable import Observable
 
-from math import pi, cos, sin, sqrt
-
-class DistSensor (Drawable):
+class DistSensor (Drawable, Observable):
     """A distance sensor."""
 
     def __init__ (self, onto, pos, angle, range):
         Drawable.__init__ (self, onto)
+        Observable.__init__ (self)
         self.pos = pos
         self.angle = angle
         self.range = range
@@ -66,6 +67,7 @@ class DistSensor (Drawable):
                     d = m + f
                     if self.distance is None or self.distance > d:
                         self.distance = d
+        self.notify ()
         return self.distance
 
     def draw (self):

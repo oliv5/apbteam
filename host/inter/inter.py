@@ -177,18 +177,19 @@ class Arm (Drawable):
 class Servo:
     """Servo motor."""
 
-    def __init__ (self, coord, l, start, extent):
+    def __init__ (self, onto, coord, l, start, extent):
+        self.onto = onto
         self.coord = coord
         self.l = l
         self.start = start
         self.extent = extent
         self.pos = 0
 
-    def draw (self, d):
-        d.draw_arc (self.coord, self.l, start = self.start,
+    def draw (self):
+        self.onto.draw_arc (self.coord, self.l, start = self.start,
                 extent = self.extent, style = 'arc', outline = '#808080')
         a = self.start + self.pos * self.extent
-        d.draw_line (self.coord, (self.coord[0] + self.l * cos (a),
+        self.onto.draw_line (self.coord, (self.coord[0] + self.l * cos (a),
             self.coord[1] + self.l * sin (a)))
 
 
@@ -198,19 +199,19 @@ class Rear (Drawable):
     def __init__ (self, onto):
         Drawable.__init__ (self, onto)
         self.traps = [
-                Servo ((-2.5, -1), 0.8, 0, pi/2),
-                Servo ((-1.5, -0.9), 0.8, 0, pi/2),
-                Servo ((-0.5, -0.8), 0.8, 0, pi/2),
-                Servo ((0.5, -0.8), 0.8, pi, -pi/2),
-                Servo ((1.5, -0.9), 0.8, pi, -pi/2),
-                Servo ((-2.5, 1.3), 0.8, -pi/6, pi/3),
+                Servo (self, (-2.5, -1), 0.8, 0, pi/2),
+                Servo (self, (-1.5, -0.9), 0.8, 0, pi/2),
+                Servo (self, (-0.5, -0.8), 0.8, 0, pi/2),
+                Servo (self, (0.5, -0.8), 0.8, pi, -pi/2),
+                Servo (self, (1.5, -0.9), 0.8, pi, -pi/2),
+                Servo (self, (-2.5, 1.3), 0.8, -pi/6, pi/3),
                 ]
 
     def draw (self):
         self.reset ()
         self.trans_scale (0.9/5)
         for i in self.traps:
-            i.draw (self)
+            i.draw ()
         self.draw_line ((-0.5, 1.5), (-0.5, 0.5), (-2.5, 0.2),
                 fill = '#808080')
         self.draw_line ((-2.5, -1.2), (-2.5, -2.3), (2.5, -2.3), (2.5, 0.2),

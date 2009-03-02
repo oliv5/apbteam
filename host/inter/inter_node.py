@@ -33,6 +33,7 @@ from mex.node import Node
 from mex.msg import Msg
 
 import asserv
+import io
 
 class InterNode (Inter):
     """Inter, coupled with a mex Node."""
@@ -41,23 +42,22 @@ class InterNode (Inter):
     # period.
     TICK = 900.0
 
-    IO_JACK = 0xb0
-    IO_COLOR = 0xb1
-    IO_SERVO = 0xb2
-    IO_SHARPS = 0xb3
-    IO_PATH = 0xb4
-
     def __init__ (self):
         Inter.__init__ (self)
         self.node = Node ()
         self.asserv_link = asserv.Mex (self.node)
         self.asserv_link.position.register (self.notify_position)
         self.asserv_link.aux[0].register (self.notify_aux0)
-        self.node.register (self.IO_JACK, self.handle_IO_JACK)
-        self.node.register (self.IO_COLOR, self.handle_IO_COLOR)
-        self.node.register (self.IO_SERVO, self.handle_IO_SERVO)
-        self.node.register (self.IO_SHARPS, self.handle_IO_SHARPS)
-        self.node.register (self.IO_PATH, self.handle_IO_PATH)
+        self.io_link = io.Mex (self.node)
+        self.notify_jack ()
+        self.notify_color_switch ()
+        self.jackVar.trace_variable ('w',
+                lambda *args: self.notify_jack ())
+        self.colorVar.trace_variable ('w',
+                lambda *args: self.notify_color_switch ())
+        for i in range (len (self.io_link.servo)):
+            self.io_link.servo[i].register (
+                    lambda i = i: self.notify_servo (i))
         self.tk.createfilehandler (self.node, READABLE, self.read)
         self.date = 0
         self.synced = True
@@ -74,10 +74,12 @@ class InterNode (Inter):
         for s in self.dist_sensors:
             s.obstacles = self.obstacles
             s.hide = True
+            s.register (self.update_sharps)
         self.tableview.robot.drawn.extend (self.dist_sensors)
+        self.update_sharps ()
         self.path = Path (self.tableview.table)
         self.tableview.drawn.append (self.path)
-        self.tableview
+        self.io_link.path.register (self.notify_path)
 
     def createWidgets (self):
         Inter.createWidgets (self)
@@ -149,39 +151,35 @@ class InterNode (Inter):
         self.actuatorview.arm.angle = self.asserv_link.aux[0].angle
         self.update (self.actuatorview.arm)
 
-    def handle_IO_JACK (self, msg):
-        m = Msg (self.IO_JACK)
-        m.push ('B', self.jackVar.get ())
-        self.node.response (m)
+    def notify_jack (self):
+        self.io_link.jack.state = self.jackVar.get ()
+        self.io_link.jack.notify ()
 
-    def handle_IO_COLOR (self, msg):
-        m = Msg (self.IO_COLOR)
-        m.push ('B', self.colorVar.get ())
-        self.node.response (m)
+    def notify_color_switch (self):
+        self.io_link.color_switch.state = self.colorVar.get ()
+        self.io_link.color_switch.notify ()
 
-    def handle_IO_SERVO (self, msg):
-        for t in self.actuatorview.rear.traps:
-            t.pos = float (msg.pop ('B')[0]) / 255
-        self.update (self.actuatorview.rear)
+    def notify_servo (self, i):
+        servo = self.io_link.servo[i]
+        trap = self.actuatorview.rear.traps[i]
+        trap.pos = float (servo.value) / 255
+        self.update (trap)
 
-    def handle_IO_SHARPS (self, msg):
-        m = Msg (self.IO_SHARPS)
-        for i in self.dist_sensors:
-            d = i.distance or 800
+    def update_sharps (self):
+        for ds, adc in zip (self.dist_sensors, self.io_link.adc):
+            d = ds.distance or 800
             d /= 10
             if d > 10:
                 v = 0.000571429 * d*d + -0.0752381 * d + 2.89107
             else:
                 v = 2.2 / 10 * d
             v *= 1024 / 5
-            m.push ('H', v)
             assert v >= 0 and v < 1024
-        self.node.response (m)
+            adc.value = v
+            adc.notify ()
 
-    def handle_IO_PATH (self, msg):
-        self.path.path = [ ]
-        while len (msg) >= 4:
-            self.path.path.append (msg.pop ('hh'))
+    def notify_path (self):
+        self.path.path = self.io_link.path.path
         self.update (self.path)
 
     def place_obstacle (self, ev):
