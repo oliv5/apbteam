@@ -26,7 +26,7 @@ import math
 import mex.hub
 import utils.forked
 
-from asserv import Asserv
+import asserv
 import asserv.init
 from io import Io
 import io.init
@@ -50,7 +50,8 @@ class TestSimu (InterNode):
         def time ():
             return self.node.date / self.TICK
         # Asserv.
-        self.asserv = Asserv (PopenIO (asserv_cmd), time, **asserv.init.host)
+        self.asserv = asserv.Proto (PopenIO (asserv_cmd), time,
+                **asserv.init.host)
         self.asserv.async = True
         self.tk.createfilehandler (self.asserv, READABLE, self.asserv_read)
         # Io.

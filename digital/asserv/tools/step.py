@@ -1,9 +1,10 @@
 import sys
 
-from asserv import Asserv
+import Gnuplot
+
+import asserv
 import proto.popen_io
 import serial
-import Gnuplot
 
 def step (name, offset, kp, ki, kd, plots, **param):
     if sys.argv[1] == '!':
@@ -12,7 +13,7 @@ def step (name, offset, kp, ki, kd, plots, **param):
         io = serial.Serial (sys.argv[1])
     p = { name + 'kp': kp, name + 'ki': ki, name + 'kd': kd}
     p.update (param)
-    a = Asserv (io, **p)
+    a = asserv.Proto (io, **p)
     a.stats (*plots)
     a.consign (name, offset)
     #a.speed (name, 16)

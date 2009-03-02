@@ -1,6 +1,6 @@
 import sys
 
-from asserv import Asserv
+import asserv
 import asserv.init
 import proto.popen_io
 import serial
@@ -11,6 +11,6 @@ if sys.argv[1] == '!':
 else:
     io = serial.Serial (sys.argv[1])
     init = asserv.init.target
-a = Asserv (io, **init)
+a = asserv.Proto (io, **init)
 a.write_eeprom ()
 a.close ()

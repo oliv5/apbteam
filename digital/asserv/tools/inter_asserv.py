@@ -24,7 +24,7 @@
 """Inter, communicating with the asserv board."""
 import math
 
-from asserv import Asserv
+import asserv
 import asserv.init
 import proto.popen_io
 import serial
@@ -43,7 +43,7 @@ class InterAsserv (Inter):
         else:
             io = serial.Serial (argv[0])
             i = asserv.init.target
-        self.a = Asserv (io, **i)
+        self.a = asserv.Proto (io, **i)
         self.a.async = True
         self.a.register_pos (self.pos)
         # Inter.

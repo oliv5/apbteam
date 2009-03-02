@@ -1,11 +1,11 @@
 import sys
+import random
+import math
 
-from asserv import Asserv
+import asserv
 import asserv.init
 import proto.popen_io
 import serial
-import random
-import math
 
 if sys.argv[1] == '!':
     io = proto.popen_io.PopenIO (sys.argv[2:])
@@ -13,7 +13,7 @@ if sys.argv[1] == '!':
 else:
     io = serial.Serial (sys.argv[1])
     init = asserv.init.target
-a = Asserv (io, **init)
+a = asserv.Proto (io, **init)
 for i in xrange (10):
     x = random.randrange (2000)
     y = random.randrange (1100)
