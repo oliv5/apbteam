@@ -32,6 +32,8 @@ from Tkinter import *
 from mex.node import Node
 from mex.msg import Msg
 
+import asserv
+
 class InterNode (Inter):
     """Inter, coupled with a mex Node."""
 
@@ -48,8 +50,9 @@ class InterNode (Inter):
     def __init__ (self):
         Inter.__init__ (self)
         self.node = Node ()
-        self.node.register (0xa0, self.handle_asserv_0)
-        self.node.register (0xa8, self.handle_asserv_8)
+        self.asserv_link = asserv.Mex (self.node)
+        self.asserv_link.position.register (self.notify_position)
+        self.asserv_link.aux[0].register (self.notify_aux0)
         self.node.register (self.IO_JACK, self.handle_IO_JACK)
         self.node.register (self.IO_COLOR, self.handle_IO_COLOR)
         self.node.register (self.IO_SERVO, self.handle_IO_SERVO)
@@ -137,15 +140,13 @@ class InterNode (Inter):
                 else:
                     self.step ()
 
-    def handle_asserv_0 (self, msg):
-        x, y, a = msg.pop ('hhl')
-        self.tableview.robot.pos = (x, y)
-        self.tableview.robot.angle = float (a) / 1024
+    def notify_position (self):
+        self.tableview.robot.pos = self.asserv_link.position.pos
+        self.tableview.robot.angle = self.asserv_link.position.angle
         self.update (self.tableview.robot)
 
-    def handle_asserv_8 (self, msg):
-        a, = msg.pop ('l')
-        self.actuatorview.arm.angle = float (a) / 1024
+    def notify_aux0 (self):
+        self.actuatorview.arm.angle = self.asserv_link.aux[0].angle
         self.update (self.actuatorview.arm)
 
     def handle_IO_JACK (self, msg):
