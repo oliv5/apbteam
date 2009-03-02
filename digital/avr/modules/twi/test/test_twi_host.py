@@ -1,12 +1,9 @@
-import sys
-sys.path.append (sys.path[0] + '/../../../../../host')
+import os, signal, time
 
 from mex.hub import Hub
 from mex.msg import Msg
 from mex.node import Node
 from utils.forked import Forked
-
-import os, signal, time
 
 def log (x):
     print x

@@ -1,10 +1,7 @@
-import sys
-sys.path.append (sys.path[0] + '/../../../../../host')
+import os, signal
 
 from mex.hub import Hub
 from mex.msg import Msg
-
-import os, signal
 
 def log (x):
     print x

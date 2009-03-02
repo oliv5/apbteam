@@ -22,9 +22,8 @@
 #
 # }}}
 """Inter, coupled with a mex Node."""
-if __name__ == '__main__':
-    import sys
-    sys.path.append (sys.path[0] + '/..')
+from math import pi
+import time
 
 from inter import Inter, Obstacle
 from dist_sensor import DistSensor
@@ -32,8 +31,6 @@ from path import Path
 from Tkinter import *
 from mex.node import Node
 from mex.msg import Msg
-from math import pi
-import time
 
 class InterNode (Inter):
     """Inter, coupled with a mex Node."""

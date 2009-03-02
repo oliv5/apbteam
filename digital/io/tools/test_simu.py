@@ -1,6 +1,3 @@
-import sys
-sys.path.append (sys.path[0] + '/../../../host')
-sys.path.append (sys.path[0] + '/../../asserv/tools')
 import math
 
 import mex.hub

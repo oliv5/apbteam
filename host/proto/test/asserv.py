@@ -1,9 +1,8 @@
 import sys
-sys.path.append (sys.path[0] + '/../..')
+import time, select, os
 
 import proto
 from proto.popen_io import PopenIO
-import time, select, os
 
 # Pass program name as argument.
 io = PopenIO (sys.argv[1:])

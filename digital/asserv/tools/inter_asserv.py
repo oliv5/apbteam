@@ -22,19 +22,15 @@
 #
 # }}}
 """Inter, communicating with the asserv board."""
-import sys
-sys.path.append (sys.path[0] + '/../../../host')
+import math
 
 from asserv import Asserv
 import asserv.init
 import proto.popen_io
 import serial
 
-import math
-
 from inter.inter import Inter
 from Tkinter import *
-
 
 class InterAsserv (Inter):
     """Inter, communicating with the asserv board."""
@@ -118,6 +114,7 @@ class InterAsserv (Inter):
         self.a.free ()
 
 if __name__ == '__main__':
+    import sys
     app = InterAsserv (sys.argv[1:])
     try:
         app.mainloop ()

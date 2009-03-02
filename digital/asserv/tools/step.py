@@ -1,5 +1,4 @@
 import sys
-sys.path.append (sys.path[0] + '/../../../host')
 
 from asserv import Asserv
 import proto.popen_io

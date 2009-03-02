@@ -22,12 +22,11 @@
 #
 # }}}
 """Graphic interface for test_path."""
-import sys
-sys.path.append ('../../../../../host')
+import re
+
 from Tkinter import *
 from inter.drawable import *
 from subprocess import Popen, PIPE
-import re
 
 class Obstacle:
     def __init__ (self, pos, radius):

@@ -1,11 +1,9 @@
-import sys
-sys.path.append (sys.path[0] + '/../..')
+import select
 
 from mex.hub import Hub
 from mex.node import Node
 from mex.msg import Msg
 from utils.forked import Forked
-import select
 
 def log (x):
     print x
