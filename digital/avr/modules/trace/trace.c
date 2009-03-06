@@ -110,12 +110,10 @@ trace_init (void)
 	trace_erase_next_sector ();
 
         /* Store the start code. */
-	for (i = 24; i >= 0; i -= 8)
+	for (i = 4; i; i--)
 	  {
-	    flash_write (trace_global.addr,
-			 TRACE_CODE_START >> i);
-	    trace_global.addr =
-		FLASH_ADDRESS_INC(trace_global.addr);
+	    flash_write (trace_global.addr, v32_to_v8(TRACE_CODE_START, i-1));
+	    trace_global.addr = FLASH_ADDRESS_INC(trace_global.addr);
 	  }
 	return TRACE_STATUS_ON;
       }

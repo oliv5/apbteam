@@ -57,16 +57,16 @@ flood (void)
     /* A little more than 3 memory sectors, a sector is 4 kbytes. */
     for (count = 0; count < 2000; count ++)
       {
-        /* Right motor. */
-        speed = 1;
-        position = 2;
-        acc = 3;
-        arg1 = 1;
-        arg2 = 2;
-        arg3 = 3;
-        TRACE (TRACE_ASSERV__RIGHT_MOTOR, speed, position, acc);
-        TRACE (TRACE_ASSERV__LEFT_MOTOR, speed, position, acc);
-        TRACE (TRACE_IA__IA_CMD, arg1, arg2, arg3);
+	/* Right motor. */
+	speed = 1;
+	position = 2;
+	acc = 3;
+	arg1 = 1;
+	arg2 = 2;
+	arg3 = 3;
+	TRACE (TRACE_ASSERV__RIGHT_MOTOR, speed, position, acc);
+	TRACE (TRACE_ASSERV__LEFT_MOTOR, speed, position, acc);
+	TRACE (TRACE_IA__IA_CMD, arg1, arg2, arg3);
       }
 
     /* Print the end of the address. */
