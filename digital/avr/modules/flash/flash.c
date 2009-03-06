@@ -277,7 +277,6 @@ flash_log (uint8_t size, uint8_t *args)
 		 addr = FLASH_PAGE (addr - FLASH_PAGE_SIZE))
 	      {
 		uint32_t res;
-		uint32_t toto = FLASH_LOG_CODE_READ;
 		flash_read_array (addr, (uint8_t *) &res, 4);
 		if (res == FLASH_LOG_CODE_READ)
 		  {

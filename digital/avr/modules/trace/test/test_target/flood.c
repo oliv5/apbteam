@@ -58,12 +58,12 @@ flood (void)
     for (count = 0; count < 2000; count ++)
       {
         /* Right motor. */
-        speed = count;
-        position = count + 1;
-        acc = count + 2;
-        arg1 = count;
-        arg2 = count + 1;
-        arg3 = count + 3;
+        speed = 1;
+        position = 2;
+        acc = 3;
+        arg1 = 1;
+        arg2 = 2;
+        arg3 = 3;
         TRACE (TRACE_ASSERV__RIGHT_MOTOR, speed, position, acc);
         TRACE (TRACE_ASSERV__LEFT_MOTOR, speed, position, acc);
         TRACE (TRACE_IA__IA_CMD, arg1, arg2, arg3);
