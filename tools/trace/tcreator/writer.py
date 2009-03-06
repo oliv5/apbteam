@@ -1,11 +1,12 @@
 import sys
+import time
 
 from lib.traceclass import *
 
 class Writer:
 
     """Template writer"""
-    def __init__ (self, name, enum_name = "trace_id"):
+    def __init__ (self, name, enum_name):
         self.__name = name
         self.__enum_name = enum_name
 
@@ -21,10 +22,20 @@ class Writer:
         f = open ('tcreator/template.h', 'r')
         template = f.read()
         f.close()
-        define = self.__name.replace('.', '_')
+
+        if self.__name != None:
+            define = self.__name.replace('.', '_')
+        else:
+            define = "trace.h"
         template = template.replace('%%template%%', define)
-        template = template.replace('%%enum_name%%', self.__enum_name)
+
+        if self.__enum_name == None:
+            template = template.replace('%%enum_name%%', "trace_id_t")
+        else:
+            template = template.replace('%%enum_name%%', self.__enum_name)
+
         template = template.replace('%%data%%', string)
+        template = template.replace('%%year%%', time.strftime ('%Y'))
         return template
 
 

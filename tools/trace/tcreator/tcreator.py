@@ -7,7 +7,6 @@ except:
     print "--> You should run yapps on lib/parser.g"
 
 class TCreator:
-        
     def __init__(self, infile, outfile, enum_name = "trace_id_t"):
         self.__infile = infile
         self.__outfile = outfile
@@ -21,7 +20,7 @@ class TCreator:
         w = Writer (self.__outfile, self.__enum_name)
         outstring = w.parse_list (data)
 
-        if self.__outfile != "":
+        if self.__outfile != None:
             w.write_file (outstring)
         else:
             w.print_file (outstring)

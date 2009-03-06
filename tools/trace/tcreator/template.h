@@ -3,7 +3,7 @@
 /* %%template%% */
 /*  {{{
  *
- * Copyright (C) 2008 APBTeam
+ * Copyright (C) %%year%% APBTeam
  *
  * APBTeam:
  *        Web: http://apbteam.org/

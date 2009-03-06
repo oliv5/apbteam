@@ -27,6 +27,8 @@ To interpret the memory data
 
 python trace.py inter <file in>
 
+The interpreted data is directly print on the std output.
+
 Trace definition file
 ---------------------
 
