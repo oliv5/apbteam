@@ -43,6 +43,13 @@ def c1 ():
         m.push ('B', nb)
         n.response (m)
     n.register (0x82, a)
+    def b ():
+        assert False
+    eb = n.schedule (31, b)
+    def c ():
+        print 'hello'
+        n.cancel (eb)
+    n.schedule (28, c)
     m = Msg (0x81)
     n.send (m)
     n.wait ()

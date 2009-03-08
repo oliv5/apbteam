@@ -26,6 +26,7 @@ import mex
 from msg import Msg
 import socket
 from struct import pack, unpack, calcsize
+import bisect
 
 class Node:
 
@@ -42,6 +43,7 @@ class Node:
         self.__seq = 0
         self.__req = None
         self.__handlers = { }
+        self.__schedule_queue = [ ]
         self.register (mex.DATE, lambda msg: self.__handle_DATE (msg))
         self.register (mex.REQ, lambda msg: self.__handle_REQ (msg))
         # Synchronise.
@@ -70,8 +72,12 @@ class Node:
             return True
         else:
             idle = Msg (mex.IDLE)
-            if self.__date_waited != None:
-                idle.push ('L', self.__date_waited)
+            date_waited = self.__date_waited
+            if self.__schedule_queue and (date_waited is None
+                    or self.__schedule_queue[0][0] < date_waited):
+                date_waited = self.__schedule_queue[0][0]
+            if date_waited != None:
+                idle.push ('L', date_waited)
             self.send (idle)
 
     def read (self):
@@ -116,6 +122,18 @@ class Node:
         assert mtype not in self.__handlers
         self.__handlers[mtype] = handler
 
+    def schedule (self, date, action):
+        """Schedule an action for the given date, return the event identifier."""
+        assert date > self.date
+        assert callable (action)
+        event = date, action
+        bisect.insort (self.__schedule_queue, event)
+        return event
+
+    def cancel (self, event):
+        """Cancel a scheduled event."""
+        self.__schedule_queue.remove (event)
+
     def close (self):
         """Close connection with the Hub."""
         self.__socket.close ()
@@ -143,6 +161,12 @@ class Node:
     def __handle_DATE (self, msg):
         """Handle an incoming DATE."""
         self.date, = msg.pop ('L')
+        # Run scheduled events.
+        while self.__schedule_queue \
+                and self.__schedule_queue[0][0] == self.date:
+            action = self.__schedule_queue[0][1]
+            del self.__schedule_queue[0]
+            action ()
 
     def __handle_REQ (self, msg):
         """Handle an incoming REQ."""
