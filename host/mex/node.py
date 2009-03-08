@@ -35,60 +35,56 @@ class Node:
 
     def __init__ (self, addr = mex.DEFAULT_ADDR):
         """Create a new Node and connect it to given Hub address."""
-        self.socket = socket.socket ()
-        self.socket.setsockopt (socket.SOL_TCP, socket.TCP_NODELAY, 1)
-        self.socket.connect (addr)
         self.date = 0
-        self.seq = 0
-        self.req = None
-        self.handlers = { }
-        self.register (mex.DATE, lambda msg: self.handle_DATE (msg))
-        self.register (mex.REQ, lambda msg: self.handle_REQ (msg))
+        self.__socket = socket.socket ()
+        self.__socket.setsockopt (socket.SOL_TCP, socket.TCP_NODELAY, 1)
+        self.__socket.connect (addr)
+        self.__seq = 0
+        self.__req = None
+        self.__handlers = { }
+        self.register (mex.DATE, lambda msg: self.__handle_DATE (msg))
+        self.register (mex.REQ, lambda msg: self.__handle_REQ (msg))
         # Synchronise.
         rsp = None
         while rsp == None or rsp.mtype != mex.DATE:
-            rsp = self.recv ()
-            self.dispatch (rsp)
+            rsp = self.__recv ()
+            self.__dispatch (rsp)
 
     def wait (self, date = None):
         """Wait forever or until a date is reached."""
-        while date == None or self.date != date:
-            idle = Msg (mex.IDLE)
-            if date != None:
-                idle.push ('L', date)
-            self.send (idle)
-            msg = self.recv ()
-            self.dispatch (msg)
+        self.__date_waited = date
+        while not self.sync ():
+            self.read ()
 
     def wait_async (self, date = None):
         """Asynchronous version of wait.  This should not be called again
         until sync return True."""
-        self.async_waited = date
+        self.__date_waited = date
         synced = self.sync ()
         assert not synced
 
     def sync (self):
         """To be called after read or wait_async.  Return True if the waited
         date is reached or signal the Hub our waiting status."""
-        if self.date == self.async_waited:
+        if self.date == self.__date_waited:
             return True
         else:
             idle = Msg (mex.IDLE)
-            if self.async_waited != None:
-                idle.push ('L', self.async_waited)
+            if self.__date_waited != None:
+                idle.push ('L', self.__date_waited)
             self.send (idle)
 
     def read (self):
         """Used for asynchronous operations.  Handle incoming data.  The sync
         method should be called after this one returns."""
-        msg = self.recv ()
-        self.dispatch (msg)
+        msg = self.__recv ()
+        self.__dispatch (msg)
 
     def send (self, msg):
         """Send a message."""
         data = msg.data ()
-        packet = pack (mex.HEADER_FMT, len (data), self.seq) + data
-        self.socket.sendall (packet)
+        packet = pack (mex.HEADER_FMT, len (data), self.__seq) + data
+        self.__socket.sendall (packet)
 
     def request (self, msg):
         """Send a request and return response."""
@@ -98,60 +94,60 @@ class Node:
         req.push (msg.data ())
         self.send (req)
         # Wait for response.
-        rsp = self.recv ()
+        rsp = self.__recv ()
         while rsp.mtype != mex.RSP:
-            self.dispatch (rsp)
-            rsp = self.recv ()
+            self.__dispatch (rsp)
+            rsp = self.__recv ()
         # Discard reqid.
         rsp.pop ('B')
         return Msg (rsp.pop ())
 
     def response (self, msg):
         """Send a response to the currently serviced request."""
-        assert self.req != None
+        assert self.__req != None
         rsp = Msg (mex.RSP)
-        rsp.push ('B', self.req)
-        self.req = None
+        rsp.push ('B', self.__req)
+        self.__req = None
         rsp.push (msg.data ())
         self.send (rsp)
 
     def register (self, mtype, handler):
         """Register an handler for the given message type."""
-        assert mtype not in self.handlers
-        self.handlers[mtype] = handler
+        assert mtype not in self.__handlers
+        self.__handlers[mtype] = handler
 
     def close (self):
         """Close connection with the Hub."""
-        self.socket.close ()
-        self.socket = None
+        self.__socket.close ()
+        self.__socket = None
 
     def fileno (self):
         """Return socket fileno () for asynchronous operations."""
-        return self.socket.fileno ()
+        return self.__socket.fileno ()
 
-    def recv (self):
+    def __recv (self):
         """Receive one message."""
-        head = self.socket.recv (calcsize (mex.HEADER_FMT))
+        head = self.__socket.recv (calcsize (mex.HEADER_FMT))
         if head == '':
             self.close ()
             raise Node.closed
-        size, self.seq = unpack (mex.HEADER_FMT, head)
-        data = self.socket.recv (size)
+        size, self.__seq = unpack (mex.HEADER_FMT, head)
+        data = self.__socket.recv (size)
         return Msg (data)
 
-    def dispatch (self, msg):
+    def __dispatch (self, msg):
         """Call the right handler for the given message."""
-        if msg.mtype in self.handlers:
-            self.handlers[msg.mtype] (msg)
+        if msg.mtype in self.__handlers:
+            self.__handlers[msg.mtype] (msg)
 
-    def handle_DATE (self, msg):
+    def __handle_DATE (self, msg):
         """Handle an incoming DATE."""
         self.date, = msg.pop ('L')
 
-    def handle_REQ (self, msg):
+    def __handle_REQ (self, msg):
         """Handle an incoming REQ."""
-        self.req, = msg.pop ('B')
+        self.__req, = msg.pop ('B')
         dec = Msg (msg.pop ())
-        self.dispatch (dec)
-        self.req = None
+        self.__dispatch (dec)
+        self.__req = None
 
