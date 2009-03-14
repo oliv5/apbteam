@@ -118,7 +118,7 @@ top__MOVE_AWAY_FROM_START_BORDER__move_fsm_finished (void)
 fsm_branch_t
 top__GET_SAMPLES_FROM_SAMPLES_DISTRIBUTOR__get_samples_fsm_finished (void)
 {
-    if (!chrono_near_end_match ())
+    if (!(chrono_remaining_time ()> 83000))
       {
 	/* Start the move FSM to our ice distributor */
 	move_start (PG_DISTRIBUTOR_ICE_OUR_X, PG_DISTRIBUTOR_ICE_OUR_Y, 0);

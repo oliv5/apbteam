@@ -33,11 +33,13 @@
 void
 main_timer_init (void)
 {
-    /* Fov = F_io / (prescaler * (TOP + 1))
-     * TOP = 0xff
-     * prescaler = 256
-     * Tov = 1 / Fov = 4.444 ms */
-    /* Note: if you change this, update MT_TC0_*. */
+    /* Configuration of the timer/counter 0:
+     *  - top = 0xff,
+     *  - prescaler = 256,
+     *  -> Fov = F_io / (prescaler * (TOP + 1))
+     *  -> Tov = 1 / Fov = 4.444 ms.
+     * Note: if you change the TCCR0 register value, please also update
+     * MT_TC0_PRESCALER and MT_TC0_TOP. */
     TCCR0 = regv (FOC0, WGM00, COM01, COM0, WGM01, CS02, CS01, CS00,
                      0,     0,     0,    0,     0,    1,    1,    0);
 }
@@ -45,7 +47,7 @@ main_timer_init (void)
 uint8_t
 main_timer_wait (void)
 {
-    /* We have reached overflow. */
+    /* Let's pretend we have reached overflow before calling this function. */
     uint8_t count_before_ov = 1;
     /* Loop until an overflow of the timer occurs. */
     while (!(TIFR & _BV (TOV0)))

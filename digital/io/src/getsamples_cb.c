@@ -273,7 +273,7 @@ getsamples__TAKE_SAMPLES__arm_pass_noted_position (void)
     /* Prepare classification */
     getsamples_configure_classifier ();
     /* More samples? */
-    if (getsamples_data_.sample_bitfield && !chrono_near_end_match ())
+    if (getsamples_data_.sample_bitfield && !(chrono_remaining_time () > 83000))
       {
 	/* Compute notifier */
 	getsamples_data_.arm_noted_position += BOT_ARM_THIRD_ROUND;

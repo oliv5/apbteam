@@ -37,21 +37,26 @@
  */
 
 /**
- * Configuration of prescaler of timer/counter 0.
+ * Prescaler configured for timer/counter 0.
+ * If you want to change this value, you also need to change the TCCR0
+ * register.
  */
-#define MT_TC0_PRESCALER 256
+#define MT_TC0_PRESCALER 256L
 /**
- * Configuration of the top of timer/counter 0.
+ * Top configured for timer/counter 0.
+ * If you want to change this value, you also need to change the TCCR0
+ * register.
  */
 #define MT_TC0_TOP 255
 /**
- * Configuration of the period timer/counter 0 (in millisecond).
+ * Period of timer/counter 0 (in millisecond).
  */
-#define MT_TC0_PERIOD ((1 / AC_FREQ / MT_TC0_PRESCALER * (MT_TC0_TOP + 1)) \
-		       * 1000)
+#define MT_TC0_PERIOD \
+    (1000 / (AC_FREQ / (MT_TC0_PRESCALER * (MT_TC0_TOP + 1))))
 
 /**
  * Initialize the main timer to 4.444 ms.
+ * This function setup the timer/counter 0 configuration register.
  */
 void
 main_timer_init (void);
@@ -62,6 +67,10 @@ main_timer_init (void);
  *  - 0 if we are on time (we have not reached overflow before calling this
  *  function).
  *  - 1 if we have already reached overflow.
+ * @warning if this function return 1, it means we are late and the main loop
+ * is lasting more than the time configured. Consequence, some important
+ * functions (like the chronometer for match duration) will not work
+ * correctly!
  */
 uint8_t
 main_timer_wait (void);

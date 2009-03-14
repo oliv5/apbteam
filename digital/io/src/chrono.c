@@ -1,4 +1,4 @@
-/* chrono.avr.c */
+/* chrono.c */
 /* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
  *
  * Copyright (C) 2008 Dufour Jérémy
@@ -23,115 +23,79 @@
  *
  * }}} */
 
+#include "common.h"
+
+#include "aquajim.h"
+#include "main_timer.h"
+#include "asserv.h"
+
+#include "modules/utils/utils.h"
+#include "modules/host/mex.h"
+
 #include "chrono.h"
 
-#include "modules/utils/utils.h"	/* regv */
-#include "asserv.h"			/* asserv_* */
-
-#include "io.h"				/* Registers for timer/counter 1 */
-
-#ifdef HOST
-#include <unistd.h>
-#include <signal.h>
-#include "modules/host/mex.h"
-#endif
+/**
+ * Implementation notes.
+ * This module compute the number of tic of the main loop it should count
+ * before the match is over (chrono_init). Every tic of the main loop, it
+ * decrements the counter (chrono_update). When the counter is zero, the
+ * match is over (chrono_is_match_over, chrono_end_match).
+ */
 
 /**
- * Number of overflow of the timer/counter 1 before doing the last one.
+ * Number of overflows of the timer/counter 0 to wait before the match is
+ * over.
+ * Basically, it is match_duration / timer_counter_0_overflow_duration.
  */
-#define CHRONO_OVERFLOW_MAX 79
+#define CHRONO_MATCH_OVERFLOW_COUNT (MATCH_DURATION_MS / MT_TC0_PERIOD)
 
-/**
- * Number of TIC to restart from for the last overflow.
- */
-#define CHRONO_RESTART_TIC 58982
 /**
  * Duration of a loop to emulate from the original behaviour, in ms.
  */
-#define CHRONO_LOOP_DURATION 4
+#define CHRONO_LOOP_DURATION_MS 4
+
 /**
  * Time to wait before resetting asserv board, in ms.
  */
-#define CHRONO_WAIT_BEFORE_RESET 1000
+#define CHRONO_WAIT_BEFORE_RESET_MS 1000
 
 /**
- * Number of overflow to count before saying we are near the end of the match.
- * You can compute it using the following formula:
- * CHRONO_OVERFLOW_MAX * seconds / 90
+ * Number of time to overflow before the end of the match.
  */
-#define CHRONO_OVERFLOW_COUNT_NEAR_END_MATCH \
-    ((uint8_t) (CHRONO_OVERFLOW_MAX * 83 / 90))
+static uint32_t chrono_ov_count_;
 
-/**
- * Match is finished.
- * This variable will be set to 1 when the match is over.
- */
-static volatile uint8_t chrono_match_over_ = 0;
 
-/**
- * Overflow counter.
- */
-static volatile uint8_t chrono_ov_count_;
-
-#ifdef HOST
-/** SIGALRM handler. */
-void
-signal_alarm (int signal);
-#endif
-
-/* Initialize the chrono timer/counter 1. */
 void
 chrono_init (void)
 {
-#ifndef HOST
-    /* Presaler = 256 */
-    TCCR1B = regv (ICNC1, ICES1, 5, WGM13, WGM12, CS12, CS11, CS10,
-		       0,     0, 0,     0,     0,    1,    0,    0);
-    /* Enable overflow interrupt */
-    set_bit (TIMSK, TOIE1);
-#else
-    /* Set-up SIGALRM handler */
-    signal (SIGALRM, &signal_alarm);
-    /* Alarm in 90 seconds */
-//     alarm (90);
-#endif
+    /* Set the overflow counter to the maximum of overflow before the end of
+     * the match. */
+    chrono_ov_count_ = CHRONO_MATCH_OVERFLOW_COUNT;
 }
 
-#ifndef HOST
-/* Overflow of timer/counter 1 handler. */
-SIGNAL (SIG_OVERFLOW1)
-{
-    switch (++chrono_ov_count_)
-      {
-      case CHRONO_OVERFLOW_MAX:
-	/* Last but not complete overflow */
-	TCNT1 = CHRONO_RESTART_TIC;
-	break;
-      case CHRONO_OVERFLOW_MAX + 1:
-	/* End of match! */
-	chrono_match_over_ = 1;
-	break;
-      }
-}
-#else
-/* SIGALRM handler */
 void
-signal_alarm (int signal)
+chrono_update (void)
 {
-    /* End of match! */
-    chrono_match_over_ = 1;
+    /* Decrement overflow counter if it is possible. */
+    if (chrono_ov_count_)
+	chrono_ov_count_--;
 }
-#endif
 
-
-/* Match over? */
 uint8_t
 chrono_is_match_over (void)
 {
-    return chrono_match_over_;
+    if (chrono_ov_count_)
+	return 0;
+    else
+	return 1;
 }
 
-/* End the match. */
+uint32_t
+chrono_remaining_time (void)
+{
+    return chrono_ov_count_ * MT_TC0_PERIOD;
+}
+
 void
 chrono_end_match (uint8_t block)
 {
@@ -144,7 +108,7 @@ chrono_end_match (uint8_t block)
 	/* Manage retransmission */
 	asserv_retransmit ();
 	/* Wait a little */
-	utils_delay_ms (CHRONO_LOOP_DURATION);
+	utils_delay_ms (CHRONO_LOOP_DURATION_MS);
       }
 
     /* Make the bot stop moving */
@@ -161,7 +125,7 @@ chrono_end_match (uint8_t block)
 	    /* Retransmit if needed */
 	    asserv_retransmit ();
 	    /* Wait a little */
-	    utils_delay_ms (CHRONO_LOOP_DURATION);
+	    utils_delay_ms (CHRONO_LOOP_DURATION_MS);
 	  }
 	else
 	    /* Exit loop */
@@ -169,7 +133,7 @@ chrono_end_match (uint8_t block)
       }
 
     /* Wait CHRONO_WAIT_BEFORE_RESET ms before reseting */
-    utils_delay_ms (CHRONO_WAIT_BEFORE_RESET);
+    utils_delay_ms (CHRONO_WAIT_BEFORE_RESET_MS);
     /* Reset the asserv board */
     asserv_reset ();
     /* Block indefinitely */
@@ -179,16 +143,7 @@ chrono_end_match (uint8_t block)
 	  {
 	    mex_node_wait ();
 	  }
-#endif
+#else
 	    ;
-}
-
-/* Are we near the end of the match. */
-uint8_t
-chrono_near_end_match (void)
-{
-    /* If we have overflow a certain number of time */
-    if (chrono_ov_count_ >= CHRONO_OVERFLOW_COUNT_NEAR_END_MATCH)
-	return 1;
-    return 0;
+#endif
 }

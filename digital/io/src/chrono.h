@@ -3,7 +3,7 @@
 /* chrono.h */
 /* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
  *
- * Copyright (C) 2008 Dufour Jérémy
+ * Copyright (C) 2008 Dufour JÃ©rÃ©my
  *
  * APBTeam:
  *        Web: http://apbteam.org/
@@ -27,33 +27,43 @@
 
 /**
  * @file Module to manage the chrono responsible to stop the bot after 90s.
- * It uses the timer/counter 1 (16 bits), configured with a prescaler set to
- * 256.
- * This way, we need to overflow 79.10071 for a match of 90s:
- * match_duration / (1 / (AC_FREQ / (Prescaler * (TOP + 1))))
- * It will overflow 79 times and them reset the timer/counter to 58982
- * (TOP - ((TOP + 1) / 10)).
- * @todo add the ability to unblock the chrono_end_match with a flag that can
- * be unset with an uart command. Maybe dangerous...
+ *
+ * It is based on the main timer (time/counter 0) to know when to stop the
+ * bot.
+ *
+ * The main loop should never last more than the 4.44ms defined, otherwise,
+ * this module will not be precise at all!
  */
 
-#include "common.h"
-
 /**
- * Initialize the chrono timer/counter 1.
- * It starts it for a duration of 90s.
+ * Initialize the chrono module.
+ * It setups it for a duration of MATCH_DURATION_MS.
  */
 void
 chrono_init (void);
 
 /**
+ * Update chrono module.
+ * You must call this function every overflow of the main timer.
+ */
+void
+chrono_update (void);
+
+/**
  * Match over?
  * @return
- *   - 0 if the match is not finished yet
- *   - 1 if the match is over
+ *   - 0 if the match is not finished yet.
+ *   - 1 if the match is over.
  */
 uint8_t
 chrono_is_match_over (void);
+
+/**
+ * How much time remains before the end of the match.
+ * @return remaining time in ms.
+ */
+uint32_t
+chrono_remaining_time (void);
 
 /**
  * End the match.
@@ -63,15 +73,5 @@ chrono_is_match_over (void);
  */
 void
 chrono_end_match (uint8_t block);
-
-/**
- * Are we near the end of the match.
- * This function tell you when there is not much time remaining.
- * @return
- *   - 0 not near the end of the match
- *   - 1 near the end of the match
- */
-uint8_t
-chrono_near_end_match (void);
 
 #endif /* chrono_h */
