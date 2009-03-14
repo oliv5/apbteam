@@ -31,10 +31,10 @@
 
 /* AVR include, non HOST */
 #ifndef HOST
-# include "main_timer.avr.h"
 # include "switch.h"	/* Manage switches (jack, color selector) */
 #endif /* HOST */
 
+#include "main_timer.h"
 #include "simu.host.h"
 
 #include "asserv.h"	/* Functions to control the asserv board */

@@ -1,9 +1,7 @@
-#ifndef simu_host_h
-#define simu_host_h
-/* simu.host.h - Host simulation. */
+/* main_timer.avr.c */
 /* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
  *
- * Copyright (C) 2008 Nicolas Schodet
+ * Copyright (C) 2009 Dufour Jérémy
  *
  * APBTeam:
  *        Web: http://apbteam.org/
@@ -25,24 +23,36 @@
  *
  * }}} */
 
-#ifdef HOST
+#include "common.h"
 
-/** Hooked, do nothing. */
+#include "main_timer.h"
+
+#include "modules/utils/utils.h"
+#include "io.h"
+
 void
-switch_init (void);
+main_timer_init (void)
+{
+    /* Fov = F_io / (prescaler * (TOP + 1))
+     * TOP = 0xff
+     * prescaler = 256
+     * Tov = 1 / Fov = 4.444 ms */
+    /* Note: if you change this, update MT_TC0_*. */
+    TCCR0 = regv (FOC0, WGM00, COM01, COM0, WGM01, CS02, CS01, CS00,
+                     0,     0,     0,    0,     0,    1,    1,    0);
+}
 
-/** Hooked, do nothing. */
-void
-switch_update (void);
-
-/** Hooked, request via mex. */
 uint8_t
-switch_get_color (void);
+main_timer_wait (void)
+{
+    /* We have reached overflow. */
+    uint8_t count_before_ov = 1;
+    /* Loop until an overflow of the timer occurs. */
+    while (!(TIFR & _BV (TOV0)))
+	/* We have not reached overflow. */
+	count_before_ov = 0;
+    /* Write 1 to clear overflow. */
+    TIFR = _BV (TOV0);
 
-/** Hooked, request via mex. */
-uint8_t
-switch_get_jack (void);
-
-#endif /* defined (HOST) */
-
-#endif /* simu_host_h */
+    return count_before_ov;
+}
