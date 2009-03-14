@@ -41,6 +41,26 @@ uint32_t asserv_scale;
  * @{
  */
 
+/**
+ * Flag bit position value for the status byte of the asserv.
+ */
+enum asserv_status_flag_e
+{
+    /** Bot movement finished with success. */
+    asserv_status_flag_move_succeed = 0,
+    /** Bot movement finished with failure: the bot is blocked. */
+    asserv_status_flag_move_failed = 1,
+    /** Arm movement finished with success. */
+    asserv_status_flag_arm_succeed = 2,
+    /** Arm movement finished with failure (can not happen?). */
+    asserv_status_flag_arm_failed = 3,
+    /** Bot is moving forward (linear speed greater than 0). */
+    asserv_status_flag_move_forward = 4,
+    /** Bot is moving backward (linear speed smaller than 0). */
+    asserv_status_flag_move_backward = 5,
+};
+typedef enum asserv_status_flag_e asserv_status_flag_e;
+
 /** Scaling factor inverse. */
 static uint32_t asserv_scale_inv;
 
@@ -261,10 +281,10 @@ asserv_status_e
 asserv_move_cmd_status (void)
 {
     /* Check Motor Finished flag */
-    if (asserv_status.status & _BV (0))
+    if (asserv_status.status & _BV (asserv_status_flag_move_succeed))
 	return success;
     /* Check Motor Blocked flag */
-    else if (asserv_status.status & _BV (1))
+    else if (asserv_status.status & _BV (asserv_status_flag_move_failed))
 	return failure;
     /* Otherwise, not finished nor failure */
     return none;
@@ -275,10 +295,10 @@ asserv_status_e
 asserv_arm_cmd_status (void)
 {
     /* Check Arm Finished flag */
-    if (asserv_status.status & _BV (2))
+    if (asserv_status.status & _BV (asserv_status_flag_arm_succeed))
 	return success;
     /* Check Arm Blocked flag */
-    else if (asserv_status.status & _BV (3))
+    else if (asserv_status.status & _BV (asserv_status_flag_arm_failed))
 	return failure;
     /* Otherwise, not finished nor failure */
     return none;
@@ -312,10 +332,10 @@ uint8_t
 asserv_get_moving_direction (void)
 {
     /* Foward move? */
-    if (asserv_status.status & _BV (4))
+    if (asserv_status.status & _BV (asserv_status_flag_move_forward))
 	return 1;
     /* Backward move? */
-    if (asserv_status.status & _BV (5))
+    if (asserv_status.status & _BV (asserv_status_flag_move_backward))
 	return 2;
     /* Not moving */
     return 0;
