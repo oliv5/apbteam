@@ -162,7 +162,7 @@ class InterNode (Inter):
     def notify_servo (self, i):
         servo = self.io_link.servo[i]
         trap = self.actuatorview.rear.traps[i]
-        trap.pos = float (servo.value) / 255
+        trap.pos = servo.value
         self.update (trap)
 
     def update_sharps (self):
