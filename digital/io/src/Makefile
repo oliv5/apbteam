@@ -1,105 +1,21 @@
+# Base directory of AVR.
 BASE = ../../avr
+# Name of the program to build.
 PROGS = io
+# Sources to compile.
 io_SOURCES = main.c asserv.c servo.avr.c eeprom.avr.c trap.c sharp.c \
              switch.avr.c chrono.c \
-	     simu.host.c \
-	     fsm.c \
-	     getsamples.c getsamples_fsm.c getsamples_cb.c \
-	     gutter_fsm.c gutter_cb.c gutter.c \
-	     move.c move_fsm.c move_cb.c \
-	     top.c top_fsm.c top_cb.c
+	     simu.host.c
+# Modules needed for IO.
 MODULES = proto uart twi utils adc math/fixed path
+# Configuration file.
 CONFIGFILE = avrconfig.h
-# atmega8, atmega8535, atmega128...
+# IO board use an ATMega128.
 AVR_MCU = atmega128
-# -O2 : speed
-# -Os : size
+# Optimize for speed.
 OPTIMIZE = -O2
 
-include $(BASE)/make/Makefile.gen
-
-# FSM build:
-#
-# The %_cb.c file can not be auto-generated.  When the %_cb_skel.c is changed,
-# user should check if they still are synchronised using a merge program, like
-# vimdiff.
-#
-# To help user, the user can define the CB variable to request a particular
-# behaviour.
-#
-# If CB=touch, ignore the auto-generation and touch the %_cb.c file.
-#
-# If CB=vimdiff, use vimdiff to merge differences.
-#
-# If CB=merge, try to merge automatically.  In this case, it uses a old copy
-# of %_cb_skel.c to merge.  This will fail the first time if no old copy is
-# available.
-
-# If templates are modified, files should be rebuilt.
-FSM_TEMPLATES := template_cb.h template_cb_decl.h template_cb_impl.c \
-		 template_cb_skel.c template_fsm.c template_fsm.h
-FSM_TEMPLATES := $(FSM_TEMPLATES:%=fsm_templates/%)
-
-# Theses files are auto-generated, remove them on clean.
-EXTRA_CLEAN_FILES = getsamples_fsm.h getsamples_fsm.c getsamples_cb.h \
-		    getsamples_cb_skel.c getsamples.png \
-		    gutter_fsm.h gutter_fsm.c gutter_cb.h \
-		    gutter_cb_skel.c gutter.png \
-		    move_fsm.h move_fsm.c move_cb.h move_cb_skel.c move.png \
-		    top_fsm.h top_fsm.c top_cb.h top_cb_skel.c top.png
-
-# Bootstrap, fsm should be generated before fsm.h is used.
-fsm.c: fsm.h
-main.c: fsm.h
-fsm.h: getsamples_fsm.h gutter_fsm.h move_fsm.h top_fsm.h
-
-DFAGEN_DIR := $(BASE)/../../tools/dfagen
-DFAGEN_DEPS := $(DFAGEN_DIR)/dfagen.py
-DFAGEN := python $(DFAGEN_DIR)/dfagen.py
-
-$(DFAGEN_DIR)/dfagen.py: $(DFAGEN_DIR)/dfagen/parser.py
-$(DFAGEN_DIR)/dfagen/parser.py: $(DFAGEN_DIR)/dfagen/parser.g
-	yapps $<
-
-%_fsm.h %_fsm.c %_cb.h %_cb_skel.c: %.fsm fsm.conf $(FSM_TEMPLATES) \
-	$(DFAGEN_DEPS)
-	$(DFAGEN) -o c -d $< -c fsm.conf -p $(<:%.fsm=%)
-
-.PRECIOUS: getsamples_cb.c gutter_cb.c move_cb.c top_cb.c
-
-ifndef CB
-%_cb.c: %_cb_skel.c
-	@echo "Please update $@"
-	@false
-else ifeq ($(CB),touch)
-%_cb.c: %_cb_skel.c
-	@echo "Updating $@ blindly"
-	cp $< .$<.old
-	touch $@
-else ifeq ($(CB),merge)
-%_cb.c: %_cb_skel.c
-	@echo "Try to merge $@..."
-	@if [ -r .$<.old ]; then \
-		merge $@ .$<.old $<; \
-		RET=$$?; \
-	else \
-		echo "No history, cannot merge"; \
-		RET=1; \
-	fi; \
-	cp $< .$<.old; \
-	exit $$RET
-else
-%_cb.c: %_cb_skel.c
-	@echo "Using $(CB) to update $@"
-	cp $< .$<.old
-	$(CB) $@ $<
-endif
-
-
-png: getsamples.png gutter.png move.png top.png
-
-%.png: %.dot
-	dot -Tpng -o $@ $<
-
-%.dot: %.fsm $(DFAGEN_DEPS)
-	$(DFAGEN) -o dot -d $< -p $(<:%.fsm=%)
+# FSMs.
+FSM_SOURCES := getsamples gutter move top
+# Include FSM makefile.
+include $(BASE)/make/Makefile.fsm
