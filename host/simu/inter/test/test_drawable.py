@@ -23,7 +23,7 @@
 # }}} */
 from math import pi
 
-from inter.drawable import *
+from simu.inter.drawable import *
 
 class Test (Drawable):
 

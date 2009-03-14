@@ -24,7 +24,7 @@
 """Computed path drawing."""
 
 from Tkinter import *
-from drawable import *
+from simu.inter.drawable import *
 
 from math import pi, cos, sin, sqrt
 

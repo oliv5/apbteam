@@ -25,7 +25,7 @@
 from math import pi, cos, sin, sqrt
 
 from Tkinter import *
-from drawable import *
+from simu.inter.drawable import *
 from utils.observable import Observable
 
 class DistSensor (Drawable, Observable):
@@ -34,6 +34,7 @@ class DistSensor (Drawable, Observable):
     def __init__ (self, onto, pos, angle, range):
         Drawable.__init__ (self, onto)
         Observable.__init__ (self)
+        self.onto = onto
         self.pos = pos
         self.angle = angle
         self.range = range

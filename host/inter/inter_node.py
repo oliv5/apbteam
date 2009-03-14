@@ -75,10 +75,8 @@ class InterNode (Inter):
             s.obstacles = self.obstacles
             s.hide = True
             s.register (self.update_sharps)
-        self.tableview.robot.drawn.extend (self.dist_sensors)
         self.update_sharps ()
         self.path = Path (self.tableview.table)
-        self.tableview.drawn.append (self.path)
         self.io_link.path.register (self.notify_path)
 
     def createWidgets (self):
@@ -145,11 +143,11 @@ class InterNode (Inter):
     def notify_position (self):
         self.tableview.robot.pos = self.asserv_link.position.pos
         self.tableview.robot.angle = self.asserv_link.position.angle
-        self.update (self.tableview.robot)
+        self.tableview.robot.update ()
 
     def notify_aux0 (self):
         self.actuatorview.arm.angle = self.asserv_link.aux[0].angle
-        self.update (self.actuatorview.arm)
+        self.actuatorview.arm.update ()
 
     def notify_jack (self):
         self.io_link.jack.state = self.jackVar.get ()
@@ -163,7 +161,7 @@ class InterNode (Inter):
         servo = self.io_link.servo[i]
         trap = self.actuatorview.rear.traps[i]
         trap.pos = servo.value
-        self.update (trap)
+        trap.update ()
 
     def update_sharps (self):
         for ds, adc in zip (self.dist_sensors, self.io_link.adc):
@@ -180,7 +178,7 @@ class InterNode (Inter):
 
     def notify_path (self):
         self.path.path = self.io_link.path.path
-        self.update (self.path)
+        self.path.update ()
 
     def place_obstacle (self, ev):
         pos = self.tableview.screen_coord ((ev.x, ev.y))
@@ -188,16 +186,15 @@ class InterNode (Inter):
             self.obstacles[0].pos = pos
         else:
             self.obstacles.append (Obstacle (self.tableview.table, pos, 150))
-            self.tableview.drawn.append (self.obstacles[0])
-        self.update (*self.obstacles)
-        self.update (*self.dist_sensors)
+        for d in self.obstacles + self.dist_sensors:
+            d.update ()
         self.update ()
 
     def show_sensors (self):
         hide = not self.showSensorsVar.get ()
         for i in self.dist_sensors:
             i.hide = hide
-        self.update (*self.dist_sensors)
+            i.update ()
         self.update ()
 
 if __name__ == '__main__':

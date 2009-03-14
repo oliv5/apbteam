@@ -26,7 +26,7 @@ from math import sin, cos, sqrt, atan2
 
 class TransMatrix:
     """Define a matrix to be used for transformations on the plane.
-    
+
     This is a "special" kind of matrix, because the last column is omitted as
     it is always (0, 0, 1)."""
 

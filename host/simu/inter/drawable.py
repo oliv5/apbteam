@@ -23,7 +23,7 @@
 # }}}
 """Drawable and DrawableCanvas."""
 from math import sqrt, degrees
-import trans_matrix
+import simu.utils.trans_matrix
 import Tkinter
 
 __all__ = ('Drawable', 'DrawableCanvas')
@@ -33,35 +33,39 @@ class Drawable:
 
     def __init__ (self, onto):
         """Initialise the drawable."""
-        self.onto = onto
-        self.trans_matrix = trans_matrix.TransMatrix ()
-        self.items = [ ]
-        self.trans_apply = self.trans_matrix.apply
-        self.trans_apply_angle = self.trans_matrix.apply_angle
-        self.trans_apply_distance = self.trans_matrix.apply_distance
-        self.trans_rotate = self.trans_matrix.rotate
-        self.trans_translate = self.trans_matrix.translate
-        self.trans_scale = self.trans_matrix.scale
+        self.__onto = onto
+        self.__trans_matrix = simu.utils.trans_matrix.TransMatrix ()
+        self.__items = [ ]
+        self.trans_apply = self.__trans_matrix.apply
+        self.trans_apply_angle = self.__trans_matrix.apply_angle
+        self.trans_apply_distance = self.__trans_matrix.apply_distance
+        self.trans_rotate = self.__trans_matrix.rotate
+        self.trans_translate = self.__trans_matrix.translate
+        self.trans_scale = self.__trans_matrix.scale
+        self.trans_identity = self.__trans_matrix.identity
+        self.__children = [ ]
+        self.children = self.__children
+        self.__onto.__children.append (self)
 
     def __draw_rectangle (self, p1, p2, **kw):
         if 'outline' not in kw:
             kw = kw.copy ()
             kw['outline'] = 'black'
         p = self.trans_apply (p1, (p2[0], p1[1]), p2, (p1[0], p2[1]))
-        return self.onto.__draw_polygon (*p, **kw)
+        return self.__onto.__draw_polygon (*p, **kw)
 
     def __draw_line (self, *p, **kw):
         p = self.trans_apply (*p)
-        return self.onto.__draw_line (*p, **kw)
+        return self.__onto.__draw_line (*p, **kw)
 
     def __draw_polygon (self, *p, **kw):
         p = self.trans_apply (*p)
-        return self.onto.__draw_polygon (*p, **kw)
+        return self.__onto.__draw_polygon (*p, **kw)
 
     def __draw_circle (self, p, r, **kw):
         p = self.trans_apply (p)
         r = self.trans_apply_distance (r)
-        return self.onto.__draw_circle (p, r, **kw)
+        return self.__onto.__draw_circle (p, r, **kw)
 
     def __draw_arc (self, p, r, **kw):
         p = self.trans_apply (p)
@@ -70,45 +74,57 @@ class Drawable:
             kw = kw.copy ()
             kw['start'] = self.trans_apply_angle (kw['start'])
             import math
-        return self.onto.__draw_arc (p, r, **kw)
+        return self.__onto.__draw_arc (p, r, **kw)
 
     def draw_rectangle (self, *p, **kw):
         """Draw a rectangle."""
-        self.items.append (self.__draw_rectangle (*p, **kw))
+        self.__items.append (self.__draw_rectangle (*p, **kw))
 
     def draw_line (self, *p, **kw):
         """Draw a line."""
-        self.items.append (self.__draw_line (*p, **kw))
+        self.__items.append (self.__draw_line (*p, **kw))
 
     def draw_polygon (self, *p, **kw):
         """Draw a line."""
-        self.items.append (self.__draw_polygon (*p, **kw))
+        self.__items.append (self.__draw_polygon (*p, **kw))
 
     def draw_circle (self, p, r, **kw):
         """Draw a circle of the given radius centered on p."""
-        self.items.append (self.__draw_circle (p, r, **kw))
+        self.__items.append (self.__draw_circle (p, r, **kw))
 
     def draw_arc (self, p, r, **kw):
         """Draw a arc of the given radius centered on p."""
-        self.items.append (self.__draw_arc (p, r, **kw))
-
-    def trans_reset (self):
-        """Reset transformations."""
-        self.trans_matrix.identity ()
+        self.__items.append (self.__draw_arc (p, r, **kw))
 
     def reset (self):
-        self.__delete (*self.items)
-        self.items = [ ]
-        self.trans_reset ()
+        """Clear all drawn items, reset transformations."""
+        for i in self.__children:
+            i.reset ()
+        self.__delete (*self.__items)
+        self.__items = [ ]
+        self.trans_identity ()
 
     def __delete (self, *list):
         """Delete a list of items."""
-        self.onto.__delete (*list)
+        self.__onto.__delete (*list)
+
+    def update (self, *list):
+        """Add provided arguments to update list, or self if no argument
+        provided."""
+        if list:
+            self.__onto.update (*list)
+        else:
+            self.__onto.update (self)
+
+    def draw (self):
+        """Default drawing method which redraw every children."""
+        if self.__children:
+            self.update (*self.__children)
 
 
 class DrawableCanvas(Tkinter.Canvas):
-    """Extend a Tkinter.Canvas to use Drawable on it.  User should implement
-    the draw method."""
+    """Extend a Tkinter.Canvas to use Drawable on it.  Children are drawn on
+    redraw."""
 
     def __init__ (self, width, height, xorigin, yorigin, master = None, **kw):
         """Initialise a DrawableCanvas.  The width and height parameters
@@ -121,6 +137,8 @@ class DrawableCanvas(Tkinter.Canvas):
         self.__xorigin = xorigin
         self.__yorigin = yorigin
         self.bind ('<Configure>', self.__resize)
+        self.__updated = [ ]
+        self._Drawable__children = [ ]
 
     def __resize (self, ev):
         # Compute new scale.
@@ -159,6 +177,26 @@ class DrawableCanvas(Tkinter.Canvas):
 
     def _Drawable__delete (self, *list):
         self.delete (*list)
+
+    def update (self, *list):
+        """If called with arguments, add them to the update list.
+        Else, redraw all element in the update list."""
+        if list:
+            for i in list:
+                if i not in self.__updated:
+                    self.__updated.append (i)
+        else:
+            while self.__updated:
+                updated = self.__updated
+                self.__updated = [ ]
+                for i in updated:
+                    i.draw ()
+
+    def draw (self):
+        """Default drawing method which redraw every children."""
+        if self._Drawable__children:
+            self.update (*self._Drawable__children)
+        self.update ()
 
     def __coord (self, *args):
         return [ (i[0] * self.__scale + self.__xoffset,

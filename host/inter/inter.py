@@ -23,16 +23,12 @@
 # }}}
 """Inter and its childrens."""
 from Tkinter import *
-from drawable import *
+from simu.inter.drawable import *
 
 from math import pi, cos, sin
 
 class Robot (Drawable):
     """The robot."""
-
-    def __init__ (self, onto):
-        Drawable.__init__ (self, onto)
-        self.drawn = [ ]
 
     def draw (self):
         self.reset ()
@@ -48,8 +44,7 @@ class Robot (Drawable):
         self.draw_line ((0, +f / 2), (0, -f / 2), fill = axes_fill)
         self.draw_line ((-wr, f / 2), (+wr, f / 2), fill = axes_fill)
         self.draw_line ((-wr, -f / 2), (+wr, -f / 2), fill = axes_fill)
-        for i in self.drawn:
-            i.draw ()
+        Drawable.draw (self)
 
 class Obstacle (Drawable):
     """An obstacle."""
@@ -64,6 +59,7 @@ class Obstacle (Drawable):
         self.trans_translate (self.pos)
         self.draw_circle ((0, 0), self.radius, fill = '#31aa23')
         self.draw_circle ((0, 0), self.radius + 250, outlinestipple = 'gray25')
+        Drawable.draw (self)
 
 class Table (Drawable):
     """The table and its elements."""
@@ -130,6 +126,7 @@ class Table (Drawable):
             if len (b[2]) > 1:
                 self.draw_circle ((b[0], 2100 - b[1]), 72 / 2,
                         **balls_config[b[2][1]])
+        Drawable.draw (self)
 
 class TableView (DrawableCanvas):
     """This class handle the view of the table and every items inside it."""
@@ -148,13 +145,6 @@ class TableView (DrawableCanvas):
         self.robot = Robot (self.table)
         self.robot.angle = 0
         self.robot.pos = (0, 0)
-        self.drawn = [ ]
-
-    def draw (self):
-        self.table.draw ()
-        for i in self.drawn:
-            i.draw ()
-        self.robot.draw ()
 
 class Arm (Drawable):
     """The robot arm."""
@@ -173,12 +163,13 @@ class Arm (Drawable):
         self.draw_line ((0, 1), (0.3, 1), arrow = LAST, fill = '#808080')
         self.draw_line ((0, 0), (cos (pi / 6), -sin (pi / 6)))
         self.draw_line ((0, 0), (-cos (pi / 6), -sin (pi / 6)))
+        Drawable.draw (self)
 
-class Servo:
+class Servo (Drawable):
     """Servo motor."""
 
     def __init__ (self, onto, coord, l, start, extent):
-        self.onto = onto
+        Drawable.__init__ (self, onto)
         self.coord = coord
         self.l = l
         self.start = start
@@ -186,12 +177,13 @@ class Servo:
         self.pos = 0
 
     def draw (self):
-        self.onto.draw_arc (self.coord, self.l, start = self.start,
+        self.reset ()
+        self.draw_arc (self.coord, self.l, start = self.start,
                 extent = self.extent, style = 'arc', outline = '#808080')
         a = self.start + self.pos * self.extent
-        self.onto.draw_line (self.coord, (self.coord[0] + self.l * cos (a),
+        self.draw_line (self.coord, (self.coord[0] + self.l * cos (a),
             self.coord[1] + self.l * sin (a)))
-
+        Drawable.draw (self)
 
 class Rear (Drawable):
     """Rear actuators."""
@@ -210,14 +202,13 @@ class Rear (Drawable):
     def draw (self):
         self.reset ()
         self.trans_scale (0.9/5)
-        for i in self.traps:
-            i.draw ()
         self.draw_line ((-0.5, 1.5), (-0.5, 0.5), (-2.5, 0.2),
                 fill = '#808080')
         self.draw_line ((-2.5, -1.2), (-2.5, -2.3), (2.5, -2.3), (2.5, 0.2),
                 (0.5, 0.5), (0.5, 1.5), fill = '#808080')
         for i in (-1.5, -0.5, 0.5, 1.5):
             self.draw_line ((i, -2.3), (i, -2), fill = '#808080')
+        Drawable.draw (self)
 
 class ActuatorView (DrawableCanvas):
     """This class handle the view of the actuators inside the robot."""
@@ -234,10 +225,6 @@ class ActuatorView (DrawableCanvas):
         self.rear_drawable.trans_translate ((0, -0.5))
         self.rear = Rear (self.rear_drawable)
 
-    def draw (self):
-        self.arm.draw ()
-        self.rear.draw ()
-
 class Inter (Frame):
     """Robot simulation interface."""
 
@@ -245,7 +232,6 @@ class Inter (Frame):
         Frame.__init__ (self, master)
         self.pack (expand = 1, fill = 'both')
         self.createWidgets ()
-        self.updated = [ ]
 
     def createWidgets (self):
         self.rightFrame = Frame (self)
@@ -271,33 +257,27 @@ class Inter (Frame):
         self.tableview.pack (expand = True, fill = 'both')
 
     def update (self, *args):
-        """If called with arguments, add them to the list of objects to be
-        updated.
-        If called without argument, redraw all objects to be updated."""
-        if args:
-            for i in args:
-                if i not in self.updated:
-                    self.updated.append (i)
-        else:
-            for i in self.updated:
-                i.draw ()
-            self.updated = [ ]
+        """Redraw all objects to be updated."""
+        self.tableview.update ()
+        self.actuatorview.update ()
 
 if __name__ == '__main__':
     app = Inter ()
     app.tableview.robot.angle = pi / 3
     app.tableview.robot.pos = (700, 700)
+    app.tableview.robot.update ()
     if 0:
         from dist_sensor import DistSensor
         ds = DistSensor (app.tableview.robot, (150, -127), -pi / 12, 800)
-        app.tableview.robot.drawn.append (ds)
-        app.tableview.drawn.append (Obstacle (app.tableview, (1300, 1200), 150))
-        ds.obstacles = app.tableview.drawn
+        obs = Obstacle (app.tableview, (1300, 1200), 150)
+        ds.obstacles = [ obs ]
     app.actuatorview.arm.angle = pi/6
+    app.actuatorview.arm.update ()
     app.actuatorview.rear.traps[0].pos = 1
     app.actuatorview.rear.traps[1].pos = 0
     app.actuatorview.rear.traps[2].pos = 0
     app.actuatorview.rear.traps[3].pos = 1
     app.actuatorview.rear.traps[4].pos = 0
     app.actuatorview.rear.traps[5].pos = 0
+    app.actuatorview.rear.update ()
     app.mainloop()
