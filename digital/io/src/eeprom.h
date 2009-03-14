@@ -3,7 +3,7 @@
 /* eeprom.h */
 /* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
  *
- * Copyright (C) 2008 Dufour Jérémy
+ * Copyright (C) 2008 Dufour JÃ©rÃ©my
  *
  * APBTeam:
  *        Web: http://apbteam.org/

@@ -3,7 +3,7 @@
 /* asserv.h */
 /* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
  *
- * Copyright (C) 2008 Dufour Jérémy
+ * Copyright (C) 2008 Dufour JÃ©rÃ©my
  *
  * APBTeam:
  *        Web: http://apbteam.org/
@@ -314,7 +314,7 @@ uint8_t
 asserv_arm_position_reached (void);
 
 /** Set scale.
- * @param scale vous avez qu'à deviner (f8.24).
+ * @param scale vous avez qu'Ã  deviner (f8.24).
  */
 void
 asserv_set_scale (uint32_t scale);

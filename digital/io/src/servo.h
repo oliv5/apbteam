@@ -3,7 +3,7 @@
 /* servo.h */
 /* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
  *
- * Copyright (C) 2008 Dufour Jérémy
+ * Copyright (C) 2008 Dufour JÃ©rÃ©my
  *
  * APBTeam:
  *        Web: http://apbteam.org/
@@ -36,8 +36,8 @@
  *
  * Servo motors can be controlled by the time the input signal spend at its
  * high state. For example, if the signal sent to the servo motor only spend
- * 1ms at the high state, it will have a 0° angle position. If the signal
- * stays for 1.5ms at high state, it will have a 90° angle position.
+ * 1ms at the high state, it will have a 0Â° angle position. If the signal
+ * stays for 1.5ms at high state, it will have a 90Â° angle position.
  * To manage all servo motors in a "one time shot", we need to use the
  * timer/counter 2 of the ATmega128 and its overflow.
  * We setup the timer/counter to the value of its overflow minus the time the

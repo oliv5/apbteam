@@ -1,7 +1,7 @@
 /* eeprom.avr.c */
 /* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
  *
- * Copyright (C) 2008 Dufour Jérémy
+ * Copyright (C) 2008 Dufour JÃ©rÃ©my
  *
  * APBTeam:
  *        Web: http://apbteam.org/
@@ -45,6 +45,8 @@
 
 /**
  * Current version of the parameters organization.
+ * @warning: you must update this value every time you change the structure of
+ * data stored into the EEPROM.
  */
 #define EEPROM_PARAM_KEY 0x04
 
