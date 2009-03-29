@@ -28,6 +28,10 @@
 /** Auxiliary motor informations. */
 struct aux_t
 {
+    /** Associated state. */
+    struct state_t *state;
+    /** Controlled speed. */
+    struct speed_t *speed;
     /** Absolute position. */
     int16_t pos;
     /** Trajectory mode. */
@@ -36,18 +40,25 @@ struct aux_t
     uint32_t goto_pos;
     /** Wait counter. */
     uint16_t wait;
+    /** Top zero port input register. */
+    volatile uint8_t *zero_pin;
+    /** Top zero port bit value. */
+    uint8_t zero_bv;
 };
 
 extern struct aux_t aux0;
 
 void
+aux_init (void);
+
+void
 aux_pos_update (void);
 
 void
-aux_traj_goto_start (uint16_t pos, uint8_t seq);
+aux_traj_goto_start (struct aux_t *aux, uint16_t pos, uint8_t seq);
 
 void
-aux_traj_find_zero_start (uint8_t seq);
+aux_traj_find_zero_start (struct aux_t *aux, uint8_t seq);
 
 void
 aux_traj_update (void);

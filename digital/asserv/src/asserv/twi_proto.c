@@ -191,13 +191,13 @@ twi_proto_callback (u8 *buf, u8 size)
 	 * - w: new position.
 	 * - b: speed. */
 	speed_aux0.max = buf[4];
-	aux_traj_goto_start (v8_to_v16 (buf[2], buf[3]), 0);
+	aux_traj_goto_start (&aux0, v8_to_v16 (buf[2], buf[3]), 0);
 	break;
       case c ('B', 1):
 	/* Find the zero position of the arm.
 	 * - b: speed. */
 	speed_aux0.max = buf[2];
-	aux_traj_find_zero_start (0);
+	aux_traj_find_zero_start (&aux0, 0);
 	break;
       case c ('p', x):
 	/* Set parameters. */

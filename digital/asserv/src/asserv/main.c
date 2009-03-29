@@ -110,6 +110,7 @@ main (int argc, char **argv)
     postrack_init ();
     speed_init ();
     traj_init ();
+    aux_init ();
     eeprom_read_params ();
     proto_send0 ('z');
     sei ();
@@ -139,8 +140,7 @@ main_loop (void)
     /* Compute trajectory. */
     if (state_main.mode >= MODE_TRAJ)
 	traj_update ();
-    if (state_aux0.mode >= MODE_TRAJ)
-	aux_traj_update ();
+    aux_traj_update ();
     /* Speed control. */
     speed_update ();
     main_timer[3] = timer_read ();
@@ -416,14 +416,14 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	 * - b: sequence number. */
 	if (args[2] == state_aux0.sequence)
 	    break;
-	aux_traj_goto_start (v8_to_v16 (args[0], args[1]), args[2]);
+	aux_traj_goto_start (&aux0, v8_to_v16 (args[0], args[1]), args[2]);
 	break;
       case c ('y', 1):
 	/* Auxiliary find zero.
 	 * - b: sequence number. */
 	if (args[0] == state_aux0.sequence)
 	    break;
-	aux_traj_find_zero_start (args[0]);
+	aux_traj_find_zero_start (&aux0, args[0]);
 	break;
       case c ('a', 2):
 	/* Set both acknoledge.
