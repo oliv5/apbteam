@@ -185,14 +185,26 @@ class Proto:
         """Speed controlled position consign."""
         if w == 't':
             self.mseq += 1
-            self.proto.send ('s', 'LLB', offset, 0, self.mseq)
+            self.proto.send ('s', 'LLB', offset / self.param['scale'], 0,
+                    self.mseq)
         elif w == 'a':
             self.mseq += 1
-            self.proto.send ('s', 'LLB', 0, offset, self.mseq)
+            self.proto.send ('s', 'LLB', 0, offset / self.param['scale'],
+                    self.mseq)
         else:
             assert w == 'a0'
             self.a0seq += 1
             self.proto.send ('s', 'LB', offset, self.a0seq)
+        self.wait (self.finished, auto = True)
+
+    def speed_angle (self, w, angle):
+        """Speed controlled angle consign."""
+        if w == 'a':
+            self.mseq += 1
+            self.proto.send ('s', 'LLB', 0, angle * self.param['f'],
+                    self.mseq)
+        else:
+            assert 0
         self.wait (self.finished, auto = True)
 
     def set_pos (self, x = None, y = None, a = None):
