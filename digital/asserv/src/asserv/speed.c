@@ -43,6 +43,15 @@ struct speed_t speed_theta, speed_alpha;
 /** Auxiliaries speed control states. */
 struct speed_t speed_aux0;
 
+/** Initialise speed control states. */
+void
+speed_init (void)
+{
+    speed_theta.pos = &pos_theta;
+    speed_alpha.pos = &pos_alpha;
+    speed_aux0.pos = &pos_aux0;
+}
+
 /** Update shaft position consign according to a speed consign. */
 static void
 speed_update_by_speed (struct speed_t *speed)
@@ -79,51 +88,66 @@ speed_compute_max_speed (int32_t d, int16_t cur, int16_t acc, int8_t max)
 
 /** Update shaft position consign according to a position consign. */
 static void
-speed_update_by_position (struct speed_t *speed, struct pos_t *pos)
+speed_update_by_position (struct speed_t *speed)
 {
-    int32_t diff = speed->pos_cons - pos->cons;
+    int32_t diff = speed->pos_cons - speed->pos->cons;
     speed->cur = speed_compute_max_speed (diff, speed->cur, speed->acc,
 					  speed->max);
 }
 
 /** Update shaft position consign according to its consign type. */
 static void
-speed_update_by (struct speed_t *speed, struct pos_t *pos)
+speed_update_by (struct speed_t *speed)
 {
     if (speed->use_pos)
-	speed_update_by_position (speed, pos);
+	speed_update_by_position (speed);
     else
 	speed_update_by_speed (speed);
     /* Update shaft position. */
-    pos->cons += speed->cur >> 8;
+    speed->pos->cons += speed->cur >> 8;
+}
+
+/** Update shaft position consign for two motors system. */
+static void
+speed_update_double (struct state_t *state, struct speed_t *speed0,
+		     struct speed_t *speed1)
+{
+    if (state->mode >= MODE_SPEED)
+      {
+	/* Update speed. */
+	speed_update_by (speed0);
+	speed_update_by (speed1);
+	/* Check for completion. */
+	if (state->mode == MODE_SPEED
+	    && (speed0->use_pos || speed1->use_pos)
+	    && (!speed0->use_pos || speed0->cur == 0)
+	    && (!speed1->use_pos || speed1->cur == 0))
+	  {
+	    state_finish (state);
+	  }
+      }
+}
+
+/** Update shaft position consign for one motor system. */
+static void
+speed_update_single (struct state_t *state, struct speed_t *speed)
+{
+    if (state->mode >= MODE_SPEED)
+      {
+	/* Update speed. */
+	speed_update_by (speed);
+	/* Check for completion. */
+	if (state->mode == MODE_SPEED
+	    && speed->use_pos && speed->cur == 0)
+	    state_finish (state);
+      }
 }
 
 /** Update shaft position consign according to consign. */
 void
 speed_update (void)
 {
-    if (state_main.mode >= MODE_SPEED)
-      {
-	/* Update speed. */
-	speed_update_by (&speed_theta, &pos_theta);
-	speed_update_by (&speed_alpha, &pos_alpha);
-	/* Check for completion. */
-	if (state_main.mode == MODE_SPEED
-	    && (speed_theta.use_pos || speed_alpha.use_pos)
-	    && (!speed_theta.use_pos || speed_theta.cur == 0)
-	    && (!speed_alpha.use_pos || speed_alpha.cur == 0))
-	  {
-	    state_finish (&state_main);
-	  }
-      }
-    if (state_aux0.mode >= MODE_SPEED)
-      {
-	/* Update speed. */
-	speed_update_by (&speed_aux0, &pos_aux0);
-	/* Check for completion. */
-	if (state_aux0.mode == MODE_SPEED
-	    && speed_aux0.use_pos && speed_aux0.cur == 0)
-	    state_finish (&state_aux0);
-      }
+    speed_update_double (&state_main, &speed_theta, &speed_alpha);
+    speed_update_single (&state_aux0, &speed_aux0);
 }
 

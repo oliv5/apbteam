@@ -108,6 +108,7 @@ main (int argc, char **argv)
     uart0_init ();
     twi_proto_init ();
     postrack_init ();
+    speed_init ();
     traj_init ();
     eeprom_read_params ();
     proto_send0 ('z');

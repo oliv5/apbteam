@@ -28,6 +28,8 @@
 /** Speed control state. */
 struct speed_t
 {
+    /** Controlled position. */
+    struct pos_t *pos;
     /** Current speed, f8.8. */
     int16_t cur;
     /** Consign speed, f8.8. */
@@ -46,6 +48,9 @@ struct speed_t
 
 extern struct speed_t speed_theta, speed_alpha;
 extern struct speed_t speed_aux0;
+
+void
+speed_init (void);
 
 void
 speed_update (void);
