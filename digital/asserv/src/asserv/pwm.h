@@ -44,8 +44,8 @@ extern uint8_t pwm_reverse;
  * minimum, use 0. */
 #define PWM_MIN_FOR(x) PWM_MIN_FOR_ (x)
 #define PWM_MIN_FOR_(x) PWM_MIN_FOR_ ## x
-#define PWM_MIN_FOR_pwm_left 0x8
-#define PWM_MIN_FOR_pwm_right 0x8
+#define PWM_MIN_FOR_pwm_left 0x10
+#define PWM_MIN_FOR_pwm_right 0x10
 #define PWM_MIN_FOR_pwm_aux0 0x10
 
 /** Define which bit controls the PWM inversion. */
