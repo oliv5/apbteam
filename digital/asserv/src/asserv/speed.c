@@ -52,7 +52,7 @@ speed_init (void)
     speed_aux0.pos = &pos_aux0;
 }
 
-/** Update shaft position consign according to a speed consign. */
+/** Update current speed according to a speed consign. */
 static void
 speed_update_by_speed (struct speed_t *speed)
 {
@@ -86,7 +86,7 @@ speed_compute_max_speed (int32_t d, int16_t cur, int16_t acc, int8_t max)
     return s;
 }
 
-/** Update shaft position consign according to a position consign. */
+/** Update current speed according to a position consign. */
 static void
 speed_update_by_position (struct speed_t *speed)
 {
