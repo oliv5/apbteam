@@ -109,8 +109,8 @@ twi_proto_callback (u8 *buf, u8 size)
 	pos_reset (&pos_theta);
 	pos_reset (&pos_alpha);
 	state_main.mode = MODE_PWM;
-	pwm_left = 0;
-	pwm_right = 0;
+	pwm_set (&pwm_left, 0);
+	pwm_set (&pwm_right, 0);
 	break;
       case c ('s', 0):
 	/* Stop (set zero speed). */

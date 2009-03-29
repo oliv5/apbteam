@@ -55,9 +55,10 @@ static int32_t counter_right_raw;
 /** Correction factor (f8.24). */
 uint32_t counter_right_correction = 1L << 24;
 
-/** PWM values, this is an error if absolute value is greater than the
- * maximum. */
-int16_t pwm_left, pwm_right, pwm_aux0;
+/** PWM control states. */
+struct pwm_t pwm_left = PWM_INIT_FOR (pwm_left);
+struct pwm_t pwm_right = PWM_INIT_FOR (pwm_right);
+struct pwm_t pwm_aux0 = PWM_INIT_FOR (pwm_aux0);
 /** PWM reverse directions. */
 uint8_t pwm_reverse;
 
@@ -168,18 +169,12 @@ simu_step (void)
 {
     double old_left_th, old_right_th, old_aux0_th;
     /* Convert pwm value into voltage. */
-    assert (pwm_left >= -PWM_MAX_FOR (pwm_left)
-	    && pwm_left <= PWM_MAX_FOR (pwm_left));
-    assert (pwm_right >= -PWM_MAX_FOR (pwm_right)
-	    && pwm_right <= PWM_MAX_FOR (pwm_right));
-    assert (pwm_aux0 >= -PWM_MAX_FOR (pwm_aux0)
-	    && pwm_aux0 <= PWM_MAX_FOR (pwm_aux0));
     simu_left_model.u = simu_left_model.m.u_max
-	* ((double) pwm_left / (PWM_MAX + 1));
+	* ((double) pwm_left.cur / (PWM_MAX + 1));
     simu_right_model.u = simu_right_model.m.u_max
-	* ((double) pwm_right / (PWM_MAX + 1));
+	* ((double) pwm_right.cur / (PWM_MAX + 1));
     simu_aux0_model.u = simu_aux0_model.m.u_max
-	* ((double) pwm_aux0 / (PWM_MAX + 1));
+	* ((double) pwm_aux0.cur / (PWM_MAX + 1));
     /* Make one step. */
     old_left_th = simu_left_model.th;
     old_right_th = simu_right_model.th;
@@ -259,7 +254,7 @@ simu_send (void)
     mex_node_send (m);
     /* Send PWM. */
     m = mex_msg_new (0xa1);
-    mex_msg_push (m, "hhh", pwm_left, pwm_right, pwm_aux0);
+    mex_msg_push (m, "hhh", pwm_left.cur, pwm_right.cur, pwm_aux0.cur);
     mex_node_send (m);
     /* Send Arm position. */
     m = mex_msg_new (0xa8);

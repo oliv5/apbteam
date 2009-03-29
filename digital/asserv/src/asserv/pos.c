@@ -133,16 +133,16 @@ pos_update (void)
 	    pos_reset (&pos_theta);
 	    pos_reset (&pos_alpha);
 	    state_blocked (&state_main);
-	    pwm_left = 0;
-	    pwm_right = 0;
+	    pwm_set (&pwm_left, 0);
+	    pwm_set (&pwm_right, 0);
 	  }
 	else
 	  {
 	    pid_theta = pos_compute_pid (diff_theta, &pos_theta);
 	    pid_alpha = pos_compute_pid (diff_alpha, &pos_alpha);
 	    /* Update PWM. */
-	    PWM_SET (pwm_left, pid_theta - pid_alpha);
-	    PWM_SET (pwm_right, pid_theta + pid_alpha);
+	    pwm_set (&pwm_left, pid_theta - pid_alpha);
+	    pwm_set (&pwm_right, pid_theta + pid_alpha);
 	  }
       }
     if (state_aux0.mode >= MODE_POS)
@@ -158,13 +158,13 @@ pos_update (void)
 	    /* Blocked. */
 	    pos_reset (&pos_aux0);
 	    state_blocked (&state_aux0);
-	    pwm_aux0 = 0;
+	    pwm_set (&pwm_aux0, 0);
 	  }
 	else
 	  {
 	    pid = pos_compute_pid (diff, &pos_aux0);
 	    /* Update PWM. */
-	    PWM_SET (pwm_aux0, pid);
+	    pwm_set (&pwm_aux0, pid);
 	  }
       }
 }

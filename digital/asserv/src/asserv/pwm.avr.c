@@ -27,9 +27,10 @@
 #include "pwm_mp.avr.h"
 #include "pwm_ocr.avr.h"
 
-/** PWM values, this is an error if absolute value is greater than the
- * maximum. */
-int16_t pwm_left, pwm_right, pwm_aux0;
+/** PWM control states. */
+struct pwm_t pwm_left = PWM_INIT_FOR (pwm_left);
+struct pwm_t pwm_right = PWM_INIT_FOR (pwm_right);
+struct pwm_t pwm_aux0 = PWM_INIT_FOR (pwm_aux0);
 /** PWM reverse directions. */
 uint8_t pwm_reverse;
 
@@ -45,17 +46,11 @@ pwm_init (void)
 void
 pwm_update (void)
 {
-    /* Some assumption checks. */
-    assert (pwm_left >= -PWM_MAX_FOR (pwm_left)
-	    && pwm_left <= PWM_MAX_FOR (pwm_left));
-    assert (pwm_right >= -PWM_MAX_FOR (pwm_right)
-	    && pwm_right <= PWM_MAX_FOR (pwm_right));
-    assert (pwm_aux0 >= -PWM_MAX_FOR (pwm_aux0)
-	    && pwm_aux0 <= PWM_MAX_FOR (pwm_aux0));
     pwm_mp_update ();
     pwm_ocr_update ();
 }
 
+/** Set which PWM is reversed. */
 void
 pwm_set_reverse (uint8_t reverse)
 {

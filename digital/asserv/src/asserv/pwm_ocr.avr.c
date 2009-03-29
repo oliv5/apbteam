@@ -95,35 +95,35 @@ pwm_ocr_update (void)
 # ifdef PWM1
     uint16_t pwm1;
     /* Set PWM1. */
-    if (PWM1 == 0)
+    if (PWM1.cur == 0)
       {
 	pwm1 = 0;
       }
-    else if (PWM1 < 0)
+    else if (PWM1.cur < 0)
       {
-	pwm1 = -PWM1;
+	pwm1 = -PWM1.cur;
       }
     else
       {
 	dir_b |= _BV (PWM1_DIR);
-	pwm1 = PWM1;
+	pwm1 = PWM1.cur;
       }
 # endif /* PWM1 */
 # ifdef PWM2
     uint16_t pwm2;
     /* Set PWM2. */
-    if (PWM2 == 0)
+    if (PWM2.cur == 0)
       {
 	pwm2 = 0;
       }
-    else if (PWM2 < 0)
+    else if (PWM2.cur < 0)
       {
-	pwm2 = -PWM2;
+	pwm2 = -PWM2.cur;
       }
     else
       {
 	dir_b |= _BV (PWM2_DIR);
-	pwm2 = PWM2;
+	pwm2 = PWM2.cur;
       }
 # endif /* PWM2 */
 #endif /* PWM1or2 */
@@ -134,35 +134,35 @@ pwm_ocr_update (void)
 # ifdef PWM3
     uint16_t pwm3;
     /* Set PWM3. */
-    if (PWM3 == 0)
+    if (PWM3.cur == 0)
       {
 	pwm3 = 0;
       }
-    else if (PWM3 < 0)
+    else if (PWM3.cur < 0)
       {
-	pwm3 = -PWM3;
+	pwm3 = -PWM3.cur;
       }
     else
       {
 	dir_e |= _BV (PWM3_DIR);
-	pwm3 = PWM3;
+	pwm3 = PWM3.cur;
       }
 # endif /* PWM3 */
 # ifdef PWM4
     uint16_t pwm4;
     /* Set PWM4. */
-    if (PWM4 == 0)
+    if (PWM4.cur == 0)
       {
 	pwm4 = 0;
       }
-    else if (PWM4 < 0)
+    else if (PWM4.cur < 0)
       {
-	pwm4 = -PWM4;
+	pwm4 = -PWM4.cur;
       }
     else
       {
 	dir_e |= _BV (PWM4_DIR);
-	pwm4 = PWM4;
+	pwm4 = PWM4.cur;
       }
 # endif /* PWM4 */
 #endif /* PWM3or4 */

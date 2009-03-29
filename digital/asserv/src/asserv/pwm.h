@@ -30,7 +30,19 @@
  * (rounding after shifting bug). */
 #define PWM_MAX 0x3f0
 
-extern int16_t pwm_left, pwm_right, pwm_aux0;
+/** PWM control state. */
+struct pwm_t
+{
+    /** Current PWM value. */
+    int16_t cur;
+    /** Maximum value. */
+    int16_t max;
+    /** Minimum value (dead zone). */
+    int16_t min;
+};
+
+extern struct pwm_t pwm_left, pwm_right, pwm_aux0;
+
 extern uint8_t pwm_reverse;
 
 /** Define maximum PWM value for each output. */
@@ -55,12 +67,23 @@ extern uint8_t pwm_reverse;
 #define PWM_REVERSE_BIT_pwm_right _BV (1)
 #define PWM_REVERSE_BIT_pwm_aux0 _BV (2)
 
-/** Set pwm value and saturate. */
-#define PWM_SET(pwm, value) \
-    do { \
-	(pwm) = (value); \
-	UTILS_BOUND ((pwm), -PWM_MAX_FOR (pwm), PWM_MAX_FOR (pwm)); \
-    } while (0)
+/** State init macro. */
+#define PWM_INIT_FOR(x) \
+    { 0, PWM_MAX_FOR (x), PWM_MIN_FOR (x) }
+
+/** Set PWM value. */
+static inline void
+pwm_set (struct pwm_t *pwm, int16_t value)
+{
+    if (value > pwm->max)
+	pwm->cur = pwm->max;
+    else if (value < -pwm->max)
+	pwm->cur = -pwm->max;
+    else if (value > -pwm->min && value < pwm->min)
+	pwm->cur = 0;
+    else
+	pwm->cur = value;
+}
 
 void
 pwm_init (void);

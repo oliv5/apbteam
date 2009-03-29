@@ -193,7 +193,7 @@ main_loop (void)
 #endif /* HOST */
     if (main_stat_pwm && !--main_stat_pwm_cpt)
       {
-	proto_send3w ('W', pwm_left, pwm_right, pwm_aux0);
+	proto_send3w ('W', pwm_left.cur, pwm_right.cur, pwm_aux0.cur);
 	main_stat_pwm_cpt = main_stat_pwm;
       }
     if (main_stat_timer && !--main_stat_timer_cpt)
@@ -231,8 +231,8 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	pos_reset (&pos_theta);
 	pos_reset (&pos_alpha);
 	state_main.mode = MODE_PWM;
-	pwm_left = 0;
-	pwm_right = 0;
+	pwm_set (&pwm_left, 0);
+	pwm_set (&pwm_right, 0);
 	break;
       case c ('w', 4):
 	/* Set pwm.
@@ -241,15 +241,15 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	pos_reset (&pos_theta);
 	pos_reset (&pos_alpha);
 	state_main.mode = MODE_PWM;
-	PWM_SET (pwm_left, v8_to_v16 (args[0], args[1]));
-	PWM_SET (pwm_right, v8_to_v16 (args[2], args[3]));
+	pwm_set (&pwm_left, v8_to_v16 (args[0], args[1]));
+	pwm_set (&pwm_right, v8_to_v16 (args[2], args[3]));
 	break;
       case c ('w', 2):
 	/* Set auxiliary pwm.
 	 * - w: pwm. */
 	pos_reset (&pos_aux0);
 	state_aux0.mode = MODE_PWM;
-	PWM_SET (pwm_aux0, v8_to_v16 (args[0], args[1]));
+	pwm_set (&pwm_aux0, v8_to_v16 (args[0], args[1]));
 	break;
       case c ('c', 4):
 	/* Add to position consign.
