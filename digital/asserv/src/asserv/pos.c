@@ -93,80 +93,100 @@ pos_compute_pid (int32_t e, struct pos_t *pos)
     return pid >> 8;
 }
 
-/** Update PWM according to consign. */
+/** Update PWM for a polar motor system. */
 void
-pos_update (void)
+pos_update_polar (struct state_t *state,
+		  struct pos_t *pos_theta, struct pos_t *pos_alpha,
+		  int16_t counter_left_diff, int16_t counter_right_diff,
+		  struct pwm_t *pwm_left, struct pwm_t *pwm_right)
 {
-    if (state_main.mode >= MODE_POS)
+    if (state->mode >= MODE_POS)
       {
 	int16_t pid_theta, pid_alpha;
 	int32_t diff_theta, diff_alpha;
 	/* Update current shaft positions. */
-	pos_theta.cur += counter_left_diff + counter_right_diff;
-	pos_alpha.cur += counter_right_diff - counter_left_diff;
-	if (state_main.variant & 1)
-	    pos_reset (&pos_theta);
-	if (state_main.variant & 2)
-	    pos_reset (&pos_alpha);
+	pos_theta->cur += counter_left_diff + counter_right_diff;
+	pos_alpha->cur += counter_right_diff - counter_left_diff;
+	if (state->variant & 1)
+	    pos_reset (pos_theta);
+	if (state->variant & 2)
+	    pos_reset (pos_alpha);
 	/* Compute PID. */
-	diff_theta = pos_theta.cons - pos_theta.cur;
-	diff_alpha = pos_alpha.cons - pos_alpha.cur;
+	diff_theta = pos_theta->cons - pos_theta->cur;
+	diff_alpha = pos_alpha->cons - pos_alpha->cur;
 	/* Compute actual speed and test for blocking. */
-	int32_t cur_speed_theta = pos_theta.cur - pos_theta.cur_old;
-	pos_theta.cur_old = pos_theta.cur;
-	int32_t cur_speed_alpha = pos_alpha.cur - pos_alpha.cur_old;
-	pos_alpha.cur_old = pos_alpha.cur;
+	int32_t cur_speed_theta = pos_theta->cur - pos_theta->cur_old;
+	pos_theta->cur_old = pos_theta->cur;
+	int32_t cur_speed_alpha = pos_alpha->cur - pos_alpha->cur_old;
+	pos_alpha->cur_old = pos_alpha->cur;
 	if ((UTILS_ABS (diff_theta) > pos_blocked_error_limit
 	     && UTILS_ABS (cur_speed_theta) < pos_blocked_speed_limit))
-	    pos_theta.blocked_counter++;
+	    pos_theta->blocked_counter++;
 	else
-	    pos_theta.blocked_counter = 0;
+	    pos_theta->blocked_counter = 0;
 	if ((UTILS_ABS (diff_alpha) > pos_blocked_error_limit
 	     && UTILS_ABS (cur_speed_alpha) < pos_blocked_speed_limit))
-	    pos_alpha.blocked_counter++;
+	    pos_alpha->blocked_counter++;
 	else
-	    pos_alpha.blocked_counter = 0;
-	if (pos_theta.blocked_counter > pos_blocked_counter_limit
-	    || pos_alpha.blocked_counter > pos_blocked_counter_limit)
+	    pos_alpha->blocked_counter = 0;
+	if (pos_theta->blocked_counter > pos_blocked_counter_limit
+	    || pos_alpha->blocked_counter > pos_blocked_counter_limit)
 	  {
 	    /* Blocked. */
-	    pos_reset (&pos_theta);
-	    pos_reset (&pos_alpha);
-	    state_blocked (&state_main);
-	    pwm_set (&pwm_left, 0);
-	    pwm_set (&pwm_right, 0);
+	    pos_reset (pos_theta);
+	    pos_reset (pos_alpha);
+	    state_blocked (state);
+	    pwm_set (pwm_left, 0);
+	    pwm_set (pwm_right, 0);
 	  }
 	else
 	  {
-	    pid_theta = pos_compute_pid (diff_theta, &pos_theta);
-	    pid_alpha = pos_compute_pid (diff_alpha, &pos_alpha);
+	    pid_theta = pos_compute_pid (diff_theta, pos_theta);
+	    pid_alpha = pos_compute_pid (diff_alpha, pos_alpha);
 	    /* Update PWM. */
-	    pwm_set (&pwm_left, pid_theta - pid_alpha);
-	    pwm_set (&pwm_right, pid_theta + pid_alpha);
+	    pwm_set (pwm_left, pid_theta - pid_alpha);
+	    pwm_set (pwm_right, pid_theta + pid_alpha);
 	  }
       }
-    if (state_aux0.mode >= MODE_POS)
+}
+
+/** Update PWM for a single motor system. */
+void
+pos_update_single (struct state_t *state, struct pos_t *pos,
+		   int16_t counter_diff, struct pwm_t *pwm)
+{
+    if (state->mode >= MODE_POS)
       {
 	int16_t pid;
 	int32_t diff;
 	/* Update current shaft position. */
-	pos_aux0.cur += counter_aux0_diff;
+	pos->cur += counter_diff;
 	/* Compute PID. */
-	diff = pos_aux0.cons - pos_aux0.cur;
+	diff = pos->cons - pos->cur;
 	if (UTILS_ABS (diff) > 5000)
 	  {
 	    /* Blocked. */
-	    pos_reset (&pos_aux0);
-	    state_blocked (&state_aux0);
-	    pwm_set (&pwm_aux0, 0);
+	    pos_reset (pos);
+	    state_blocked (state);
+	    pwm_set (pwm, 0);
 	  }
 	else
 	  {
-	    pid = pos_compute_pid (diff, &pos_aux0);
+	    pid = pos_compute_pid (diff, pos);
 	    /* Update PWM. */
-	    pwm_set (&pwm_aux0, pid);
+	    pwm_set (pwm, pid);
 	  }
       }
+}
+
+/** Update PWM according to consign. */
+void
+pos_update (void)
+{
+    pos_update_polar (&state_main, &pos_theta, &pos_alpha,
+		      counter_left_diff, counter_right_diff,
+		      &pwm_left, &pwm_right);
+    pos_update_single (&state_aux0, &pos_aux0, counter_aux0_diff, &pwm_aux0);
 }
 
 /** Reset position control state.  To be called when the position control is
