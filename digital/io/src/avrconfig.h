@@ -55,7 +55,7 @@
 /** If the send buffer is full when putc:
  *  - DROP: drop the new byte.
  *  - WAIT: wait until there is room in the send buffer. */
-#define AC_UART0_SEND_BUFFER_FULL WAIT
+#define AC_UART0_SEND_BUFFER_FULL DROP
 /** In HOST compilation:
  *  - STDIO: use stdin/out.
  *  - PTS: use pseudo terminal. */
