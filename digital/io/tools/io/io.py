@@ -39,7 +39,7 @@ class Proto:
             self.proto.send ('h', 'BHH', i, t[0], t[1])
 
     def write_eeprom (self):
-        self.proto.send ('p', 'BB', ord ('E'), ord ('s'))
+        self.proto.send ('p', 'cc', 'E', 's')
         time.sleep (1)
         self.proto.wait (lambda: True)
 

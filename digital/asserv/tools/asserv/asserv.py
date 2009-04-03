@@ -185,24 +185,22 @@ class Proto:
         """Speed controlled position consign."""
         if w == 't':
             self.mseq += 1
-            self.proto.send ('s', 'LLB', offset / self.param['scale'], 0,
-                    self.mseq)
+            self.proto.send ('s', 'llB', self._dist (offset), 0, self.mseq)
         elif w == 'a':
             self.mseq += 1
-            self.proto.send ('s', 'LLB', 0, offset / self.param['scale'],
-                    self.mseq)
+            self.proto.send ('s', 'llB', 0, self.dist (offset), self.mseq)
         else:
             assert w == 'a0'
             self.a0seq += 1
-            self.proto.send ('s', 'LB', offset, self.a0seq)
+            self.proto.send ('s', 'lB', offset, self.a0seq)
         self.wait (self.finished, auto = True)
 
     def speed_angle (self, w, angle):
         """Speed controlled angle consign."""
         if w == 'a':
             self.mseq += 1
-            self.proto.send ('s', 'LLB', 0, angle * self.param['f'],
-                    self.mseq)
+            self.proto.send ('s', 'llB',
+                    0, int (round (angle * self.param['f'])), self.mseq)
         else:
             assert 0
         self.wait (self.finished, auto = True)
@@ -210,41 +208,37 @@ class Proto:
     def set_pos (self, x = None, y = None, a = None):
         """Set current position."""
         if x is not None:
-            self.proto.send ('p', 'BL', ord ('X'),
-                    256 * x / self.param['scale'])
+            self.proto.send ('p', 'cl', 'X', self._dist_f248 (x))
         if y is not None:
-            self.proto.send ('p', 'BL', ord ('Y'),
-                    256 * y / self.param['scale'])
+            self.proto.send ('p', 'cl', 'Y', self._dist_f248 (y))
         if a is not None:
-            self.proto.send ('p', 'BL', ord ('A'),
-                    a * (1 << 24) / (2 * math.pi))
+            self.proto.send ('p', 'cl', 'A', self._angle_f824 (a))
 
     def goto (self, x, y, backward_ok = False):
         """Go to position."""
         self.mseq += 1
-        self.proto.send (backward_ok and 'r' or 'x', 'LLB',
-                256 * x / self.param['scale'],
-                256 * y / self.param['scale'], self.mseq)
+        self.proto.send (backward_ok and 'r' or 'x', 'llB',
+                self._dist_f248 (x), self._dist_f248 (y), self.mseq)
         self.wait (self.finished, auto = True)
 
     def goto_angle (self, a):
         """Go to angle."""
         self.mseq += 1
-        self.proto.send ('x', 'HB', a * (1 << 16) / (2 * math.pi), self.mseq)
+        self.proto.send ('x', 'HB', self._angle_f16 (a), self.mseq)
         self.wait (self.finished, auto = True)
 
     def goto_xya (self, x, y, a, backward_ok = False):
         """Go to position, then angle."""
         self.mseq += 1
-        self.proto.send (backward_ok and 'r' or 'x', 'LLHB',
-                256 * x / self.param['scale'],
-                256 * y / self.param['scale'],
-                a * (1 << 16) / (2 * math.pi), self.mseq)
+        self.proto.send (backward_ok and 'r' or 'x', 'llHB',
+                self._dist_f248 (x), self._dist_f248 (y),
+                self._angle_f16 (a), self.mseq)
         self.wait (self.finished, auto = True)
 
     def set_simu_pos (self, x, y, a):
         """Set simulated position."""
-        self.proto.send ('h', 'BHHH', ord ('X'), x, y, a * 1024)
+        self.proto.send ('h', 'chhh', 'X', int (round (x)), int (round (y)),
+                int (round (a * 1024)))
 
     def register_pos (self, func = None, interval = 225 / 4):
         """Will call func each time a position is received.  If no function is
@@ -260,32 +254,32 @@ class Proto:
     def send_param (self):
         """Send all parameters."""
         p = self.param
-        self.proto.send ('p', 'BHH', ord ('p'), p['tkp'] * 256,
-                p['akp'] * 256)
-        self.proto.send ('p', 'BHH', ord ('i'), p['tki'] * 256,
-                p['aki'] * 256)
-        self.proto.send ('p', 'BHH', ord ('d'), p['tkd'] * 256,
-                p['akd'] * 256)
-        self.proto.send ('p', 'BH', ord ('p'), p['a0kp'] * 256)
-        self.proto.send ('p', 'BH', ord ('i'), p['a0ki'] * 256)
-        self.proto.send ('p', 'BH', ord ('d'), p['a0kd'] * 256)
-        self.proto.send ('p', 'BH', ord ('E'), p['E'])
-        self.proto.send ('p', 'BH', ord ('I'), p['I'])
-        self.proto.send ('p', 'BH', ord ('D'), p['D'])
-        self.proto.send ('p', 'BHHH', ord ('b'), p['be'], p['bs'], p['bc'])
-        self.proto.send ('p', 'BHH', ord ('a'), p['ta'] * 256,
-                p['aa'] * 256)
-        self.proto.send ('p', 'BH', ord ('a'), p['a0a'] * 256)
-        self.proto.send ('p', 'BBBBB', ord ('s'), p['tsm'], p['asm'],
-                p['tss'], p['ass'])
-        self.proto.send ('p', 'BBB', ord ('s'), p['a0sm'], p['a0ss'])
-        self.proto.send ('p', 'BL', ord ('c'), p['c'] * 256 * 256 * 256)
-        self.proto.send ('p', 'BH', ord ('f'), p['f'])
-        self.proto.send ('p', 'BH', ord ('l'), p['l'])
+        def f88 (x):
+            return int (round (x * (1 << 8)))
+        def f824 (x):
+            return int (round (x * (1 << 24)))
+        self.proto.send ('p', 'cHH', 'p', f88 (p['tkp']), f88 (p['akp']))
+        self.proto.send ('p', 'cHH', 'i', f88 (p['tki']), f88 (p['aki']))
+        self.proto.send ('p', 'cHH', 'd', f88 (p['tkd']), f88 (p['akd']))
+        self.proto.send ('p', 'cH', 'p', f88 (p['a0kp']))
+        self.proto.send ('p', 'cH', 'i', f88 (p['a0ki']))
+        self.proto.send ('p', 'cH', 'd', f88 (p['a0kd']))
+        self.proto.send ('p', 'cH', 'E', p['E'])
+        self.proto.send ('p', 'cH', 'I', p['I'])
+        self.proto.send ('p', 'cH', 'D', p['D'])
+        self.proto.send ('p', 'cHHH', 'b', p['be'], p['bs'], p['bc'])
+        self.proto.send ('p', 'cHH', 'a', f88 (p['ta']), f88 (p['aa']))
+        self.proto.send ('p', 'cH', 'a', f88 (p['a0a']))
+        self.proto.send ('p', 'cBBBB', 's', p['tsm'], p['asm'], p['tss'],
+                p['ass'])
+        self.proto.send ('p', 'cBB', 's', p['a0sm'], p['a0ss'])
+        self.proto.send ('p', 'cL', 'c', f824 (p['c']))
+        self.proto.send ('p', 'cH', 'f', p['f'])
+        self.proto.send ('p', 'cH', 'l', p['l'])
 
     def write_eeprom (self):
         """Request an EEPROM write."""
-        self.proto.send ('p', 'BB', ord ('E'), 1)
+        self.proto.send ('p', 'cB', 'E', 1)
         time.sleep (1)
         self.wait (lambda: True)
 
@@ -347,3 +341,16 @@ class Proto:
     def fileno (self):
         """Return fileno for select() calls."""
         return self.proto.fileno ()
+
+    def _dist (self, d):
+        return int (round (d / self.param['scale']))
+
+    def _dist_f248 (self, d):
+        return int (round ((1 << 8) * d / self.param['scale']))
+
+    def _angle_f16 (self, a):
+        return int (round ((1 << 16) * a / (2 * math.pi))) & 0xffff
+
+    def _angle_f824 (self, a):
+        return int (round ((1 << 24) * a / (2 * math.pi)))
+

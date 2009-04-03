@@ -171,7 +171,7 @@ class InterNode (Inter):
                 v = 0.000571429 * d*d + -0.0752381 * d + 2.89107
             else:
                 v = 2.2 / 10 * d
-            v *= 1024 / 5
+            v = int (round (v * 1024 / 5))
             assert v >= 0 and v < 1024
             adc.value = v
             adc.notify ()

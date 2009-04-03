@@ -158,7 +158,7 @@ class Frame:
         if command:
             assert len (command) == 1 and command.isalpha ()
             self.command = command
-            self.args = struct.pack ('!' + fmt, *[ int (i) for i in args ])
+            self.args = struct.pack ('!' + fmt, *args)
         else:
             self.command = None
             self.args = ''
