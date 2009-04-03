@@ -89,7 +89,7 @@ class InterAsserv (Inter):
         p = self.a.position
         self.tableview.robot.pos = p.pos
         self.tableview.robot.angle = p.angle
-        self.update (self.tableview.robot)
+        self.tableview.robot.update ()
         self.update ()
 
     def button1 (self, ev):
