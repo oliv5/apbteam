@@ -27,5 +27,5 @@
 
 struct state_t state_main;
 
-struct state_t state_aux0;
+struct state_t state_aux[AC_ASSERV_AUX_NB];
 

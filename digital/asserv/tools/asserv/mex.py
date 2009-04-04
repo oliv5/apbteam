@@ -55,7 +55,7 @@ class Mex:
     class PWM (Observable):
         """Motor PWM.
 
-        - pwm: current PWM value (hardware unit).
+        - pwm: current PWM values (hardware unit).
 
         """
 
@@ -65,7 +65,7 @@ class Mex:
             node.register (ID_PWM, self.__handle)
 
         def __handle (self, msg):
-            self.pwm = msg.pop ('hhh')
+            self.pwm = msg.pop ('hhhh')
             self.notify ()
 
     class Aux (Observable):
@@ -95,6 +95,6 @@ class Mex:
     def __init__ (self, node):
         self.position = self.Position (node)
         self.pwm = self.PWM (node)
-        self.aux = (self.Aux (), )
+        self.aux = (self.Aux (), self.Aux ())
         self.__aux_pack = self.Aux.Pack (node, self.aux)
 

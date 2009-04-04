@@ -38,6 +38,7 @@
 #include <string.h>
 
 #include "pwm.h"
+#include "aux.h"
 
 #include "motor_model.host.h"
 #include "models.host.h"
@@ -46,10 +47,12 @@
 uint8_t DDRF, PORTC, PORTD, PORTE, PORTF, PORTG, PINC;
 
 /** Overall counter values. */
-uint16_t counter_left, counter_right, counter_aux0;
+uint16_t counter_left, counter_right,
+	 counter_aux[AC_ASSERV_AUX_NB];
 /** Counter differences since last update.
  * Maximum of 9 significant bits, sign included. */
-int16_t counter_left_diff, counter_right_diff, counter_aux0_diff;
+int16_t counter_left_diff, counter_right_diff,
+	counter_aux_diff[AC_ASSERV_AUX_NB];
 /** Overall uncorrected counter values. */
 static int32_t counter_right_raw;
 /** Correction factor (f8.24). */
@@ -58,7 +61,9 @@ uint32_t counter_right_correction = 1L << 24;
 /** PWM control states. */
 struct pwm_t pwm_left = PWM_INIT_FOR (pwm_left);
 struct pwm_t pwm_right = PWM_INIT_FOR (pwm_right);
-struct pwm_t pwm_aux0 = PWM_INIT_FOR (pwm_aux0);
+struct pwm_t pwm_aux[AC_ASSERV_AUX_NB] = {
+    PWM_INIT_FOR (pwm_aux0), PWM_INIT_FOR (pwm_aux1)
+};
 /** PWM reverse directions. */
 uint8_t pwm_reverse;
 
@@ -66,13 +71,15 @@ uint8_t pwm_reverse;
 const struct robot_t *simu_robot;
 
 /** Motor models. */
-struct motor_t simu_left_model, simu_right_model, simu_aux0_model;
+struct motor_t simu_left_model, simu_right_model,
+	       simu_aux_model[AC_ASSERV_AUX_NB];
 
 /** Computed simulated position (mm, rad). */
 double simu_pos_x, simu_pos_y, simu_pos_a;
 
 /** Full counter values. */
-uint32_t simu_counter_left, simu_counter_right, simu_counter_aux0;
+uint32_t simu_counter_left, simu_counter_right,
+	 simu_counter_aux[AC_ASSERV_AUX_NB];
 double simu_counter_left_th, simu_counter_right_th;
 
 /** Use mex. */
@@ -103,7 +110,7 @@ simu_init (void)
 	exit (1);
       }
     models_init (simu_robot, &simu_left_model, &simu_right_model,
-		 &simu_aux0_model);
+		 simu_aux_model);
     simu_pos_x = simu_pos_y = simu_pos_a = 0;
 }
 
@@ -158,31 +165,40 @@ simu_sensor_update (void)
 	    PINC |= sensors_bit[i];
       }
     /** Top zero sensor. */
-    double aa = simu_aux0_model.th / simu_aux0_model.m.i_G * 3;
-    if (!(cos (aa) > 0 && fabs (sin (aa)) * 80.0 < 7.5))
-	PINC |= _BV (5);
+    double aa;
+    for (i = 0; i < AC_ASSERV_AUX_NB; i++)
+      {
+	aa = simu_aux_model[i].th / simu_aux_model[i].m.i_G * 3;
+	if (!(cos (aa) > 0 && fabs (sin (aa)) * 80.0 < 7.5))
+	    *aux[i].zero_pin |= aux[i].zero_bv;
+      }
 }
 
 /** Do a simulation step. */
 static void
 simu_step (void)
 {
-    double old_left_th, old_right_th, old_aux0_th;
+    int i;
+    double old_left_th, old_right_th, old_aux_th[AC_ASSERV_AUX_NB];
     /* Convert pwm value into voltage. */
     simu_left_model.u = simu_left_model.m.u_max
 	* ((double) pwm_left.cur / (PWM_MAX + 1));
     simu_right_model.u = simu_right_model.m.u_max
 	* ((double) pwm_right.cur / (PWM_MAX + 1));
-    simu_aux0_model.u = simu_aux0_model.m.u_max
-	* ((double) pwm_aux0.cur / (PWM_MAX + 1));
+    for (i = 0; i < AC_ASSERV_AUX_NB; i++)
+	simu_aux_model[i].u = simu_aux_model[i].m.u_max
+	    * ((double) pwm_aux[i].cur / (PWM_MAX + 1));
     /* Make one step. */
     old_left_th = simu_left_model.th;
     old_right_th = simu_right_model.th;
-    old_aux0_th = simu_aux0_model.th;
     motor_model_step (&simu_left_model);
     motor_model_step (&simu_right_model);
-    if (simu_robot->aux0_motor)
-	motor_model_step (&simu_aux0_model);
+    for (i = 0; i < AC_ASSERV_AUX_NB; i++)
+      {
+	old_aux_th[i] = simu_aux_model[i].th;
+	if (simu_robot->aux_motor[i])
+	    motor_model_step (&simu_aux_model[i]);
+      }
     /* Modify counters. */
     uint32_t counter_left_new;
     uint32_t counter_right_new;
@@ -224,13 +240,16 @@ simu_step (void)
     counter_right = right_new;
     simu_counter_right = counter_right_new;
     /* Update auxiliary counter. */
-    if (simu_robot->aux0_motor)
+    for (i = 0; i < AC_ASSERV_AUX_NB; i++)
       {
-	uint32_t counter_aux0_new = simu_aux0_model.th / (2*M_PI)
-	    * simu_robot->aux0_encoder_steps;
-	counter_aux0_diff = counter_aux0_new - simu_counter_aux0;
-	counter_aux0 += counter_aux0_diff;
-	simu_counter_aux0 = counter_aux0_new;
+	if (simu_robot->aux_motor[i])
+	  {
+	    uint32_t counter_aux_new = simu_aux_model[i].th / (2*M_PI)
+		* simu_robot->aux_encoder_steps[i];
+	    counter_aux_diff[i] = counter_aux_new - simu_counter_aux[i];
+	    counter_aux[i] += counter_aux_diff[i];
+	    simu_counter_aux[i] = counter_aux_new;
+	  }
       }
     /* Update position. */
     simu_pos_update ((simu_left_model.th - old_left_th)
@@ -246,6 +265,7 @@ simu_step (void)
 static void
 simu_send (void)
 {
+    int i;
     mex_msg_t *m;
     /* Send position. */
     m = mex_msg_new (0xa0);
@@ -254,12 +274,15 @@ simu_send (void)
     mex_node_send (m);
     /* Send PWM. */
     m = mex_msg_new (0xa1);
-    mex_msg_push (m, "hhh", pwm_left.cur, pwm_right.cur, pwm_aux0.cur);
+    mex_msg_push (m, "hh", pwm_left.cur, pwm_right.cur);
+    for (i = 0; i < AC_ASSERV_AUX_NB; i++)
+	mex_msg_push (m, "h", pwm_aux[i].cur);
     mex_node_send (m);
-    /* Send Arm position. */
+    /* Send Aux position. */
     m = mex_msg_new (0xa8);
-    mex_msg_push (m, "l", (int32_t) (1024.0 * simu_aux0_model.th /
-				     simu_aux0_model.m.i_G));
+    for (i = 0; i < AC_ASSERV_AUX_NB; i++)
+	mex_msg_push (m, "l", (int32_t) (1024.0 * simu_aux_model[i].th
+					 / simu_aux_model[i].m.i_G));
     mex_node_send (m);
 }
 

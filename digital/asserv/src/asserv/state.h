@@ -79,8 +79,8 @@ struct state_t
 /** Main motors state. */
 extern struct state_t state_main;
 
-/** First auxiliary motor state. */
-extern struct state_t state_aux0;
+/** Auxiliary motor states. */
+extern struct state_t state_aux[AC_ASSERV_AUX_NB];
 
 /** Start a new command execution. */
 static inline void

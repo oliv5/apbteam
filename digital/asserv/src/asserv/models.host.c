@@ -96,7 +96,7 @@ static const struct robot_t gloubi_robot =
     13.0, // approx
     /* Whether the encoder is mounted on the main motor (false) or not (true). */
     0,
-    0.0, 0.0, NULL, 0
+    0.0, 0.0, { NULL, NULL }, { 0, 0 }
 };
 
 /* Taz, APBTeam/Efrei 2005. */
@@ -116,7 +116,7 @@ static const struct robot_t taz_robot =
     0.0,
     /* Whether the encoder is mounted on the main motor (false) or not (true). */
     0,
-    0.0, 0.0, NULL, 0
+    0.0, 0.0, { NULL, NULL }, { 0, 0 }
 };
 
 /* TazG, Taz with RE25G motors. */
@@ -136,7 +136,7 @@ static const struct robot_t tazg_robot =
     0.0,
     /* Whether the encoder is mounted on the main motor (false) or not (true). */
     0,
-    0.0, 0.0, NULL, 0
+    0.0, 0.0, { NULL, NULL }, { 0, 0 }
 };
 
 /* Giboulée arm model, with a RE25CLL and a 1:10 ratio gearbox. */
@@ -179,10 +179,10 @@ static const struct robot_t giboulee_robot =
     0.063 / 2,
     /** Distance between the encoders wheels (m). */
     0.28,
-    /** First auxiliary motor or NULL if none. */
-    &giboulee_arm_model,
-    /** Number of steps on the first auxiliary motor encoder. */
-    500,
+    /** Auxiliary motors, NULL if not present. */
+    { &giboulee_arm_model, NULL },
+    /** Number of steps for each auxiliary motor encoder. */
+    { 500, 0 },
 };
 
 /* Table of models. */
@@ -214,8 +214,9 @@ models_get (const char *name)
 /** Initialise simulation models. */
 void
 models_init (const struct robot_t *robot, struct motor_t *main_motor_left,
-	     struct motor_t *main_motor_right, struct motor_t *aux0_motor)
+	     struct motor_t *main_motor_right, struct motor_t aux_motor[])
 {
+    int i;
     if (main_motor_left)
       {
 	main_motor_left->m = *robot->main_motor;
@@ -232,11 +233,17 @@ models_init (const struct robot_t *robot, struct motor_t *main_motor_left,
 	main_motor_right->h = ECHANT_PERIOD;
 	main_motor_right->d = 1000;
       }
-    if (aux0_motor && robot->aux0_motor)
+    if (aux_motor)
       {
-	aux0_motor->m = *robot->aux0_motor;
-	aux0_motor->h = ECHANT_PERIOD;
-	aux0_motor->d = 1000;
+	for (i = 0; i < AC_ASSERV_AUX_NB; i++)
+	  {
+	    if (robot->aux_motor[i])
+	      {
+		aux_motor[i].m = *robot->aux_motor[i];
+		aux_motor[i].h = ECHANT_PERIOD;
+		aux_motor[i].d = 1000;
+	      }
+	  }
       }
 }
 

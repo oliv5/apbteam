@@ -38,8 +38,8 @@
 # include "simu.host.h"
 #endif
 
-/** Motor state. */
-struct aux_t aux0;
+/** Motors states. */
+struct aux_t aux[AC_ASSERV_AUX_NB];
 
 /** Trajectory modes. */
 enum
@@ -62,18 +62,24 @@ enum
 void
 aux_init (void)
 {
-    aux0.state = &state_aux0;
-    aux0.speed = &speed_aux0;
-    aux0.zero_pin = &PINC;
-    aux0.zero_bv = _BV (5);
+    aux[0].state = &state_aux[0];
+    aux[0].speed = &speed_aux[0];
+    aux[0].zero_pin = &PINC;
+    aux[0].zero_bv = _BV (5);
+    aux[1].state = &state_aux[1];
+    aux[1].speed = &speed_aux[1];
+    aux[1].zero_pin = &PINC;
+    aux[1].zero_bv = _BV (6);
 }
 
 /** Update positions. */
 void
 aux_pos_update (void)
 {
+    uint8_t i;
     /* Easy... */
-    aux0.pos += counter_aux0_diff;
+    for (i = 0; i < AC_ASSERV_AUX_NB; i++)
+	aux[i].pos += counter_aux_diff[i];
 }
 
 /** Goto position. */
@@ -190,6 +196,8 @@ aux_traj_update_single (struct aux_t *aux)
 void
 aux_traj_update (void)
 {
-    aux_traj_update_single (&aux0);
+    uint8_t i;
+    for (i = 0; i < AC_ASSERV_AUX_NB; i++)
+	aux_traj_update_single (&aux[i]);
 }
 

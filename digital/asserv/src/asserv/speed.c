@@ -41,15 +41,17 @@
 struct speed_t speed_theta, speed_alpha;
 
 /** Auxiliaries speed control states. */
-struct speed_t speed_aux0;
+struct speed_t speed_aux[AC_ASSERV_AUX_NB];
 
 /** Initialise speed control states. */
 void
 speed_init (void)
 {
+    uint8_t i;
     speed_theta.pos = &pos_theta;
     speed_alpha.pos = &pos_alpha;
-    speed_aux0.pos = &pos_aux0;
+    for (i = 0; i < AC_ASSERV_AUX_NB; i++)
+	speed_aux[i].pos = &pos_aux[i];
 }
 
 /** Update current speed according to a speed consign. */
@@ -147,7 +149,9 @@ speed_update_single (struct state_t *state, struct speed_t *speed)
 void
 speed_update (void)
 {
+    uint8_t i;
     speed_update_double (&state_main, &speed_theta, &speed_alpha);
-    speed_update_single (&state_aux0, &speed_aux0);
+    for (i = 0; i < AC_ASSERV_AUX_NB; i++)
+	speed_update_single (&state_aux[i], &speed_aux[i]);
 }
 

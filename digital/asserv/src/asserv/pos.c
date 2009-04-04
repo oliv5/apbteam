@@ -44,7 +44,7 @@
 struct pos_t pos_theta, pos_alpha;
 
 /** Auxiliaries control states. */
-struct pos_t pos_aux0;
+struct pos_t pos_aux[AC_ASSERV_AUX_NB];
 
 /** Error saturation. */
 int32_t pos_e_sat = 1023;
@@ -183,10 +183,13 @@ pos_update_single (struct state_t *state, struct pos_t *pos,
 void
 pos_update (void)
 {
+    uint8_t i;
     pos_update_polar (&state_main, &pos_theta, &pos_alpha,
 		      counter_left_diff, counter_right_diff,
 		      &pwm_left, &pwm_right);
-    pos_update_single (&state_aux0, &pos_aux0, counter_aux0_diff, &pwm_aux0);
+    for (i = 0; i < AC_ASSERV_AUX_NB; i++)
+	pos_update_single (&state_aux[i], &pos_aux[i], counter_aux_diff[i],
+			   &pwm_aux[i]);
 }
 
 /** Reset position control state.  To be called when the position control is

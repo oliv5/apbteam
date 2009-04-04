@@ -34,7 +34,7 @@
 #define PWM1 pwm_left
 #define PWM2 pwm_right
 #define PWM3 pwm_aux0
-#undef PWM4
+#define PWM4 pwm_aux1
 
 #include "pwm_config.h"
 
@@ -98,8 +98,8 @@ void
 pwm_mp_update (void)
 {
 #if PWM1or2 || PWM3or4
-    if (PWM1c (PWM1.cur) || PWM2c (PWM2.cur)
-	|| PWM3c (PWM3.cur) || PWM4c (PWM4.cur))
+    if (PWM1c (PWM_VALUE (PWM1)) || PWM2c (PWM_VALUE (PWM2))
+	|| PWM3c (PWM_VALUE (PWM3)) || PWM4c (PWM_VALUE (PWM4)))
 	pwm_mp_go = 1;
     if (!pwm_mp_go)
 	return;
@@ -107,7 +107,7 @@ pwm_mp_update (void)
 #if PWM1or2
     /* Chip enable. */
     PORTB &= ~_BV (0);
-    pwm_mp_send (PWM1c (PWM1.cur), PWM2c (PWM2.cur),
+    pwm_mp_send (PWM1c (PWM_VALUE (PWM1)), PWM2c (PWM_VALUE (PWM2)),
 		 PWM1c (pwm_reverse & PWM_REVERSE_BIT (PWM1)),
 		 PWM2c (pwm_reverse & PWM_REVERSE_BIT (PWM2)));
     /* Chip disable. */
@@ -116,7 +116,7 @@ pwm_mp_update (void)
 #if PWM3or4
     /* Chip enable. */
     PORTE &= ~_BV (4);
-    pwm_mp_send (PWM3c (PWM3.cur), PWM4c (PWM4.cur),
+    pwm_mp_send (PWM3c (PWM_VALUE (PWM3)), PWM4c (PWM_VALUE (PWM4)),
 		 PWM3c (pwm_reverse & PWM_REVERSE_BIT (PWM3)),
 		 PWM4c (pwm_reverse & PWM_REVERSE_BIT (PWM4)));
     /* Chip disable. */

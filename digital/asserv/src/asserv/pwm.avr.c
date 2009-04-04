@@ -30,7 +30,9 @@
 /** PWM control states. */
 struct pwm_t pwm_left = PWM_INIT_FOR (pwm_left);
 struct pwm_t pwm_right = PWM_INIT_FOR (pwm_right);
-struct pwm_t pwm_aux0 = PWM_INIT_FOR (pwm_aux0);
+struct pwm_t pwm_aux[AC_ASSERV_AUX_NB] = {
+    PWM_INIT_FOR (pwm_aux0), PWM_INIT_FOR (pwm_aux1)
+};
 /** PWM reverse directions. */
 uint8_t pwm_reverse;
 

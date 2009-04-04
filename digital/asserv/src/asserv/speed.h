@@ -47,7 +47,7 @@ struct speed_t
 };
 
 extern struct speed_t speed_theta, speed_alpha;
-extern struct speed_t speed_aux0;
+extern struct speed_t speed_aux[AC_ASSERV_AUX_NB];
 
 void
 speed_init (void);

@@ -43,6 +43,8 @@
 #define COUNTER_RIGHT 1
 /** Define the first auxiliary counter address. */
 #define COUNTER_AUX0 2
+/** Define the second auxiliary counter address. */
+#define COUNTER_AUX1 3
 
 /** Define to 1 to reverse the left counter. */
 #define COUNTER_LEFT_REVERSE 1
@@ -50,22 +52,27 @@
 #define COUNTER_RIGHT_REVERSE 0
 /** Define to 1 to reverse the first auxiliary counter. */
 #define COUNTER_AUX0_REVERSE 0
+/** Define to 1 to reverse the second auxiliary counter. */
+#define COUNTER_AUX1_REVERSE 0
 
 /** Define to 1 to use the AVR External Memory system, or 0 to use hand made
  * signals. */
 #define COUNTER_USE_XMEM 1
 
 /** Last values. */
-static uint8_t counter_left_old, counter_right_old, counter_aux0_old;
+static uint8_t counter_left_old, counter_right_old,
+	       counter_aux_old[AC_ASSERV_AUX_NB];
 /** Overall counter values. */
-uint16_t counter_left, counter_right, counter_aux0;
+uint16_t counter_left, counter_right,
+	 counter_aux[AC_ASSERV_AUX_NB];
 /** Overall uncorrected counter values. */
 static int32_t counter_right_raw;
 /** Correction factor (f8.24). */
 uint32_t counter_right_correction = 1L << 24;
 /** Counter differences since last update.
  * Maximum of 9 significant bits, sign included. */
-int16_t counter_left_diff, counter_right_diff, counter_aux0_diff;
+int16_t counter_left_diff, counter_right_diff,
+	counter_aux_diff[AC_ASSERV_AUX_NB];
 
 #if !COUNTER_USE_XMEM
 # define COUNTER_ALE _BV (2)
@@ -117,18 +124,20 @@ counter_init (void)
     /* Begin with safe values. */
     counter_left_old = counter_read (COUNTER_LEFT);
     counter_right_old = counter_read (COUNTER_RIGHT);
-    counter_aux0_old = counter_read (COUNTER_AUX0);
+    counter_aux_old[0] = counter_read (COUNTER_AUX0);
+    counter_aux_old[1] = counter_read (COUNTER_AUX1);
 }
 
 /** Update overall counter values and compute diffs. */
 void
 counter_update (void)
 {
-    uint8_t left, right, aux0;
+    uint8_t left, right, aux0, aux1;
     /* Sample counters. */
     left = counter_read (COUNTER_LEFT);
     right = counter_read (COUNTER_RIGHT);
     aux0 = counter_read (COUNTER_AUX0);
+    aux1 = counter_read (COUNTER_AUX1);
     /* Left counter. */
 #if !COUNTER_LEFT_REVERSE
     counter_left_diff = (int8_t) (left - counter_left_old);
@@ -152,11 +161,19 @@ counter_update (void)
     counter_right = right_new;
     /* First auxiliary counter. */
 #if !COUNTER_AUX0_REVERSE
-    counter_aux0_diff = (int8_t) (aux0 - counter_aux0_old);
+    counter_aux_diff[0] = (int8_t) (aux0 - counter_aux_old[0]);
 #else
-    counter_aux0_diff = (int8_t) (counter_aux0_old - aux0);
+    counter_aux_diff[0] = (int8_t) (counter_aux_old[0] - aux0);
 #endif
-    counter_aux0_old = aux0;
-    counter_aux0 += counter_aux0_diff;
+    counter_aux_old[0] = aux0;
+    counter_aux[0] += counter_aux_diff[0];
+    /* Second auxiliary counter. */
+#if !COUNTER_AUX1_REVERSE
+    counter_aux_diff[1] = (int8_t) (aux1 - counter_aux_old[1]);
+#else
+    counter_aux_diff[1] = (int8_t) (counter_aux_old[1] - aux1);
+#endif
+    counter_aux_old[1] = aux1;
+    counter_aux[1] += counter_aux_diff[1];
 }
 

@@ -73,8 +73,8 @@ twi_proto_update (void)
     u8 status[12];
     status[0] = (speed_theta.cur < 0 ? (1 << 5) : 0)
 	| (speed_theta.cur > 0 ? (1 << 4) : 0)
-	| (state_aux0.blocked << 3)
-	| (state_aux0.finished << 2)
+	| (state_aux[0].blocked << 3)
+	| (state_aux[0].finished << 2)
 	| (state_main.blocked << 1)
 	| (state_main.finished << 0);
     status[1] = twi_proto.seq;
@@ -86,8 +86,8 @@ twi_proto_update (void)
     status[7] = v32_to_v8 (postrack_y, 1);
     status[8] = v32_to_v8 (postrack_a, 2);
     status[9] = v32_to_v8 (postrack_a, 1);
-    status[10] = v16_to_v8 (aux0.pos, 1);
-    status[11] = v16_to_v8 (aux0.pos, 0);
+    status[10] = v16_to_v8 (aux[0].pos, 1);
+    status[11] = v16_to_v8 (aux[0].pos, 0);
     twi_sl_update (status, sizeof (status));
 }
 
@@ -190,14 +190,14 @@ twi_proto_callback (u8 *buf, u8 size)
 	/* Move the arm.
 	 * - w: new position.
 	 * - b: speed. */
-	speed_aux0.max = buf[4];
-	aux_traj_goto_start (&aux0, v8_to_v16 (buf[2], buf[3]), 0);
+	speed_aux[0].max = buf[4];
+	aux_traj_goto_start (&aux[0], v8_to_v16 (buf[2], buf[3]), 0);
 	break;
       case c ('B', 1):
 	/* Find the zero position of the arm.
 	 * - b: speed. */
-	speed_aux0.max = buf[2];
-	aux_traj_find_zero_start (&aux0, 0);
+	speed_aux[0].max = buf[2];
+	aux_traj_find_zero_start (&aux[0], 0);
 	break;
       case c ('p', x):
 	/* Set parameters. */

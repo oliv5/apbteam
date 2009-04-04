@@ -49,10 +49,10 @@ struct robot_t
     double encoder_wheel_r;
     /** Distance between the encoders wheels (m). */
     double encoder_footing;
-    /** First auxiliary motor or NULL if none. */
-    const struct motor_def_t *aux0_motor;
-    /** Number of steps on the first auxiliary motor encoder. */
-    int aux0_encoder_steps;
+    /** Auxiliary motors, NULL if not present. */
+    const struct motor_def_t *aux_motor[AC_ASSERV_AUX_NB];
+    /** Number of steps for each auxiliary motor encoder. */
+    int aux_encoder_steps[AC_ASSERV_AUX_NB];
 };
 
 /** Get a pointer to a model by name, or return 0. */
@@ -62,6 +62,6 @@ models_get (const char *name);
 /** Initialise simulation models. */
 void
 models_init (const struct robot_t *robot, struct motor_t *main_motor_left,
-	     struct motor_t *main_motor_right, struct motor_t *aux0_motor);
+	     struct motor_t *main_motor_right, struct motor_t aux_motor[]);
 
 #endif /* models_host_h */

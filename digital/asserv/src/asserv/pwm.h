@@ -41,9 +41,17 @@ struct pwm_t
     int16_t min;
 };
 
-extern struct pwm_t pwm_left, pwm_right, pwm_aux0;
+extern struct pwm_t pwm_left, pwm_right, pwm_aux[AC_ASSERV_AUX_NB];
 
 extern uint8_t pwm_reverse;
+
+/** Define current PWM value for each output. */
+#define PWM_VALUE(x) PWM_VALUE_ (x)
+#define PWM_VALUE_(x) PWM_MAX_FOR_ ## x
+#define PWM_VALUE_pwm_left pwm_left.cur
+#define PWM_VALUE_pwm_right pwm_right.cur
+#define PWM_VALUE_pwm_aux0 pwm_aux[0].cur
+#define PWM_VALUE_pwm_aux1 pwm_aux[1].cur
 
 /** Define maximum PWM value for each output. */
 #define PWM_MAX_FOR(x) PWM_MAX_FOR_ (x)
@@ -51,6 +59,7 @@ extern uint8_t pwm_reverse;
 #define PWM_MAX_FOR_pwm_left PWM_MAX
 #define PWM_MAX_FOR_pwm_right PWM_MAX
 #define PWM_MAX_FOR_pwm_aux0 (PWM_MAX / 2)
+#define PWM_MAX_FOR_pwm_aux1 (PWM_MAX / 2)
 
 /** Define minimum PWM value for each output, if the value is less than the
  * minimum, use 0. */
@@ -59,6 +68,7 @@ extern uint8_t pwm_reverse;
 #define PWM_MIN_FOR_pwm_left 0x10
 #define PWM_MIN_FOR_pwm_right 0x10
 #define PWM_MIN_FOR_pwm_aux0 0x10
+#define PWM_MIN_FOR_pwm_aux1 0x10
 
 /** Define which bit controls the PWM inversion. */
 #define PWM_REVERSE_BIT(x) PWM_REVERSE_BIT_ (x)
@@ -66,6 +76,7 @@ extern uint8_t pwm_reverse;
 #define PWM_REVERSE_BIT_pwm_left _BV (0)
 #define PWM_REVERSE_BIT_pwm_right _BV (1)
 #define PWM_REVERSE_BIT_pwm_aux0 _BV (2)
+#define PWM_REVERSE_BIT_pwm_aux1 _BV (3)
 
 /** State init macro. */
 #define PWM_INIT_FOR(x) \

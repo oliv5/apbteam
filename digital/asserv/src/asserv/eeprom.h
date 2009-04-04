@@ -26,7 +26,7 @@
  * }}} */
 
 /** Change the eeprom key each time you change eeprom format. */
-#define EEPROM_KEY 0x4c
+#define EEPROM_KEY 0x4d
 
 void
 eeprom_read_params (void);

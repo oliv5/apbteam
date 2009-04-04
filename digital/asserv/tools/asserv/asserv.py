@@ -35,33 +35,39 @@ class Proto:
     interface."""
 
     stats_format = {
-            'C': 'HHH',
-            'Z': 'H',
-            'S': 'bbb',
-            'P': 'hhhhhh',
-            'W': 'hhh',
+            'C': 'HHHH',
+            'S': 'bbbb',
+            'P': 'hhhh',
+            'Q': 'hhhh',
+            'W': 'hhhh',
             }
     # The last occuring stats will increment stats_count, so they have to
     # be in the same order than in asserv program.
-    stats_order = 'CZSPW'
+    stats_order = 'CSPW'
     stats_items = {
             'lc': ('C', 0),
             'rc': ('C', 1),
             'a0c': ('C', 2),
-            'a0z': ('Z', 0),
+            'a1c': ('C', 3),
             'ts': ('S', 0),
             'as': ('S', 1),
             'a0s': ('S', 2),
+            'a1s': ('S', 3),
             'te': ('P', 0),
             'ti': ('P', 1),
             'ae': ('P', 2),
             'ai': ('P', 3),
-            'a0e': ('P', 4),
-            'a0i': ('P', 5),
+            'a0e': ('Q', 0),
+            'a0i': ('Q', 1),
+            'a1e': ('Q', 2),
+            'a1i': ('Q', 3),
             'lw': ('W', 0),
             'rw': ('W', 1),
             'a0w': ('W', 2),
+            'a1w': ('W', 3),
             }
+
+    _index = dict (t = ord ('t'), a = ord ('a'), a0 = 0, a1 = 1)
 
     class Position (Observable):
         """An observable position.  To be used with register_pos.
@@ -88,9 +94,9 @@ class Proto:
         self.async = False
         self.mseq = 0
         self.mseq_ack = 0
-        self.a0seq = 0
-        self.a0seq_ack = 0
-        self.proto.register ('A', 'BB', self.__handle_ack)
+        self.aseq = [ 0, 0 ]
+        self.aseq_ack = [ 0, 0 ]
+        self.proto.register ('A', 'BBB', self.__handle_ack)
         def make_handle (s):
             return lambda *args: self.__handle_stats (s, *args)
         for (s, f) in self.stats_format.iteritems ():
@@ -99,12 +105,15 @@ class Proto:
         self.param = dict (
                 scale = 1,
                 tkp = 0, tki = 0, tkd = 0,
+                ta = 1, tsm = 0, tss = 0,
                 akp = 0, aki = 0, akd = 0,
+                aa = 1, asm = 0, ass = 0,
                 a0kp = 0, a0ki = 0, a0kd = 0,
+                a0a = 1, a0sm = 0, a0ss = 0,
+                a1kp = 0, a1ki = 0, a1kd = 0,
+                a1a = 1, a1sm = 0, a1ss = 0,
                 E = 1023, I = 1023, D = 1023,
                 be = 2048, bs = 0x10, bc = 20,
-                ta = 1, aa = 1, a0a = 1,
-                tsm = 0, asm = 0, tss = 0, ass = 0, a0sm = 0, a0ss = 0,
                 c = 1, f = 0x1000,
                 l = 0x2000,
                 )
@@ -168,8 +177,7 @@ class Proto:
         elif w == 'a':
             self.proto.send ('c', 'hh', 0, c)
         else:
-            assert w == 'a0'
-            self.proto.send ('c', 'h', c)
+            self.proto.send ('C', 'Bh', self._index[w], c)
 
     def speed (self, w, s):
         """Speed consign."""
@@ -178,8 +186,7 @@ class Proto:
         elif w == 'a':
             self.proto.send ('s', 'bb', 0, s)
         else:
-            assert w == 'a0'
-            self.proto.send ('s', 'b', s)
+            self.proto.send ('S', 'Bb', self._index[w], s)
 
     def speed_pos (self, w, offset):
         """Speed controlled position consign."""
@@ -190,9 +197,9 @@ class Proto:
             self.mseq += 1
             self.proto.send ('s', 'llB', 0, self.dist (offset), self.mseq)
         else:
-            assert w == 'a0'
-            self.a0seq += 1
-            self.proto.send ('s', 'lB', offset, self.a0seq)
+            i = self._index[w]
+            self.aseq[i] += 1
+            self.proto.send ('S', 'BlB', i, offset, self.aseq[i])
         self.wait (self.finished, auto = True)
 
     def speed_angle (self, w, angle):
@@ -258,21 +265,17 @@ class Proto:
             return int (round (x * (1 << 8)))
         def f824 (x):
             return int (round (x * (1 << 24)))
-        self.proto.send ('p', 'cHH', 'p', f88 (p['tkp']), f88 (p['akp']))
-        self.proto.send ('p', 'cHH', 'i', f88 (p['tki']), f88 (p['aki']))
-        self.proto.send ('p', 'cHH', 'd', f88 (p['tkd']), f88 (p['akd']))
-        self.proto.send ('p', 'cH', 'p', f88 (p['a0kp']))
-        self.proto.send ('p', 'cH', 'i', f88 (p['a0ki']))
-        self.proto.send ('p', 'cH', 'd', f88 (p['a0kd']))
+        for m in ('t', 'a', 'a0', 'a1'):
+            index = self._index [m]
+            self.proto.send ('p', 'cBH', 'p', index, f88 (p[m + 'kp']))
+            self.proto.send ('p', 'cBH', 'i', index, f88 (p[m + 'ki']))
+            self.proto.send ('p', 'cBH', 'd', index, f88 (p[m + 'kd']))
+            self.proto.send ('p', 'cBH', 'a', index, f88 (p[m + 'a']))
+            self.proto.send ('p', 'cBBB', 's', index, p[m + 'sm'], p[m + 'ss'])
         self.proto.send ('p', 'cH', 'E', p['E'])
         self.proto.send ('p', 'cH', 'I', p['I'])
         self.proto.send ('p', 'cH', 'D', p['D'])
         self.proto.send ('p', 'cHHH', 'b', p['be'], p['bs'], p['bc'])
-        self.proto.send ('p', 'cHH', 'a', f88 (p['ta']), f88 (p['aa']))
-        self.proto.send ('p', 'cH', 'a', f88 (p['a0a']))
-        self.proto.send ('p', 'cBBBB', 's', p['tsm'], p['asm'], p['tss'],
-                p['ass'])
-        self.proto.send ('p', 'cBB', 's', p['a0sm'], p['a0ss'])
         self.proto.send ('p', 'cL', 'c', f824 (p['c']))
         self.proto.send ('p', 'cH', 'f', p['f'])
         self.proto.send ('p', 'cH', 'l', p['l'])
@@ -292,11 +295,12 @@ class Proto:
                 self.stats_line = [ ]
                 self.stats_count += 1
 
-    def __handle_ack (self, mseq, a0seq):
+    def __handle_ack (self, mseq, a0seq, a1seq):
         """Record current acknowledge level and acknowledge reception."""
         self.mseq_ack = mseq & 0x7f
-        self.a0seq_ack = a0seq & 0x7f
-        self.proto.send ('a', 'BB', mseq, a0seq)
+        self.aseq_ack[0] = a0seq & 0x7f
+        self.aseq_ack[1] = a1seq & 0x7f
+        self.proto.send ('a', 'BBB', mseq, a0seq, a1seq)
 
     def __handle_pos (self, x, y, a):
         """Handle position report."""
@@ -319,7 +323,9 @@ class Proto:
 
     def finished (self):
         """Return True if movement commands have been acknowledged."""
-        return self.mseq == self.mseq_ack and self.a0seq == self.a0seq_ack
+        return (self.mseq == self.mseq_ack
+                and self.aseq[0] == self.aseq_ack[0]
+                and self.aseq[1] == self.aseq_ack[1])
 
     def free (self):
         """Coast motors."""
@@ -328,7 +334,7 @@ class Proto:
     def reset (self):
         """Coast all motors and reset asserv."""
         self.proto.send ('w')
-        self.proto.send ('w', 'H', 0)
+        self.proto.send ('W')
         self.proto.send ('z')
         self.proto.send ('z')
 

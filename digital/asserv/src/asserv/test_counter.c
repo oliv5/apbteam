@@ -85,7 +85,8 @@ main (void)
 	  }
 	if (count && !--count_cpt)
 	  {
-	    proto_send3w ('C', counter_left, counter_right, counter_aux0);
+	    proto_send4w ('C', counter_left, counter_right,
+			  counter_aux[0], counter_aux[1]);
 	    count_cpt = count;
 	  }
 	while (uart0_poll ())

@@ -46,7 +46,7 @@ struct aux_t
     uint8_t zero_bv;
 };
 
-extern struct aux_t aux0;
+extern struct aux_t aux[AC_ASSERV_AUX_NB];
 
 void
 aux_init (void);
