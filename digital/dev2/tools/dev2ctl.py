@@ -33,18 +33,25 @@ opt.add_option ('-s', '--select', type = 'int',
         help = 'select specified OUTPUT (1 to 4)', metavar = 'OUTPUT')
 opt.add_option ('-u', '--unselect', action = 'store_true', default = False,
         help = 'unselect outputs')
+opt.add_option ('-g', '--gpio', type = 'int', nargs = 2,
+        help = 'set DDR and PORT', metavar = 'DDR PORT')
 opt.add_option ('-d', '--dfu', action = 'store_true', default = False,
         help = 'go to DFU boot loader')
 
 (options, args) = opt.parse_args ()
 if args:
     opt.error ('too many arguments')
-if (options.select is not None) + options.unselect + options.dfu != 1:
+if ((options.select is not None) + options.unselect
+        + (options.gpio is not None)
+        + options.dfu != 1):
     opt.error ('choose one of available options')
 if options.select is not None and (options.select < 1 or options.select > 4):
     opt.error ('output out of bound')
 if options.unselect:
     options.select = 0
+if options.gpio is not None and (options.gpio[0] < 0 or options.gpio[0] > 0xff
+        or options.gpio[1] < 0 or options.gpio[1] > 0xff):
+    opt.error ('invalid range')
 
 # Open device.
 d = None
@@ -55,6 +62,10 @@ for bus in usb.busses ():
 if d is None:
     print >> sys.stderr, 'device not found'
     sys.exit (1)
+prod = d.getString (2, 32)
+if 'dev2' not in prod:
+    print >> sys.stderr, 'not a dev2 device'
+    sys.exit (1)
 
 # Send control message.
 if options.dfu:
@@ -62,5 +73,11 @@ if options.dfu:
 elif options.select is not None:
     d.controlMsg (usb.TYPE_VENDOR | usb.RECIP_DEVICE, 1, 0,
             value = options.select)
+elif options.gpio is not None:
+    if 'gpio' not in prod:
+        print >> sys.stderr, 'not a gpio device'
+        sys.exit (1)
+    d.controlMsg (usb.TYPE_VENDOR | usb.RECIP_DEVICE, 0x80, 0,
+            value = options.gpio[0] | (options.gpio[1] << 8))
 else:
     assert 0
