@@ -22,12 +22,26 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
-#include "test_usb.h"
+#include "common.h"
 
-/** Based on DualCDC example from LUFA.  Refers to LUFA Demos for more
+#include "modules/usb/usb.h"
+#include "io.h"
+
+#include <avr/wdt.h>
+
+#include "descriptors.h"
+
+/**
+ * Based on DualCDC example from LUFA.  Refers to LUFA Demos for more
  * comments.  There is only 4 endpoints on the at90usb162, therefore a dual
  * CDC-ACM cannot be implemented.  To access this dual "serial port", use a
- * generic usb_serial driver. */
+ * generic usb_serial driver.
+ */
+
+HANDLES_EVENT (USB_Connect);
+HANDLES_EVENT (USB_Disconnect);
+HANDLES_EVENT (USB_ConfigurationChanged);
+HANDLES_EVENT (USB_UnhandledControlPacket);
 
 volatile uint8_t USB_USBTask_run;
 volatile uint8_t TS1Task_run;

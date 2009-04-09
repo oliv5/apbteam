@@ -1,6 +1,6 @@
-#ifndef test_usb_h
-#define test_usb_h
-/* test_usb.h */
+#ifndef usb_h
+#define usb_h
+/* usb.h */
 /* usb - USB device module using LUFA. {{{
  *
  * Copyright (C) 2009 Nicolas Schodet
@@ -24,18 +24,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
-#include <avr/io.h>
-#include <avr/wdt.h>
-#include <string.h>
-
-#include "descriptors.h"
-
-#include <LUFA/Version.h>
 #include <LUFA/Drivers/USB/USB.h>
 
-HANDLES_EVENT (USB_Connect);
-HANDLES_EVENT (USB_Disconnect);
-HANDLES_EVENT (USB_ConfigurationChanged);
-HANDLES_EVENT (USB_UnhandledControlPacket);
-
-#endif /* test_usb_h */
+#endif /* usb_h */

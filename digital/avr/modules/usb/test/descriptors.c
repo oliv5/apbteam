@@ -22,7 +22,25 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "common.h"
+
+#include "modules/usb/usb.h"
+
+#include <avr/pgmspace.h>
+
 #include "descriptors.h"
+
+/* Configuration structure. */
+typedef struct
+{
+    USB_Descriptor_Configuration_Header_t Config;
+    USB_Descriptor_Interface_t TS1_Interface;
+    USB_Descriptor_Endpoint_t TS1_DataOutEndpoint;
+    USB_Descriptor_Endpoint_t TS1_DataInEndpoint;
+    USB_Descriptor_Interface_t TS2_Interface;
+    USB_Descriptor_Endpoint_t TS2_DataOutEndpoint;
+    USB_Descriptor_Endpoint_t TS2_DataInEndpoint;
+} USB_Descriptor_Configuration_t;
 
 USB_Descriptor_Device_t PROGMEM DeviceDescriptor =
 {
@@ -144,7 +162,7 @@ USB_Descriptor_String_t PROGMEM ProductString =
 
 uint16_t
 USB_GetDescriptor (const uint16_t wValue, const uint8_t wIndex,
-		   void** const DescriptorAddress)
+		   void ** const DescriptorAddress)
 {
     const uint8_t DescriptorType = wValue >> 8;
     const uint8_t DescriptorNumber = wValue & 0xFF;

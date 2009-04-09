@@ -24,8 +24,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
-#include <LUFA/Drivers/USB/USB.h>
-#include <avr/pgmspace.h>
 
 /* Endpoints. */
 #define TS1_TX_EPNUM 1
@@ -33,23 +31,5 @@
 #define TS2_TX_EPNUM 3
 #define TS2_RX_EPNUM 4
 #define TS_TXRX_EPSIZE 16
-
-/* Configuration structure. */
-typedef struct
-{
-    USB_Descriptor_Configuration_Header_t Config;
-    USB_Descriptor_Interface_t TS1_Interface;
-    USB_Descriptor_Endpoint_t TS1_DataOutEndpoint;
-    USB_Descriptor_Endpoint_t TS1_DataInEndpoint;
-    USB_Descriptor_Interface_t TS2_Interface;
-    USB_Descriptor_Endpoint_t TS2_DataOutEndpoint;
-    USB_Descriptor_Endpoint_t TS2_DataInEndpoint;
-} USB_Descriptor_Configuration_t;
-
-/* Used by LUFA to get descriptors. */
-uint16_t
-USB_GetDescriptor (const uint16_t wValue, const uint8_t wIndex,
-		   void** const DescriptorAddress)
-ATTR_WARN_UNUSED_RESULT ATTR_NON_NULL_PTR_ARG (3);
 
 #endif /* descriptors_h */
