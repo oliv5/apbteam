@@ -36,10 +36,9 @@
 #elif defined (__AVR_ATmega8535__)
 #elif defined (__AVR_ATmega16__)
 #elif defined (__AVR_ATmega32__)
-#elif defined (__AVR_ATmega128__)
-# define PE UPE
 #elif defined (__AVR_ATmega64__)
-# define PE UPE
+#elif defined (__AVR_ATmega128__)
+#elif defined (__AVR_AT90USB162__)
 #else
 # warning "uart: not tested on this chip"
 #endif
@@ -54,8 +53,8 @@
 #   define UCSRB UCSR0B
 #   define UCSRC UCSR0C
 #   define UDR UDR0
-#   define SIG_UART_RECV SIG_UART0_RECV
-#   define SIG_UART_DATA SIG_UART0_DATA
+#   define USART_RX_vect USART0_RX_vect
+#   define USART_UDRE_vect USART0_UDRE_vect
 #  else
 #   error "uart: can not find uart 0"
 #  endif /* defined (UBRR0H) */
@@ -70,10 +69,75 @@
 #  define UDR UDR1
 #  define SIG_UART_RECV SIG_UART1_RECV
 #  define SIG_UART_DATA SIG_UART1_DATA
+#  define USART_RX_vect USART1_RX_vect
+#  define USART_UDRE_vect USART1_UDRE_vect
 # else
 #  error "uart: can not find uart 1"
 # endif /* defined (UBRR1H) */
 #endif /* AC_UART (PORT) == 1 */
+
+/* Missing generic definitions. */
+#if !defined (TXEN)
+# if AC_UART (PORT) == 0
+#  define RXC RXC0
+#  define TXC TXC0
+#  define UDRE UDRE0
+#  define FE FE0
+#  define DOR DOR0
+#  define UPE UPE0
+#  define U2X U2X0
+#  define MPCM MPCM0
+#  define RXCIE RXCIE0
+#  define TXCIE TXCIE0
+#  define UDRIE UDRIE0
+#  define RXEN RXEN0
+#  define TXEN TXEN0
+#  define UCSZ2 UCSZ02
+#  define RXB8 RXB80
+#  define TXB8 TXB80
+#  define UMSEL1 UMSEL01
+#  define UMSEL0 UMSEL00
+#  define UPM1 UPM01
+#  define UPM0 UPM00
+#  define USBS USBS0
+#  define UCSZ1 UCSZ01
+#  define UCSZ0 UCSZ00
+#  define UCPOL UCPOL0
+# else /* AC_UART (PORT) == 1 */
+#  define RXC RXC1
+#  define TXC TXC1
+#  define UDRE UDRE1
+#  define FE FE1
+#  define DOR DOR1
+#  define UPE UPE1
+#  define U2X U2X1
+#  define MPCM MPCM1
+#  define RXCIE RXCIE1
+#  define TXCIE TXCIE1
+#  define UDRIE UDRIE1
+#  define RXEN RXEN1
+#  define TXEN TXEN1
+#  define UCSZ2 UCSZ12
+#  define RXB8 RXB81
+#  define TXB8 TXB81
+#  define UMSEL1 UMSEL11
+#  define UMSEL0 UMSEL10
+#  define UPM1 UPM11
+#  define UPM0 UPM10
+#  define USBS USBS1
+#  define UCSZ1 UCSZ11
+#  define UCSZ0 UCSZ10
+#  define UCPOL UCPOL1
+# endif /* AC_UART (PORT) == 1 */
+#endif /* !defined (TXEN) */
+
+/* Different names for different chips. */
+#ifndef UPE
+# define UPE PE
+#endif
+#ifndef USART_RX_vect
+# define USART_RX_vect USART_RXC_vect
+#endif
 
 /* UR selector (UCSRC & UBRRH multiplexed). */
 #if defined (URSEL)
@@ -162,7 +226,7 @@ static volatile uint8_t uart_recv_head, uart_recv_tail;
 #endif
 
 /* Error code. */
-#define ERROR_BITS (_BV (FE) | _BV (DOR) | _BV (PE))
+#define ERROR_BITS (_BV (FE) | _BV (DOR) | _BV (UPE))
 
 /* +AutoDec */
 /* -AutoDec */
@@ -255,7 +319,7 @@ uart_poll (void)
 #if RECV_MODE == RING
 
 /* Handle received char for ring buffer. */
-SIGNAL (SIG_UART_RECV)
+SIGNAL (USART_RX_vect)
 {
     uint8_t c;
     uint8_t tmphead;
@@ -281,7 +345,7 @@ SIGNAL (SIG_UART_RECV)
 #if SEND_MODE == RING
 
 /** Handle data register empty for ring buffer. */
-SIGNAL (SIG_UART_DATA)
+SIGNAL (USART_UDRE_vect)
 {
     uint8_t tmptail;
     if (uart_send_head != uart_send_tail)

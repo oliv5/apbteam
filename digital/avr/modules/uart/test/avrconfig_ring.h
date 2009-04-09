@@ -32,7 +32,11 @@
 
 /* uart - UART module. */
 /** Select hardware uart for primary uart: 0, 1 or -1 to disable. */
-#define AC_UART0_PORT 0
+#ifdef __AVR_AT90USB162__
+# define AC_UART0_PORT 1
+#else
+# define AC_UART0_PORT 0
+#endif
 /** Baudrate: 2400, 4800, 9600, 14400, 19200, 28800, 38400, 57600, 76800,
  * 115200, 230400, 250000, 500000, 1000000. */
 #define AC_UART0_BAUDRATE 115200
