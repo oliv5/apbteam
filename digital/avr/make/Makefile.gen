@@ -2,7 +2,7 @@
 
 # Flags
 
-INCLUDES := -I$(BASE) -I$(BASE)/common
+INCLUDES := $(INCLUDES) -I$(BASE) -I$(BASE)/common
 CFLAGS := -g -Wall -W -Wundef -Wno-unused-parameter -Wno-pointer-sign \
 	  $(OPTIMIZE)
 ASFLAGS := -Wa,--gstabs
