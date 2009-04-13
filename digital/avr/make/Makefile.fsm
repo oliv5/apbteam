@@ -91,7 +91,7 @@ else
 endif
 
 
-png: $(FSM_SOURCES:%=%_cb.h)
+png: $(FSM_SOURCES:%=%.png)
 
 %.png: %.dot
 	dot -Tpng -o $@ $<
