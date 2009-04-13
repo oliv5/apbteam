@@ -101,5 +101,6 @@ fsm_handle_event (fsm_t *fsm, u8 event);
 #include "gutter_fsm.h"
 #include "move_fsm.h"
 #include "top_fsm.h"
+#include "filterbridge_fsm.h"
 
 #endif /* fsm_h */

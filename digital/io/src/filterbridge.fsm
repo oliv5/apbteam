@@ -1,0 +1,92 @@
+# Filter Bridge FSM
+# Filter column element (our colour -> go to lift, !our colour -> EJECT)
+filterbridge
+
+States:
+ IDLE
+  waiting the lift is ready to accept new puck
+ WAIT_A_PUCK
+  waiting for a new puck
+ CLOSE_FIRST_DOOR
+  isolating the firt puck on the bridge
+ WAIT_RGB_IDENT
+  waiting for RGB probe the first puck
+ EJECT_PUCK
+  eject a bad puck
+ RETURN_NORMAL_POS
+  move the bridge to his normal position
+ BLAH
+  useless states
+ OPEN_SECOND_DOOR
+  open and free the puck to the lift
+ CLOSE_SECOND_DOOR
+  prepare for a new puck
+ OPEN_FIRST_DOOR
+  accept a puck for a new test
+
+Events:
+ lift_ready
+  lift ready to accept new puck
+ puck_on_pos2
+  a puck has been detected on bridge's position 2
+ first_door_closed
+  the first door is closed
+ bad_color
+  the RGB had probed the puck and it is bad
+ no_puck_on_pos2
+  there is no puck on position 2
+ bridge_in_position
+  bridge is in his normal position
+ good_color
+  the RGB had probed the puck and it is good (and ready to listening horrible lift music)
+ second_door_closed
+  you shall not pass to the lift
+ first_door_opened
+  bridge ready to test a new puck
+ puck_ejected
+  the ejection procedure is completed
+
+
+IDLE:
+ lift_ready -> WAIT_A_PUCK
+  the lift is ready to get pucks, we can begin testing procedure
+
+WAIT_A_PUCK:
+ puck_on_pos2 -> CLOSE_FIRST_DOOR
+  close the first door after a puck is ready for filtering
+
+CLOSE_FIRST_DOOR:
+ first_door_closed -> WAIT_RGB_IDENT
+  get puck color
+
+WAIT_RGB_IDENT:
+ bad_color -> EJECT_PUCK
+  eject bad PUCK
+ good_color -> OPEN_SECOND_DOOR
+  put puck to the lift
+
+EJECT_PUCK:
+ puck_ejected -> RETURN_NORMAL_POS
+  put bridge on normal position after puck ejection
+
+RETURN_NORMAL_POS:
+ bridge_in_position -> BLAH
+  ready for a new puck test (unless bad puck is here yet)
+
+BLAH:
+ puck_on_pos2 -> EJECT_PUCK
+  re-eject this sticky puck, grml!
+ no_puck_on_pos2 -> OPEN_FIRST_DOOR
+  make bridge ready to test a new puck
+
+OPEN_SECOND_DOOR:
+ no_puck_on_pos2 -> CLOSE_SECOND_DOOR
+  close the lift access door and tell to lift it has a new puck
+
+CLOSE_SECOND_DOOR:
+ second_door_closed -> OPEN_FIRST_DOOR
+  filter bridge is ready to get a new puck
+
+OPEN_FIRST_DOOR:
+ first_door_opened -> IDLE
+  filter bridge ready
