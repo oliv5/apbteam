@@ -1,0 +1,89 @@
+# Elevator FSM
+# Control the elevator's position and doors.
+elevator
+
+States:
+ IDLE
+  waiting for the beginning of the round
+ GO_TO_POS_X
+  go to a position to be ready to get a new puck
+ WAIT_A_PUCK
+  waiting for a new puck (hurry up filter bridge!)
+ BLAH
+  useless state (incrementing nb_puck variable)
+ WAIT_POS_ORDER
+  waiting for position order (depending where we want to drop our column)
+ GO_TO_POX_Y
+  go to a position to be ready to release pucks
+ WAIT_FOR_RELEASE_ORDER
+  ready to open doors at your command
+ OPEN_DOORS
+  releasing pucks
+ WAIT_FOR_CLOSE_ORDER
+  ready to close doors at your command
+ CLOSE_DOORS
+  closing the elevator's doors
+
+Events:
+ started
+  round had begun!
+ in_position
+  elevator is in position
+ new_puck
+  we received a new puck from FB (filter bridge, not facebook)
+ ok_for_other_pucks
+  complex event (nb_pucks < 4 . (time_ok + !fb_empty))
+ not_ok_for_other_pucks
+  complex event !ok_for_other_pucks
+ time_up
+  complex event (!time_ok . fb_empty)
+ order_received
+  we received a new order
+ doors_opened
+  doors are opened
+ doors_closed
+  doors are closed
+
+IDLE:
+ started -> GO_TO_POS_X
+  match begin, we're going to be ready to get a new puck
+
+GO_TO_POS_X:
+ in_position -> WAIT_A_PUCK
+  in position and ready to get a new puck
+
+WAIT_A_PUCK:
+ new_puck -> BLAH
+  incrementing nb_puck var
+ time_up -> WAIT_POS_ORDER
+  no more time to wait a new puck
+
+BLAH:
+ ok_for_other_pucks -> GO_TO_POS_X
+  update elevator position to get a new puck
+ not_ok_for_other_pucks -> WAIT_POS_ORDER
+  no more puck, going next step
+
+WAIT_POS_ORDER:
+ order_received -> GO_TO_POX_Y
+  go to position Y
+
+GO_TO_POX_Y:
+ in_position -> WAIT_FOR_RELEASE_ORDER
+  ready to release pucks at altitude Y
+
+WAIT_FOR_RELEASE_ORDER:
+ order_received -> OPEN_DOORS
+  release pucks to the target position (I hope)
+
+OPEN_DOORS:
+ doors_opened -> WAIT_FOR_CLOSE_ORDER
+  wait for close order
+
+WAIT_FOR_CLOSE_ORDER:
+ order_received -> CLOSE_DOORS
+  closing doors
+
+CLOSE_DOORS:
+ doors_closed -> GO_TO_POS_X
+  pucks are released and elevator is ready to make a new column

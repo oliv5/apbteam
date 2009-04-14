@@ -16,6 +16,6 @@ AVR_MCU = atmega128
 OPTIMIZE = -O2
 
 # FSMs.
-FSM_SOURCES := getsamples gutter move top filterbridge
+FSM_SOURCES := getsamples gutter move top filterbridge elevator
 # Include FSM makefile.
 include $(BASE)/make/Makefile.fsm
