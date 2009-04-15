@@ -26,7 +26,8 @@
 
 module counter_top(clk, rst, q0, q1, q2, q3, ale, rd, wr, ad, i0, i1, ioa,
 	ioc);
-    parameter size = 8;
+    parameter size = 9;
+    parameter lsize = 8;
     input clk;
     input rst;
     input [1:0] q0, q1, q2, q3;
@@ -36,33 +37,33 @@ module counter_top(clk, rst, q0, q1, q2, q3, ale, rd, wr, ad, i0, i1, ioa,
     input [3:0] ioa, ioc;
 
     wire [1:0] qf0, qf1, qf2, qf3;
-    wire [size:0] count0, count1;
-    wire [size-1:0] count2, count3;
+    wire [size-1:0] count0, count1, count2, count3;
 
     // Decode encoders outputs.
     noise_filter f0[1:0] (clk, rst, q0, qf0);
-    quad_decoder_div4 #(9) qd0 (clk, rst, qf0, count0);
+    quad_decoder_div4 #(size) qd0 (clk, rst, qf0, count0);
 
     noise_filter f1[1:0] (clk, rst, q1, qf1);
-    quad_decoder_div4 #(9) qd1 (clk, rst, qf1, count1);
+    quad_decoder_div4 #(size) qd1 (clk, rst, qf1, count1);
 
     input_latch f2[1:0] (clk, rst, q2, qf2);
-    quad_decoder_div4 qd2 (clk, rst, qf2, count2);
+    quad_decoder_div4 #(size) qd2 (clk, rst, qf2, count2);
 
     input_latch f3[1:0] (clk, rst, q3, qf3);
-    quad_decoder_full qd3 (clk, rst, qf3, count3);
+    quad_decoder_div4 #(size) qd3 (clk, rst, qf3, count3);
 
-    reg [size-1:0] lcount;
+    reg [lsize-1:0] lcount;
     
     // Latch a counter when its address is given.
     always @(negedge ale or negedge rst) begin
 	if (!rst)
 	    lcount <= 0;
 	else begin
-	    lcount <= ad[1:0] == 0 ? count0[8:1] :
-		ad[1:0] == 1 ? count1[8:1] :
-		ad[1:0] == 2 ? count2 :
-		count3;
+	    lcount <=
+		ad[1:0] ==  0 ? count0[lsize:1] :
+		ad[1:0] ==  1 ? count1[lsize:1] :
+		ad[1:0] ==  2 ? count2[lsize:1] :
+		count3[lsize:1];
 	end
     end
 
