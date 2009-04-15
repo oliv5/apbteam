@@ -231,14 +231,14 @@ void
 proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 {
     /* Many commands use the first argument as a selector. */
-    struct aux_t *aux = 0;
+    struct aux_t *auxp = 0;
     struct pwm_t *pwm = 0;
     struct pos_t *pos = 0;
     struct speed_t *speed = 0;
     struct state_t *state = 0;
     if (args[0] < AC_ASSERV_AUX_NB)
       {
-	aux = &aux[args[0]];
+	auxp = &aux[args[0]];
 	pwm = &pwm_aux[args[0]];
 	pos = &pos_aux[args[0]];
 	speed = &speed_aux[args[0]];
@@ -284,7 +284,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	/* Set auxiliary pwm.
 	 * - b: aux index.
 	 * - w: pwm. */
-	if (!aux) { proto_send0 ('?'); return; }
+	if (!auxp) { proto_send0 ('?'); return; }
 	pos_reset (pos);
 	state->mode = MODE_PWM;
 	pwm_set (pwm, v8_to_v16 (args[1], args[2]));
@@ -302,7 +302,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	/* Add to auxiliary position consign.
 	 * - b: aux index.
 	 * - w: consign offset. */
-	if (!aux) { proto_send0 ('?'); return; }
+	if (!auxp) { proto_send0 ('?'); return; }
 	state->mode = MODE_POS;
 	state->variant = 0;
 	pos->cons += v8_to_v16 (args[1], args[2]);
@@ -329,7 +329,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	/* Set auxiliary speed.
 	 * - b: aux index.
 	 * - b: speed. */
-	if (!aux) { proto_send0 ('?'); return; }
+	if (!auxp) { proto_send0 ('?'); return; }
 	state->mode = MODE_SPEED;
 	state->variant = 0;
 	speed->use_pos = 0;
@@ -375,7 +375,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	 * - b: aux index.
 	 * - d: consign offset.
 	 * - b: sequence number. */
-	if (!aux) { proto_send0 ('?'); return; }
+	if (!auxp) { proto_send0 ('?'); return; }
 	if (args[5] == state->sequence)
 	    break;
 	speed->use_pos = 1;
@@ -459,19 +459,19 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	 * - b: aux index.
 	 * - w: pos, i16.
 	 * - b: sequence number. */
-	if (!aux) { proto_send0 ('?'); return; }
+	if (!auxp) { proto_send0 ('?'); return; }
 	if (args[3] == state->sequence)
 	    break;
-	aux_traj_goto_start (aux, v8_to_v16 (args[1], args[2]), args[3]);
+	aux_traj_goto_start (auxp, v8_to_v16 (args[1], args[2]), args[3]);
 	break;
       case c ('y', 1):
 	/* Auxiliary find zero.
 	 * - b: aux index.
 	 * - b: sequence number. */
-	if (!aux) { proto_send0 ('?'); return; }
+	if (!auxp) { proto_send0 ('?'); return; }
 	if (args[1] == state->sequence)
 	    break;
-	aux_traj_find_zero_start (aux, args[1]);
+	aux_traj_find_zero_start (auxp, args[1]);
 	break;
       case c ('a', 3):
 	/* Set all acknoledge.
