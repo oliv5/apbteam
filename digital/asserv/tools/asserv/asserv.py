@@ -116,6 +116,7 @@ class Proto:
                 be = 2048, bs = 0x10, bc = 20,
                 c = 1, f = 0x1000,
                 l = 0x2000,
+                w = 0x00,
                 )
         self.param.update (param)
         self.send_param ()
@@ -279,6 +280,7 @@ class Proto:
         self.proto.send ('p', 'cL', 'c', f824 (p['c']))
         self.proto.send ('p', 'cH', 'f', p['f'])
         self.proto.send ('p', 'cH', 'l', p['l'])
+        self.proto.send ('p', 'cB', 'w', p['w'])
 
     def write_eeprom (self):
         """Request an EEPROM write."""
