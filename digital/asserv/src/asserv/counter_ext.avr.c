@@ -51,9 +51,9 @@
 /** Define to 1 to reverse the right counter. */
 #define COUNTER_RIGHT_REVERSE 0
 /** Define to 1 to reverse the first auxiliary counter. */
-#define COUNTER_AUX0_REVERSE 0
+#define COUNTER_AUX0_REVERSE 1
 /** Define to 1 to reverse the second auxiliary counter. */
-#define COUNTER_AUX1_REVERSE 0
+#define COUNTER_AUX1_REVERSE 1
 
 /** Define to 1 to use the AVR External Memory system, or 0 to use hand made
  * signals. */
