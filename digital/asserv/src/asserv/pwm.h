@@ -47,7 +47,7 @@ extern uint8_t pwm_reverse;
 
 /** Define current PWM value for each output. */
 #define PWM_VALUE(x) PWM_VALUE_ (x)
-#define PWM_VALUE_(x) PWM_MAX_FOR_ ## x
+#define PWM_VALUE_(x) PWM_VALUE_ ## x
 #define PWM_VALUE_pwm_left pwm_left.cur
 #define PWM_VALUE_pwm_right pwm_right.cur
 #define PWM_VALUE_pwm_aux0 pwm_aux[0].cur
