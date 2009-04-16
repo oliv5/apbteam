@@ -73,7 +73,7 @@
 # include "spi_hard.h"
 #endif
 #if SPI0_DRIVER == SPI_DRIVER_SOFT || SPI1_DRIVER == SPI_DRIVER_SOFT
-# error "spi: driver soft not supported yet"
+# include "spi_soft.h"
 #endif
 
 /* Map names to drivers. */
