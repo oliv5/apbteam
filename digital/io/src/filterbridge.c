@@ -4,8 +4,8 @@
  * Copyright (C) 2009 Nicolas Haller
  *
  * APBTeam
- *        Web: http://assos.efrei.fr/robot/
- *      Email: robot AT efrei DOT fr
+ *        Web: http://apbteam.org/
+ *      Email: team AT apbteam DOT org
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
