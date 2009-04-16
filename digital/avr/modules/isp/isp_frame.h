@@ -1,6 +1,6 @@
-#ifndef avrconfig_h
-#define avrconfig_h
-/* avrconfig.h */
+#ifndef isp_frame_h
+#define isp_frame_h
+/* isp_frame.h */
 /* avr.isp - Serial programming AVR module. {{{
  *
  * Copyright (C) 2009 Nicolas Schodet
@@ -25,12 +25,26 @@
  *
  * }}} */
 
-/* isp - ISP module. */
-/** Size of isp_frame buffer. */
-#define AC_ISP_FRAME_BUFFER_SIZE 275
-/** Should be implemented by the user to send a character. */
-#define AC_ISP_FRAME_SEND_CHAR uart0_putc
-/** Should be implemented by the user (isp_proto) to accept a frame. */
-#define AC_ISP_FRAME_ACCEPT_FRAME isp_proto_accept
+/** The isp_frame sub module transfers data between a character oriented device
+ * (uart, usb bulk, tcp socket) and a framed device (isp_proto) to support
+ * implementation of AVR068. */
 
-#endif /* avrconfig_h */
+/** Should be implemented by the user to send a character. */
+void
+AC_ISP_FRAME_SEND_CHAR (uint8_t c);
+
+/** Accept an input character. */
+void
+isp_frame_accept_char (uint8_t c);
+
+/** Should be implemented by the user (isp_proto) to accept a frame.
+ *
+ * The provided buffer can be used by the callee. */
+void
+AC_ISP_FRAME_ACCEPT_FRAME (uint8_t *data, uint16_t len, uint16_t buffer_size);
+
+/** Send a frame, to be used by isp_proto. */
+void
+isp_frame_send_frame (uint8_t *data, uint16_t len);
+
+#endif /* isp_frame_h */
