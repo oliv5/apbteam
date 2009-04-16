@@ -25,6 +25,7 @@
 #include "common.h"
 
 #include "modules/usb/usb.h"
+#include "modules/isp/isp_frame.h"
 #include "io.h"
 
 #include <avr/wdt.h>
@@ -39,6 +40,47 @@ HANDLES_EVENT (USB_ConfigurationChanged);
 HANDLES_EVENT (USB_UnhandledControlPacket);
 
 volatile uint8_t usb_connected, usb_configured;
+
+uint8_t isp_sent;
+
+void
+isp_send_char (uint8_t c)
+{
+    Endpoint_SelectEndpoint (ISP_TX_EPNUM);
+    /* Wait endpoint to become ready. */
+    while (!Endpoint_ReadWriteAllowed ())
+	;
+    Endpoint_Write_Byte (c);
+    /* If at end of endpoint buffer, send. */
+    if (!Endpoint_ReadWriteAllowed ())
+	Endpoint_ClearCurrentBank ();
+    /* Select back RX endpoint. */
+    Endpoint_SelectEndpoint (ISP_RX_EPNUM);
+    /* Will need extra clear at end of all transfers. */
+    isp_sent = 1;
+}
+
+static void
+isp_task (void)
+{
+    Endpoint_SelectEndpoint (ISP_RX_EPNUM);
+    /* If data is available from USB: */
+    if (Endpoint_ReadWriteAllowed ())
+      {
+	/* Read as much as possible, and clear endpoint. */
+	do {
+	    isp_frame_accept_char (Endpoint_Read_Byte ());
+	} while (Endpoint_ReadWriteAllowed ());
+	Endpoint_ClearCurrentBank ();
+      }
+    /* If data has been sent, sent a ZLP or finalise last packet. */
+    if (isp_sent)
+      {
+	Endpoint_SelectEndpoint (ISP_TX_EPNUM);
+	Endpoint_ClearCurrentBank ();
+	isp_sent = 0;
+      }
+}
 
 int
 main (void)
@@ -60,6 +102,7 @@ main (void)
 	if (usb_configured)
 	  {
 	    serial_task ();
+	    isp_task ();
 	  }
       }
 }

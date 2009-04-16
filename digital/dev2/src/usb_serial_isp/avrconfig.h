@@ -73,6 +73,16 @@
 #define AC_UART1_SEND_BUFFER_FULL WAIT
 #define AC_UART1_HOST_DRIVER PTS
 
+/* isp - ISP module. */
+/** Size of isp_frame buffer. */
+#define AC_ISP_FRAME_BUFFER_SIZE 275
+/** Should be implemented by the user to send a character. */
+#define AC_ISP_FRAME_SEND_CHAR isp_send_char
+/** Should be implemented by the user (isp_proto) to accept a frame. */
+#define AC_ISP_FRAME_ACCEPT_FRAME isp_proto_accept
+/** Should be implemeted by the user to send a frame. */
+#define AC_ISP_PROTO_SEND isp_frame_send_frame
+
 /* usb */
 #include "modules/usb/lufaconfig.h"
 
