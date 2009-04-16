@@ -26,70 +26,78 @@
  * }}} */
 #include "io.h"
 
-#define SPI_DDR DDRB
-#define SPI_PORT PORTB
+/* Configuration constants are used for all drivers, even if values come from
+ * hardware driver. */
 
-#if defined  (__AVR_ATmega128__)
-#define SPI_BIT_SS 0
-#define SPI_BIT_SCK 1
-#define SPI_BIT_MOSI 2
-#define SPI_BIT_MISO 3
-#elif defined (__AVR_ATmega16__)
-#define SPI_BIT_SS 4
-#define SPI_BIT_SCK 7
-#define SPI_BIT_MOSI 5
-#define SPI_BIT_MISO 6
-#else
-#error "Not implemented"
+/** Operate as a slave. */
+#define SPI_SLAVE 0
+/** Operate as master. */
+#define SPI_MASTER _BV (MSTR)
+
+/** Output MSB first. */
+#define SPI_MSB_FIRST 0
+/** Output LSB first. */
+#define SPI_LSB_FIRST _BV (DORD)
+
+/** Clock polarity: rising edge is the leading one, SCK is low when idle. */
+#define SPI_CPOL_RISING 0
+/** Clock polarity: falling edge is the leading one, SCK is high when idle. */
+#define SPI_CPOL_FALLING _BV (CPOL)
+/** Clock phase: sample on leading edge. */
+#define SPI_CPHA_SAMPLE 0
+/** Clock phase: setup on leading edge. */
+#define SPI_CPHA_SETUP _BV (CPHA)
+
+/** SPI mode 0, sample on rising edge, setup on falling edge. */
+#define SPI_MODE_0 (SPI_CPOL_RISING | SPI_CPHA_SAMPLE)
+/** SPI mode 1, setup on rising edge, sample on falling edge. */
+#define SPI_MODE_1 (SPI_CPOL_RISING | SPI_CPHA_SETUP)
+/** SPI mode 2, sample on falling edge, setup on rising edge. */
+#define SPI_MODE_2 (SPI_CPOL_FALLING | SPI_CPHA_SAMPLE)
+/** SPI mode 3, setup on falling edge, sample on rising edge. */
+#define SPI_MODE_3 (SPI_CPOL_FALLING | SPI_CPHA_SETUP)
+/** SPI mode mask. */
+#define SPI_MODE_MASK SPI_MODE_3
+
+/* Define selected drivers. */
+#define SPI_DRIVER_NONE '0'
+#define SPI_DRIVER_HARD 'h'
+#define SPI_DRIVER_SOFT 's'
+#define SPI_DRIVER__(drv) SPI_DRIVER_ ## drv
+#define SPI_DRIVER_(drv) SPI_DRIVER__ (drv)
+#define SPI0_DRIVER SPI_DRIVER_ (AC_SPI0_DRIVER)
+#define SPI1_DRIVER SPI_DRIVER_ (AC_SPI1_DRIVER)
+
+/* Include drivers header. */
+#if SPI0_DRIVER == SPI_DRIVER_HARD || SPI1_DRIVER == SPI_DRIVER_HARD
+# include "spi_hard.h"
+#endif
+#if SPI0_DRIVER == SPI_DRIVER_SOFT || SPI1_DRIVER == SPI_DRIVER_SOFT
+# error "spi: driver soft not supported yet"
 #endif
 
-#define SPI_IT_ENABLE _BV(SPIE) 
-#define SPI_IT_DISABLE 0x0
-#define SPI_ENABLE _BV(SPE)
-#define SPI_DISABLE 0x0
-#define SPI_MSB_FIRST 0x00
-#define SPI_LSB_FIRST _BV(DORD)
-#define SPI_MASTER _BV(MSTR)
-#define SPI_SLAVE 0x00
-#define SPI_CPOL_RISING 0x0
-#define SPI_CPOL_FALLING _BV(CPOL)
-#define SPI_CPHA_SAMPLE 0x0
-#define SPI_CPHA_SETUP _BV(CPHA)
-
-enum spi_fosc_t
-{
-    SPI_FOSC_DIV4,
-    SPI_FOSC_DIV16,
-    SPI_FOSC_DIV64,
-    SPI_FOSC_DIV128,
-    SPI_FOSC_DIV2,
-    SPI_FOSC_DIV8,
-    SPI_FOSC_DIV32
-};
-
-/** Initialise the SPI Control Register.
- * \param  spcr  the spcr register data to be store in the register.
- */
-void
-spi_init (uint8_t spcr);
-
-/** Send a data to the Slave.
- * \param  data  the data to send
- */
-void
-spi_send (uint8_t data);
-
-/** Receive a data from the SPI bus.
- * \return  the data received from the bus.
- */
-uint8_t 
-spi_recv (void);
-
-/** Send and receive data.
-  * \param  data  the data to send.
-  * \return  the data received.
-  */
-uint8_t
-spi_send_and_recv (uint8_t data);
+/* Map names to drivers. */
+#if SPI0_DRIVER == SPI_DRIVER_HARD
+# define spi_init spi_hard_init
+# define spi_send spi_hard_send
+# define spi_recv spi_hard_recv
+# define spi_send_and_recv spi_hard_send_and_recv
+#elif SPI0_DRIVER == SPI_DRIVER_SOFT
+# define spi_init spi_soft_init
+# define spi_send spi_soft_send
+# define spi_recv spi_soft_recv
+# define spi_send_and_recv spi_soft_send_and_recv
+#endif
+#if SPI1_DRIVER == SPI_DRIVER_HARD
+# define spi1_init spi_hard_init
+# define spi1_send spi_hard_send
+# define spi1_recv spi_hard_recv
+# define spi1_send_and_recv spi_hard_send_and_recv
+#elif SPI1_DRIVER == SPI_DRIVER_SOFT
+# define spi1_init spi_soft_init
+# define spi1_send spi_soft_send
+# define spi1_recv spi_soft_recv
+# define spi1_send_and_recv spi_soft_send_and_recv
+#endif
 
 #endif /* spi_h */

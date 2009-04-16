@@ -101,5 +101,10 @@
 /** Slave send buffer size. */
 #define AC_TWI_SL_SEND_BUFFER_SIZE 16
 
+/* spi - SPI module. */
+/** Select driver: HARD, SOFT, or NONE. */
+#define AC_SPI0_DRIVER HARD
+/** Same thing for an optionnal second SPI driver. */
+#define AC_SPI1_DRIVER NONE
 
 #endif /* avrconfig_h */

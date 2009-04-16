@@ -99,8 +99,8 @@ main (int argc, char **argv)
     //PORTA = 0xff;
 
     uart0_init ();
-    spi_init (SPI_IT_DISABLE | SPI_ENABLE | SPI_MSB_FIRST | SPI_SLAVE |
-	      SPI_CPOL_FALLING | SPI_CPHA_SETUP | SPI_FOSC_DIV16);
+    spi_init (SPI_SLAVE, SPI_CPOL_FALLING | SPI_CPHA_SETUP, SPI_MSB_FIRST,
+	      SPI_FOSC_DIV16);
     init_timer_LR_ ();
     init_curLim ();
     //postrack_init ();
@@ -179,7 +179,7 @@ main_loop (void)
 	    spi_frame_size = 0;
 	  }
       }
-    if (PINB & _BV (SPI_BIT_SS))
+    if (PINB & _BV (4))
       {
 	spi_frame_size = 0;
       }

@@ -84,6 +84,12 @@
 /** Support for quote parameter. */
 #define AC_PROTO_QUOTE 1
 
+/* spi - SPI module. */
+/** Select driver: HARD, SOFT, or NONE. */
+#define AC_SPI0_DRIVER HARD
+/** Same thing for an optionnal second SPI driver. */
+#define AC_SPI1_DRIVER NONE
+
 /* mp */
 
 #endif /* avrconfig_h */

@@ -52,8 +52,8 @@ pwm_mp_init (void)
     DDRE |= _BV (4);
 #endif
 #if PWM1or2 || PWM3or4
-    spi_init (SPI_IT_DISABLE | SPI_ENABLE | SPI_MSB_FIRST | SPI_MASTER |
-	      SPI_CPOL_FALLING | SPI_CPHA_SETUP | SPI_FOSC_DIV16);
+    spi_init (SPI_MASTER, SPI_CPOL_FALLING | SPI_CPHA_SETUP, SPI_MSB_FIRST,
+	      SPI_FOSC_DIV16);
 #endif
     /* Reset PWM values at reset. */
     pwm_mp_go = 1;

@@ -24,63 +24,47 @@
  * }}} */
 #include "common.h"
 
-#include "modules/proto/proto.h"
-#include "modules/spi/spi.h"
 #include "io.h"
+#include "modules/proto/proto.h"
+#include "modules/uart/uart.h"
+#include "modules/spi/spi.h"
+#include "modules/utils/utils.h"
 
 void
 proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 {
-    //TODO Still don't know what to to
+    /* TODO: command to select a slave. */
+#define c(cmd, size) (cmd << 8 | size)
+    switch (c (cmd, size))
+      {
+      case c ('z', 0):
+	utils_reset ();
+	break;
+      case c ('s', 1):
+	spi_send (args[0]);
+	break;
+      case c ('r', 0):
+	proto_send1b ('R', spi_recv ());
+	break;
+      case c ('r', 1):
+	proto_send1b ('R', spi_send_and_recv (args[0]));
+	break;
+      default:
+	proto_send0 ('?');
+	return;
+      }
+    proto_send (cmd, size, args);
+#undef c
 }
 
 int
 main (void)
 {
-    //uint8_t test [10];
-    //uint8_t res;
-
-    /*res = SPI_IT_ENABLE;
-    spi_init (res);
-    res = SPI_IT_DISABLE;
-    spi_init (res);
-    res = SPI_ENABLE;
-    spi_init (res);
-    res = SPI_DISABLE;
-    spi_init (res);
-    res = SPI_LSB_FIRST;
-    spi_init (res);
-    res = SPI_MSB_FIRST;
-    spi_init (res);
-    res = SPI_MASTER;
-    spi_init (res);
-    res = SPI_SLAVE;
-    spi_init (res);
-    res = SPI_CPOL_RISING;
-    spi_init (res);
-    res = SPI_CPOL_FALLING;
-    spi_init (res);
-    res = SPI_CPHA_SAMPLE;
-    spi_init (res);
-    res = SPI_CPHA_SETUP;
-    spi_init (res);
-    */
-
-    //initialise the spi.
-    spi_init (0x14);
-
-    proto_send0 (PORTB);
-    proto_send0 (DDRB);
-
-
-    /*test[0] = 0x2;
-    test[1] = 0x3;
-    test[2] = 0x4;
-    
-    spi_send (3);
-
-    res = spi_recv ();
-    */
-    return 0;
+    spi_init (SPI_MASTER, SPI_MODE_0, SPI_MSB_FIRST, SPI_FOSC_DIV128);
+    uart0_init ();
+    sei ();
+    proto_send0 ('z');
+    while (1)
+	proto_accept (uart0_getc ());
 }
 

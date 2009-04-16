@@ -83,6 +83,12 @@
 /** Support for quote parameter. */
 #define AC_PROTO_QUOTE 1
 
+/* spi - SPI module. */
+/** Select driver: HARD, SOFT, or NONE. */
+#define AC_SPI0_DRIVER HARD
+/** Same thing for an optionnal second SPI driver. */
+#define AC_SPI1_DRIVER NONE
+
 /* flash - Flash SPI AVR module. */
 /** Flash PORT used. */
 #define AC_FLASH_PORT PORTD
@@ -90,6 +96,5 @@
 #define AC_FLASH_DDR DDRD
 /** Flash SS pin. */
 #define AC_FLASH_BIT_SS 5
-
 
 #endif /* avrconfig_h */

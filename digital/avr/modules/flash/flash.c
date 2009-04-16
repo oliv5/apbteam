@@ -105,9 +105,8 @@ flash_init (void)
     AC_FLASH_DDR |= _BV(AC_FLASH_BIT_SS);
 
     /* send the read-ID instruction. */
-    spi_init (SPI_IT_DISABLE | SPI_ENABLE | SPI_MASTER | SPI_MSB_FIRST
-              | SPI_MASTER | SPI_CPOL_FALLING | SPI_CPHA_SETUP
-              | SPI_FOSC_DIV16);
+    spi_init (SPI_MASTER, SPI_CPOL_FALLING | SPI_CPHA_SETUP, SPI_MSB_FIRST,
+	      SPI_FOSC_DIV16);
 
     AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
     spi_send (FLASH_READ_ID);
