@@ -28,13 +28,27 @@
 
 /*
  * CLOSE_FIRST_DOOR =first_door_closed=>
- *  => WAIT_RGB_IDENT
+ *  => WAIT_RGB_PROBE
  *   get puck color
  */
 fsm_branch_t
 filterbridge__CLOSE_FIRST_DOOR__first_door_closed (void)
 {
     return filterbridge_next (CLOSE_FIRST_DOOR, first_door_closed);
+}
+
+/*
+ * WAIT_RGB_PROBE =color_probed=>
+ * bad_color => EJECT_PUCK
+ *   eject bad PUCK
+ * good_color => OPEN_SECOND_DOOR
+ *   put puck to the lift
+ */
+fsm_branch_t
+filterbridge__WAIT_RGB_PROBE__color_probed (void)
+{
+    return filterbridge_next_branch (WAIT_RGB_PROBE, color_probed, bad_color);
+    return filterbridge_next_branch (WAIT_RGB_PROBE, color_probed, good_color);
 }
 
 /*
@@ -60,50 +74,6 @@ filterbridge__CLOSE_SECOND_DOOR__second_door_closed (void)
 }
 
 /*
- * WAIT_RGB_IDENT =good_color=>
- *  => OPEN_SECOND_DOOR
- *   put puck to the lift
- */
-fsm_branch_t
-filterbridge__WAIT_RGB_IDENT__good_color (void)
-{
-    return filterbridge_next (WAIT_RGB_IDENT, good_color);
-}
-
-/*
- * WAIT_RGB_IDENT =bad_color=>
- *  => EJECT_PUCK
- *   eject bad PUCK
- */
-fsm_branch_t
-filterbridge__WAIT_RGB_IDENT__bad_color (void)
-{
-    return filterbridge_next (WAIT_RGB_IDENT, bad_color);
-}
-
-/*
- * BLAH =no_puck_on_pos2=>
- *  => OPEN_FIRST_DOOR
- *   make bridge ready to test a new puck
- */
-fsm_branch_t
-filterbridge__BLAH__no_puck_on_pos2 (void)
-{
-    return filterbridge_next (BLAH, no_puck_on_pos2);
-}
-
-/*
- * BLAH =puck_on_pos2=>
- *  => EJECT_PUCK
- *   re-eject this sticky puck, grml!
- */
-fsm_branch_t
-filterbridge__BLAH__puck_on_pos2 (void)
-{
-    return filterbridge_next (BLAH, puck_on_pos2);
-}
-
-/*
  * IDLE =lift_ready=>
  *  => WAIT_A_PUCK
  *   the lift is ready to get pucks, we can begin testing procedure
@@ -116,13 +86,16 @@ filterbridge__IDLE__lift_ready (void)
 
 /*
  * RETURN_NORMAL_POS =bridge_in_position=>
- *  => BLAH
- *   ready for a new puck test (unless bad puck is here yet)
+ * no_puck_anymore => OPEN_FIRST_DOOR
+ *   make bridge ready to test a new puck
+ * puck_still_here => EJECT_PUCK
+ *   re-eject this sticky puck, grml!
  */
 fsm_branch_t
 filterbridge__RETURN_NORMAL_POS__bridge_in_position (void)
 {
-    return filterbridge_next (RETURN_NORMAL_POS, bridge_in_position);
+    return filterbridge_next_branch (RETURN_NORMAL_POS, bridge_in_position, no_puck_anymore);
+    return filterbridge_next_branch (RETURN_NORMAL_POS, bridge_in_position, puck_still_here);
 }
 
 /*

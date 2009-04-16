@@ -1,4 +1,4 @@
-/* filterbridge_cb.c - filterbridge FSM callbacks. */
+/* elevator_cb.c - elevator FSM callbacks. */
 /*  {{{
  *
  * Copyright (C) 2009 Nicolas Haller
@@ -49,17 +49,6 @@ elevator__WAIT_FOR_CLOSE_ORDER__order_received (void)
 }
 
 /*
- * CLOSE_DOORS =doors_closed=>
- *  => GO_TO_POS_X
- *   pucks are released and elevator is ready to make a new column
- */
-fsm_branch_t
-elevator__CLOSE_DOORS__doors_closed (void)
-{
-    return elevator_next (CLOSE_DOORS, doors_closed);
-}
-
-/*
  * WAIT_A_PUCK =time_up=>
  *  => WAIT_POS_ORDER
  *   no more time to wait a new puck
@@ -72,24 +61,29 @@ elevator__WAIT_A_PUCK__time_up (void)
 
 /*
  * WAIT_A_PUCK =new_puck=>
- *  => BLAH
+ * ok_for_other_pucks => GO_TO_POS_X
  *   incrementing nb_puck var
+ *   update elevator position to get a new puck
+ * not_ok_for_other_pucks => WAIT_POS_ORDER
+ *   incrementing nb_puck var
+ *   no more time to wait a new puck
  */
 fsm_branch_t
 elevator__WAIT_A_PUCK__new_puck (void)
 {
-    return elevator_next (WAIT_A_PUCK, new_puck);
+    return elevator_next_branch (WAIT_A_PUCK, new_puck, ok_for_other_pucks);
+    return elevator_next_branch (WAIT_A_PUCK, new_puck, not_ok_for_other_pucks);
 }
 
 /*
- * GO_TO_POX_Y =in_position=>
+ * GO_TO_POS_Y =in_position=>
  *  => WAIT_FOR_RELEASE_ORDER
  *   ready to release pucks at altitude Y
  */
 fsm_branch_t
-elevator__GO_TO_POX_Y__in_position (void)
+elevator__GO_TO_POS_Y__in_position (void)
 {
-    return elevator_next (GO_TO_POX_Y, in_position);
+    return elevator_next (GO_TO_POS_Y, in_position);
 }
 
 /*
@@ -104,39 +98,6 @@ elevator__GO_TO_POS_X__in_position (void)
 }
 
 /*
- * WAIT_FOR_RELEASE_ORDER =order_received=>
- *  => OPEN_DOORS
- *   release pucks to the target position (I hope)
- */
-fsm_branch_t
-elevator__WAIT_FOR_RELEASE_ORDER__order_received (void)
-{
-    return elevator_next (WAIT_FOR_RELEASE_ORDER, order_received);
-}
-
-/*
- * BLAH =not_ok_for_other_pucks=>
- *  => WAIT_POS_ORDER
- *   no more puck, going next step
- */
-fsm_branch_t
-elevator__BLAH__not_ok_for_other_pucks (void)
-{
-    return elevator_next (BLAH, not_ok_for_other_pucks);
-}
-
-/*
- * BLAH =ok_for_other_pucks=>
- *  => GO_TO_POS_X
- *   update elevator position to get a new puck
- */
-fsm_branch_t
-elevator__BLAH__ok_for_other_pucks (void)
-{
-    return elevator_next (BLAH, ok_for_other_pucks);
-}
-
-/*
  * IDLE =started=>
  *  => GO_TO_POS_X
  *   match begin, we're going to be ready to get a new puck
@@ -148,14 +109,36 @@ elevator__IDLE__started (void)
 }
 
 /*
+ * WAIT_FOR_RELEASE_ORDER =order_received=>
+ *  => OPEN_DOORS
+ *   release pucks to the target position (I hope)
+ */
+fsm_branch_t
+elevator__WAIT_FOR_RELEASE_ORDER__order_received (void)
+{
+    return elevator_next (WAIT_FOR_RELEASE_ORDER, order_received);
+}
+
+/*
  * WAIT_POS_ORDER =order_received=>
- *  => GO_TO_POX_Y
+ *  => GO_TO_POS_Y
  *   go to position Y
  */
 fsm_branch_t
 elevator__WAIT_POS_ORDER__order_received (void)
 {
     return elevator_next (WAIT_POS_ORDER, order_received);
+}
+
+/*
+ * CLOSE_DOORS =doors_closed=>
+ *  => GO_TO_POS_X
+ *   pucks are released and elevator is ready to make a new column
+ */
+fsm_branch_t
+elevator__CLOSE_DOORS__doors_closed (void)
+{
+    return elevator_next (CLOSE_DOORS, doors_closed);
 }
 
 
