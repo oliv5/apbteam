@@ -1,6 +1,6 @@
-#ifndef avrconfig_h
-#define avrconfig_h
-/* avrconfig.h */
+#ifndef isp_proto_h
+#define isp_proto_h
+/* isp_proto.h */
 /* avr.isp - Serial programming AVR module. {{{
  *
  * Copyright (C) 2009 Nicolas Schodet
@@ -25,14 +25,16 @@
  *
  * }}} */
 
-/* isp - ISP module. */
-/** Size of isp_frame buffer. */
-#define AC_ISP_FRAME_BUFFER_SIZE 275
-/** Should be implemented by the user to send a character. */
-#define AC_ISP_FRAME_SEND_CHAR uart0_putc
-/** Should be implemented by the user (isp_proto) to accept a frame. */
-#define AC_ISP_FRAME_ACCEPT_FRAME isp_proto_accept
-/** Should be implemeted by the user to send a frame. */
-#define AC_ISP_PROTO_SEND isp_frame_send_frame
+/** The isp_proto sub module interprets commands in the AVR068 and AVR069
+ * format.  Framing is needed for AVR068 and provided by isp_frame. */
 
-#endif /* avrconfig_h */
+/** Should be implemeted by the user to send a frame. */
+void
+AC_ISP_PROTO_SEND (uint8_t *data, uint16_t len);
+
+/** Accept a frame to interpret.  The provided buffer will also be used to
+ * transfer frames. */
+void
+isp_proto_accept (uint8_t *data, uint16_t len, uint16_t buffer_size);
+
+#endif /* isp_proto_h */

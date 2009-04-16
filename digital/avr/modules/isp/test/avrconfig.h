@@ -32,5 +32,7 @@
 #define AC_ISP_FRAME_SEND_CHAR uart0_putc
 /** Should be implemented by the user (isp_proto) to accept a frame. */
 #define AC_ISP_FRAME_ACCEPT_FRAME isp_proto_accept
+/** Should be implemeted by the user to send a frame. */
+#define AC_ISP_PROTO_SEND isp_frame_send_frame
 
 #endif /* avrconfig_h */
