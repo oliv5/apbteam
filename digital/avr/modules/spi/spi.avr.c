@@ -1,5 +1,5 @@
 /* spi.avr.c */
-/*  {{{
+/* avr.spi - SPI AVR module. {{{
  *
  * Copyright (C) 2008 Nélio Laranjeiro
  *
@@ -22,31 +22,20 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
-#include "io.h"
 #include "common.h"
+
+#include "io.h"
+
 #include "spi.h"
 
-/** For host */
-#ifdef HOST
-static uint8_t SPCR;
-static uint8_t SPDR;
-static uint8_t SPSR;
-static uint8_t SPIF;
-#endif
-
-/** Spi driver context. */
-static spi_t spi_global;
-
 /** Initialise the SPI Control Register.
- * \param  sprc  the sprc register data to be store in the register.
- * \param  cb  the function call back to call the user which receive the data.
- * \param  user_data  the user data to be provieded in the function call back.
+ * \param  spcr  the spcr register data to be store in the register.
  */
 void
-spi_init(uint8_t sprc)
+spi_init (uint8_t spcr)
 {
     /* Master configuration. */
-    if (sprc & _BV(MSTR))
+    if (spcr & _BV(MSTR))
       {
 	SPI_PORT |= _BV(SPI_BIT_SS);
 	SPI_DDR |= _BV(SPI_BIT_SS);
@@ -75,55 +64,39 @@ spi_init(uint8_t sprc)
 	SPI_PORT &= ~_BV(SPI_BIT_SCK);
       }
 
-    SPCR = sprc;
-    spi_global.interruption = SPCR & _BV(SPIE);
+    SPCR = spcr;
 }
 
 /** Send a data to the Slave.
  * \param  data  the data to send
  */
 void
-spi_send(uint8_t data)
+spi_send (uint8_t data)
 {
-    SPDR = data;
-    // Wait the end of the transmission.
-    while(!(SPSR & _BV(SPIF))); 
+    spi_send_and_recv (data);
 }
 
 /** Receive a data from the SPI bus.
  * \return  the data received from the bus.
  */
 uint8_t
-spi_recv(void)
+spi_recv (void)
 {
-    SPDR = 0;
-    /* Wait for reception complete */
-    while(!(SPSR & _BV(SPIF))); 
-    
-    /* Return data register */
-    return SPDR;
+    return spi_send_and_recv (0);
 }
 
 /** Send and receive data.
-  * \param  data  the data to send.
-  * \return  the data received.
-  */
+ * \param  data  the data to send.
+ * \return  the data received.
+ */
 uint8_t
 spi_send_and_recv (uint8_t data)
 {
     SPDR = data;
-    // Wait the end of the transmission.
-    while(!(SPSR & _BV(SPIF))); 
-
+    /* Wait the end of the transmission. */
+    while (!(SPSR & _BV(SPIF)))
+	;
+    /* Return data register. */
     return SPDR;
-}
-
-/** Return the status register from the SPI driver.
- * \return  the status register value
- */
-uint8_t
-spi_status(void)
-{
-    return SPSR;
 }
 

@@ -1,7 +1,7 @@
 #ifndef spi_h
 #define spi_h
 /* spi.h */
-/*  {{{
+/* avr.spi - SPI AVR module. {{{
  *
  * Copyright (C) 2008 Nélio Laranjeiro
  *
@@ -67,38 +67,23 @@ enum spi_fosc_t
     SPI_FOSC_DIV32
 };
 
-struct spi_t
-{
-    /** interruption status. */
-    int8_t interruption;
-};
-typedef struct spi_t spi_t;
-
 /** Initialise the SPI Control Register.
- * \param  sprc  the sprc register data to be store in the register.
- * \param  cb  the function call back to call the user which receive the data.
- * \param  user_data  the user data to be provieded in the function call back.
+ * \param  spcr  the spcr register data to be store in the register.
  */
 void
-spi_init(uint8_t sprc);
-
-/** Uninitialise the SPI module.
- * Unused on the target
- */
-void
-spi_uninit (void);
+spi_init (uint8_t spcr);
 
 /** Send a data to the Slave.
  * \param  data  the data to send
  */
 void
-spi_send(uint8_t data);
+spi_send (uint8_t data);
 
 /** Receive a data from the SPI bus.
  * \return  the data received from the bus.
  */
 uint8_t 
-spi_recv(void);
+spi_recv (void);
 
 /** Send and receive data.
   * \param  data  the data to send.
@@ -106,11 +91,5 @@ spi_recv(void);
   */
 uint8_t
 spi_send_and_recv (uint8_t data);
-
-/** Return the status register from the SPI driver.
- * \return  the status register value
- */
-uint8_t
-spi_status(void);
 
 #endif /* spi_h */

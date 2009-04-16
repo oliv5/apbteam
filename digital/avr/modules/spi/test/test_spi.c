@@ -22,18 +22,11 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
-#include <stdint.h>
-#include <common.h>
+#include "common.h"
 
 #include "modules/proto/proto.h"
+#include "modules/spi/spi.h"
 #include "io.h"
-#include "../spi.h"
-
-/** Call back function to be called on the AVR interruption */
-void
-spi_interruption_function (void *user_data, uint8_t data)
-{
-}
 
 void
 proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
