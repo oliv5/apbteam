@@ -27,21 +27,24 @@
 #include "filterbridge_cb.h"
 
 /*
- * CLOSE_FIRST_DOOR =first_door_closed=>
- *  => WAIT_RGB_PROBE
- *   get puck color
+ * WAIT_A_PUCK =puck_on_pos2=>
+ * nb_puck_ok => WAIT_RGB_PROBE
+ *   probe color of the new puck
+ * too_much_puck => EJECT_PUCK
+ *   we have too much puck, eject the puck quickly and whistle
  */
 fsm_branch_t
-filterbridge__CLOSE_FIRST_DOOR__first_door_closed (void)
+filterbridge__WAIT_A_PUCK__puck_on_pos2 (void)
 {
-    return filterbridge_next (CLOSE_FIRST_DOOR, first_door_closed);
+    return filterbridge_next_branch (WAIT_A_PUCK, puck_on_pos2, nb_puck_ok);
+    return filterbridge_next_branch (WAIT_A_PUCK, puck_on_pos2, too_much_puck);
 }
 
 /*
  * WAIT_RGB_PROBE =color_probed=>
  * bad_color => EJECT_PUCK
- *   eject bad PUCK
- * good_color => OPEN_SECOND_DOOR
+ *   eject bad puck
+ * good_color => OPEN_DOOR
  *   put puck to the lift
  */
 fsm_branch_t
@@ -49,28 +52,6 @@ filterbridge__WAIT_RGB_PROBE__color_probed (void)
 {
     return filterbridge_next_branch (WAIT_RGB_PROBE, color_probed, bad_color);
     return filterbridge_next_branch (WAIT_RGB_PROBE, color_probed, good_color);
-}
-
-/*
- * WAIT_A_PUCK =puck_on_pos2=>
- *  => CLOSE_FIRST_DOOR
- *   close the first door after a puck is ready for filtering
- */
-fsm_branch_t
-filterbridge__WAIT_A_PUCK__puck_on_pos2 (void)
-{
-    return filterbridge_next (WAIT_A_PUCK, puck_on_pos2);
-}
-
-/*
- * CLOSE_SECOND_DOOR =second_door_closed=>
- *  => OPEN_FIRST_DOOR
- *   filter bridge is ready to get a new puck
- */
-fsm_branch_t
-filterbridge__CLOSE_SECOND_DOOR__second_door_closed (void)
-{
-    return filterbridge_next (CLOSE_SECOND_DOOR, second_door_closed);
 }
 
 /*
@@ -85,50 +66,45 @@ filterbridge__IDLE__lift_ready (void)
 }
 
 /*
- * RETURN_NORMAL_POS =bridge_in_position=>
- * no_puck_anymore => OPEN_FIRST_DOOR
- *   make bridge ready to test a new puck
- * puck_still_here => EJECT_PUCK
- *   re-eject this sticky puck, grml!
- */
-fsm_branch_t
-filterbridge__RETURN_NORMAL_POS__bridge_in_position (void)
-{
-    return filterbridge_next_branch (RETURN_NORMAL_POS, bridge_in_position, no_puck_anymore);
-    return filterbridge_next_branch (RETURN_NORMAL_POS, bridge_in_position, puck_still_here);
-}
-
-/*
- * OPEN_FIRST_DOOR =first_door_opened=>
+ * CLOSE_DOOR =door_closed=>
  *  => IDLE
  *   filter bridge ready
  */
 fsm_branch_t
-filterbridge__OPEN_FIRST_DOOR__first_door_opened (void)
+filterbridge__CLOSE_DOOR__door_closed (void)
 {
-    return filterbridge_next (OPEN_FIRST_DOOR, first_door_opened);
+    return filterbridge_next (CLOSE_DOOR, door_closed);
 }
 
 /*
- * OPEN_SECOND_DOOR =no_puck_on_pos2=>
- *  => CLOSE_SECOND_DOOR
- *   close the lift access door and tell to lift it has a new puck
+ * RETURN_NORMAL_POS =bridge_in_position=>
+ *  => CLOSE_DOOR
+ *   make bridge ready to test a new puck
  */
 fsm_branch_t
-filterbridge__OPEN_SECOND_DOOR__no_puck_on_pos2 (void)
+filterbridge__RETURN_NORMAL_POS__bridge_in_position (void)
 {
-    return filterbridge_next (OPEN_SECOND_DOOR, no_puck_on_pos2);
+    return filterbridge_next (RETURN_NORMAL_POS, bridge_in_position);
 }
 
 /*
- * EJECT_PUCK =puck_ejected=>
+ * OPEN_DOOR =no_puck_on_pos2=>
+ *  => CLOSE_DOOR
+ *   release puck to the lift
+ */
+fsm_branch_t
+filterbridge__OPEN_DOOR__no_puck_on_pos2 (void)
+{
+    return filterbridge_next (OPEN_DOOR, no_puck_on_pos2);
+}
+
+/*
+ * EJECT_PUCK =ejection_done=>
  *  => RETURN_NORMAL_POS
  *   put bridge on normal position after puck ejection
  */
 fsm_branch_t
-filterbridge__EJECT_PUCK__puck_ejected (void)
+filterbridge__EJECT_PUCK__ejection_done (void)
 {
-    return filterbridge_next (EJECT_PUCK, puck_ejected);
+    return filterbridge_next (EJECT_PUCK, ejection_done);
 }
-
-

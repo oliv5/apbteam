@@ -7,40 +7,34 @@ States:
   waiting the lift is ready to accept new puck
  WAIT_A_PUCK
   waiting for a new puck
- CLOSE_FIRST_DOOR
-  isolating the firt puck on the bridge
  WAIT_RGB_PROBE
   waiting for RGB probe the first puck
  EJECT_PUCK
   eject a bad puck
  RETURN_NORMAL_POS
   move the bridge to his normal position
- OPEN_SECOND_DOOR
-  open and free the puck to the lift
- CLOSE_SECOND_DOOR
-  prepare for a new puck
- OPEN_FIRST_DOOR
-  accept a puck for a new test
+ OPEN_DOOR
+  release puck to the lift and block a new puck on pos1
+ CLOSE_DOOR
+  release pos1 puck and close access to the lift
 
 Events:
  lift_ready
   lift ready to accept new puck
  puck_on_pos2
   a puck has been detected on bridge's position 2
- first_door_closed
-  the first door is closed
  no_puck_on_pos2
   there is no puck on position 2
  bridge_in_position
   bridge is in his normal position
- second_door_closed
-  you shall not pass to the lift
- first_door_opened
-  bridge ready to test a new puck
- puck_ejected
+ door_opened
+  puck 1 blocked and puck 2 release to the lift
+ ejection_done
   the ejection procedure is completed
  color_probed
   the result of the investigation will be revealed (suspens!!)
+ door_closed
+  ready to test a new puck
 
 
 IDLE:
@@ -48,37 +42,29 @@ IDLE:
   the lift is ready to get pucks, we can begin testing procedure
 
 WAIT_A_PUCK:
- puck_on_pos2 -> CLOSE_FIRST_DOOR
-  close the first door after a puck is ready for filtering
-
-CLOSE_FIRST_DOOR:
- first_door_closed -> WAIT_RGB_PROBE
-  get puck color
+ puck_on_pos2: too_much_puck -> EJECT_PUCK
+  we have too much puck, eject the puck quickly and whistle
+ puck_on_pos2: nb_puck_ok -> WAIT_RGB_PROBE
+  probe color of the new puck
 
 WAIT_RGB_PROBE:
  color_probed: bad_color -> EJECT_PUCK
-  eject bad PUCK
- color_probed: good_color -> OPEN_SECOND_DOOR
+  eject bad puck
+ color_probed: good_color -> OPEN_DOOR
   put puck to the lift
 
 EJECT_PUCK:
- puck_ejected -> RETURN_NORMAL_POS
+ ejection_done -> RETURN_NORMAL_POS
   put bridge on normal position after puck ejection
 
 RETURN_NORMAL_POS:
- bridge_in_position: puck_still_here -> EJECT_PUCK
-  re-eject this sticky puck, grml!
- bridge_in_position: no_puck_anymore -> OPEN_FIRST_DOOR
+ bridge_in_position -> CLOSE_DOOR
   make bridge ready to test a new puck
 
-OPEN_SECOND_DOOR:
- no_puck_on_pos2 -> CLOSE_SECOND_DOOR
-  close the lift access door and tell to lift it has a new puck
+OPEN_DOOR:
+ no_puck_on_pos2 -> CLOSE_DOOR
+  release puck to the lift
 
-CLOSE_SECOND_DOOR:
- second_door_closed -> OPEN_FIRST_DOOR
-  filter bridge is ready to get a new puck
-
-OPEN_FIRST_DOOR:
- first_door_opened -> IDLE
+CLOSE_DOOR:
+ door_closed -> IDLE
   filter bridge ready
