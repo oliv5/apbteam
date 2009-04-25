@@ -73,15 +73,51 @@
 #define AC_UART1_SEND_BUFFER_FULL WAIT
 #define AC_UART1_HOST_DRIVER PTS
 
+/* spi - SPI module. */
+/** Select driver: HARD, SOFT, or NONE. */
+#define AC_SPI0_DRIVER SOFT
+/** For software SPI, specify SCK IO port. */
+#define AC_SPI0_SOFT_SCK_IO D, 5
+/** For software SPI, specify MOSI IO port. */
+#define AC_SPI0_SOFT_MOSI_IO D, 7
+/** For software SPI, specify MISO IO port. */
+#define AC_SPI0_SOFT_MISO_IO D, 6
+/** Same thing for an optionnal second SPI driver. */
+#define AC_SPI1_DRIVER NONE
+
 /* isp - ISP module. */
 /** Size of isp_frame buffer. */
 #define AC_ISP_FRAME_BUFFER_SIZE 275
 /** Should be implemented by the user to send a character. */
-#define AC_ISP_FRAME_SEND_CHAR isp_send_char
+#define AC_ISP_FRAME_SEND_CHAR usb_isp_send_char
 /** Should be implemented by the user (isp_proto) to accept a frame. */
 #define AC_ISP_FRAME_ACCEPT_FRAME isp_proto_accept
-/** Should be implemeted by the user to send a frame. */
+/** Should be implemented by the user to send a frame. */
 #define AC_ISP_PROTO_SEND isp_frame_send_frame
+/** Programmer signature. */
+#define AC_ISP_PROTO_SIGNATURE "APBisp_2"
+/** Programmer build number. */
+#define AC_ISP_PROTO_BUILD_NUMBER 0x0100
+/** Programmer hardware version. */
+#define AC_ISP_PROTO_HW_VERSION 0x02
+/** Programmer software version. */
+#define AC_ISP_PROTO_SW_VERSION 0x0204
+/** Should be implemented by the user to enable SPI programming:
+ * - set RESET and SCK to low,
+ * - power on, or if not possible, do a positive RESET pulse,
+ * - enable SPI. */
+#define AC_ISP_SPI_ENABLE usb_isp_spi_enable
+/** Should be implemented by the user to disable SPI programming:
+ * - disable SPI,
+ * - release RESET,
+ * - power off if desired. */
+#define AC_ISP_SPI_DISABLE usb_isp_spi_disable
+/** Should be implemented by the user to do a pulse on SCK.  This is used to
+ * try to resynchronise. */
+#define AC_ISP_SPI_SCK_PULSE usb_isp_spi_sck_pulse
+/** Should be implemented by the user to send and receive a byte using the SPI
+ * bus. */
+#define AC_ISP_SPI_TX usb_isp_spi_tx
 
 /* usb */
 #include "modules/usb/lufaconfig.h"
