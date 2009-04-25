@@ -33,3 +33,29 @@ main (void)
     return 0;
 }
 
+void
+AC_ISP_SPI_ENABLE (void)
+{
+}
+
+void
+AC_ISP_SPI_DISABLE (void)
+{
+}
+
+void
+AC_ISP_SPI_SCK_PULSE (void)
+{
+}
+
+uint8_t
+AC_ISP_SPI_TX (uint8_t data)
+{
+    return 0;
+}
+
+void
+AC_ISP_FRAME_SEND_CHAR (uint8_t data)
+{
+}
+

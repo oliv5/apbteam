@@ -32,7 +32,7 @@
 #define AC_ISP_FRAME_SEND_CHAR uart0_putc
 /** Should be implemented by the user (isp_proto) to accept a frame. */
 #define AC_ISP_FRAME_ACCEPT_FRAME isp_proto_accept
-/** Should be implemeted by the user to send a frame. */
+/** Should be implemented by the user to send a frame. */
 #define AC_ISP_PROTO_SEND isp_frame_send_frame
 /** Programmer signature. */
 #define AC_ISP_PROTO_SIGNATURE "APBisp_2"
@@ -42,5 +42,21 @@
 #define AC_ISP_PROTO_HW_VERSION 0x02
 /** Programmer software version. */
 #define AC_ISP_PROTO_SW_VERSION 0x0204
+/** Should be implemented by the user to enable SPI programming:
+ * - set RESET and SCK to low,
+ * - power on, or if not possible, do a positive RESET pulse,
+ * - enable SPI. */
+#define AC_ISP_SPI_ENABLE isp_spi_enable
+/** Should be implemented by the user to disable SPI programming:
+ * - disable SPI,
+ * - release RESET,
+ * - power off if desired. */
+#define AC_ISP_SPI_DISABLE isp_spi_disable
+/** Should be implemented by the user to do a pulse on SCK.  This is used to
+ * try to resynchronise. */
+#define AC_ISP_SPI_SCK_PULSE isp_spi_sck_pulse
+/** Should be implemented by the user to send and receive a byte using the SPI
+ * bus. */
+#define AC_ISP_SPI_TX isp_spi_tx
 
 #endif /* avrconfig_h */

@@ -123,4 +123,16 @@ void
 isp_multi (uint8_t num_tx, uint8_t num_rx, uint8_t rx_start,
 	   const uint8_t *dout, uint8_t *din);
 
+void
+AC_ISP_SPI_ENABLE (void);
+
+void
+AC_ISP_SPI_DISABLE (void);
+
+void
+AC_ISP_SPI_SCK_PULSE (void);
+
+uint8_t
+AC_ISP_SPI_TX (uint8_t data);
+
 #endif /* isp_h */

@@ -26,6 +26,8 @@
  * }}} */
 #include "common.h"
 
+#include "modules/utils/utils.h"
+
 #include "isp.h"
 
 /** ISP context. */
@@ -78,6 +80,39 @@ struct isp_t
 /** Global context. */
 static struct isp_t isp_global;
 
+#define isp_spi_enable AC_ISP_SPI_ENABLE
+#define isp_spi_disable AC_ISP_SPI_DISABLE
+#define isp_spi_sck_pulse AC_ISP_SPI_SCK_PULSE
+#define isp_spi_tx AC_ISP_SPI_TX
+
+/** Transmit a 16 bit data. */
+static void
+isp_spi_tx_16 (uint16_t data)
+{
+    isp_spi_tx ((data >> 8) & 0xff);
+    isp_spi_tx ((data >> 0) & 0xff);
+}
+
+/** Transmit a 32 bit data and return last byte received.  This is used for
+ * RDY/BSY polling. */
+static uint8_t
+isp_spi_tx_32 (uint32_t data)
+{
+    isp_spi_tx ((data >> 24) & 0xff);
+    isp_spi_tx ((data >> 16) & 0xff);
+    isp_spi_tx ((data >> 8) & 0xff);
+    return isp_spi_tx ((data >> 0) & 0xff);
+}
+
+/** Wait for the specified delay, which can be a variable (it must be a
+ * constant for utils_delay_ms. */
+static void
+isp_delay_ms (uint8_t delay_ms)
+{
+    while (delay_ms--)
+	utils_delay_ms (1);
+}
+
 /** Enable SPI port and enter programing mode.
  * - timeout_ms: command time-out, unused.
  * - stab_delay_ms: stabilisation delay once device is reseted and SPI
@@ -114,7 +149,6 @@ isp_enter_progmode (uint8_t timeout_ms, uint8_t stab_delay_ms,
     /* Synchronisation loops. */
     for (i = 0; i < synch_loops; i++)
       {
-	isp_wd_kick ();
 	isp_delay_ms (cmd_exe_delay_ms);
 	isp_spi_tx (cmd[0]);
 	isp_delay_ms (byte_delay_ms);
