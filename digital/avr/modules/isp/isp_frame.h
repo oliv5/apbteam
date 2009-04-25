@@ -41,7 +41,7 @@ isp_frame_accept_char (uint8_t c);
  *
  * The provided buffer can be used by the callee. */
 void
-AC_ISP_FRAME_ACCEPT_FRAME (uint8_t *data, uint16_t len, uint16_t buffer_size);
+AC_ISP_FRAME_ACCEPT_FRAME (uint8_t *data, uint16_t len);
 
 /** Send a frame, to be used by isp_proto. */
 void

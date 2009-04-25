@@ -36,7 +36,7 @@
 #define ISP_PROTO_SIGNATURE "APBdev_2"
 
 void
-isp_proto_accept (uint8_t *data, uint16_t len, uint16_t buffer_size)
+isp_proto_accept (uint8_t *data, uint16_t len)
 {
     /* Decode command. */
     switch (data [0])

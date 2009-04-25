@@ -35,6 +35,6 @@ AC_ISP_PROTO_SEND (uint8_t *data, uint16_t len);
 /** Accept a frame to interpret.  The provided buffer will also be used to
  * transfer frames. */
 void
-isp_proto_accept (uint8_t *data, uint16_t len, uint16_t buffer_size);
+isp_proto_accept (uint8_t *data, uint16_t len);
 
 #endif /* isp_proto_h */

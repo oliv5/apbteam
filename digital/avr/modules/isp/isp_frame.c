@@ -166,8 +166,7 @@ isp_frame_process (void)
     else
       {
 	AC_ISP_FRAME_ACCEPT_FRAME (isp_frame_global.buffer,
-				   isp_frame_global.buffer_len,
-				   AC_ISP_FRAME_BUFFER_SIZE);
+				   isp_frame_global.buffer_len);
       }
 }
 
