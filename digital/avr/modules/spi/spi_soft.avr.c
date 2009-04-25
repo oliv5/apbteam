@@ -59,6 +59,16 @@ spi_soft_init_ (uint8_t speed)
 }
 
 void
+spi_soft_uninit (void)
+{
+    /* Reset GPIO configuration. */
+    IO_PORT (SPI_MISO_IO) &= ~IO_BV (SPI_MISO_IO);
+    IO_DDR (SPI_MOSI_IO) &= ~IO_BV (SPI_MOSI_IO);
+    IO_PORT (SPI_MOSI_IO) &= ~IO_BV (SPI_MOSI_IO);
+    IO_DDR (SPI_SCK_IO) &= ~IO_BV (SPI_SCK_IO);
+}
+
+void
 spi_soft_send (uint8_t data)
 {
     spi_soft_send_and_recv (data);

@@ -47,6 +47,10 @@
 void
 spi_soft_init_ (uint8_t speed);
 
+/** Uninitialise SPI driver. */
+void
+spi_soft_uninit (void);
+
 /** Send data. */
 void
 spi_soft_send (uint8_t data);

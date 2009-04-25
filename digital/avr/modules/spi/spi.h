@@ -79,22 +79,26 @@
 /* Map names to drivers. */
 #if SPI0_DRIVER == SPI_DRIVER_HARD
 # define spi_init spi_hard_init
+# define spi_uninit spi_hard_uninit
 # define spi_send spi_hard_send
 # define spi_recv spi_hard_recv
 # define spi_send_and_recv spi_hard_send_and_recv
 #elif SPI0_DRIVER == SPI_DRIVER_SOFT
 # define spi_init spi_soft_init
+# define spi_uninit spi_soft_uninit
 # define spi_send spi_soft_send
 # define spi_recv spi_soft_recv
 # define spi_send_and_recv spi_soft_send_and_recv
 #endif
 #if SPI1_DRIVER == SPI_DRIVER_HARD
 # define spi1_init spi_hard_init
+# define spi1_uninit spi_hard_uninit
 # define spi1_send spi_hard_send
 # define spi1_recv spi_hard_recv
 # define spi1_send_and_recv spi_hard_send_and_recv
 #elif SPI1_DRIVER == SPI_DRIVER_SOFT
 # define spi1_init spi_soft_init
+# define spi1_uninit spi_soft_uninit
 # define spi1_send spi_soft_send
 # define spi1_recv spi_soft_recv
 # define spi1_send_and_recv spi_soft_send_and_recv

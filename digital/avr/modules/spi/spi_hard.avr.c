@@ -46,6 +46,13 @@
 # error "spi: not implemented on this chip"
 #endif
 
+/** WARNING: there is some assertions in GPIO settings which should be
+ * verified:
+ *  - does SCK initial value match selected mode?
+ *  - should a pull-up be used on inputs?
+ *  - can SS be reset as an input on uninit?
+ */
+
 void
 spi_hard_init_ (uint8_t spcr, uint8_t spi2x)
 {
@@ -81,6 +88,23 @@ spi_hard_init_ (uint8_t spcr, uint8_t spi2x)
 	IO_PORT (SPI_MISO_IO) |= IO_BV (SPI_MISO_IO);
 	IO_DDR (SPI_MISO_IO) |= IO_BV (SPI_MISO_IO);
       }
+}
+
+void
+spi_hard_uninit (void)
+{
+    /* Reset MISO now for slave mode (see above, no effect in master mode). */
+    IO_DDR (SPI_MISO_IO) &= ~IO_BV (SPI_MISO_IO);
+    IO_PORT (SPI_MISO_IO) &= ~IO_BV (SPI_MISO_IO);
+    /* Disable SPI. */
+    SPCR = 0;
+    /* Reset GPIO configuration. */
+    IO_DDR (SPI_SS_IO) &= ~IO_BV (SPI_SS_IO);
+    IO_PORT (SPI_SS_IO) &= ~IO_BV (SPI_SS_IO);
+    IO_DDR (SPI_MOSI_IO) &= ~IO_BV (SPI_MOSI_IO);
+    IO_PORT (SPI_MOSI_IO) &= ~IO_BV (SPI_MOSI_IO);
+    IO_DDR (SPI_SCK_IO) &= ~IO_BV (SPI_SCK_IO);
+    IO_PORT (SPI_SCK_IO) &= ~IO_BV (SPI_SCK_IO);
 }
 
 void

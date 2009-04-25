@@ -48,6 +48,10 @@ enum spi_fosc_t
 void
 spi_hard_init_ (uint8_t spcr, uint8_t spi2x);
 
+/** Uninitialise SPI driver, release GPIO (SS too!). */
+void
+spi_hard_uninit (void);
+
 /** Send data. */
 void
 spi_hard_send (uint8_t data);
