@@ -94,7 +94,7 @@ uint8_t
 isp_enter_progmode (uint8_t timeout_ms, uint8_t stab_delay_ms,
 		    uint8_t cmd_exe_delay_ms, uint8_t synch_loops,
 		    uint8_t byte_delay_ms, uint8_t poll_value,
-		    uint8_t poll_index, uint8_t cmd[4])
+		    uint8_t poll_index, const uint8_t cmd[4])
 {
     uint8_t i, tmp1, tmp2;
     /* Reset context. */
@@ -164,7 +164,8 @@ isp_load_address (uint32_t addr)
  * - cmd: chip erase command.
  * - returns: ISP_OK or ISP_TIMEOUT if using polling and it timed-out. */
 uint8_t
-isp_chip_erase (uint8_t erase_delay_ms, uint8_t poll_method, uint8_t cmd[4])
+isp_chip_erase (uint8_t erase_delay_ms, uint8_t poll_method,
+		const uint8_t cmd[4])
 {
     uint8_t tries;
     isp_spi_tx (cmd[0]);
@@ -192,10 +193,10 @@ isp_chip_erase (uint8_t erase_delay_ms, uint8_t poll_method, uint8_t cmd[4])
  * - num_bytes: total number of bytes to program.
  * - returns: ISP_OK or ISP_FAILED for bad parameters.
  * See context for other parameters meaning. */
-static uint8_t
+uint8_t
 isp_program_begin (uint16_t num_bytes, uint8_t mode, uint8_t delay_ms,
 		   uint8_t cmd_write_mem, uint8_t cmd_write_page,
-		   uint8_t cmd_read_mem, uint8_t poll[2], uint8_t flash)
+		   uint8_t cmd_read_mem, const uint8_t poll[2], uint8_t flash)
 {
     /* Set delay bounds. */
     if (delay_ms < 4)
@@ -227,7 +228,7 @@ isp_program_begin (uint16_t num_bytes, uint8_t mode, uint8_t delay_ms,
 uint8_t
 isp_program_flash_begin (uint16_t num_bytes, uint8_t mode, uint8_t delay_ms,
 			 uint8_t cmd_write_mem, uint8_t cmd_write_page,
-			 uint8_t cmd_read_mem, uint8_t poll[2])
+			 uint8_t cmd_read_mem, const uint8_t poll[2])
 {
     return isp_program_begin (num_bytes, mode, delay_ms, cmd_write_mem,
 			      cmd_write_page, cmd_read_mem, poll, 1);
@@ -240,7 +241,7 @@ isp_program_flash_begin (uint16_t num_bytes, uint8_t mode, uint8_t delay_ms,
 uint8_t
 isp_program_eeprom_begin (uint16_t num_bytes, uint8_t mode, uint8_t delay_ms,
 			  uint8_t cmd_write_mem, uint8_t cmd_write_page,
-			  uint8_t cmd_read_mem, uint8_t poll[2])
+			  uint8_t cmd_read_mem, const uint8_t poll[2])
 {
     return isp_program_begin (num_bytes, mode, delay_ms, cmd_write_mem,
 			      cmd_write_page, cmd_read_mem, poll, 0);
@@ -251,7 +252,7 @@ isp_program_eeprom_begin (uint16_t num_bytes, uint8_t mode, uint8_t delay_ms,
  * - returns: ISP_OK, ISP_FAILED for bad parameters or ISP_TIMEOUT if using
  *   polling and it timed-out. */
 uint8_t
-isp_program_continue (uint8_t *data, uint16_t size)
+isp_program_continue (const uint8_t *data, uint16_t size)
 {
     uint16_t i;
     uint8_t tries, read;
@@ -396,7 +397,7 @@ isp_program_end (void)
  * - num_bytes: total number of bytes to program.
  * - returns: ISP_OK or ISP_FAILED for bad parameters.
  * See context for other parameters meaning. */
-static uint8_t
+uint8_t
 isp_read_begin (uint16_t num_bytes, uint8_t cmd_read_mem, uint8_t flash)
 {
     /* Check data size. */
@@ -486,7 +487,7 @@ isp_read_end (void)
 /** Program miscellaneous memory (fuse, lock).
  * - cmd: program command. */
 void
-isp_program_misc (uint8_t cmd[4])
+isp_program_misc (const uint8_t cmd[4])
 {
     uint8_t i;
     for (i = 0; i < 4; i++)
@@ -497,7 +498,7 @@ isp_program_misc (uint8_t cmd[4])
  * - ret_addr: transfer index at which the return value must be read.
  * - cmd: read command. */
 uint8_t
-isp_read_misc (uint8_t ret_addr, uint8_t cmd[4])
+isp_read_misc (uint8_t ret_addr, const uint8_t cmd[4])
 {
     uint8_t i, read = 0, tmp;
     for (i = 0; i < 4; i++)
@@ -514,15 +515,15 @@ isp_read_misc (uint8_t ret_addr, uint8_t cmd[4])
  * - num_tx: number of bytes to transmit.
  * - num_rx: number of bytes to receive.
  * - rx_start: start reception after this number of transmitted bytes.
- * - data: buffer to read sent bytes and write received bytes.
+ * - dout: buffer to read sent bytes.
+ * - din: buffer to write received bytes.
  * Limitation: no support for doing this in several chunks as memory
  * programing and reading. */
 void
-isp_multi (uint8_t num_tx, uint8_t num_rx, uint8_t rx_start, uint8_t *data)
+isp_multi (uint8_t num_tx, uint8_t num_rx, uint8_t rx_start,
+	   const uint8_t *dout, uint8_t *din)
 {
-    uint8_t in, *din, out;
-    const uint8_t *dout;
-    dout = din = data;
+    uint8_t in, out;
     while (num_tx || num_rx)
       {
 	out = 0;

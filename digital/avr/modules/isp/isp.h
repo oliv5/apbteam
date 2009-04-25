@@ -64,7 +64,7 @@ uint8_t
 isp_enter_progmode (uint8_t timeout_ms, uint8_t stab_delay_ms,
 		    uint8_t cmd_exe_delay_ms, uint8_t synch_loops,
 		    uint8_t byte_delay_ms, uint8_t poll_value,
-		    uint8_t poll_index, uint8_t cmd[4]);
+		    uint8_t poll_index, const uint8_t cmd[4]);
 
 void
 isp_leave_progmode (uint8_t pre_delay_ms, uint8_t post_delay_ms);
@@ -73,23 +73,33 @@ void
 isp_load_address (uint32_t addr);
 
 uint8_t
-isp_chip_erase (uint8_t erase_delay_ms, uint8_t poll_method, uint8_t cmd[4]);
+isp_chip_erase (uint8_t erase_delay_ms, uint8_t poll_method,
+		const uint8_t cmd[4]);
+
+uint8_t
+isp_program_begin (uint16_t num_bytes, uint8_t mode, uint8_t delay_ms,
+		   uint8_t cmd_write_mem, uint8_t cmd_write_page,
+		   uint8_t cmd_read_mem, const uint8_t poll[2],
+		   uint8_t flash);
 
 uint8_t
 isp_program_flash_begin (uint16_t num_bytes, uint8_t mode, uint8_t delay_ms,
 			 uint8_t cmd_write_mem, uint8_t cmd_write_page,
-			 uint8_t cmd_read_mem, uint8_t poll[2]);
+			 uint8_t cmd_read_mem, const uint8_t poll[2]);
 
 uint8_t
 isp_program_eeprom_begin (uint16_t num_bytes, uint8_t mode, uint8_t delay_ms,
 			  uint8_t cmd_write_mem, uint8_t cmd_write_page,
-			  uint8_t cmd_read_mem, uint8_t poll[2]);
+			  uint8_t cmd_read_mem, const uint8_t poll[2]);
 
 uint8_t
-isp_program_continue (uint8_t *data, uint16_t size);
+isp_program_continue (const uint8_t *data, uint16_t size);
 
 uint8_t
 isp_program_end (void);
+
+uint8_t
+isp_read_begin (uint16_t num_bytes, uint8_t cmd_read_mem, uint8_t flash);
 
 uint8_t
 isp_read_flash_begin (uint16_t num_bytes, uint8_t cmd_read_mem);
@@ -104,12 +114,13 @@ uint8_t
 isp_read_end (void);
 
 void
-isp_program_misc (uint8_t cmd[4]);
+isp_program_misc (const uint8_t cmd[4]);
 
 uint8_t
-isp_read_misc (uint8_t ret_addr, uint8_t cmd[4]);
+isp_read_misc (uint8_t ret_addr, const uint8_t cmd[4]);
 
 void
-isp_multi (uint8_t num_tx, uint8_t num_rx, uint8_t rx_start, uint8_t *data);
+isp_multi (uint8_t num_tx, uint8_t num_rx, uint8_t rx_start,
+	   const uint8_t *dout, uint8_t *din);
 
 #endif /* isp_h */
