@@ -2,6 +2,7 @@ usb_SOURCES = DevChapter9.c Endpoint.c LowLevel.c \
 	      Events.c StdDescriptors.c USBInterrupt.c USBTask.c
 vpath %.c $(BASE)/modules/usb/lufa/LUFA/Drivers/USB/LowLevel
 vpath %.c $(BASE)/modules/usb/lufa/LUFA/Drivers/USB/HighLevel
-CFLAGS += -std=gnu99 -fpack-struct -fshort-enums -ffunction-sections
+CFLAGS += -std=gnu99 -fgnu89-inline -fpack-struct -fshort-enums \
+	  -ffunction-sections
 CPPFLAGS += -I$(BASE)/modules/usb/lufa
 LDFLAGS += -Wl,--relax -Wl,--gc-sections
