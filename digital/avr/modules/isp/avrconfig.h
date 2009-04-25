@@ -34,5 +34,13 @@
 #define AC_ISP_FRAME_ACCEPT_FRAME isp_proto_accept
 /** Should be implemeted by the user to send a frame. */
 #define AC_ISP_PROTO_SEND isp_frame_send_frame
+/** Programmer signature. */
+#define AC_ISP_PROTO_SIGNATURE "APBisp_2"
+/** Programmer build number. */
+#define AC_ISP_PROTO_BUILD_NUMBER 0x0100
+/** Programmer hardware version. */
+#define AC_ISP_PROTO_HW_VERSION 0x02
+/** Programmer software version. */
+#define AC_ISP_PROTO_SW_VERSION 0x0204
 
 #endif /* avrconfig_h */

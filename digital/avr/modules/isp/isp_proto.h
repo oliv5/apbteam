@@ -28,6 +28,9 @@
 /** The isp_proto sub module interprets commands in the AVR068 and AVR069
  * format.  Framing is needed for AVR068 and provided by isp_frame. */
 
+/** Requested SCK duration, in the AVR06[89] format. */
+uint8_t isp_proto_sck_duration;
+
 /** Should be implemeted by the user to send a frame. */
 void
 AC_ISP_PROTO_SEND (uint8_t *data, uint16_t len);
