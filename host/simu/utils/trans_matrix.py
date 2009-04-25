@@ -1,4 +1,4 @@
-# inter - Robot simulation interface. {{{
+# simu - Robot simulation. {{{
 #
 # Copyright (C) 2008 Nicolas Schodet
 #
