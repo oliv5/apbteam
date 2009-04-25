@@ -64,7 +64,7 @@ struct isp_frame_t
     /** Buffer to store frame until validated. */
     uint8_t buffer[AC_ISP_FRAME_BUFFER_SIZE];
     /** Used buffer length. */
-    uint8_t buffer_len;
+    uint16_t buffer_len;
 };
 
 /** Global context. */

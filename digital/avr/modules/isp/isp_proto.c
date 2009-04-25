@@ -198,7 +198,7 @@ isp_proto_accept (uint8_t *data, uint16_t len)
 	if (len != 4) break;
 	size = v8_to_v16 (data[1], data[2]);
 	status = isp_read_begin (size, data[3], data[0] ==
-				 ISP_PROTO_CMD_PROGRAM_FLASH_ISP);
+				 ISP_PROTO_CMD_READ_FLASH_ISP);
 	if (status == ISP_OK)
 	    status = isp_read_continue (&data[2], size);
 	if (status == ISP_OK)

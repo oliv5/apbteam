@@ -567,7 +567,7 @@ isp_multi (uint8_t num_tx, uint8_t num_rx, uint8_t rx_start,
 	    num_tx--;
 	  }
 	in = isp_spi_tx (out);
-	if (!rx_start)
+	if (rx_start)
 	    rx_start--;
 	else if (num_rx)
 	  {
