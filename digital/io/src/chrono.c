@@ -64,10 +64,18 @@
  */
 static uint32_t chrono_ov_count_;
 
+/**
+ * Status of the chrono module.
+ * Set to 0 if the module is disabled, otherwise set to a non 0 value.
+ */
+static uint8_t chrono_enabled_ = 0;
+
 
 void
 chrono_init (void)
 {
+    /* Enable chrono. */
+    chrono_enable ();
     /* Set the overflow counter to the maximum of overflow before the end of
      * the match. */
     chrono_ov_count_ = CHRONO_MATCH_OVERFLOW_COUNT;
@@ -77,7 +85,7 @@ void
 chrono_update (void)
 {
     /* Decrement overflow counter if it is possible. */
-    if (chrono_ov_count_)
+    if (chrono_enabled_ && chrono_ov_count_)
 	chrono_ov_count_--;
 }
 
@@ -88,6 +96,24 @@ chrono_is_match_over (void)
 	return 0;
     else
 	return 1;
+}
+
+void
+chrono_enable (void)
+{
+    chrono_enabled_ = 1;
+}
+
+void
+chrono_disable (void)
+{
+    chrono_enabled_ = 0;
+}
+
+uint8_t
+chrono_enabled (void)
+{
+    return chrono_enabled_;
 }
 
 uint32_t

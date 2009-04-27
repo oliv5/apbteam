@@ -182,6 +182,8 @@ main_loop (void)
 	    /* Manage UART protocol */
 	    proto_accept (uart0_getc ());
 
+	/* Update chrono. */
+	chrono_update ();
 	/* Is match over? */
 	if (chrono_is_match_over ())
 	  {

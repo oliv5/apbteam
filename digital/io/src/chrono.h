@@ -50,6 +50,26 @@ void
 chrono_update (void);
 
 /**
+ * Enable chrono module.
+ * You should call this function when a match start.
+ */
+void
+chrono_enable (void);
+
+/**
+ * Disable chrono module.
+ */
+void
+chrono_disable (void);
+
+/**
+ * Is chrono module enabled?
+ * @return 0 if not enabled, other values otherwise.
+ */
+uint8_t
+chrono_enabled (void);
+
+/**
  * Match over?
  * @return
  *   - 0 if the match is not finished yet.
