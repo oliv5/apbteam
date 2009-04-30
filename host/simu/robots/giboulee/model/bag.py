@@ -49,4 +49,5 @@ class Bag:
                 DistanceSensorSharps (link_bag.io.adc[4], scheduler, table,
                     (-70, -100), pi, (self.position, )),
                 ]
+        self.path = link_bag.io.path
 
