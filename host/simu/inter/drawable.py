@@ -140,6 +140,16 @@ class DrawableCanvas(Tkinter.Canvas):
         self.__updated = [ ]
         self._Drawable__children = [ ]
 
+    def resize (self, width, height, xorigin = None, yorigin = None):
+        """Change size given at initialisation.  Will be used on next
+        configure event."""
+        self.__width = width
+        self.__height = height
+        if xorigin is not None:
+            self.__xorigin = xorigin
+        if yorigin is not None:
+            self.__yorigin = yorigin
+
     def __resize (self, ev):
         # Compute new scale.
         w, h = float (ev.width), float (ev.height)

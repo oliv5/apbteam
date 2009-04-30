@@ -32,14 +32,21 @@ import io
 import io.init
 from proto.popen_io import PopenIO
 
-from inter.inter_node import InterNode
+import simu.view.table_eurobot2008 as table
+import simu.robots.giboulee.link.bag as robot_link
+import simu.robots.giboulee.model.bag as robot_model
+import simu.robots.giboulee.view.bag as robot_view
+
+from simu.inter.inter_node import InterNode
 from Tkinter import *
 
 class TestSimu (InterNode):
-    """Inter, with simulated programs."""
+    """Interface, with simulated programs."""
 
-    robot_start_pos = ((200, 2100 - 70, math.radians (-90)),
-            (3000 - 200, 2100 - 70, math.radians (-90)))
+    robot_start_pos = {
+            False: (200, 2100 - 70, math.radians (-90)),
+            True: (3000 - 200, 2100 - 70, math.radians (-90))
+            }
 
     def __init__ (self, asserv_cmd, io_cmd):
         # Hub.
@@ -48,7 +55,7 @@ class TestSimu (InterNode):
         # InterNode.
         InterNode.__init__ (self)
         def time ():
-            return self.node.date / self.TICK
+            return self.node.date / self.node.tick
         # Asserv.
         self.asserv = asserv.Proto (PopenIO (asserv_cmd), time,
                 **asserv.init.host)
@@ -58,9 +65,18 @@ class TestSimu (InterNode):
         self.io = io.Proto (PopenIO (io_cmd), time, **io.init.host)
         self.io.async = True
         self.tk.createfilehandler (self.io, READABLE, self.io_read)
+        # Add table.
+        self.table = table.Table (self.table_view)
+        # Add robot.
+        self.robot_link = robot_link.Bag (self.node)
+        self.robot_model = robot_model.Bag (self.robot_link)
+        self.robot_view = robot_view.Bag (self.table, self.actuator_view,
+                self.sensor_frame, self.robot_model)
+        for adc in self.robot_link.io.adc:
+            adc.value = 0
         # Color switch.
+        self.robot_model.color_switch.register (self.change_color)
         self.change_color ()
-        self.colorVar.trace_variable ('w', self.change_color)
 
     def close (self):
         self.forked_hub.kill ()
@@ -85,13 +101,10 @@ class TestSimu (InterNode):
         self.io.proto.sync ()
 
     def change_color (self, *dummy):
-        i = self.colorVar.get ()
+        i = self.robot_model.color_switch.state
         self.asserv.set_simu_pos (*self.robot_start_pos[i]);
 
 if __name__ == '__main__':
     app = TestSimu (('../../asserv/src/asserv/asserv.host', '-m', 'giboulee'),
             ('../src/io.host'))
-    try:
-        app.mainloop ()
-    finally:
-        app.close ()
+    app.mainloop ()
