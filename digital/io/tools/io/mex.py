@@ -85,7 +85,7 @@ class Mex:
     class ADC (Observable):
         """Analog to digital input."
 
-        - value: hardware unit.
+        - value: volts.
 
         """
 
@@ -105,7 +105,10 @@ class Mex:
                 m = msg
                 for adc in self.__list:
                     assert adc.value is not None
-                    m.push ('H', adc.value)
+                    v = int (1024 * adc.value / 5)
+                    v = min (v, 1023)
+                    v = max (0, v)
+                    m.push ('H', v)
                 self.__node.response (m)
 
     class Path (Observable):
