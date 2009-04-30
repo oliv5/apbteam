@@ -32,7 +32,12 @@ import io
 import io.init
 from proto.popen_io import PopenIO
 
+import simu.model.table as table_model
 import simu.view.table_eurobot2008 as table
+
+import simu.model.round_obstacle as obstacle_model
+import simu.view.round_obstacle as obstacle_view
+
 import simu.robots.giboulee.link.bag as robot_link
 import simu.robots.giboulee.model.bag as robot_model
 import simu.robots.giboulee.view.bag as robot_view
@@ -66,14 +71,19 @@ class TestSimu (InterNode):
         self.io.async = True
         self.tk.createfilehandler (self.io, READABLE, self.io_read)
         # Add table.
-        self.table = table.Table (self.table_view)
+        self.table_model = table_model.Table ()
+        self.table = table.Table (self.table_view, self.table_model)
+        self.obstacle = obstacle_model.RoundObstacle (150)
+        self.table_model.obstacles.append (self.obstacle)
+        self.obstacle_view = obstacle_view.RoundObstacle (self.table,
+                self.obstacle)
+        self.table_view.bind ('<2>', self.place_obstacle)
         # Add robot.
         self.robot_link = robot_link.Bag (self.node)
-        self.robot_model = robot_model.Bag (self.robot_link)
+        self.robot_model = robot_model.Bag (self.node, self.table_model,
+                self.robot_link)
         self.robot_view = robot_view.Bag (self.table, self.actuator_view,
                 self.sensor_frame, self.robot_model)
-        for adc in self.robot_link.io.adc:
-            adc.value = 0
         # Color switch.
         self.robot_model.color_switch.register (self.change_color)
         self.change_color ()
@@ -103,6 +113,11 @@ class TestSimu (InterNode):
     def change_color (self, *dummy):
         i = self.robot_model.color_switch.state
         self.asserv.set_simu_pos (*self.robot_start_pos[i]);
+
+    def place_obstacle (self, ev):
+        pos = self.table_view.screen_coord ((ev.x, ev.y))
+        self.obstacle.pos = pos
+        self.obstacle.notify ()
 
 if __name__ == '__main__':
     app = TestSimu (('../../asserv/src/asserv/asserv.host', '-m', 'giboulee'),

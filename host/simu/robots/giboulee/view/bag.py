@@ -23,6 +23,7 @@
 # }}}
 """Giboulee bag of views."""
 from simu.view.switch import Switch
+from simu.view.distance_sensor import DistanceSensor
 from simu.robots.giboulee.view.robot import Robot
 from simu.robots.giboulee.view.arm import Arm
 from simu.robots.giboulee.view.sorter import Sorter
@@ -38,4 +39,6 @@ class Bag:
                 model_bag.arm)
         self.sorter = Sorter (actuator_view.add_view (Sorter.width,
             Sorter.height), model_bag.sorter)
+        self.distance_sensor = [DistanceSensor (self.robot, ds)
+                for ds in model_bag.distance_sensor]
 

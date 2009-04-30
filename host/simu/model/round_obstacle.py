@@ -23,10 +23,12 @@
 # }}}
 """Obstacle with a round shape."""
 from math import pi, cos, sin, sqrt
+from utils.observable import Observable
 
-class RoundObstacle:
+class RoundObstacle (Observable):
 
     def __init__ (self, radius, level = 0):
+        Observable.__init__ (self)
         self.pos = None
         self.radius = radius
         self.level = level
@@ -34,6 +36,8 @@ class RoundObstacle:
     def intersect (self, a, b):
         """If the segment [AB] intersects the obstacle, return distance from a
         to intersection point, else, return None."""
+        if self.pos is None:
+            return None
         ab = sqrt ((b[0] - a[0]) ** 2 + (b[1] - a[1]) ** 2) # distance AB.
         n = ((b[0] - a[0]) / ab, (b[1] - a[1]) / ab) # vector of length 1.
         o = self.pos # obstacle center.

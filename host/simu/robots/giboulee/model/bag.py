@@ -24,15 +24,29 @@
 """Giboulee bag of models."""
 from simu.model.switch import Switch
 from simu.model.position import Position
+from simu.model.distance_sensor_sharps import DistanceSensorSharps
 from simu.robots.giboulee.model.arm import Arm
 from simu.robots.giboulee.model.sorter import Sorter
+from math import pi
 
 class Bag:
 
-    def __init__ (self, link_bag):
+    def __init__ (self, scheduler, table, link_bag):
         self.jack = Switch (link_bag.io.jack)
         self.color_switch = Switch (link_bag.io.color_switch)
         self.position = Position (link_bag.asserv.position)
         self.arm = Arm (link_bag.asserv.aux[0])
         self.sorter = Sorter (link_bag.io.servo[0:5], link_bag.io.servo[5])
+        self.distance_sensor = [
+                DistanceSensorSharps (link_bag.io.adc[0], scheduler, table,
+                    (150, 127), 0, (self.position, )),
+                DistanceSensorSharps (link_bag.io.adc[1], scheduler, table,
+                    (150, 0), 0, (self.position, )),
+                DistanceSensorSharps (link_bag.io.adc[2], scheduler, table,
+                    (150, -127), 0, (self.position, )),
+                DistanceSensorSharps (link_bag.io.adc[3], scheduler, table,
+                    (-70, 100), pi, (self.position, )),
+                DistanceSensorSharps (link_bag.io.adc[4], scheduler, table,
+                    (-70, -100), pi, (self.position, )),
+                ]
 

@@ -27,6 +27,9 @@ from simu.inter.drawable import Drawable
 class Table (Drawable):
     """The table and its elements."""
 
+    def __init__ (self, onto, table_model):
+        Drawable.__init__ (self, onto)
+
     def draw (self):
         # Redraw.
         self.reset ()

@@ -43,6 +43,9 @@ class DistanceSensor:
         pos, target = self.pos, self.target
         m = TransMatrix ()
         for i in self.into:
+            if i.pos is None:
+                self.distance = None
+                return
             m.rotate (i.angle)
             m.translate (i.pos)
         pos, target = m.apply (pos, target)
