@@ -1,0 +1,102 @@
+# Cylinder FSM
+# Control the puck's entrance
+cylinder
+
+States:
+ IDLE
+  waiting for init
+ INIT
+  initializing cylinder
+ WAIT_A_PUCK
+  waiting a puck enter in cylinder
+ TURN_PLUS_2
+  turn cylinder to 2 positions after
+ WAIT_FOR_BRIDGE_READY
+  waiting for the bridge is ready
+ TURN_PLUS_2_AGAIN
+  release puck to the bridge after a wait (cf. WAIT_FOR_BRIDGE_READY)
+ TURN_PLUS_4
+  release a puck directly from the ground to the bridge
+ PROBE_OF
+  probe optical fence to detect puck in position 3
+ TURN_MINUS_3
+  turn cylinder to 3 positions before to eject puck to the ground
+ TURN_MINUS_1
+  turn cylinder to 1 position before to prevent new puck enter in the robot
+ WAIT_FOR_PUCKS_RELEASE
+  waiting for pucks release from the lift
+ TURN_PLUS_1
+  open the puck entrance
+
+Events:
+ jack_in
+  the init signal
+ init_done
+  cylinder ready for a new match
+ new_puck
+  there is a puck in position 1
+ move_done
+  cylinder move finished
+ bridge_ready
+  bridge ready to get a new puck
+ probe_done
+  Optical fence probe finished
+ lift_ready
+  lift ready to get pucks
+
+
+IDLE:
+ jack_in -> INIT
+  initialize robot
+
+INIT:
+ init_done -> WAIT_A_PUCK
+  the cylinder is ready to get pucks
+
+WAIT_A_PUCK:
+ new_puck: bridge_full -> TURN_PLUS_2
+  bridge full, waiting before release puck to the bridge
+ new_puck: bridge_ready -> TURN_PLUS_4
+  put puck to the bridge
+
+TURN_PLUS_2:
+ move_done -> WAIT_FOR_BRIDGE_READY
+  bridge full, waiting for Bison Fute's clearance
+
+WAIT_FOR_BRIDGE_READY:
+ bridge_ready -> TURN_PLUS_2_AGAIN
+  bridge clear, delivering puck...
+
+TURN_PLUS_2_AGAIN:
+ move_done -> PROBE_OF
+  there is a puck to the cylinder?
+
+TURN_PLUS_4:
+ move_done -> PROBE_OF
+  there is a puck to the cylinder?
+
+PROBE_OF:
+ probe_done: puck_detected_and_lift_full -> TURN_MINUS_3
+  BAD CASE, there is an undesirable puck to the cylinder
+ probe_done: puck_detected_and_lift_ready -> WAIT_FOR_BRIDGE_READY
+  there is a puck, we take a shortcut...
+ probe_done: cylinder_empty_and_lift_full -> TURN_MINUS_1
+  stop accepting new puck
+ probe_done: cylinder_empty_and_lift_ready -> WAIT_A_PUCK
+  ready for a new puck
+
+TURN_MINUS_3:
+ move_done -> WAIT_FOR_PUCKS_RELEASE
+  evil puck dropped and robot entrance closed
+
+TURN_MINUS_1:
+ move_done -> WAIT_FOR_PUCKS_RELEASE
+  robot entrance closed
+
+WAIT_FOR_PUCKS_RELEASE:
+ lift_ready -> TURN_PLUS_1
+  robot ready for new puck, open door
+
+TURN_PLUS_1:
+ move_done -> WAIT_A_PUCK
+  door opened, ready for a new puck
