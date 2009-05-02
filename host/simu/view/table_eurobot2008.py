@@ -97,5 +97,5 @@ class Table (Drawable):
 if __name__ == '__main__':
     from simu.inter.inter import Inter
     app = Inter ()
-    Table (app.table_view)
+    Table (app.table_view, None)
     app.mainloop ()
