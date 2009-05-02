@@ -185,6 +185,70 @@ static const struct robot_t giboulee_robot =
     { 500, 0 },
 };
 
+/* AquaJim arm model, with a RE40G and a 1:4 + 15:80 ratio gearbox. */
+static const struct motor_def_t aquajim_arm_model =
+{
+    /* Motor characteristics. */
+    317 * (2*M_PI) / 60,/* Speed constant ((rad/s)/V). */
+    30.2 / 1000,	/* Torque constant (N.m/A). */
+    0,			/* Bearing friction (N.m/(rad/s)). */
+    0.316,		/* Terminal resistance (Ohm). */
+    0.08 / 1000,	/* Terminal inductance (H). */
+    24.0,		/* Maximum voltage (V). */
+    /* Gearbox characteristics. */
+    4.0 * 80.0 / 15.0,	/* Gearbox ratio. */
+    0.75,		/* Gearbox efficiency. */
+    /* Load characteristics. */
+    0.05 * 2.5 * 0.06 * 0.06,	/* Load (kg.m^2). */
+};
+
+/* AquaJim elevator model, with a RE25CLL and a 1:10 ratio gearbox. */
+static const struct motor_def_t aquajim_elevator_model =
+{
+    /* Motor characteristics. */
+    407 * (2*M_PI) / 60,/* Speed constant ((rad/s)/V). */
+    23.4 / 1000,	/* Torque constant (N.m/A). */
+    0,			/* Bearing friction (N.m/(rad/s)). */
+    2.18,		/* Terminal resistance (Ohm). */
+    0.24 / 1000,	/* Terminal inductance (H). */
+    24.0,		/* Maximum voltage (V). */
+    /* WARNING: this motor uses a 12V motor on 24V power, PWM should be
+     * limited to half scale. */
+    /* Gearbox characteristics. */
+    10,			/* Gearbox ratio. */
+    0.75,		/* Gearbox efficiency. */
+    /* Load characteristics. */
+    0.200 * 0.01 * 0.01,/* Load (kg.m^2). */
+    /* This is a pifometric estimation. */
+};
+
+/* AquaJim, APBTeam 2009. */
+static const struct robot_t aquajim_robot =
+{
+    /* Main motors. */
+    &amax32ghp_model,
+    /* Number of steps on the main motors encoders. */
+    2500,
+    /* Wheel radius (m). */
+    0.065 / 2,
+    /* Distance between the wheels (m). */
+    0.16,
+    /* Weight of the robot (kg). */
+    20.0,
+    /* Distance of the gravity center from the center of motors axis (m). */
+    0.0,
+    /* Whether the encoder is mounted on the main motor (false) or not (true). */
+    1,
+    /** Encoder wheel radius (m). */
+    0.063 / 2,
+    /** Distance between the encoders wheels (m). */
+    0.28,
+    /** Auxiliary motors, NULL if not present. */
+    { &aquajim_arm_model, &aquajim_elevator_model },
+    /** Number of steps for each auxiliary motor encoder. */
+    { 250, 250 },
+};
+
 /* Table of models. */
 static const struct
 {
@@ -195,6 +259,7 @@ static const struct
       { "taz", &taz_robot },
       { "tazg", &tazg_robot },
       { "giboulee", &giboulee_robot },
+      { "aquajim", &aquajim_robot },
       { 0, 0 }
 };
 

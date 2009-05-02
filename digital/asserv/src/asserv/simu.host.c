@@ -250,6 +250,12 @@ simu_step (void)
 	    counter_aux[i] += counter_aux_diff[i];
 	    simu_counter_aux[i] = counter_aux_new;
 	  }
+	else
+	  {
+	    counter_aux_diff[i] = 0;
+	    counter_aux[i] = 0;
+	    simu_counter_aux[i] = 0;
+	  }
       }
     /* Update position. */
     simu_pos_update ((simu_left_model.th - old_left_th)
@@ -281,8 +287,13 @@ simu_send (void)
     /* Send Aux position. */
     m = mex_msg_new (0xa8);
     for (i = 0; i < AC_ASSERV_AUX_NB; i++)
-	mex_msg_push (m, "l", (int32_t) (1024.0 * simu_aux_model[i].th
-					 / simu_aux_model[i].m.i_G));
+      {
+	if (simu_robot->aux_motor[i])
+	    mex_msg_push (m, "l", (int32_t) (1024.0 * simu_aux_model[i].th
+					     / simu_aux_model[i].m.i_G));
+	else
+	    mex_msg_push (m, "l", 0);
+      }
     mex_node_send (m);
 }
 
