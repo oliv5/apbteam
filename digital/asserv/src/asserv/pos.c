@@ -52,12 +52,6 @@ int32_t pos_e_sat = 1023;
 int32_t pos_i_sat = 1023;
 /** Differential saturation. */
 int32_t pos_d_sat = 1023;
-/** Blocking detection: error limit. */
-int32_t pos_blocked_error_limit = 2048;
-/** Blocking detection: speed limit. */
-int32_t pos_blocked_speed_limit = 0x10;
-/** Blocking detection: counter limit. */
-int32_t pos_blocked_counter_limit = 20;
 
 /** Compute a PID.
  * How to compute maximum numbers size:
@@ -103,34 +97,33 @@ pos_update_polar (struct state_t *state,
     if (state->mode >= MODE_POS)
       {
 	int16_t pid_theta, pid_alpha;
-	int32_t diff_theta, diff_alpha;
+	int32_t error_theta, error_alpha;
+	int16_t cur_speed_theta, cur_speed_alpha;
 	/* Update current shaft positions. */
-	pos_theta->cur += counter_left_diff + counter_right_diff;
-	pos_alpha->cur += counter_right_diff - counter_left_diff;
+	cur_speed_theta = counter_left_diff + counter_right_diff;
+	cur_speed_alpha = counter_right_diff - counter_left_diff;
+	pos_theta->cur += cur_speed_theta;
+	pos_alpha->cur += cur_speed_alpha;
 	if (state->variant & 1)
 	    pos_reset (pos_theta);
 	if (state->variant & 2)
 	    pos_reset (pos_alpha);
-	/* Compute PID. */
-	diff_theta = pos_theta->cons - pos_theta->cur;
-	diff_alpha = pos_alpha->cons - pos_alpha->cur;
-	/* Compute actual speed and test for blocking. */
-	int32_t cur_speed_theta = pos_theta->cur - pos_theta->cur_old;
-	pos_theta->cur_old = pos_theta->cur;
-	int32_t cur_speed_alpha = pos_alpha->cur - pos_alpha->cur_old;
-	pos_alpha->cur_old = pos_alpha->cur;
-	if ((UTILS_ABS (diff_theta) > pos_blocked_error_limit
-	     && UTILS_ABS (cur_speed_theta) < pos_blocked_speed_limit))
+	/* Compute error. */
+	error_theta = pos_theta->cons - pos_theta->cur;
+	error_alpha = pos_alpha->cons - pos_alpha->cur;
+	/* Test for blocking. */
+	if (UTILS_ABS (error_theta) > pos_theta->blocked_error_limit
+	    && UTILS_ABS (cur_speed_theta) < pos_theta->blocked_speed_limit)
 	    pos_theta->blocked_counter++;
 	else
 	    pos_theta->blocked_counter = 0;
-	if ((UTILS_ABS (diff_alpha) > pos_blocked_error_limit
-	     && UTILS_ABS (cur_speed_alpha) < pos_blocked_speed_limit))
+	if (UTILS_ABS (error_alpha) > pos_alpha->blocked_error_limit
+	    && UTILS_ABS (cur_speed_alpha) < pos_alpha->blocked_speed_limit)
 	    pos_alpha->blocked_counter++;
 	else
 	    pos_alpha->blocked_counter = 0;
-	if (pos_theta->blocked_counter > pos_blocked_counter_limit
-	    || pos_alpha->blocked_counter > pos_blocked_counter_limit)
+	if (pos_theta->blocked_counter > pos_theta->blocked_counter_limit
+	    || pos_alpha->blocked_counter > pos_alpha->blocked_counter_limit)
 	  {
 	    /* Blocked. */
 	    pos_reset (pos_theta);
@@ -141,8 +134,9 @@ pos_update_polar (struct state_t *state,
 	  }
 	else
 	  {
-	    pid_theta = pos_compute_pid (diff_theta, pos_theta);
-	    pid_alpha = pos_compute_pid (diff_alpha, pos_alpha);
+	    /* Compute PID. */
+	    pid_theta = pos_compute_pid (error_theta, pos_theta);
+	    pid_alpha = pos_compute_pid (error_alpha, pos_alpha);
 	    /* Update PWM. */
 	    pwm_set (pwm_left, pid_theta - pid_alpha);
 	    pwm_set (pwm_right, pid_theta + pid_alpha);
@@ -158,12 +152,18 @@ pos_update_single (struct state_t *state, struct pos_t *pos,
     if (state->mode >= MODE_POS)
       {
 	int16_t pid;
-	int32_t diff;
+	int32_t error;
 	/* Update current shaft position. */
 	pos->cur += counter_diff;
-	/* Compute PID. */
-	diff = pos->cons - pos->cur;
-	if (UTILS_ABS (diff) > 5000)
+	/* Compute error. */
+	error = pos->cons - pos->cur;
+	/* Test or blocking. */
+	if (UTILS_ABS (error) > pos->blocked_error_limit
+	    && UTILS_ABS (counter_diff) < pos->blocked_speed_limit)
+	    pos->blocked_counter++;
+	else
+	    pos->blocked_counter = 0;
+	if (pos->blocked_counter > pos->blocked_counter_limit)
 	  {
 	    /* Blocked. */
 	    pos_reset (pos);
@@ -172,7 +172,8 @@ pos_update_single (struct state_t *state, struct pos_t *pos,
 	  }
 	else
 	  {
-	    pid = pos_compute_pid (diff, pos);
+	    /* Compute PID. */
+	    pid = pos_compute_pid (error, pos);
 	    /* Update PWM. */
 	    pwm_set (pwm, pid);
 	  }
@@ -201,7 +202,6 @@ pos_reset (struct pos_t *pos)
     pos->cur = 0;
     pos->cons = 0;
     pos->e_old = 0;
-    pos->cur_old = 0;
     pos->blocked_counter = 0;
 }
 

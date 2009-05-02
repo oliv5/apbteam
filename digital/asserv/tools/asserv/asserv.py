@@ -106,14 +106,17 @@ class Proto:
                 scale = 1,
                 tkp = 0, tki = 0, tkd = 0,
                 ta = 1, tsm = 0, tss = 0,
+                tbe = 2048, tbs = 0x10, tbc = 20,
                 akp = 0, aki = 0, akd = 0,
                 aa = 1, asm = 0, ass = 0,
+                abe = 2048, abs = 0x10, abc = 20,
                 a0kp = 0, a0ki = 0, a0kd = 0,
                 a0a = 1, a0sm = 0, a0ss = 0,
+                a0be = 2048, a0bs = 0x10, a0bc = 20,
                 a1kp = 0, a1ki = 0, a1kd = 0,
                 a1a = 1, a1sm = 0, a1ss = 0,
+                a1be = 2048, a1bs = 0x10, a1bc = 20,
                 E = 1023, I = 1023, D = 1023,
-                be = 2048, bs = 0x10, bc = 20,
                 c = 1, f = 0x1000,
                 l = 0x2000,
                 w = 0x00,
@@ -273,10 +276,11 @@ class Proto:
             self.proto.send ('p', 'cBH', 'd', index, f88 (p[m + 'kd']))
             self.proto.send ('p', 'cBH', 'a', index, f88 (p[m + 'a']))
             self.proto.send ('p', 'cBBB', 's', index, p[m + 'sm'], p[m + 'ss'])
+            self.proto.send ('p', 'cBHHB', 'b', index, p[m + 'be'],
+                    p[m + 'bs'], p[m + 'bc'])
         self.proto.send ('p', 'cH', 'E', p['E'])
         self.proto.send ('p', 'cH', 'I', p['I'])
         self.proto.send ('p', 'cH', 'D', p['D'])
-        self.proto.send ('p', 'cHHH', 'b', p['be'], p['bs'], p['bc'])
         self.proto.send ('p', 'cL', 'c', f824 (p['c']))
         self.proto.send ('p', 'cH', 'f', p['f'])
         self.proto.send ('p', 'cH', 'l', p['l'])

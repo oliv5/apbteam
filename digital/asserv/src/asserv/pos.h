@@ -38,8 +38,12 @@ struct pos_t
     int32_t i;
     /** Last error value. */
     int32_t e_old;
-    /** Old current position. */
-    uint32_t cur_old;
+    /** Blocking detection: error limit. */
+    int32_t blocked_error_limit;
+    /** Blocking detection: speed limit. */
+    int16_t blocked_speed_limit;
+    /** Blocking detection: counter limit. */
+    uint8_t blocked_counter_limit;
     /** Count the number of blocked detection. */
     uint8_t blocked_counter;
 };

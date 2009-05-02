@@ -630,6 +630,17 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		if (!pos) { proto_send0 ('?'); return; }
 		pos->kd = v8_to_v16 (args[2], args[3]);
 		break;
+	      case c ('b', 7):
+		/* Set blocking detection parameters.
+		 * - b: index.
+		 * - w: error limit.
+		 * - w: speed limit.
+		 * - b: counter limit. */
+		if (!pos) { proto_send0 ('?'); return; }
+		pos->blocked_error_limit = v8_to_v16 (args[2], args[3]);
+		pos->blocked_speed_limit = v8_to_v16 (args[4], args[5]);
+		pos->blocked_counter_limit = args[6];
+		break;
 	      case c ('E', 3):
 		pos_e_sat = v8_to_v16 (args[1], args[2]);
 		break;
@@ -638,11 +649,6 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		break;
 	      case c ('D', 3):
 		pos_d_sat = v8_to_v16 (args[1], args[2]);
-		break;
-	      case c ('b', 7):
-		pos_blocked_error_limit = v8_to_v16 (args[1], args[2]);
-		pos_blocked_speed_limit = v8_to_v16 (args[3], args[4]);
-		pos_blocked_counter_limit = v8_to_v16 (args[5], args[6]);
 		break;
 	      case c ('e', 5):
 		traj_eps = v8_to_v16 (args[1], args[2]);
@@ -672,21 +678,30 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		proto_send2w ('a', speed_theta.acc, speed_alpha.acc);
 		proto_send2b ('s', speed_theta.max, speed_theta.slow);
 		proto_send2b ('s', speed_alpha.max, speed_alpha.slow);
+		proto_send3w ('b', pos_theta.blocked_error_limit,
+			      pos_theta.blocked_speed_limit,
+			      pos_theta.blocked_counter_limit);
+		proto_send3w ('b', pos_alpha.blocked_error_limit,
+			      pos_alpha.blocked_speed_limit,
+			      pos_alpha.blocked_counter_limit);
 		proto_send2w ('p', pos_theta.kp, pos_alpha.kp);
 		proto_send2w ('i', pos_theta.ki, pos_alpha.ki);
 		proto_send2w ('d', pos_theta.kd, pos_alpha.kd);
 		proto_send2w ('a', speed_aux[0].acc, speed_aux[1].acc);
 		proto_send2b ('s', speed_aux[0].max, speed_aux[0].slow);
 		proto_send2b ('s', speed_aux[1].max, speed_aux[1].slow);
+		proto_send3w ('b', pos_aux[0].blocked_error_limit,
+			      pos_aux[0].blocked_speed_limit,
+			      pos_aux[0].blocked_counter_limit);
+		proto_send3w ('b', pos_aux[1].blocked_error_limit,
+			      pos_aux[1].blocked_speed_limit,
+			      pos_aux[1].blocked_counter_limit);
 		proto_send2w ('p', pos_aux[0].kp, pos_aux[1].kp);
 		proto_send2w ('i', pos_aux[0].ki, pos_aux[1].ki);
 		proto_send2w ('d', pos_aux[0].kd, pos_aux[1].kd);
 		proto_send1w ('E', pos_e_sat);
 		proto_send1w ('I', pos_i_sat);
 		proto_send1w ('D', pos_d_sat);
-		proto_send3w ('b', pos_blocked_error_limit,
-			      pos_blocked_speed_limit,
-			      pos_blocked_counter_limit);
 		proto_send2w ('e', traj_eps, traj_aeps);
 		proto_send1w ('l', traj_angle_limit);
 		proto_send1b ('w', pwm_reverse);
