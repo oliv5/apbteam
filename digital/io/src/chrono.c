@@ -92,7 +92,7 @@ chrono_update (void)
 uint8_t
 chrono_is_match_over (void)
 {
-    if (chrono_ov_count_)
+    if (!chrono_enabled_ || chrono_ov_count_)
 	return 0;
     else
 	return 1;
