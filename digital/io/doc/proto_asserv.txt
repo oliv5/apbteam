@@ -92,10 +92,20 @@ This table describe the list of supported commands by the *asserv* card:
 +---------+-------+-----------------+------------------------------------------+
 |   'b'   |  Arm  | - position (2b) | Move the arm to a desired position       |
 |         |       | - speed (1b)    | at a specific speed                      |
-|         |       |                 |   - position: 5000 steps by round        |
+|         |       |                 |   - position: 250 * 4 * 80 / 15 steps by |
+|         |       |                 |     round                                |
 |         |       |                 |   - speed: in step by cycle (4.44ms)     |
 +---------+-------+-----------------+------------------------------------------+
-|   'B'   |  arm  | None            | Find the zero position of the arm        |
+|   'B'   |  Arm  | - speed (1b)    | Find the zero position of the arm        |
+|         |       |                 |   - speed: in step by cycle (4.44ms)     |
++---------+-------+-----------------+------------------------------------------+
+|   'c'   | Elvt  | - position (2b) | Move the elevator to a desired position  |
+|         |       | - speed (1b)    | at a specific speed                      |
+|         |       |                 |   - position: 72.34 steps by mm          |
+|         |       |                 |   - speed: in step by cycle (4.44ms)     |
++---------+-------+-----------------+------------------------------------------+
+|   'C'   | Elvt  | - speed (1b)    | Find the zero position of the elevator   |
+|         |       |                 |   - speed: in step by cycle (4.44ms)     |
 +---------+-------+-----------------+------------------------------------------+
 |   'p'   | Other | See next table  | Change setting values                    |
 +---------+-------+-----------------+------------------------------------------+
@@ -132,14 +142,14 @@ card.
 
 It is used to know if the last command sent by the *io* card is currently
 executed, is finished or has failed (i.e. we are blocked) and also to retreive
-the current position (X, Y, alpha) of the bot and its arm.
+the current position (X, Y, alpha) of the bot, its arm and elevator.
 
 The buffer is a static 12 bytes length one::
 
-      0        1      2 .. 4  5 .. 7   8   9     10 11    <-- byte position
-  +--------+--------+- - - -+- - - -+- - - - -+- - - - -+
-  | status |  seq   | X pos | Y pos |  angle  | arm pos |
-  +--------+--------+- - - -+- - - -+- - - - -+- - - - -+
+      0        1      2 .. 4  5 .. 7  8   9    10 11     12 13 <-- byte position
+  +--------+--------+- - - -+- - - -+-------+---------+----------+
+  | status |  seq   | X pos | Y pos | angle | arm pos | elevator |
+  +--------+--------+- - - -+- - - -+-------+---------+----------+
 
 
 Status value
@@ -154,16 +164,19 @@ Here is a list of the bits used and their definitions:
 
  1. Movement finished with failure: the bot is blocked (MB);
 
- 2. Arm movement finished with success (AF);
+ 2. Movement is going forward: the current linear speed is greater than 0
+    (FWD);
 
- 3. Arm movement finished with failure: it should not happen, but we are not
-    sure yet (AB).
+ 3. Movement is going backward: the current linear speed is smaller than 0
+    (BCK);
 
- 4. Movement is going forward: the current linear speed is greater than 0
-    (FWD) ;
+ 4. Arm movement finished with success (AF);
 
- 5. Movement is going backward: the current linear speed is smaller than 0
-    (BCK) ;
+ 5. Arm movement finished with failure: it should not happen (AB);
+
+ 6. Elevator movement finished with success (EF);
+
+ 7. Elevator movement finished with failure: it should not happen (EB).
 
 The others bits are unused.
 

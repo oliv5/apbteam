@@ -50,14 +50,18 @@ enum asserv_status_flag_e
     asserv_status_flag_move_succeed = 0,
     /** Bot movement finished with failure: the bot is blocked. */
     asserv_status_flag_move_failed = 1,
-    /** Arm movement finished with success. */
-    asserv_status_flag_arm_succeed = 2,
-    /** Arm movement finished with failure (can not happen?). */
-    asserv_status_flag_arm_failed = 3,
     /** Bot is moving forward (linear speed greater than 0). */
-    asserv_status_flag_move_forward = 4,
+    asserv_status_flag_move_forward = 2,
     /** Bot is moving backward (linear speed smaller than 0). */
-    asserv_status_flag_move_backward = 5,
+    asserv_status_flag_move_backward = 3,
+    /** Arm movement finished with success. */
+    asserv_status_flag_arm_succeed = 4,
+    /** Arm movement finished with failure (can not happen). */
+    asserv_status_flag_arm_failed = 5,
+    /** Elevator movement finished with success. */
+    asserv_status_flag_elevator_succeed = 6,
+    /** Elevator movement finished with failure (can not happen). */
+    asserv_status_flag_elevator_failed = 7,
 };
 typedef enum asserv_status_flag_e asserv_status_flag_e;
 
@@ -93,6 +97,8 @@ typedef struct asserv_struct_s
     asserv_position_t position;
     /** Arm position. */
     uint16_t arm_position;
+    /** Elevator position. */
+    uint16_t elevator_position;
 } asserv_struct_s;
 
 /**
@@ -157,7 +163,7 @@ asserv_twi_send (uint8_t length);
 
 /**
  * Move the arm.
- * A complete rotation correspond to 5000 steps.
+ * A complete rotation correspond to 5333 steps.
  * @param position desired goal position (in step).
  * @param speed speed of the movement.
  */
@@ -248,6 +254,7 @@ asserv_update_status (void)
 				     status_buffer[7], 0)) >> 8;
     asserv_status.position.a = v8_to_v16 (status_buffer[8], status_buffer[9]);
     asserv_status.arm_position = v8_to_v16 (status_buffer[10], status_buffer[11]);
+    asserv_status.elevator_position = v8_to_v16 (status_buffer[12], status_buffer[13]);
 }
 
 /* Is last command sent to the asserv board is being executed? */
@@ -304,6 +311,20 @@ asserv_arm_cmd_status (void)
     return none;
 }
 
+/* Is last elevator class command has successfully ended? */
+asserv_status_e
+asserv_elevator_cmd_status (void)
+{
+    /* Check Elevator Finished flag */
+    if (asserv_status.status & _BV (asserv_status_flag_elevator_succeed))
+	return success;
+    /* Check Elevator Blocked flag */
+    else if (asserv_status.status & _BV (asserv_status_flag_elevator_failed))
+	return failure;
+    /* Otherwise, not finished nor failure */
+    return none;
+}
+
 /* Get the current position of the bot. */
 void
 asserv_get_position (asserv_position_t *current_position)
@@ -325,6 +346,14 @@ asserv_get_arm_position (void)
 {
     /* Return the position of the arm of the current status buffer */
     return asserv_status.arm_position;
+}
+
+/* Get the elevator position. */
+uint16_t
+asserv_get_elevator_position (void)
+{
+    /* Return the position of the elevator of the current status buffer */
+    return asserv_status.elevator_position;
 }
 
 /* Are we moving forward/backward? */
@@ -458,6 +487,18 @@ asserv_move_arm (int16_t offset, uint8_t speed)
     asserv_arm_current_position += offset;
     /* Move the arm to the desired position */
     asserv_move_arm_absolute (asserv_arm_current_position, speed);
+}
+
+/* Move the elevator. */
+void
+asserv_move_elevator_absolute (uint16_t position, uint8_t speed)
+{
+    /* Put position and speed as parameters */
+    asserv_twi_buffer_param[0] = v16_to_v8 (position, 1);
+    asserv_twi_buffer_param[1] = v16_to_v8 (position, 0);
+    asserv_twi_buffer_param[2] = speed;
+    /* Send the move the elevator command to the asserv board */
+    asserv_twi_send_command ('c', 3);
 }
 
 /* Set current X position. */

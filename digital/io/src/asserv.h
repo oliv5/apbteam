@@ -113,6 +113,15 @@ asserv_status_e
 asserv_arm_cmd_status (void);
 
 /**
+ * Is last elevator class command has successfully ended?
+ * This function is used to know the status of the last elevator command. It
+ * looks at the status register.
+ * @return the status of the last move class command.
+ */
+asserv_status_e
+asserv_elevator_cmd_status (void);
+
+/**
  * Structure for storing a position for the bot.
  */
 typedef struct asserv_position_t
@@ -138,6 +147,13 @@ asserv_get_position (asserv_position_t *current_position);
  */
 uint16_t
 asserv_get_arm_position (void);
+
+/**
+ * Get the elevator position.
+ * @return the position of the elevator (in steps).
+ */
+uint16_t
+asserv_get_elevator_position (void);
 
 /**
  * Are we moving forward/backward?
@@ -228,6 +244,17 @@ asserv_go_to_distributor (void);
  */
 void
 asserv_move_arm (int16_t offset, uint8_t speed);
+
+/**
+ * Move the elevator.
+ * Elevator class command.
+ * This function take the number of steps you want to move to. This is an
+ * absolute position.
+ * @param position desired goal position (in step).
+ * @param speed speed of the movement.
+ */
+void
+asserv_move_elevator_absolute (uint16_t position, uint8_t speed);
 
 /**
  * Set current X position.

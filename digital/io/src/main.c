@@ -582,6 +582,14 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		 */
 		asserv_move_arm (v8_to_v16 (args[1], args[2]), args[3]);
 		break;
+	      case 'c':
+		/* Move the elevator
+		 *  - 2b: position ;
+		 *  - 1b: speed.
+		 */
+		asserv_move_elevator_absolute (v8_to_v16 (args[1], args[2]),
+					       args[3]);
+		break;
 	      }
 	  }
 	break;
