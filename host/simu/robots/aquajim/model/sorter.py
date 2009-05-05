@@ -27,7 +27,8 @@ from math import pi
 
 class Sorter (Observable):
 
-    def __init__ (self, table, arm_motor_link, elevator_motor_link, servo_links):
+    def __init__ (self, table, arm_motor_link, elevator_motor_link,
+            servo_links, elevator_door_model):
         Observable.__init__ (self)
         self.table = table
         self.arm_motor_link = arm_motor_link
@@ -37,6 +38,7 @@ class Sorter (Observable):
         self.elevator_motor_link.register (self.__elevator_motor_notified)
         self.__elevator_motor_notified ()
         self.servo_links = servo_links
+        self.elevator_door = elevator_door_model
 
     def __arm_motor_notified (self):
         self.arm_angle = self.arm_motor_link.angle

@@ -24,6 +24,7 @@
 """AquaJim bag of models."""
 from simu.model.switch import Switch
 from simu.model.position import Position
+from simu.model.motor_basic import MotorBasic
 from simu.model.distance_sensor_sharps import DistanceSensorSharps
 from simu.robots.aquajim.model.sorter import Sorter
 from math import pi
@@ -34,8 +35,11 @@ class Bag:
         self.jack = Switch (link_bag.io.jack)
         self.color_switch = Switch (link_bag.io.color_switch)
         self.position = Position (link_bag.asserv.position)
+        self.elevator_door = MotorBasic (link_bag.io.pwm[0], scheduler,
+                2 * pi, 0, pi / 2)
         self.sorter = Sorter (table, link_bag.asserv.aux[0],
-                link_bag.asserv.aux[1], link_bag.io.servo[0:2])
+                link_bag.asserv.aux[1], link_bag.io.servo[0:2],
+                self.elevator_door)
         self.distance_sensor = [
                 DistanceSensorSharps (link_bag.io.adc[0], scheduler, table,
                     (150, 150), 0, (self.position, )),
