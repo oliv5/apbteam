@@ -47,6 +47,7 @@
 #include "chrono.h"	/* chrono_end_match */
 #include "gutter.h"	/* gutter_generate_wait_finished_event */
 #include "sharp.h"	/* sharp module */
+#include "pwm.h"
 #include "playground.h"
 
 #include "io.h"
@@ -149,6 +150,8 @@ main_init (void)
     top_start ();
     /* Sharp module */
     sharp_init ();
+    /* PWM module */
+    pwm_init ();
 
     /* io initialization done */
     proto_send0 ('z');
@@ -192,6 +195,9 @@ main_loop (void)
 	    /* Safety */
 	    return;
 	  }
+
+	/* Update PWM */
+	pwm_update ();
 
 	/* Update TWI module to get new data from the asserv board */
 	asserv_update_status ();
@@ -427,6 +433,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	      }
 	  }
 	break;
+
       case c ('s', 2):
 	/* Set servo motor to a desired position using the servo module.
 	 *   - 1b: servo id number;
@@ -470,6 +477,14 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	 */
 	sharp_set_threshold (args[0], v8_to_v16 (args[1], args[2]),
 			     v8_to_v16 (args[3], args[4]));
+	break;
+
+      case c ('w', 4):
+	/* Set PWM.
+	 *   - 1w: PWM value id number;
+	 *   - 1w: pwm high time value (position).
+	 */
+	pwm_set (v8_to_v16 (args[0], args[1]), v8_to_v16 (args[2], args[3]));
 	break;
 
 	/* EEPROM command */

@@ -27,12 +27,14 @@
 
 #include "servo.h"
 #include "sharp.h"
+#include "pwm.h"
 
 #include "modules/utils/utils.h"
 #include "modules/host/host.h"
 #include "modules/host/mex.h"
 #include "modules/adc/adc.h"
 #include "modules/path/path.h"
+#include "io.h"
 
 enum
 {
@@ -41,6 +43,7 @@ enum
     MSG_SIMU_IO_SERVO = 0xb2,
     MSG_SIMU_IO_SHARPS = 0xb3,
     MSG_SIMU_IO_PATH = 0xb4,
+    MSG_SIMU_IO_PWM = 0xb5,
 };
 
 /** Requested servo position. */
@@ -57,9 +60,14 @@ uint8_t servo_high_time_current_[SERVO_NUMBER];
 uint8_t simu_servo_update = 10, simu_servo_update_cpt;
 uint8_t simu_switch_update = 100, simu_switch_update_cpt;
 uint8_t simu_sharps_update = 9, simu_sharps_update_cpt;
+uint8_t simu_pwm_update = 10, simu_pwm_update_cpt;
 
 /** Sampled switches. */
 uint8_t simu_switches;
+
+/** PWM registers. */
+uint16_t OCR1A;
+uint8_t PORTB;
 
 /** Initialise simulation. */
 void
@@ -68,6 +76,8 @@ simu_init (void)
     mex_node_connect ();
     simu_servo_update_cpt = 1;
     simu_switch_update_cpt = 1;
+    simu_sharps_update_cpt = 1;
+    simu_pwm_update_cpt = 1;
 }
 
 /** Make a simulation step. */
@@ -127,6 +137,15 @@ simu_step (void)
 	for (i = 0; i < SHARP_NUMBER; i++)
 	    mex_msg_pop (m, "H", &adc_values[i]);
 	mex_msg_delete (m);
+      }
+    /* Send PWM. */
+    if (simu_pwm_update && !--simu_pwm_update_cpt)
+      {
+	simu_pwm_update_cpt = simu_pwm_update;
+	m = mex_msg_new (MSG_SIMU_IO_PWM);
+	mex_msg_push (m, "h", (IO_PORT (PWM_DIR_IO) & IO_BV (PWM_DIR_IO))
+		      ? PWM_OCR : -PWM_OCR);
+	mex_node_send (m);
       }
 }
 

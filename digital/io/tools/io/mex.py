@@ -30,11 +30,15 @@ ID_COLOR = 0xb1
 ID_SERVO = 0xb2
 ID_ADC = 0xb3
 ID_PATH = 0xb4
+ID_PWM = 0xb5
 
 SERVO_NB = 6
 SERVO_VALUE_MAX = 255
 
 ADC_NB = 5
+
+PWM_NB = 1
+PWM_VALUE_MAX = 1024
 
 class Mex:
     """Handle communications with simulated io."""
@@ -129,6 +133,30 @@ class Mex:
                 self.path.append (msg.pop ('hh'))
             self.notify ()
 
+    class PWM (Observable):
+        """PWM output.
+
+        - value: current PWM value (-1 ... +1).
+
+        """
+
+        def __init__ (self):
+            Observable.__init__ (self)
+            self.value = None
+
+        class Pack:
+            """Handle reception of several PWM for one message."""
+
+            def __init__ (self, node, list):
+                self.__list = list
+                node.register (ID_PWM, self.__handle)
+
+            def __handle (self, msg):
+                values = msg.pop ('%dh' % len (self.__list))
+                for pwm, value in zip (self.__list, values):
+                    pwm.value = float (value) / PWM_VALUE_MAX
+                    pwm.notify ()
+
     def __init__ (self, node):
         self.jack = self.Switch (node, ID_JACK)
         self.color_switch = self.Switch (node, ID_COLOR)
@@ -137,4 +165,6 @@ class Mex:
         self.adc = tuple (self.ADC () for i in range (0, ADC_NB))
         self.__adc_pack = self.ADC.Pack (node, self.adc)
         self.path = self.Path (node)
+        self.pwm = tuple (self.PWM () for i in range (0, PWM_NB))
+        self.__adc_pwm = self.PWM.Pack (node, self.pwm)
 

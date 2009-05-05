@@ -3,7 +3,7 @@ BASE = ../../avr
 # Name of the program to build.
 PROGS = io
 # Sources to compile.
-io_SOURCES = main.c asserv.c servo.avr.c eeprom.avr.c trap.c sharp.c \
+io_SOURCES = main.c asserv.c servo.avr.c eeprom.avr.c trap.c sharp.c pwm.c \
              switch.avr.c chrono.c main_timer.avr.c \
 	     simu.host.c
 # Modules needed for IO.
