@@ -70,7 +70,8 @@ This table describe the list of supported commands by the *asserv* card:
 +---------+-------+-----------------+------------------------------------------+
 |   'a'   | Move  | - angle (2b)    | Angular move (0 <=> 0° ; 65536 <=> 360)  |
 +---------+-------+-----------------+------------------------------------------+
-|   'f'   | Move  | None            | Go to the wall (backward movement)       |
+|   'f'   | Move  | - direction (b) | Go to the wall                           |
+|         |       |                 |   - direction: 0 = forward, 1 = backward |
 +---------+-------+-----------------+------------------------------------------+
 |   'F'   | Move  | None            | Go to a distributor (forward movement)   |
 +---------+-------+-----------------+------------------------------------------+

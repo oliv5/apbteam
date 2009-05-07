@@ -455,8 +455,10 @@ asserv_goto_xya (uint32_t x, uint32_t y, int16_t a)
 void
 asserv_go_to_the_wall (void)
 {
+    /* Put direction as parameters */
+    asserv_twi_buffer_param[0] = 1;
     /* Send the go the wall command to the asserv board */
-    asserv_twi_send_command ('f', 0);
+    asserv_twi_send_command ('f', 1);
 }
 
 /* Move forward to approach a ditributor. */

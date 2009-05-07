@@ -383,12 +383,13 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	speed->pos_cons += v8_to_v32 (args[1], args[2], args[3], args[4]);
 	state_start (state, MODE_SPEED, args[5]);
 	break;
-      case c ('f', 1):
+      case c ('f', 2):
 	/* Go to the wall.
+	 * - b: 0: forward, 1: backward.
 	 * - b: sequence number. */
-	if (args[0] == state_main.sequence)
+	if (args[1] == state_main.sequence)
 	    break;
-	traj_ftw_start (args[0]);
+	traj_ftw_start (args[0], args[1]);
 	break;
       case c ('F', 1):
 	/* Go to the dispenser.

@@ -71,6 +71,9 @@ class InterAsserv (Inter):
         self.backwardOkButton = Checkbutton (self.rightFrame,
                 text = 'backward ok', variable = self.backwardOkVar)
         self.backwardOkButton.pack ()
+        self.ftwButton = Button (self.rightFrame, text = 'FTW',
+                command = self.ftw)
+        self.ftwButton.pack ()
 
         self.tableview.configure (cursor = 'crosshair')
         self.tableview.bind ('<1>', self.button1)
@@ -114,6 +117,9 @@ class InterAsserv (Inter):
 
     def emergency_stop (self):
         self.a.free ()
+
+    def ftw (self):
+        self.a.ftw (self.backwardOkVar.get ())
 
 if __name__ == '__main__':
     import sys

@@ -246,6 +246,12 @@ class Proto:
                 self._angle_f16 (a), self.mseq)
         self.wait (self.finished, auto = True)
 
+    def ftw (self, backward = True):
+        """Go to the wall."""
+        self.mseq += 1
+        self.proto.send ('f', 'BB', backward and 1 or 0, self.mseq)
+        self.wait (self.finished, auto = True)
+
     def set_simu_pos (self, x, y, a):
         """Set simulated position."""
         self.proto.send ('h', 'chhh', 'X', int (round (x)), int (round (y)),

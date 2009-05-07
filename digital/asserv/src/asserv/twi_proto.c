@@ -143,8 +143,9 @@ twi_proto_callback (u8 *buf, u8 size)
 	traj_angle_offset_start (((int32_t) (int16_t) v8_to_v16 (buf[2], buf[3])) << 8, 0);
 	break;
       case c ('f', 0):
-	/* Go to the wall. */
-	traj_ftw_start (0);
+	/* Go to the wall.
+	 * - b: 0: forward, 1: backward. */
+	traj_ftw_start (buf[2], 0);
 	break;
       case c ('F', 0):
 	/* Go to the dispenser. */

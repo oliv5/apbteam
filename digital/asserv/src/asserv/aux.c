@@ -34,6 +34,8 @@
 #include "pos.h"
 #include "speed.h"
 
+#include "contacts.h"
+
 #ifdef HOST
 # include "simu.host.h"
 #endif
@@ -64,12 +66,12 @@ aux_init (void)
 {
     aux[0].state = &state_aux[0];
     aux[0].speed = &speed_aux[0];
-    aux[0].zero_pin = &PINC;
-    aux[0].zero_bv = _BV (5);
+    aux[0].zero_pin = &IO_PIN (CONTACT_AUX0_ZERO_IO);
+    aux[0].zero_bv = IO_BV (CONTACT_AUX0_ZERO_IO);
     aux[1].state = &state_aux[1];
     aux[1].speed = &speed_aux[1];
-    aux[1].zero_pin = &PINC;
-    aux[1].zero_bv = _BV (6);
+    aux[1].zero_pin = &IO_PIN (CONTACT_AUX1_ZERO_IO);
+    aux[1].zero_bv = IO_BV (CONTACT_AUX1_ZERO_IO);
 }
 
 /** Update positions. */

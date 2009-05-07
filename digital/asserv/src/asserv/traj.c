@@ -38,6 +38,8 @@
 #include "speed.h"
 #include "postrack.h"
 
+#include "contacts.h"
+
 #ifdef HOST
 # include "simu.host.h"
 #endif
@@ -82,6 +84,9 @@ uint16_t traj_angle_limit = 0x2000;
 /** Angle at which to start going forward (rad, f8.24). */
 int32_t traj_angle_limit_rad;
 
+/** Go backward. */
+static uint8_t traj_backward;
+
 /** Go to position. */
 static uint32_t traj_goto_x, traj_goto_y;
 
@@ -116,26 +121,38 @@ traj_angle_offset_start (int32_t angle, uint8_t seq)
 static void
 traj_ftw (void)
 {
+    uint8_t left, right;
     int16_t speed;
     speed = speed_theta.slow;
     speed *= 256;
+    if (!traj_backward)
+      {
+	left = !IO_GET (CONTACT_FRONT_LEFT_IO);
+	right = !IO_GET (CONTACT_FRONT_RIGHT_IO);
+      }
+    else
+      {
+	speed = -speed;
+	left = !IO_GET (CONTACT_BACK_LEFT_IO);
+	right = !IO_GET (CONTACT_BACK_RIGHT_IO);
+      }
     speed_theta.use_pos = speed_alpha.use_pos = 0;
-    speed_theta.cons = -speed;
+    speed_theta.cons = speed;
     speed_alpha.cons = 0;
     state_main.variant = 0;
-    if (PINC & _BV (0) && PINC & _BV (1))
+    if (!left && !right)
       {
 	/* Backward. */
       }
-    else if (PINC & _BV (0) || PINC & _BV (1))
+    else if (!left || !right)
       {
 #ifndef HOST
 	/* No angular control. */
 	state_main.variant = 2;
 #else
 	/* On host, we must do the job. */
-	speed_theta.cons = -speed / 2;
-	if (PINC & _BV (0))
+	speed_theta.cons = speed / 2;
+	if (left)
 	    speed_alpha.cons = speed / 2;
 	else
 	    speed_alpha.cons = -speed / 2;
@@ -156,9 +173,10 @@ traj_ftw (void)
 
 /** Start go to the wall mode. */
 void
-traj_ftw_start (uint8_t seq)
+traj_ftw_start (uint8_t backward, uint8_t seq)
 {
     traj_mode = TRAJ_FTW;
+    traj_backward = backward;
     state_start (&state_main, MODE_TRAJ, seq);
 }
 
@@ -170,7 +188,7 @@ traj_gtd (void)
     speed = speed_theta.slow;
     speed *= 256;
     speed_theta.use_pos = speed_alpha.use_pos = 0;
-    if (PINC & _BV (3))
+    if (IO_GET (CONTACT_CENTER_IO))
       {
 	speed_theta.cons = speed;
 	speed_alpha.cons = 0;

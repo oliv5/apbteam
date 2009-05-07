@@ -40,6 +40,8 @@
 #include "pwm.h"
 #include "aux.h"
 
+#include "contacts.h"
+
 #include "motor_model.host.h"
 #include "models.host.h"
 
@@ -149,7 +151,8 @@ simu_sensor_update (void)
 	  { 170.0, 0.0 },
       };
     static const uint8_t sensors_bit[] =
-      { _BV (0), _BV (1), _BV (3), };
+      { IO_BV (CONTACT_BACK_LEFT_IO), IO_BV (CONTACT_BACK_RIGHT_IO),
+	IO_BV (CONTACT_CENTER_IO), };
     static const double table_width = 3000.0, table_height = 2100.0;
     PINC = 0;
     unsigned int i;

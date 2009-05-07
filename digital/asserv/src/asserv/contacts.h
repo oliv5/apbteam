@@ -1,9 +1,9 @@
-#ifndef traj_h
-#define traj_h
-/* traj.h */
+#ifndef contacts_h
+#define contacts_h
+/* contacts.h */
 /* asserv - Position & speed motor control on AVR. {{{
  *
- * Copyright (C) 2008 Nicolas Schodet
+ * Copyright (C) 2009 Nicolas Schodet
  *
  * APBTeam:
  *        Web: http://apbteam.org/
@@ -25,37 +25,13 @@
  *
  * }}} */
 
-extern uint8_t traj_mode;
-extern int16_t traj_eps;
-extern int16_t traj_aeps;
-extern uint16_t traj_angle_limit;
+/** Define contacts. */
+#define CONTACT_BACK_LEFT_IO C, 0
+#define CONTACT_BACK_RIGHT_IO C, 1
+#define CONTACT_FRONT_LEFT_IO C, 2
+#define CONTACT_FRONT_RIGHT_IO C, 3
+#define CONTACT_CENTER_IO C, 4
+#define CONTACT_AUX0_ZERO_IO C, 5
+#define CONTACT_AUX1_ZERO_IO C, 6
 
-void
-traj_init (void);
-
-void
-traj_update (void);
-
-void
-traj_angle_offset_start (int32_t angle, uint8_t seq);
-
-void
-traj_ftw_start (uint8_t backward, uint8_t seq);
-
-void
-traj_gtd_start (uint8_t seq);
-
-void
-traj_goto_start (uint32_t x, uint32_t y, uint8_t backward_ok, uint8_t seq);
-
-void
-traj_goto_angle_start (uint32_t a, uint8_t seq);
-
-void
-traj_goto_xya_start (uint32_t x, uint32_t y, uint32_t a, uint8_t backward_ok,
-		     uint8_t seq);
-
-void
-traj_set_angle_limit (uint16_t a);
-
-#endif /* traj_h */
+#endif /* contacts_h */
