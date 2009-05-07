@@ -23,50 +23,32 @@
  *
  * }}} */
 #include "common.h"
+#include "modules/utils/utils.h"
 #include "modules/utils/byte.h"
+#include "modules/proto/proto.h"
 #include "modules/flash/flash.h"
 #include "trace.h"
-
-#define TRACE_CODE_START FLASH_LOG_CODE
 
 #define TRACE_ARGS_MAX 6
 #define TRACE_MAX_ARGS (TRACE_ARGS_MAX * TRACE_ARGS_MAX)
 
+#define TRACE_BLOCK_SIZE_BYTES 65536
+#define TRACE_PAGE 0x80000
+#define TRACE_PAGE_BLOCKS (TRACE_PAGE / TRACE_BLOCK_SIZE_BYTES)
+#define TRACE_PAGE_PAGE_NB (FLASH_SIZE / TRACE_PAGE)
+
 struct trace_t
 {
-    /** Flash status. */
+/** Flash status. */
     trace_status_t status;
     /** Flash start address */
     const uint32_t addr_start;
     /** Flash address. */
     uint32_t addr;
-    /** Flash next sector */
-    uint32_t next_sector;
 };
 typedef struct trace_t trace_t;
 
 static trace_t trace_global;
-
-/** Erase the next sector on the Flash memory.
-  */
-static void
-trace_erase_next_sector (void)
-{
-    /* If the flash is enable and the start sector is not reached yet erase
-     * the sector. */
-    if (trace_global.status
-	&& (flash_read (trace_global.next_sector) != 0xFF))
-      {
-	if (trace_global.next_sector != trace_global.addr_start)
-	  {
-	    /* Flash page size is equal to 4k. */
-	    flash_erase (FLASH_ERASE_4K, trace_global.next_sector);
-	  }
-	else
-	    /* Disable the flash. */
-	    trace_global.status = TRACE_STATUS_OFF;
-      }
-}
 
 void
 trace_print_arg_1(uint8_t arg)
@@ -90,31 +72,62 @@ trace_print_arg_4(uint32_t arg)
     trace_print (arg);
 }
 
+static inline void
+trace_erase_page (uint32_t addr)
+{
+    uint8_t i;
+    while (flash_is_busy ());
+    for (i = 0; i < TRACE_PAGE_BLOCKS; i++)
+      {
+	flash_erase (FLASH_ERASE_64K, addr);
+	addr += TRACE_BLOCK_SIZE_BYTES;
+      }
+}
 
 uint8_t
 trace_init (void)
 {
     int8_t i;
+    uint8_t new_trace_val = 0x0;
+    uint32_t new_trace_addr = 0;
+
     trace_global.status = flash_init ();
 
     /* Get the first sector to write. */
     if (trace_global.status)
       {
-        trace_global.addr = flash_first_sector();
-	*((uint32_t *) &trace_global.addr_start) =
-	    FLASH_PAGE(trace_global.addr);
-        trace_global.next_sector =
-            FLASH_PAGE (trace_global.addr + FLASH_PAGE_SIZE);
-
-        /* If the next sector is the first one in the memory erase it. */
-	trace_erase_next_sector ();
-
-        /* Store the start code. */
-	for (i = 4; i; i--)
+	uint8_t val = 0;
+	/* Find the possible traces. */
+	for (i = 0; i < TRACE_PAGE_PAGE_NB; i++)
 	  {
-	    flash_write (trace_global.addr, v32_to_v8(TRACE_CODE_START, i-1));
-	    trace_global.addr = FLASH_ADDRESS_INC(trace_global.addr);
+	    val = flash_read (i * TRACE_PAGE);
+	    if (lesseq_mod8(new_trace_val, val))
+	      {
+		proto_send0 ('e');
+		new_trace_val = val;
+		new_trace_addr = i * TRACE_PAGE;
+	      }
 	  }
+	new_trace_addr &= FLASH_ADDRESS_HIGH;
+
+	/* Flash not empty */
+	if (!((new_trace_val == 0x0) && (new_trace_addr == 0)))
+	  {
+	    proto_send0 ('h');
+	    new_trace_addr = (new_trace_addr + TRACE_PAGE)
+		& FLASH_ADDRESS_HIGH;
+
+	    /* Erase it. */
+	    trace_erase_page (new_trace_addr);
+	  }
+	new_trace_val ++;
+	proto_send1b ('v', new_trace_val);
+	*((uint32_t*) &trace_global.addr_start) = new_trace_addr;
+
+	/* Store the trace val. */
+	flash_write (new_trace_addr, new_trace_val);
+	trace_global.addr = new_trace_addr + 1;
+
 	return TRACE_STATUS_ON;
       }
     return TRACE_STATUS_OFF;
@@ -126,16 +139,11 @@ trace_print (uint8_t arg)
     /* Store the arg on flash */
     if (trace_global.status)
       {
-	uint32_t curr_sector;
 	flash_write (trace_global.addr, arg);
-	trace_global.addr = FLASH_ADDRESS_INC(trace_global.addr);
+	trace_global.addr ++;
 
-	/* Compute the next sector address. */
-	curr_sector = trace_global.next_sector;
-	trace_global.next_sector = FLASH_PAGE (trace_global.addr +
-						   FLASH_PAGE_SIZE);
-	if (curr_sector != trace_global.next_sector)
-	    trace_erase_next_sector ();
+	if (trace_global.addr == (trace_global.addr_start + TRACE_PAGE))
+	    trace_global.status = TRACE_STATUS_OFF;
       }
 }
 

@@ -27,6 +27,9 @@
 #include "modules/spi/spi.h"
 #include "modules/utils/utils.h"
 
+#define FLASH_LOG_PAGE_SIZE 0x80000
+#define FLASH_LOG_BUFFER_SIZE 128
+
 /** Flash access.
  * The flash contains an address of 21 bits in a range from 0x0-0x1fffff.
  * This function shall access the memory directly by the SPI.
@@ -139,28 +142,6 @@ flash_init (void)
     return 1;
 }
 
-/** Find the first writable sector.
- * \param  addr  the address to start the research.
- * \return  the address of the next sector.
- */
-uint32_t
-flash_first_sector (void)
-{
-    uint8_t rsp = 0;
-    uint32_t addr;
-
-    /* Search for the next address to start writing. */
-    for (addr = 0;
-         (rsp != 0xFF) && (addr < FLASH_ADDRESS_HIGH);
-         addr += FLASH_PAGE_SIZE)
-      {
-        rsp = flash_read (addr);
-      }
-
-    return addr < (FLASH_ADDRESS_HIGH + 1) ?
-        addr - FLASH_PAGE_SIZE : FLASH_ADDRESS_ERROR;
-}
-
 /** Write in the flash byte provided in parameter.
  * \param  data  the buffer to store the data.
  */
@@ -240,11 +221,11 @@ flash_write_array (uint32_t addr, uint8_t *data, uint32_t length)
       }
 }
 
-uint8_t
+int8_t
 flash_log (uint8_t size, uint8_t *args)
 {
-    uint8_t buf[128+1];
-    uint8_t status = 0x0;
+    uint8_t buf[FLASH_LOG_BUFFER_SIZE+1];
+    int8_t error = 0x0;
     uint32_t addr = 0;
 
     if (size >= 4)
@@ -254,37 +235,8 @@ flash_log (uint8_t size, uint8_t *args)
     switch (args[0])
       {
       case FLASH_CMD_INIT:
-	status = flash_init ();
-	if (status)
-	  {
-	    uint32_t res;
-	    uint32_t ended = 0;
-	    for (addr = 0; addr < FLASH_ADDRESS_HIGH; addr += FLASH_PAGE_SIZE)
-	      {
-		flash_read_array (addr, (uint8_t *) &res, 4);
-		if (res == 0xFFFFFFFF)
-		  {
-		    ended = addr;
-		    proto_send3b ('e', addr >> 16, addr >> 8, addr);
-		    /* The sector is empty. */
-		    break;
-		  }
-	      }
-
-	    for (addr = FLASH_PAGE (ended - FLASH_PAGE_SIZE);
-		 addr != ended;
-		 addr = FLASH_PAGE (addr - FLASH_PAGE_SIZE))
-	      {
-		uint32_t res;
-		flash_read_array (addr, (uint8_t *) &res, 4);
-		if (res == FLASH_LOG_CODE_READ)
-		  {
-		    proto_send3b ('i', addr >> 16, addr >> 8, addr);
-		    break;
-		  }
-	      }
-	  }
-	proto_send1b ('s', status);
+	error = !flash_init ();
+	proto_send1b ('s', error ? 0 : 1);
 	break;
       case FLASH_CMD_READ:
 	if ((size == 5)
@@ -292,17 +244,19 @@ flash_log (uint8_t size, uint8_t *args)
 	  {
 	    flash_read_array (addr, buf, args[4]);
 	    proto_send ('r', args[4], buf);
-	    status = 0x1;
+	    error = 0;
 	  }
 	else if (size == 4)
 	  {
 	    proto_send1b ('r', flash_read (addr));
-	    status = 0x1;
+	    error = 0;
 	  }
+	else
+	    error = 2;
 	break;
       default:
-	status = 0x0;
+	return 3;
       }
 
-    return status;
+    return error;
 }

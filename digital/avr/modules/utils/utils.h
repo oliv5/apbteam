@@ -79,4 +79,10 @@ utils_delay_ms (double ms)
 /** Count the number of element in an array. */
 #define UTILS_COUNT(a) (sizeof (a) / sizeof ((a)[0]))
 
+static inline uint8_t
+lesseq_mod8 (uint8_t a, uint8_t b)
+{
+    return ((int8_t) (a - b)) <= 0;
+}
+
 #endif /* utils_h */

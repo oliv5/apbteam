@@ -33,49 +33,48 @@
 #include "modules/utils/byte.h"
 #include "modules/uart/uart.h"
 
-void
-flash_dump_full (void)
-{
-    uint8_t buffer [BUFFER_SIZE];
-    uint32_t i;
-    uint8_t state;
 
-    /* Initialise the flash memory to read .*/
-    state = flash_init ();
-    proto_send1b ('s', state);
-
-    if (state)
-      {
-        for (i = 0; i < FLASH_ADDRESS_HIGH + 1;
-             i += sizeof (buffer))
-          {
-            flash_read_array (i, buffer, sizeof (buffer));
-            proto_send ('r', sizeof(buffer), buffer);
-          }
-      }
-}
-
+#include "events.h"
 
 void
-flash_dump_sector (uint32_t addr)
+flood (void)
 {
-    uint8_t buffer [BUFFER_SIZE];
-    uint32_t i;
-    uint8_t state;
+    uint32_t addr;
+    uint32_t count;
 
-    /* Initialise the flash memory to read .*/
-    state = flash_init ();
-    proto_send1b ('s', state);
+    uint32_t speed;
+    uint32_t position;
+    uint16_t acc;
+    uint16_t arg1;
+    uint16_t arg2;
+    uint32_t arg3;
 
-    if (state)
+    /* Initialise the trace module. */
+    trace_init ();
+
+    /* Get the start page address of the trace module. */
+    addr = trace_addr_current ();
+    proto_send3b ('a', addr >> 16, addr >> 8, addr);
+
+    /* Flood the flash memory with traces. */
+    /* A little more than 3 memory sectors, a sector is 4 kbytes. */
+    for (count = 0; count < 2000; count ++)
       {
-        for (i = FLASH_PAGE (addr); i < FLASH_PAGE (addr) + FLASH_PAGE_SIZE;
-             i += sizeof (buffer))
-          {
-            flash_read_array (i, buffer, sizeof (buffer));
-            proto_send ('r', sizeof(buffer), buffer);
-          }
+	/* Right motor. */
+	speed = 1;
+	position = 2;
+	acc = 3;
+	arg1 = 1;
+	arg2 = 2;
+	arg3 = 3;
+	TRACE (TRACE_ASSERV__RIGHT_MOTOR, speed, position, acc);
+	TRACE (TRACE_ASSERV__LEFT_MOTOR, speed, position, acc);
+	TRACE (TRACE_IA__IA_CMD, arg1, arg2, arg3);
       }
+
+    /* Print the end of the address. */
+    addr = trace_addr_current ();
+    proto_send3b ('a', addr >> 16, addr >> 8, addr);
 }
 
 void
@@ -84,6 +83,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
     /* May be unused. */
     uint32_t addr = v8_to_v32 (0, args[0], args[1], args[2]);
     uint8_t buf[16];
+    uint8_t error = 0;
 #define c(cmd, size) (cmd << 8 | size)
     switch (c (cmd, size))
       {
@@ -95,10 +95,10 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	/* Erase full */
 	flash_erase (FLASH_ERASE_FULL, 0);
 	break;
-      case c ('e', 3):
-	/* Erase 4k:
-	 *  - 3b: address. */
-	flash_erase (FLASH_ERASE_4K, addr);
+      case c ('e', 4):
+	/* Erase the flash from the address addr and with the hexa code to
+	 * erase.*/
+	flash_erase (args[3], addr);
 	break;
       case c ('i', 0):
 	/* Initialise the trace module. */
@@ -107,14 +107,6 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	addr = trace_addr_current ();
 	proto_send3b ('a', addr >> 16, addr >> 8, addr);
 	break;
-      case c ('d', 0):
-    /* Dump full memory. */
-    flash_dump_full ();
-    break;
-      case c ('d', 3):
-    /* Dump a full sector. */
-    flash_dump_sector (addr);
-    break;
       case c ('t', 2):
 	/* Trace data:
 	 *  - 1b: id.
@@ -131,20 +123,32 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	 *  - 3b: address.
 	 *  - 1b: number of bytes. */
 	if (args[3] > sizeof (buf))
-	  {
-	    proto_send0 ('?');
-	    return;
-	  }
+	{
+	  proto_send0 ('?');
+	  return;
+	}
 	else
 	  {
 	    flash_read_array (addr, buf, args[3]);
 	    proto_send ('r', args[3], buf);
 	  }
 	break;
+      case c ('f', 0):
+	/* Flood the memory with 3 sectors.
+	*/
+	flood ();
+	break;
       default:
-	/* Error */
-	proto_send0 ('?');
-	return;
+	if (cmd == 'l')
+	  {
+	    error = flash_log (size, args);
+	  }
+	else if (error || (cmd != 'l'))
+	  {
+	    /* Error */
+	    proto_send0 ('?');
+	    return;
+	  }
       }
     /* Acknowledge what has been done */
     proto_send (cmd, size, args);

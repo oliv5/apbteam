@@ -27,14 +27,11 @@
 #include "common.h"
 #include "io.h"
 
-#define FLASH_ADDRESS_HIGH 0x1FFFFF
+#define FLASH_SIZE 0x200000
+#define FLASH_ADDRESS_HIGH (FLASH_SIZE - 1)
 #define FLASH_ADDRESS_ERROR 0xFFFFFF
 #define FLASH_ADDRESS_INC(val) \
     ((val) + 1) & FLASH_ADDRESS_HIGH
-
-#define FLASH_PAGE_SIZE  0x1000
-#define FLASH_PAGE_MASK (FLASH_ADDRESS_HIGH & ~(FLASH_PAGE_SIZE-1))
-#define FLASH_PAGE(val) ((val) & FLASH_PAGE_MASK)
 
 #define FLASH_ERASE_FULL 0x60
 #define FLASH_ERASE_4K 0x20
@@ -52,9 +49,6 @@
 #define FLASH_AAI 0xAD
 
 #define FLASH_TBP_US 10
-
-#define FLASH_LOG_CODE 0xF33FF22F
-#define FLASH_LOG_CODE_READ 0x2FF23FF3
 
 enum
 {
@@ -114,13 +108,6 @@ flash_status_aai (void)
 uint8_t
 flash_init (void);
 
-/** Find the first writable sector.
- * \param  addr  the address to start the research.
- * \return  the address of the next sector.
- */
-uint32_t
-flash_first_sector (void);
-
 /** Write in the flash byte provided in parameter.
   * \param  data  the buffer to store the data.
   */
@@ -154,9 +141,12 @@ flash_write_array (uint32_t addr, uint8_t *data, uint32_t length);
 /** Process the logs
   * \param  size  the number of arguments.
   * \param  an array of arguments.
-  * \return  true on success.
+  * \return - 0 on success,
+  *         - 1 flash not initialised
+  *         - 2 flash read error.
+  *         - 3 command not found.
   */
-uint8_t
+int8_t
 flash_log (uint8_t size, uint8_t *args);
 
 #endif /* flash_h */

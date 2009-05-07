@@ -25,6 +25,7 @@ class TInter:
     def __event_print (self, events, memory):
         if len(memory) > 0:
             cmd = get_size (memory, 2)
+            memory = memory[2:]
             if cmd < len(events):
                 e = events[cmd]
                 string = e.string_get()
@@ -32,6 +33,7 @@ class TInter:
                     p = e.param_get(i)
                     size = p.length()
                     val = get_size (memory, size)
+                    memory = memory[size:]
                     string = string.replace('%d', str(val), 1)
 
                 if self.__file == None:
@@ -43,12 +45,13 @@ class TInter:
             else:
                 return None
 
-    def trace_print (self):
-        events = self.__events_get ()
+    def __dump (self, val):
+        print "Dump trace ", val
         host = THost()
-        host.dump_memory()
+        host.dump_memory (val)
         memory = host.get_trace ()
 
+        events = self.__events_get ()
         if self.__outfile != None:
             self.__file = open (self.__outfile, 'w')
             self.__file.write ('APBTeam v1.0 Log interpretor\n')
@@ -58,3 +61,25 @@ class TInter:
 
         if self.__file != None:
             self.__file.close ()
+
+    def available_traces (self):
+        host = THost()
+        traces = host.trace_list()
+        print "Traces available "
+        for i in traces:
+            print i
+
+    def trace_print (self, trace_num = None):
+        events = self.__events_get ()
+        host = THost()
+
+        if trace_num:
+            traces = host.trace_list()
+            if traces.count (trace_num) >= 1:
+                self.__dump (trace_num)
+            else:
+                print "Trace not available."
+        else:
+            traces = host.trace_list()
+            val = max(traces)
+            self.__dump (val)
