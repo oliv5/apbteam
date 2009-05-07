@@ -58,6 +58,12 @@
  *   IO_PIN (MY_IO) => PINB
  *   IO_BV (MY_IO) => _BV (5)
  *   IO_N (MY_IO) => (5)
+ *
+ *   IO_GET (MY_IO) => (PINB & _BV (5))
+ *   IO_SET (MY_IO) => PORTB |= _BV (5)
+ *   IO_CLR (MY_IO) => PORTB &= ~_BV (5)
+ *   IO_OUTPUT (MY_IO) => DDRB |= _BV (5)
+ *   IO_INPUT (MY_IO) => DDRB &= ~_BV (5)
  */
 #define IO_PORT(io) IO_PORT_ (io)
 #define IO_PORT_(p, n) PORT ## p
@@ -69,5 +75,11 @@
 #define IO_BV_(p, n) _BV (n)
 #define IO_N(io) IO_N_ (io)
 #define IO_N_(p, n) (n)
+
+#define IO_GET(io) (IO_PIN_ (io) & IO_BV_ (io))
+#define IO_SET(io) IO_PORT_ (io) |= IO_BV_ (io)
+#define IO_CLR(io) IO_PORT_ (io) &= ~IO_BV_ (io)
+#define IO_OUTPUT(io) IO_DDR_ (io) |= IO_BV_ (io)
+#define IO_INPUT(io) IO_DDR_ (io) &= ~IO_BV_ (io)
 
 #endif /* io_h */
