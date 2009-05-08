@@ -5,7 +5,7 @@
 # We do not manage some cases like, we have not get any balls from any
 # distributors.
 top
-  Top FSM that call others FSM
+  Top FSM with the Marcel's strategy
 
 States:
  IDLE
@@ -16,38 +16,16 @@ States:
   waiting for the jack to be removed from the bot
  CONFIGURE_ASSERV
   configuring the asserv board
- MOVE_AWAY_FROM_START_BORDER
-  move the bot away from the border of the start point to be able to turn
-  freely
- GO_TO_SAMPLE_DISTRIBUTOR
-  go to our distributor of samples (using the move FSM)
- GO_TO_OUR_ICE_DISTRIBUTOR
-  go to our ice distributor (using the move FSM)
- GO_TO_ADVERSE_ICE_DISTRIBUTOR
-  go to the adverse ice distributor (using the move FSM)
- GET_SAMPLES_FROM_SAMPLES_DISTRIBUTOR
-  get samples from the samples distributor (using the get samples FSM)
- GET_ICE_FROM_OUR_ICE_DISTRIBUTOR
-  get ice from our ice distributor (using the get samples FSM)
- GET_ICE_FROM_ADVERSE_ICE_DISTRIBUTOR
-  get ice from adverse ice distributor (using the get samples FSM)
- GO_TO_GUTTER
-  go to the gutter (using the move FSM)
- DROP_OFF_BALLS_TO_GUTTER
-  drop all the balls contained in the bot into the gutter (using the gutter
-  FSM)
- MOVE_AWAY_FROM_GUTTER_BORDER
-  move the bot away from the border of the gutter to be able to turn freely
+ MOVE_FORWARD
+  move forward
+ MOVE_BACKWARD
+  move backward
 
 Events:
  start
   initialize the FSM
- get_samples_fsm_finished
-  when the get samples FSM returns
  move_fsm_finished
   when the move FSM returns
- gutter_fsm_finished
-  when the gutter FSM returns
  jack_inserted_into_bot
   the jack is inserted into the bot
  jack_removed_from_bot
@@ -70,62 +48,13 @@ WAIT_JACK_OUT:
   set the settings of the asserv board (especially the position)
 
 CONFIGURE_ASSERV:
- settings_acknowledged -> MOVE_AWAY_FROM_START_BORDER
-  move the bot away from the border to be able to turn freely
+ settings_acknowledged -> MOVE_FORWARD
+  move the bot forward
 
-MOVE_AWAY_FROM_START_BORDER:
- move_fsm_finished -> GO_TO_SAMPLE_DISTRIBUTOR
-  order the bot to move to our samples distributors with the move FSM
+MOVE_FORWARD:
+ move_fsm_finished -> MOVE_BACKWARD
+  return to initial position (yep it's useless but it's for test)
 
-GO_TO_SAMPLE_DISTRIBUTOR:
- move_fsm_finished -> GET_SAMPLES_FROM_SAMPLES_DISTRIBUTOR
-  we are now in front of our samples distributor, launch the get samples FSM
-
-GET_SAMPLES_FROM_SAMPLES_DISTRIBUTOR:
- get_samples_fsm_finished: not_near_end_of_match -> GO_TO_OUR_ICE_DISTRIBUTOR
-  we have finished to get our samples, let's go to our ice distributor with
-  the move FSM
- get_samples_fsm_finished: near_end_of_match -> GO_TO_GUTTER
-  we have finished to get our samples, but there is no time, let's go to the
-  gutter with the move FSM
-
-GO_TO_OUR_ICE_DISTRIBUTOR:
- move_fsm_finished -> GET_ICE_FROM_OUR_ICE_DISTRIBUTOR
-  we are now in front of our ice distributor, launch the get samples FSM
-
-GET_ICE_FROM_OUR_ICE_DISTRIBUTOR:
- get_samples_fsm_finished: full -> GO_TO_GUTTER
-  we have finished to get ice from our distributor and we have no more space
-  left, let's go the gutter with the move FSM
- get_samples_fsm_finished: not full -> GO_TO_ADVERSE_ICE_DISTRIBUTOR
-  we have finished to get ice from our distributor and we have some space
-  left, let's go the adverse ice distributor with the move FSM
-
-GO_TO_GUTTER:
- move_fsm_finished -> DROP_OFF_BALLS_TO_GUTTER
-  we are now at the gutter, let's drop all ours balls into it with the gutter
-  FSM
-
-DROP_OFF_BALLS_TO_GUTTER:
- gutter_fsm_finished -> MOVE_AWAY_FROM_GUTTER_BORDER
-  we have finished to drop off all the balls, let's move away from the gutter
-  to move freely
-
-GO_TO_ADVERSE_ICE_DISTRIBUTOR:
- move_fsm_finished -> GET_ICE_FROM_ADVERSE_ICE_DISTRIBUTOR
-  we are now in front of the adverse ice distributor, launch the get samples
-  FSM
-
-GET_ICE_FROM_ADVERSE_ICE_DISTRIBUTOR:
- get_samples_fsm_finished -> GO_TO_GUTTER
-  we have finished to get ice. Even if we are not full, let's go to the gutter
-  with the move FSM
-
-MOVE_AWAY_FROM_GUTTER_BORDER:
- move_fsm_finished: first_loop -> GO_TO_SAMPLE_DISTRIBUTOR
-  go to our sample ditributor to try the same strategy again
-  reset internal data
- move_fsm_finished: second_loop -> GO_TO_ADVERSE_ICE_DISTRIBUTOR
-  there is no more sample nor ice in our distributors, let's try the one of
-  the opponent
-  reset internal data
+MOVE_BACKWARD:
+ move_fsm_finished -> MOVE_FORWARD
+  move forward again

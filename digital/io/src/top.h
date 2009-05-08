@@ -3,7 +3,7 @@
 /* top.h */
 /* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
  *
- * Copyright (C) 2008 Nélio Laranjeiro
+ * Copyright (C) 2009 Nicolas Haller
  *
  * APBTeam:
  *        Web: http://apbteam.org/
@@ -24,55 +24,5 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
-
-#define BLUE_DISTRIBUTOR_X 700
-#define BLUE_DISTRIBUTOR_Y 2100
-
-#define RED_DISTRIBUTOR_X 2300
-#define RED_DISTRIBUTOR_Y 2100
-
-#define ICE_DISTRIBUTOR_LEFT 0 
-#define ICE_DISTRIBUTOR_RIGHT 3000 
-#define ICE_DISTRIBUTOR_Y 1350
-
-enum sequence_e
-{
-    /* 3 color balls, 2 ice */
-    SEQUCENCE_ONE = 0x15,
-    /* 2 color balls, 3 ice */
-    SEQUENCE_TWO = 0xA
-};
-
-struct top_data_t
-{
-    /** The sequence to get.
-     * Each bit corresponds to the slot in the collector (where the balls a
-     * stored in the robot).
-     * bit 0 = slot 0
-     * bit 1 = slot 1 and so on.
-     */
-    uint8_t sequence;
-    /** The boxes already in use. */
-    uint8_t boxes_used;
-    /** sequence to realize. */
-    uint8_t sequence_to_do;
-};
-
-extern struct top_data_t top_data;
-
-/** Start a Top FSM. */
-void
-top_start (void);
-
-/**
- * Do we need to tell the top FSM the settings has been acknowledged?
- * You need to call this function in the main loop to ensure we pass a
- * requested event (settings_acknowledged) to the top FSM.
- * @return
- *   - 0 if you do not need to generate the event for the top FSM ;
- *   - 1 if you need to generate the event.
- */
-uint8_t
-top_generate_settings_ack_event (void);
 
 #endif /* top_h */
