@@ -15,11 +15,11 @@ enum %(prefix)s_state_t
 typedef enum %(prefix)s_state_t %(prefix)s_state_t;
 
 /* %(name)s events. */
-enum %(prefix)s_event_t
+enum %(prefix)s_event_type_t
 {
-%(events)s    %(PREFIX)s_EVENT_NB
+%(events,%(PREFIX)s_EVENT_TYPE_%(event)s)s    %(PREFIX)s_EVENT_TYPE_NB
 };
-typedef enum %(prefix)s_event_t %(prefix)s_event_t;
+typedef enum %(prefix)s_event_type_t %(prefix)s_event_type_t;
 
 /* Only care about next state. */
 #define _BRANCH(state, event, to) (%(PREFIX)s_STATE_ ## to)
@@ -42,5 +42,8 @@ typedef %(prefix)s_branch_t (*%(prefix)s_transition_t) (void);
 /* Value to return to follow a given branch. */
 #define %(prefix)s_next_branch(state, event, branch) \
     %(PREFIX)s_BRANCH__ ## state ## __ ## event ## __ ## branch
+
+/* Number of initial events. */
+#define %(PREFIX)s_INITIALS_NB %(initials_nb)s
 
 #endif /* %(prefix)s_defs_h */

@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include <assert.h>
 
-%(_user.type-decl)s 
+%(_user.type-decl)s
 /* %(name)s transition table. */
 static const %(prefix)s_transition_t
 %(prefix)s_transition_table[%(PREFIX)s_STATE_NB][%(PREFIX)s_EVENT_NB] = {

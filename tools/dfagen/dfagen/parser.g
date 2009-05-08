@@ -10,6 +10,7 @@ parser AutomatonParser:
     token EVENT:	"\w([\w ]*\w)?"
     token QUALIFIER:	"\w([\w ]*\w)?"
     token ATITLE:	".*?\n"
+    token ATTR:		"\w([\w =]*\w)?"
 
     rule automaton:	ATITLE		{{ a = Automaton (ATITLE.strip ()) }}
 			( comments	{{ a.comments = comments }}
@@ -23,13 +24,19 @@ parser AutomatonParser:
 			( transdef<<a>>
 				) *
 			EOF		{{ return a }}
-    
-    rule statedef:	" " STATE	{{ s = State (STATE) }}
+
+    rule statedef:			{{ initial = False }}
+			" " ( "\*"	{{ initial = True }}
+				) ?
+			STATE		{{ s = State (STATE, initial = initial) }}
+			( "\s*\[\s*"
+				ATTR	{{ s.attributes = ATTR }}
+				"\s*\]" ) ?
 			"\n"
 			( comments	{{ s.comments = comments }}
 				) ?
 					{{ return s }}
-    
+
     rule eventdef:	" " EVENT	{{ e = Event (EVENT) }}
 			"\n"
 			( comments	{{ e.comments = comments }}
@@ -52,6 +59,9 @@ parser AutomatonParser:
 			"\s*->\s*"
 			( STATE		{{ t.to = a.states[STATE] }}
 				| "\\." )
+			( "\s*\[\s*"
+				ATTR	{{ t.attributes = ATTR }}
+				"\s*\]" ) ?
 			( comments	{{ t.comments = comments }}
 				) ?
 					{{ return t }}

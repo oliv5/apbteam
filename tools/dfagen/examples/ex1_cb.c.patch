@@ -7,7 +7,7 @@
 +#include <stdio.h>
 +
 +struct door_t { ex1_state_t fsm; };
-+ 
++
  /*
   * OPEN =close=>
   *  => CLOSED

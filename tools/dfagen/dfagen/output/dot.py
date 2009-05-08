@@ -1,12 +1,13 @@
+import os.path
 
-def write (prefix, automaton, user):
+def write (prefix, automaton, user, outputdir):
     output = prefix + '.dot'
-    o = open (output, 'w')
+    o = open (os.path.join (outputdir, output), 'w')
     o.write ('digraph %s {' % prefix)
-    for s in automaton.states.values ():
+    for s in automaton.iter_states ():
         o.write (' %s\n' % s.name)
-        for tr in s.transitions.values ():
-            for br in tr.branches.values ():
+        for tr in s.iter_transitions ():
+            for br in tr.iter_branches ():
                 o.write (' %(state)s -> %(to)s [ label = "%(event)s" ];\n'
                         % dict (
                             state = s.name,

@@ -15,21 +15,32 @@ class Event:
 class State:
     """State definition."""
 
-    def __init__ (self, name, comments = ''):
+    def __init__ (self, name, comments = '', initial = False):
         self.name = name
         self.comments = comments
+        self.initial = initial
         self.transitions = { }
+        self.transitions_list = [ ]
+        self.attributes = None
 
     def __str__ (self):
-        s = ' ' + self.name + '\n'
+        s = ' ' + self.name
+        if self.attributes:
+            s += ' [ %s ]' % self.attributes
+        s += '\n'
         if self.comments:
             s += '  ' + self.comments.replace ('\n', '\n  ') + '\n'
         return s
 
     def add_branch (self, branch):
         if branch.event not in self.transitions:
-            self.transitions[branch.event] = Transition (branch.event)
+            tr = Transition (branch.event)
+            self.transitions[branch.event] = tr
+            self.transitions_list.append (tr)
         self.transitions[branch.event].add_branch (branch)
+
+    def iter_transitions (self):
+        return iter (self.transitions_list)
 
 class Transition:
     """Transition definition."""
@@ -37,6 +48,7 @@ class Transition:
     def __init__ (self, event):
         self.event = event
         self.branches = { }
+        self.branches_list = [ ]
 
     def add_branch (self, branch):
         assert self.event is branch.event
@@ -47,12 +59,17 @@ class Transition:
         if branch.name in self.branches:
             raise KeyError (branch.name)
         self.branches[branch.name] = branch
+        self.branches_list.append (branch)
+
+    def iter_branches (self):
+        return iter (self.branches_list)
+
+    def get_attributes (self):
+        return [ b.attributes for b in self.iter_branches ()
+                if b.attributes is not None ]
 
     def __str__ (self):
-        s = ''
-        for br in self.branches.values ():
-            s += str (br);
-        return s
+        return ''.join (str (br) for br in self.iter_branches ())
 
 class TransitionBranch:
 
@@ -61,51 +78,68 @@ class TransitionBranch:
         self.name = name
         self.to = to
         self.comments = comments
+        self.attributes = None
 
     def __str__ (self):
         s = ' ' + self.event.name
         if self.name:
             s += ': ' + self.name
-        s += ' -> ' + (self.to and self.to.name or '.') + '\n'
+        s += ' -> ' + (self.to and self.to.name or '.')
+        if self.attributes:
+            s += ' [ %s ]' % self.attributes
+        s += '\n'
         if self.comments:
             s += '  ' + self.comments.replace ('\n', '\n  ') + '\n'
         return s
 
 class Automaton:
-    
+
     def __init__ (self, name):
         self.name = name
         self.comments = ''
-        self.initial = None
+        self.initials = [ ]
         self.states = { }
+        self.states_list = [ ]
         self.events = { }
+        self.events_list = [ ]
 
     def add_state (self, state):
         if state.name in self.states:
             raise KeyError (state.name)
+        if state.initial:
+            self.initials.append (state)
         if not self.states:
-            self.initial = state
+            state.initial = True
+            self.initials.append (state)
         self.states[state.name] = state
+        self.states_list.append (state)
 
     def add_event (self, event):
         if event.name in self.events:
             raise KeyError (event.name)
         self.events[event.name] = event
+        self.events_list.append (event)
+
+    def iter_states (self):
+        return iter (self.states_list)
+
+    def iter_initials (self):
+        return iter (self.initials)
+
+    def iter_events (self):
+        return iter (self.events_list)
 
     def __str__ (self):
-        s = self.name
+        s = self.name + '\n'
         if self.comments:
             s += '  ' + self.comments.replace ('\n', '\n  ') + '\n'
         s += '\nStates:\n'
-        for state in self.states.values ():
-            s += str (state)
+        s += ''.join (str (state) for state in self.iter_states ())
         s += '\nEvents:\n'
-        for event in self.events.values ():
-            s += str (event)
+        s += ''.join (str (state) for state in self.iter_events ())
         s += '\n'
-        for state in self.states.values ():
+        for state in self.iter_states ():
             s += state.name + ':\n'
-            for tr in state.transitions.values ():
-                s += str (tr)
+            s += ''.join (str (tr) for tr in state.iter_transitions ())
             s += '\n'
         return s

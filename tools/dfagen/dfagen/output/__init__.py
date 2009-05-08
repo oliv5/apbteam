@@ -2,6 +2,7 @@ from ConfigParser import ConfigParser
 
 class UserConfig:
     def __init__ (self, file):
+        self.file = file
         if file:
             f = open (file, 'r')
             cp = ConfigParser ()

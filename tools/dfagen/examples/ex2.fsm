@@ -3,9 +3,9 @@ Example 2
   A barman robot.
 
 States:
- IDLE
+ IDLE [in=hello out=goodbye]
   waiting for a command
- DROPPING_ICE
+ DROPPING_ICE [in=hi]
  FILLING_GLASS
 
 Events:
@@ -15,13 +15,13 @@ Events:
  replace bottle
 
 IDLE:
- command: with ice -> DROPPING_ICE
+ command: with ice -> DROPPING_ICE [ex2_idle_command]
   open the ice door
  command: without ice -> FILLING_GLASS
   start filling
  command: empty bottle -> .
   display "empty bottle, please replace it"
- replace bottle -> .
+ replace bottle -> . [ex2_idle_replace]
   reset glass counter
 
 DROPPING_ICE:
