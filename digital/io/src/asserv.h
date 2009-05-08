@@ -38,6 +38,9 @@
  *  ignored.
  */
 
+#define ASSERV_ARM_SPEED_DEFAULT 0x16
+#define ASSERV_ELVT_SPEED_DEFAULT 0x30
+
 /**
  * Initialize the asserv control module.
  * This functions does not initialize the asserv board, but the underling
@@ -345,5 +348,17 @@ asserv_arm_position_reached (void);
  */
 void
 asserv_set_scale (uint32_t scale);
+
+/**
+ * Reset the ARM to the zero position.
+ */
+void
+asserv_arm_zero_position (void);
+
+/**
+ * Reset the elevator to the zero position.
+ */
+void
+asserv_elevator_zero_position (void);
 
 #endif /* asserv_h */

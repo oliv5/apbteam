@@ -661,3 +661,17 @@ asserv_set_scale (uint32_t scale)
     asserv_scale_inv = fixed_div_f824 (1L << 24, scale);
 }
 
+void
+asserv_arm_zero_position (void)
+{
+    asserv_twi_buffer_param[0] = ASSERV_ARM_SPEED_DEFAULT;
+    asserv_twi_send_command ('B', 1);
+}
+
+void
+asserv_elevator_zero_position (void)
+{
+    asserv_twi_buffer_param[0] = ASSERV_ELVT_SPEED_DEFAULT;
+    asserv_twi_send_command ('C', 1);
+}
+
