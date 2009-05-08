@@ -47,13 +47,15 @@
  * same algorithm. When the all servos motor have been taken care of, we
  * set-up the timer to overflow a certain number of times to wait before
  * restarting the whole cycle.
+ *
+ * All servos are connected to the PORTA of the ATmega.
  */
 
 /**
  * Number of servos motor managed by this module.
  * If you change it, you _must_ update the key of the eeprom module!
  */
-#define SERVO_NUMBER 6
+#define SERVO_NUMBER 8
 
 /**
  * Minimum high time for servos.

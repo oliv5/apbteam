@@ -103,6 +103,11 @@ servo_init (void)
 
     /* Enable overflow interrupt */
     set_bit (TIMSK, TOIE2);
+
+    /* By default, servo init disable all servo. */
+    uint8_t i;
+    for (i = 0; i < SERVO_NUMBER; i++)
+	servo_set_high_time (i, 0);
 }
 
 /* Set the high time of the input signal of a servo (and its position). */

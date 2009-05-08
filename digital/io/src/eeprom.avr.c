@@ -27,7 +27,7 @@
 #include "eeprom.h"
 
 #include "servo.h"		/* SERVO_NUMBER */
-#include "trap.h"		/* trap_high_time_pos */
+#include "servo_pos.h"
 #include "sharp.h"		/* sharp_threshold */
 
 #include <avr/eeprom.h>		/* eeprom_{read,write}_byte */
@@ -48,7 +48,7 @@
  * @warning: you must update this value every time you change the structure of
  * data stored into the EEPROM.
  */
-#define EEPROM_PARAM_KEY 0x04
+#define EEPROM_PARAM_KEY 0x05
 
 /** @} */
 
@@ -57,6 +57,7 @@ void
 eeprom_load_param ()
 {
     uint8_t compt;
+    uint8_t pos;
     uint16_t *ptr16;
 
     /* The parameters start at the given address */
@@ -66,12 +67,11 @@ eeprom_load_param ()
 	/* Error, stop here */
 	return;
 
-    /* Load trap module data */
-    /* Extreme position of the servos motor (high time value of the PWM) */
+    /* Load servo pos module data */
     for (compt = 0; compt < SERVO_NUMBER; compt++)
       {
-	trap_high_time_pos[0][compt] = eeprom_read_byte(ptr8++);
-	trap_high_time_pos[1][compt] = eeprom_read_byte(ptr8++);
+	for (pos = 0; pos < SERVO_POS_NUMBER; pos++)
+	    servo_pos_high_time[compt][pos] = eeprom_read_byte(ptr8++);
       }
 
     /* Load sharp module data */
@@ -88,7 +88,7 @@ eeprom_load_param ()
 void
 eeprom_save_param ()
 {
-    uint8_t compt;
+    uint8_t compt, pos;
     uint16_t *ptr16;
 
     /* The parameters start at the given address */
@@ -96,12 +96,11 @@ eeprom_save_param ()
     /* Store the key */
     eeprom_write_byte (ptr8++, EEPROM_PARAM_KEY);
 
-    /* Store trap module data */
-    /* Extreme position of the servos motor (high time value of the PWM) */
+    /* Store servo pos module data */
     for (compt = 0; compt < SERVO_NUMBER; compt++)
       {
-	eeprom_write_byte (ptr8++, trap_high_time_pos[0][compt]);
-	eeprom_write_byte (ptr8++, trap_high_time_pos[1][compt]);
+	for (pos = 0; pos < SERVO_POS_NUMBER; pos++)
+	    eeprom_write_byte (ptr8++, servo_pos_high_time[compt][pos]);
       }
 
     /* Store sharp module data */

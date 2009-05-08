@@ -39,10 +39,10 @@
 
 #include "asserv.h"	/* Functions to control the asserv board */
 #include "eeprom.h"	/* Parameters loaded/stored in the EEPROM */
-#include "trap.h"	/* Trap module (trap_* functions) */
 #include "fsm.h"	/* fsm_* */
 #include "giboulee.h"	/* team_color */
 /* #include "top.h" */	/* top_* */
+#include "servo_pos.h"
 #include "chrono.h"	/* chrono_end_match */
 #include "sharp.h"	/* sharp module */
 #include "pwm.h"
@@ -132,8 +132,6 @@ main_init (void)
     utils_delay_ms (500);
     /* Asserv communication */
     asserv_init ();
-    /* Trap module */
-    trap_init ();
     /* Switch module */
     switch_init ();
     /* Path module */
@@ -356,39 +354,13 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	utils_reset ();
 	break;
 
-	/* Servo/trap commands */
-      case c ('t', 3):
-	/* Set the high time values of a servo for the vertical and horizontal
-	 * positions using trapdoor module.
+	/* Servo pos commands */
+      case c ('p', (SERVO_POS_NUMBER + 1)):
+	/* Set the high time values of a servo for the positions
 	 *   - 1b: servo id number;
-	 *   - 1b: high time value (horizontal);
-	 *   - 1b: high time value (vertical).
+	 *   - 1b: high time value for position 0;
+	 *   - ...
 	 */
-	trap_set_high_time (args[0], args[1], args[2]);
-	break;
-
-      case c ('T', 1):
-	  {
-	    /* Setup traps to open a path to a destination box.
-	     *   - 1b: box identification
-	     */
-	    switch (args[0])
-	    /*FSM_HANDLE_EVENT (&top_fsm, switch_get_jack () ?
-			      TOP_EVENT_jack_removed_from_bot :
-			      TOP_EVENT_jack_inserted_into_bot);
-	    */
-	      {
-	      case 'o':
-		trap_open_rear_panel ();
-		break;
-	      case 'c':
-		trap_close_rear_panel ();
-		break;
-	      default:
-		trap_setup_path_to_box (args[0]);
-		break;
-	      }
-	  }
 	break;
 
       case c ('s', 2):
@@ -470,8 +442,8 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		    /* Trap */
 		    for (compt = 0; compt < SERVO_NUMBER; compt++)
 		      {
-			proto_send3b ('t', compt, trap_high_time_pos[0][compt],
-				      trap_high_time_pos[1][compt]);
+			proto_send ('p', SERVO_POS_NUMBER,
+				    servo_pos_high_time[compt]);
 		      }
 		    /* Sharp */
 		    for (compt = 0; compt < SHARP_NUMBER; compt++)
@@ -489,14 +461,6 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	    break;
 	  }
 	/* FSM commands */
-      case c ('g', 2):
-	/* Start the get samples FSM
-	 *   - 1b: the approach angle to face the distributor ;
-	 *   - 1b: how many and where to put collected samples ;
-	 */
-	/* getsamples_start (args[0] << 8, args[1], 0); */
-	break;
-
       case c ('A', 1):
 	  {
 	    /* Get position stats
