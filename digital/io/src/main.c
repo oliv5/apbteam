@@ -89,6 +89,11 @@ uint8_t main_always_stop_for_obstacle = 1;
 uint16_t main_move_wait_cycle;
 
 /**
+ * The same for init FSM
+ */
+uint16_t main_init_wait_cycle;
+
+/**
  * Sharps stats counters.
  */
 uint8_t main_stats_sharps, main_stats_sharps_cpt;
@@ -137,10 +142,18 @@ main_init (void)
     /* Path module */
     path_init (PG_BORDER_DISTANCE, PG_BORDER_DISTANCE,
 	       PG_WIDTH - PG_BORDER_DISTANCE, PG_HEIGHT - PG_BORDER_DISTANCE);
-    /* Start the top FSM */
-    //top_start ();
+    /* Init all FSM (except move FSM) */
     fsm_init(&top_fsm);
+    fsm_init(&init_fsm);
+    fsm_init(&cylinder_fsm);
+    fsm_init(&elevator_fsm);
+    fsm_init(&filterbridge_fsm);
+    /* Start all FSM (except move FSM) */
     fsm_handle_event (&top_fsm, TOP_EVENT_start);
+    fsm_handle_event (&init_fsm, INIT_EVENT_start);
+    /* fsm_handle_event (&top_fsm, TOP_EVENT_start);
+    fsm_handle_event (&top_fsm, TOP_EVENT_start);
+    fsm_handle_event (&top_fsm, TOP_EVENT_start); */
     /* Sharp module */
     sharp_init ();
     /* PWM module */
@@ -249,6 +262,8 @@ main_loop (void)
 		/* Pass it to all the FSM that need it */
 		FSM_HANDLE_EVENT (&move_fsm,
 				  MOVE_EVENT_bot_move_succeed);
+		FSM_HANDLE_EVENT (&init_fsm,
+				  INIT_EVENT_move_done);
 	      }
 	    else if (move_status == failure)
 	      {
@@ -257,9 +272,26 @@ main_loop (void)
 				  MOVE_EVENT_bot_move_failed);
 	      }
 	    /* Jack */
+	    if(switch_get_jack())
+	      {
+		FSM_HANDLE_EVENT (&top_fsm,
+				  TOP_EVENT_jack_removed_from_bot);
+	      }
+	    else
+	      {
+		FSM_HANDLE_EVENT (&top_fsm,
+				  TOP_EVENT_jack_inserted_into_bot);
+		FSM_HANDLE_EVENT (&init_fsm,
+				  INIT_EVENT_jack_inserted_into_bot);
+	      }
+	    /*
 	    FSM_HANDLE_EVENT (&top_fsm, switch_get_jack () ?
 			      TOP_EVENT_jack_removed_from_bot :
 			      TOP_EVENT_jack_inserted_into_bot);
+	    FSM_HANDLE_EVENT (&init_fsm, switch_get_jack () ?
+			      INIT_EVENT_jack_removed_from_bot :
+			      INIT_EVENT_jack_inserted_into_bot);
+			      */
 	    /* Settings acknowledge */
 	    /*
 	    if (main_top_generate_settings_ack_event)
@@ -348,6 +380,11 @@ main_loop (void)
 	    /* Reset stats counter */
 	    main_stats_asserv_cpt_ = main_stats_asserv_;
 	  }
+	/* Init FSM timer */
+	if(main_init_wait_cycle)
+	    --main_init_wait_cycle;
+	if(!main_init_wait_cycle)
+	    FSM_HANDLE_EVENT (&init_fsm, INIT_EVENT_init_tempo_ended);
       }
 }
 
@@ -507,10 +544,6 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		/* Stop motor */
 		asserv_stop_motor ();
 		break;
-	      case 'f':
-		/* Go to the wall */
-		asserv_go_to_the_wall ();
-		break;
 	      case 'F':
 		/* Go to the distributor */
 		asserv_go_to_distributor ();
@@ -518,6 +551,16 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	      }
 	  }
 	break;
+      case c ('a', 2):
+	  {
+	    switch (args[0])
+	      {
+	      case 'f':
+		/* Go to the wall */
+		asserv_go_to_the_wall (args[1]);
+		break;
+	      }
+	  }
       case c ('a', 3):
 	  {
 	    switch (args[0])

@@ -57,6 +57,12 @@ extern uint16_t main_move_wait_cycle;
 extern uint16_t main_getsamples_wait_cycle;
 
 /**
+ * Post an event for the init loop to wait a certain amount of time before
+ * make any move
+ */
+extern uint16_t main_init_wait_cycle;
+
+/**
  * Flag for homologation, to disable the path finding and always stop in front
  * of an obstacle and wait.
  */

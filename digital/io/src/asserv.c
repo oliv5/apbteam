@@ -453,10 +453,10 @@ asserv_goto_xya (uint32_t x, uint32_t y, int16_t a)
 
 /* Go to the wall (moving backward). */
 void
-asserv_go_to_the_wall (void)
+asserv_go_to_the_wall (uint8_t backward)
 {
     /* Put direction as parameters */
-    asserv_twi_buffer_param[0] = 1;
+    asserv_twi_buffer_param[0] = backward;
     /* Send the go the wall command to the asserv board */
     asserv_twi_send_command ('f', 1);
 }

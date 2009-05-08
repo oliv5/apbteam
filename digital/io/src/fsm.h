@@ -112,5 +112,6 @@ fsm_handle_event (fsm_t *fsm, u8 event);
 #include "filterbridge_fsm.h"
 #include "elevator_fsm.h"
 #include "cylinder_fsm.h"
+#include "init_fsm.h"
 
 #endif /* fsm_h */

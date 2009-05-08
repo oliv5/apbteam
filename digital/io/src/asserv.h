@@ -227,7 +227,7 @@ asserv_goto_xya (uint32_t x, uint32_t y, int16_t a);
  * Move class command.
  */
 void
-asserv_go_to_the_wall (void);
+asserv_go_to_the_wall (uint8_t backward);
 
 /**
  * Move forward to approach a distributor.

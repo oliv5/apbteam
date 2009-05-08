@@ -16,6 +16,6 @@ AVR_MCU = atmega128
 OPTIMIZE = -O2
 
 # FSMs.
-FSM_SOURCES := top move filterbridge elevator cylinder
+FSM_SOURCES := top move filterbridge elevator cylinder init
 # Include FSM makefile.
 include $(BASE)/make/Makefile.fsm

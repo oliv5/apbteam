@@ -1,0 +1,73 @@
+# init FSM
+# This FSM set the position of the bot with some move on wall
+# This FSM is required because the meca team is "relou"
+init
+  init FSM with setup move
+
+States:
+ IDLE
+  waiting for the beginning of the top FSM
+ WAIT_JACK_IN
+  waiting for the jack to be inserted into the bot
+ WAIT_2_SEC
+  waiting for operator's hand not on jack anymore
+ GOTO_THE_WALL
+  go to the wall for the first time
+ GO_BACKWARD
+  go backward for INIT_DIST millimeters
+ TURN_90_DEGREES_CCW
+  turn bot for 90 degrees counterclockwise
+ GOTO_THE_WALL_AGAIN
+  go to the wall for the second time
+ GO_BACKWARD_AGAIN
+  go backward for INIT_DIST millimeters again
+ TURN_180_DEGREES_CCW
+  turn bot for 180 degrees counterclockwise
+ SET_POSITION
+  tell the truth to asserv
+
+Events:
+ start
+  initialize the FSM
+ jack_inserted_into_bot
+  the jack is inserted into the bot
+ init_tempo_ended
+  the tempo is finished
+ move_done
+  the move is finished
+
+IDLE:
+ start -> WAIT_JACK_IN
+  wait for the jack to be inserted into the bot
+
+WAIT_JACK_IN:
+ jack_inserted_into_bot -> WAIT_2_SEC
+  wait for the operator hand disappears
+
+WAIT_2_SEC:
+ init_tempo_ended -> GOTO_THE_WALL
+  go to the first wall
+
+GOTO_THE_WALL:
+ move_done -> GO_BACKWARD
+  go backward for INIT_DIST millimeters
+
+GO_BACKWARD:
+ move_done -> TURN_90_DEGREES_CCW
+  turn bot for 90 degrees counterclockwise
+
+TURN_90_DEGREES_CCW:
+ move_done -> GOTO_THE_WALL_AGAIN
+  go to the wall for the second time
+
+GOTO_THE_WALL_AGAIN:
+ move_done -> GO_BACKWARD_AGAIN
+  go backward for INIT_DIST millimeters again
+
+GO_BACKWARD_AGAIN:
+ move_done -> TURN_180_DEGREES_CCW
+  turn bot for 180 degrees counterclockwise
+
+TURN_180_DEGREES_CCW:
+ move_done -> SET_POSITION
+  set real position to asserv
