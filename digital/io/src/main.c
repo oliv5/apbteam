@@ -42,10 +42,8 @@
 #include "trap.h"	/* Trap module (trap_* functions) */
 #include "fsm.h"	/* fsm_* */
 #include "giboulee.h"	/* team_color */
-#include "getsamples.h"	/* getsamples_start */
 /* #include "top.h" */	/* top_* */
 #include "chrono.h"	/* chrono_end_match */
-#include "gutter.h"	/* gutter_generate_wait_finished_event */
 #include "sharp.h"	/* sharp module */
 #include "pwm.h"
 #include "playground.h"
@@ -89,11 +87,6 @@ uint8_t main_always_stop_for_obstacle = 1;
  * of cycles.
  */
 uint16_t main_move_wait_cycle;
-
-/**
- * Get samples timeout.
- */
-uint16_t main_getsamples_wait_cycle;
 
 /**
  * Sharps stats counters.
@@ -224,9 +217,6 @@ main_loop (void)
 	    /* Update wait flag for move FSM */
 	    if (main_move_wait_cycle)
 		main_move_wait_cycle--;
-	    /* Update wait flag for getsamples FSM */
-	    if (main_getsamples_wait_cycle)
-		main_getsamples_wait_cycle--;
 	    /* Update sharp module if required and only every
 	     * MAIN_SHARP_UPDATE_FREQ cycles */
 	    if (++main_sharp_freq_counter_ == MAIN_SHARP_UPDATE_FREQ)
@@ -238,11 +228,6 @@ main_loop (void)
 	      }
 
 	    /* Update main */
-	    uint8_t main_asserv_arm_position_reached = asserv_arm_position_reached ();
-	    /*
-	    uint8_t main_top_generate_settings_ack_event = top_generate_settings_ack_event ();
-	    uint8_t main_gutter_generate_wait_finished_event = gutter_generate_wait_finished_event ();
-	    */
 	    asserv_status_e move_status = asserv_last_cmd_ack ()
 		? asserv_move_cmd_status () : none;
 
@@ -250,59 +235,19 @@ main_loop (void)
 	    if (move_status == success)
 	      {
 		/* Pass it to all the FSM that need it */
-		/*
-		FSM_HANDLE_EVENT (&getsamples_fsm,
-				  GETSAMPLES_EVENT_bot_move_succeed);
-		FSM_HANDLE_EVENT (&gutter_fsm,
-				  GUTTER_EVENT_bot_move_succeed);
-		*/
 		FSM_HANDLE_EVENT (&move_fsm,
 				  MOVE_EVENT_bot_move_succeed);
 	      }
 	    else if (move_status == failure)
 	      {
 		/* Move failed */
-		/*
-		FSM_HANDLE_EVENT (&getsamples_fsm,
-				  GETSAMPLES_EVENT_bot_move_failed);
-		FSM_HANDLE_EVENT (&getsamples_fsm,
-				  GETSAMPLES_EVENT_bot_move_succeed);
-		FSM_HANDLE_EVENT (&gutter_fsm,
-				  GUTTER_EVENT_bot_move_failed);
-		*/
 		FSM_HANDLE_EVENT (&move_fsm,
 				  MOVE_EVENT_bot_move_failed);
-	      }
-	    asserv_status_e arm_status = asserv_last_cmd_ack ()
-		? asserv_arm_cmd_status () : none;
-	    /* Check commands arm status */
-	    if (arm_status == success)
-	      {
-		/* Pass it to all the FSM that need it */
-		/*
-		FSM_HANDLE_EVENT (&getsamples_fsm,
-				  GETSAMPLES_EVENT_arm_move_succeed);
-		*/
-	      }
-	    /* TODO: Check if the sensor placed at the noted position has seen
-	     * an arm passed and forward this event to the getsamples FSM */
-	    if (main_asserv_arm_position_reached)
-	      {
-		/* Reset the notifier */
-		asserv_arm_set_position_reached (0);
-		/*
-		FSM_HANDLE_EVENT (&getsamples_fsm,
-				  GETSAMPLES_EVENT_arm_pass_noted_position);
-		*/
 	      }
 	    /* Jack */
 	    FSM_HANDLE_EVENT (&top_fsm, switch_get_jack () ?
 			      TOP_EVENT_jack_removed_from_bot :
 			      TOP_EVENT_jack_inserted_into_bot);
-	    /*FSM_HANDLE_EVENT (&top_fsm, switch_get_jack () ?
-			      TOP_EVENT_jack_removed_from_bot :
-			      TOP_EVENT_jack_inserted_into_bot);
-	    */
 	    /* Settings acknowledge */
 	    /*
 	    if (main_top_generate_settings_ack_event)
@@ -311,13 +256,6 @@ main_loop (void)
 	      }
 	      */
 	    FSM_HANDLE_EVENT (&top_fsm, TOP_EVENT_settings_acknowledged);
-	    /* Gutter wait_finished event */
-	    /*
-	    if (main_gutter_generate_wait_finished_event)
-	      {
-		FSM_HANDLE_EVENT (&gutter_fsm, GUTTER_EVENT_wait_finished);
-	      }
-	      */
 	    /* Event generated at the end of the sub FSM to post to the top FSM */
 	    if (main_post_event_for_top_fsm != 0xFF)
 	      {
@@ -352,14 +290,6 @@ main_loop (void)
 	    if (!main_move_wait_cycle)
 	      {
 		FSM_HANDLE_EVENT (&move_fsm, MOVE_EVENT_wait_finished);
-	      }
-	    /* Wait flag for getsamples FSM */
-	    if (!main_getsamples_wait_cycle)
-	      {
-		/*
-		FSM_HANDLE_EVENT (&getsamples_fsm,
-				  GETSAMPLES_EVENT_wait_finished);
-		*/
 	      }
 	    /* TODO: Check other sensors */
 	  }
@@ -443,6 +373,10 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	     *   - 1b: box identification
 	     */
 	    switch (args[0])
+	    /*FSM_HANDLE_EVENT (&top_fsm, switch_get_jack () ?
+			      TOP_EVENT_jack_removed_from_bot :
+			      TOP_EVENT_jack_inserted_into_bot);
+	    */
 	      {
 	      case 'o':
 		trap_open_rear_panel ();

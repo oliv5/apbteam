@@ -47,7 +47,6 @@ top__MOVE_BACKWARD__move_fsm_finished (void)
     asserv_position_t position;
     asserv_get_position (&position);
     /* FIXME: linear move is better? */
-    /* Move away from the gutter */
     move_start (position.x, position.y - 1500, 0);
     return top_next (MOVE_BACKWARD, move_fsm_finished);
 }
@@ -76,7 +75,6 @@ top__MOVE_FORWARD__move_fsm_finished (void)
     asserv_position_t position;
     asserv_get_position (&position);
     /* FIXME: linear move is better? */
-    /* Move away from the gutter */
     move_start (position.x, position.y + 1500, 0);
     return top_next (MOVE_FORWARD, move_fsm_finished);
 }
@@ -104,7 +102,6 @@ top__CONFIGURE_ASSERV__settings_acknowledged (void)
     asserv_position_t position;
     asserv_get_position (&position);
     /* FIXME: linear move is better? */
-    /* Move away from the gutter */
     move_start (position.x, position.y - 1500, 0);
     return top_next (CONFIGURE_ASSERV, settings_acknowledged);
 }
