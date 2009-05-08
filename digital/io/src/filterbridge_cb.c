@@ -25,86 +25,87 @@
 #include "common.h"
 #include "fsm.h"
 #include "filterbridge_cb.h"
+#include "elevator.h"
+#include "servo_pos.h"
+#include "aquajim.h"
+
+/*
+ * IDLE =start=>
+ *  => WAIT_JACK_IN
+ *   we wait for the jack
+ */
+fsm_branch_t
+filterbridge__IDLE__start (void)
+{
+    return filterbridge_next (IDLE, start);
+}
+
+/*
+ * WAIT_JACK_IN =jack_inserted_into_bot=>
+ *  => CLOSE_DOOR
+ *   we init the bridge
+ */
+fsm_branch_t
+filterbridge__WAIT_JACK_IN__jack_inserted_into_bot (void)
+{
+    servo_pos_move_to(SERVO_FINGER_ID, SERVO_FINGER_IDLE);
+    servo_pos_move_to(SERVO_DOOR_ID, SERVO_DOOR_CLOSE);
+    return filterbridge_next (WAIT_JACK_IN, jack_inserted_into_bot);
+}
+
+/*
+ * CLOSE_DOOR =state_timeout=>
+ *  => WAIT_A_PUCK
+ *   we are ready, we wait a puck
+ */
+fsm_branch_t
+filterbridge__CLOSE_DOOR__state_timeout (void)
+{
+    return filterbridge_next (CLOSE_DOOR, state_timeout);
+}
 
 /*
  * WAIT_A_PUCK =puck_on_pos2=>
- * nb_puck_ok => WAIT_RGB_PROBE
- *   probe color of the new puck
- * too_much_puck => EJECT_PUCK
- *   we have too much puck, eject the puck quickly and whistle
+ * lift_not_ready => WAIT_A_PUCK
+ *   Lift not ready, we stand by
+ * lift_ready => OPEN_DOOR
+ *   Lift ok, we deliver
  */
 fsm_branch_t
 filterbridge__WAIT_A_PUCK__puck_on_pos2 (void)
 {
-    return filterbridge_next_branch (WAIT_A_PUCK, puck_on_pos2, nb_puck_ok);
-    return filterbridge_next_branch (WAIT_A_PUCK, puck_on_pos2, too_much_puck);
+    if(elevator_is_ready)
+      {
+	servo_pos_move_to(SERVO_DOOR_ID, SERVO_DOOR_OPEN);
+	return filterbridge_next_branch (WAIT_A_PUCK, puck_on_pos2, lift_ready);
+      }
+    else
+	return filterbridge_next_branch (WAIT_A_PUCK, puck_on_pos2, lift_not_ready);
 }
 
 /*
- * WAIT_RGB_PROBE =color_probed=>
- * bad_color => EJECT_PUCK
- *   eject bad puck
- * good_color => OPEN_DOOR
- *   put puck to the lift
+ * OPEN_DOOR =state_timeout=>
+ *  => PUSH_PUCK
+ *   we push the puck to the lift
  */
 fsm_branch_t
-filterbridge__WAIT_RGB_PROBE__color_probed (void)
+filterbridge__OPEN_DOOR__state_timeout (void)
 {
-    return filterbridge_next_branch (WAIT_RGB_PROBE, color_probed, bad_color);
-    return filterbridge_next_branch (WAIT_RGB_PROBE, color_probed, good_color);
+    servo_pos_move_to(SERVO_FINGER_ID,SERVO_FINGER_PUSHING);
+    return filterbridge_next (OPEN_DOOR, state_timeout);
 }
 
 /*
- * IDLE =lift_ready=>
- *  => WAIT_A_PUCK
- *   the lift is ready to get pucks, we can begin testing procedure
- */
-fsm_branch_t
-filterbridge__IDLE__lift_ready (void)
-{
-    return filterbridge_next (IDLE, lift_ready);
-}
-
-/*
- * CLOSE_DOOR =door_closed=>
- *  => IDLE
- *   filter bridge ready
- */
-fsm_branch_t
-filterbridge__CLOSE_DOOR__door_closed (void)
-{
-    return filterbridge_next (CLOSE_DOOR, door_closed);
-}
-
-/*
- * RETURN_NORMAL_POS =bridge_in_position=>
+ * PUSH_PUCK =no_puck_on_pos2=>
  *  => CLOSE_DOOR
- *   make bridge ready to test a new puck
+ *   the puck disappears, we close doors
  */
 fsm_branch_t
-filterbridge__RETURN_NORMAL_POS__bridge_in_position (void)
+filterbridge__PUSH_PUCK__no_puck_on_pos2 (void)
 {
-    return filterbridge_next (RETURN_NORMAL_POS, bridge_in_position);
+    servo_pos_move_to(SERVO_FINGER_ID, SERVO_FINGER_IDLE);
+    servo_pos_move_to(SERVO_DOOR_ID, SERVO_DOOR_CLOSE);
+    return filterbridge_next (PUSH_PUCK, no_puck_on_pos2);
 }
 
-/*
- * OPEN_DOOR =no_puck_on_pos2=>
- *  => CLOSE_DOOR
- *   release puck to the lift
- */
-fsm_branch_t
-filterbridge__OPEN_DOOR__no_puck_on_pos2 (void)
-{
-    return filterbridge_next (OPEN_DOOR, no_puck_on_pos2);
-}
 
-/*
- * EJECT_PUCK =ejection_done=>
- *  => RETURN_NORMAL_POS
- *   put bridge on normal position after puck ejection
- */
-fsm_branch_t
-filterbridge__EJECT_PUCK__ejection_done (void)
-{
-    return filterbridge_next (EJECT_PUCK, ejection_done);
-}

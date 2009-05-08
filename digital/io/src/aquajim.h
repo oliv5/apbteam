@@ -34,4 +34,15 @@
  */
 #define MATCH_DURATION_MS 90000
 
+/**
+ * filterbridge servo
+ */
+
+#define SERVO_FINGER_ID 0
+#define SERVO_DOOR_ID 1
+#define SERVO_FINGER_IDLE 0
+#define SERVO_FINGER_PUSHING 1
+#define SERVO_DOOR_OPEN 0
+#define SERVO_DOOR_CLOSE 1
+
 #endif /* aquajim_h */

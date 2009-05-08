@@ -35,6 +35,7 @@ Events:
   the tempo is finished
  move_done
   the move is finished
+ state_timeout
 
 IDLE:
  start -> WAIT_JACK_IN

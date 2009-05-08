@@ -151,6 +151,7 @@ main_init (void)
     /* Start all FSM (except move FSM) */
     fsm_handle_event (&top_fsm, TOP_EVENT_start);
     fsm_handle_event (&init_fsm, INIT_EVENT_start);
+    fsm_handle_event (&filterbridge_fsm, FILTERBRIDGE_EVENT_start);
     /* fsm_handle_event (&top_fsm, TOP_EVENT_start);
     fsm_handle_event (&top_fsm, TOP_EVENT_start);
     fsm_handle_event (&top_fsm, TOP_EVENT_start); */
@@ -337,6 +338,8 @@ main_loop (void)
 	      }
 	    /* TODO: Check other sensors */
 	  }
+
+	/* TODO: implement filterbridge events */
 
 	/* Send Sharps raw stats. */
 	if (main_stats_sharps && !--main_stats_sharps_cpt)

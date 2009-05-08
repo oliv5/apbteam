@@ -5,66 +5,51 @@ filterbridge
 States:
  IDLE
   waiting the lift is ready to accept new puck
+ WAIT_JACK_IN
+  waiting for the jack to be inserted into the bot
+ CLOSE_DOOR[timeout=225]
+  close access to the lift (and wait 1 sec)
  WAIT_A_PUCK
   waiting for a new puck
- WAIT_RGB_PROBE
-  waiting for RGB probe the first puck
- EJECT_PUCK
-  eject a bad puck
- RETURN_NORMAL_POS
-  move the bridge to his normal position
- OPEN_DOOR
+ OPEN_DOOR[timeout=225]
   release puck to the lift and block a new puck on pos1
- CLOSE_DOOR
-  release pos1 puck and close access to the lift
+ PUSH_PUCK
+  push the puck to the lift
 
 Events:
- lift_ready
-  lift ready to accept new puck
+ start
+  robot start
+ jack_inserted_into_bot
+  jack into the bot
  puck_on_pos2
   a puck has been detected on bridge's position 2
  no_puck_on_pos2
   there is no puck on position 2
- bridge_in_position
-  bridge is in his normal position
- door_opened
-  puck 1 blocked and puck 2 release to the lift
- ejection_done
-  the ejection procedure is completed
- color_probed
-  the result of the investigation will be revealed (suspens!!)
- door_closed
-  ready to test a new puck
  state_timeout
+  timeout used to wait the end of servo move
 
 IDLE:
- lift_ready -> WAIT_A_PUCK
-  the lift is ready to get pucks, we can begin testing procedure
+ start -> WAIT_JACK_IN
+  we wait for the jack
 
-WAIT_A_PUCK:
- puck_on_pos2: too_much_puck -> EJECT_PUCK
-  we have too much puck, eject the puck quickly and whistle
- puck_on_pos2: nb_puck_ok -> WAIT_RGB_PROBE
-  probe color of the new puck
-
-WAIT_RGB_PROBE:
- color_probed: bad_color -> EJECT_PUCK
-  eject bad puck
- color_probed: good_color -> OPEN_DOOR
-  put puck to the lift
-
-EJECT_PUCK:
- ejection_done -> RETURN_NORMAL_POS
-  put bridge on normal position after puck ejection
-
-RETURN_NORMAL_POS:
- bridge_in_position -> CLOSE_DOOR
-  make bridge ready to test a new puck
-
-OPEN_DOOR:
- no_puck_on_pos2 -> CLOSE_DOOR
-  release puck to the lift
+WAIT_JACK_IN:
+ jack_inserted_into_bot -> CLOSE_DOOR
+  we init the bridge
 
 CLOSE_DOOR:
- door_closed -> IDLE
-  filter bridge ready
+ state_timeout -> WAIT_A_PUCK
+  we are ready, we wait a puck
+
+WAIT_A_PUCK:
+ puck_on_pos2: lift_not_ready -> .
+  Lift not ready, we stand by
+ puck_on_pos2: lift_ready -> OPEN_DOOR
+  Lift ok, we deliver
+
+OPEN_DOOR:
+ state_timeout -> PUSH_PUCK
+  we push the puck to the lift
+
+PUSH_PUCK:
+ no_puck_on_pos2 -> CLOSE_DOOR
+  the puck disappears, we close doors

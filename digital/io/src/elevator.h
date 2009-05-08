@@ -25,4 +25,9 @@
  *
  * }}} */
 
+/**
+ * State of the elevator
+ */
+extern uint8_t elevator_is_ready;
+
 #endif // elevator_h
