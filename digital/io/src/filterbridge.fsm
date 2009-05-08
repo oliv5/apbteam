@@ -35,7 +35,7 @@ Events:
   the result of the investigation will be revealed (suspens!!)
  door_closed
   ready to test a new puck
-
+ state_timeout
 
 IDLE:
  lift_ready -> WAIT_A_PUCK

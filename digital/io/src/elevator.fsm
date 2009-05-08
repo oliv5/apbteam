@@ -37,6 +37,7 @@ Events:
   doors are opened
  doors_closed
   doors are closed
+ state_timeout
 
 IDLE:
  started -> GO_TO_POS_X

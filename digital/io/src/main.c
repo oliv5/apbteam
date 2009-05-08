@@ -164,6 +164,12 @@ main_loop (void)
 	    continue; \
 	  } \
       }
+#define FSM_HANDLE_TIMEOUT(fsm) \
+      { if (fsm_handle_timeout (fsm)) \
+	  { \
+	    continue; \
+	  } \
+      }
 
     /* Infinite loop */
     while (1)
@@ -226,6 +232,12 @@ main_loop (void)
 		/* Reset counter */
 		main_sharp_freq_counter_ = 0;
 	      }
+	    /* Update FSM timeouts. */
+	    FSM_HANDLE_TIMEOUT (&move_fsm);
+	    FSM_HANDLE_TIMEOUT (&top_fsm);
+	    FSM_HANDLE_TIMEOUT (&filterbridge_fsm);
+	    FSM_HANDLE_TIMEOUT (&elevator_fsm);
+	    FSM_HANDLE_TIMEOUT (&cylinder_fsm);
 
 	    /* Update main */
 	    asserv_status_e move_status = asserv_last_cmd_ack ()

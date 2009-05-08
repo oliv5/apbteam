@@ -74,6 +74,12 @@ struct fsm_t
     u8 state_init;
     /** Current active state. */
     u8 state_current;
+    /** State timeout table. */
+    const u16 *state_timeout_table;
+    /** Current state timeout if not 0xffff. */
+    u16 state_timeout;
+    /** Event to generate on state timeout. */
+    u8 state_timeout_event;
 #ifdef HOST
     /** FSM name. */
     const char *name;
@@ -88,6 +94,10 @@ typedef struct fsm_t fsm_t;
 /** Reset a FSM. */
 void
 fsm_init (fsm_t *fsm);
+
+/** Handle state timeout, return 1 if a event was handled. */
+uint8_t
+fsm_handle_timeout (fsm_t *fsm);
 
 /** Handle an event on the given FSM.
  * @return

@@ -43,7 +43,7 @@ Events:
   Optical fence probe finished
  lift_ready
   lift ready to get pucks
-
+ state_timeout
 
 IDLE:
  jack_in -> INIT

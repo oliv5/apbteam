@@ -27,6 +27,7 @@ Events:
   the bot has seen something (with the sharps)
  wait_finished
   we have wait the desired time
+ state_timeout
 
 IDLE:
  start -> MOVING_TO_FINAL_POSITION

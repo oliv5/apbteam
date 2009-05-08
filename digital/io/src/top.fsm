@@ -32,6 +32,7 @@ Events:
   the jack is removed from the bot
  settings_acknowledged
   the asserv board has acknowledged the settings sent
+ state_timeout
 
 IDLE:
  start -> WAIT_JACK_IN

@@ -15,6 +15,11 @@ static const fsm_transition_t
 %(prefix)s_transition_table[%(PREFIX)s_STATE_NB][%(PREFIX)s_EVENT_NB] = {
 %(transition_table)s};
 
+/* %(name)s state timeout table. */
+static const uint16_t
+%(prefix)s_state_timeout_table[%(PREFIX)s_STATE_NB] = {
+%(states,%(@timeout|0xffff)s)s};
+
 #ifdef HOST
 
 /* %(name)s state names. */
@@ -35,6 +40,9 @@ fsm_t %(prefix)s_fsm = {
     %(PREFIX)s_EVENT_NB,
     %(PREFIX)s_STATE_%(initial)s,
     %(PREFIX)s_STATE_%(initial)s,
+    &%(prefix)s_state_timeout_table[0],
+    0,
+    %(PREFIX)s_EVENT_state_timeout,
 #ifdef HOST
     "%(name)s",
     %(prefix)s_states_names,

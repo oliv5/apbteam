@@ -37,6 +37,25 @@ fsm_init (fsm_t *fsm)
     fsm->state_current = fsm->state_init;
 }
 
+/** Handle state timeout, return 1 if a event was handled. */
+uint8_t
+fsm_handle_timeout (fsm_t *fsm)
+{
+    assert (fsm);
+    /* If there is a timeout for this state. */
+    if (fsm->state_timeout != 0xffff)
+      {
+	if (fsm->state_timeout)
+	    fsm->state_timeout--;
+	else
+	  {
+	    /* Timeout expired, generate corresponding event. */
+	    return fsm_handle_event (fsm, fsm->state_timeout_event);
+	  }
+      }
+    return 0;
+}
+
 /** Handle an event on the given FSM. */
 uint8_t
 fsm_handle_event (fsm_t *fsm, u8 event)
@@ -62,6 +81,7 @@ fsm_handle_event (fsm_t *fsm, u8 event)
 #else
 	fsm->state_current = br;
 #endif
+	fsm->state_timeout = fsm->state_timeout_table[fsm->state_current];
 	return 1;
       }
     return 0;
