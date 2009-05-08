@@ -68,3 +68,14 @@ main (int argc, char **argv)
     simu (m, 1.0);
     return 0;
 }
+
+void
+simu_sensor_update_giboulee (void)
+{
+}
+
+void
+simu_sensor_update_aquajim (void)
+{
+}
+

@@ -38,4 +38,10 @@ timer_wait (void);
 uint8_t
 timer_read (void);
 
+void
+simu_sensor_update_giboulee (void);
+
+void
+simu_sensor_update_aquajim (void);
+
 #endif /* simu_host_h */

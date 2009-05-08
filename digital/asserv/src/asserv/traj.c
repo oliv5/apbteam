@@ -151,7 +151,7 @@ traj_ftw (void)
 	state_main.variant = 2;
 #else
 	/* On host, we must do the job. */
-	speed_theta.cons = speed / 2;
+	speed_theta.cons = speed / 4;
 	if (left)
 	    speed_alpha.cons = speed / 2;
 	else

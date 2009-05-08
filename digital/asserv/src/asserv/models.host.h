@@ -53,6 +53,8 @@ struct robot_t
     const struct motor_def_t *aux_motor[AC_ASSERV_AUX_NB];
     /** Number of steps for each auxiliary motor encoder. */
     int aux_encoder_steps[AC_ASSERV_AUX_NB];
+    /** Sensor update function. */
+    void (*sensor_update) (void);
 };
 
 /** Get a pointer to a model by name, or return 0. */

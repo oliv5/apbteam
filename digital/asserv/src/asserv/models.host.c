@@ -22,8 +22,11 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "common.h"
+
 #include "motor_model.host.h"
 #include "models.host.h"
+#include "simu.host.h"
 
 #include <math.h>
 #include <string.h>
@@ -96,7 +99,7 @@ static const struct robot_t gloubi_robot =
     13.0, // approx
     /* Whether the encoder is mounted on the main motor (false) or not (true). */
     0,
-    0.0, 0.0, { NULL, NULL }, { 0, 0 }
+    0.0, 0.0, { NULL, NULL }, { 0, 0 }, NULL
 };
 
 /* Taz, APBTeam/Efrei 2005. */
@@ -116,7 +119,7 @@ static const struct robot_t taz_robot =
     0.0,
     /* Whether the encoder is mounted on the main motor (false) or not (true). */
     0,
-    0.0, 0.0, { NULL, NULL }, { 0, 0 }
+    0.0, 0.0, { NULL, NULL }, { 0, 0 }, NULL
 };
 
 /* TazG, Taz with RE25G motors. */
@@ -136,7 +139,7 @@ static const struct robot_t tazg_robot =
     0.0,
     /* Whether the encoder is mounted on the main motor (false) or not (true). */
     0,
-    0.0, 0.0, { NULL, NULL }, { 0, 0 }
+    0.0, 0.0, { NULL, NULL }, { 0, 0 }, NULL
 };
 
 /* Giboulée arm model, with a RE25CLL and a 1:10 ratio gearbox. */
@@ -183,6 +186,8 @@ static const struct robot_t giboulee_robot =
     { &giboulee_arm_model, NULL },
     /** Number of steps for each auxiliary motor encoder. */
     { 500, 0 },
+    /** Sensor update function. */
+    simu_sensor_update_giboulee,
 };
 
 /* AquaJim arm model, with a RE40G and a 1:4 + 15:80 ratio gearbox. */
@@ -247,6 +252,8 @@ static const struct robot_t aquajim_robot =
     { &aquajim_arm_model, &aquajim_elevator_model },
     /** Number of steps for each auxiliary motor encoder. */
     { 250, 250 },
+    /** Sensor update function. */
+    simu_sensor_update_aquajim,
 };
 
 /* Table of models. */

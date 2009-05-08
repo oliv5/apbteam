@@ -139,9 +139,9 @@ simu_pos_update (double dl, double dr, double footing)
     simu_pos_a = na;
 }
 
-/** Update sensors. */
-static void
-simu_sensor_update (void)
+/** Update sensors for Giboulee. */
+void
+simu_sensor_update_giboulee (void)
 {
     /** Micro-switch sensors. */
     static const double sensors[][2] =
@@ -175,6 +175,51 @@ simu_sensor_update (void)
 	if (!(cos (aa) > 0 && fabs (sin (aa)) * 80.0 < 7.5))
 	    *aux[i].zero_pin |= aux[i].zero_bv;
       }
+}
+
+/** Update sensors for AquaJim. */
+void
+simu_sensor_update_aquajim (void)
+{
+    /** Micro-switch sensors. */
+    static const double sensors[][2] =
+      {
+	  { -150.0, 150.0 },
+	  { -150.0, -150.0 },
+	  { 150.0, 150.0 },
+	  { 150.0, -150.0 },
+	  { 150.0, 0.0 },
+      };
+    static const uint8_t sensors_bit[] =
+      { IO_BV (CONTACT_BACK_LEFT_IO), IO_BV (CONTACT_BACK_RIGHT_IO),
+	IO_BV (CONTACT_FRONT_LEFT_IO), IO_BV (CONTACT_FRONT_RIGHT_IO),
+	IO_BV (CONTACT_CENTER_IO), };
+    static const double table_width = 3000.0, table_height = 2100.0;
+    static const double center_zone_radius = 150.0;
+    PINC = 0;
+    unsigned int i;
+    double x, y, cx, cy, ds;
+    for (i = 0; i < UTILS_COUNT (sensors); i++)
+      {
+	/* Compute absolute position. */
+	x = simu_pos_x + cos (simu_pos_a) * sensors[i][0]
+	    - sin (simu_pos_a) * sensors[i][1];
+	y = simu_pos_y + sin (simu_pos_a) * sensors[i][0]
+	    + cos (simu_pos_a) * sensors[i][1];
+	cx = table_width / 2 - x;
+	cy = table_height / 2 - y;
+	ds = cx * cx + cy * cy;
+	if (x >= 0.0 && x < table_width && y >= 0.0 && y < table_height
+	    && ds > center_zone_radius * center_zone_radius)
+	    PINC |= sensors_bit[i];
+      }
+    /** Top zero sensors. */
+    double aa = simu_aux_model[0].th / simu_aux_model[0].m.i_G;
+    double apos = aa / (2 * M_PI / 3);
+    if (apos - floor (apos) > 0.5)
+	PINC |= IO_BV (CONTACT_AUX0_ZERO_IO);
+    if (simu_aux_model[1].th >= 0)
+	PINC |= IO_BV (CONTACT_AUX1_ZERO_IO);
 }
 
 /** Do a simulation step. */
@@ -267,7 +312,8 @@ simu_step (void)
 		     / simu_right_model.m.i_G * simu_robot->wheel_r * 1000,
 		     simu_robot->footing * 1000);
     /* Update sensors. */
-    simu_sensor_update ();
+    if (simu_robot->sensor_update)
+	simu_robot->sensor_update ();
 }
 
 /** Send information to the other nodes. */
