@@ -184,10 +184,10 @@ simu_sensor_update_aquajim (void)
     /** Micro-switch sensors. */
     static const double sensors[][2] =
       {
-	  { -150.0, 150.0 },
-	  { -150.0, -150.0 },
-	  { 150.0, 150.0 },
-	  { 150.0, -150.0 },
+	  { -150.0, 70.0 },
+	  { -150.0, -70.0 },
+	  { 150.0, 130.0 },
+	  { 150.0, -130.0 },
 	  { 150.0, 0.0 },
       };
     static const uint8_t sensors_bit[] =

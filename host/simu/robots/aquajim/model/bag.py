@@ -42,15 +42,15 @@ class Bag:
                 self.elevator_door)
         self.distance_sensor = [
                 DistanceSensorSharps (link_bag.io.adc[0], scheduler, table,
-                    (150, 150), 0, (self.position, )),
+                    (50, 130), 0, (self.position, )),
                 DistanceSensorSharps (link_bag.io.adc[1], scheduler, table,
-                    (150, 0), 0, (self.position, )),
+                    (50, -130), 0, (self.position, )),
                 DistanceSensorSharps (link_bag.io.adc[2], scheduler, table,
-                    (150, -150), 0, (self.position, )),
+                    (50, 0), 0, (self.position, )),
                 DistanceSensorSharps (link_bag.io.adc[3], scheduler, table,
-                    (-150, 100), pi, (self.position, )),
+                    (0, 130), pi, (self.position, )),
                 DistanceSensorSharps (link_bag.io.adc[4], scheduler, table,
-                    (-150, -100), pi, (self.position, )),
+                    (0, -130), pi, (self.position, )),
                 ]
         self.path = link_bag.io.path
 

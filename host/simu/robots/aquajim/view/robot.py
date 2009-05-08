@@ -46,15 +46,14 @@ class Robot (simu.inter.drawable.Drawable):
             self.trans_rotate (self.angle)
             self.trans_translate (self.pos)
             # Draw robot body.
-            # TODO
-            self.draw_polygon ((150, 150), (150, -150), (-150, -150),
-                    (-150, 150), (150, 150))
+            self.draw_polygon ((150, 155), (-90, 155), (-150, 70),
+                    (-150, -70), (-90, -155), (150, -155))
             # Draw Robot axis.
             axes_fill = '#404040'
             self.draw_line ((-150, 0), (150, 0), fill = axes_fill,
                     arrow = 'last')
             # Draw Robot wheels.
-            f = 150 # Wheel spacing
+            f = 142 + 2 * 31.5 - 13.5 # Wheel spacing
             wr = 63 / 2 # Wheel diameter
             self.draw_line ((0, +f / 2), (0, -f / 2), fill = axes_fill)
             self.draw_line ((-wr, f / 2), (+wr, f / 2), fill = axes_fill)
