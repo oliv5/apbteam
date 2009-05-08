@@ -145,6 +145,8 @@ main_init (void)
     sharp_init ();
     /* PWM module */
     pwm_init ();
+    /* Servo pos init. */
+    servo_pos_init ();
 
     /* io initialization done */
     proto_send0 ('z');
@@ -361,7 +363,17 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	 *   - 1b: high time value for position 0;
 	 *   - ...
 	 */
+	servo_pos_set_high_time (args[0], &args[1]);
 	break;
+
+      case c ('P', 2):
+	/* Set the high time values of a servo for the positions
+	 *   - 1b: servo id number;
+	 *   - 1b: servo position number;
+	 */
+	servo_pos_move_to (args[0], args[1]);
+	break;
+
 
       case c ('s', 2):
 	/* Set servo motor to a desired position using the servo module.
