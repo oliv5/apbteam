@@ -455,7 +455,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 			     v8_to_v32 (0, args[8], args[9], 0),
 			     1, args[10]);
 	break;
-      case c ('y', 3):
+      case c ('y', 4):
 	/* Auxiliary go to position.
 	 * - b: aux index.
 	 * - w: pos, i16.
@@ -465,14 +465,15 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	    break;
 	aux_traj_goto_start (auxp, v8_to_v16 (args[1], args[2]), args[3]);
 	break;
-      case c ('y', 1):
+      case c ('y', 3):
 	/* Auxiliary find zero.
 	 * - b: aux index.
+	 * - b: speed.
 	 * - b: sequence number. */
 	if (!auxp) { proto_send0 ('?'); return; }
-	if (args[1] == state->sequence)
+	if (args[2] == state->sequence)
 	    break;
-	aux_traj_find_zero_start (auxp, args[1]);
+	aux_traj_find_zero_start (auxp, args[1], args[2]);
 	break;
       case c ('a', 3):
 	/* Set all acknoledge.

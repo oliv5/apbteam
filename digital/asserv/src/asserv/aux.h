@@ -58,7 +58,7 @@ void
 aux_traj_goto_start (struct aux_t *aux, uint16_t pos, uint8_t seq);
 
 void
-aux_traj_find_zero_start (struct aux_t *aux, uint8_t seq);
+aux_traj_find_zero_start (struct aux_t *aux, int8_t speed, uint8_t seq);
 
 void
 aux_traj_update (void);

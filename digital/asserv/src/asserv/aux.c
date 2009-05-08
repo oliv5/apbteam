@@ -50,12 +50,8 @@ enum
     AUX_TRAJ_GOTO,
     /* Goto position, try to unblock. */
     AUX_TRAJ_GOTO_UNBLOCK,
-    /* Find zero mode, first start at full speed to detect a arm... */
-    AUX_TRAJ_FIND_ZERO_START,
-    /* ...then go on until it is not seen any more... */
-    AUX_TRAJ_FIND_ZERO_SLOW,
-    /* ...finally, go backward until it is seen. */
-    AUX_TRAJ_FIND_ZERO_BACK,
+    /* Find zero mode, turn until zero is seen. */
+    AUX_TRAJ_FIND_ZERO,
     /* Everything done. */
     AUX_TRAJ_DONE,
 };
@@ -131,43 +127,22 @@ void
 aux_traj_find_zero (struct aux_t *aux)
 {
     uint8_t zero = *aux->zero_pin & aux->zero_bv;
-    switch (aux->traj_mode)
+    if (!zero)
       {
-	case AUX_TRAJ_FIND_ZERO_START:
-	  if (!zero)
-	    {
-	      aux->speed->cons = aux->speed->max << 8;
-	      aux->traj_mode = AUX_TRAJ_FIND_ZERO_SLOW;
-	    }
-	  break;
-	case AUX_TRAJ_FIND_ZERO_SLOW:
-	  if (zero)
-	    {
-	      aux->speed->cons = -aux->speed->slow << 8;
-	      aux->traj_mode = AUX_TRAJ_FIND_ZERO_BACK;
-	    }
-	  break;
-	case AUX_TRAJ_FIND_ZERO_BACK:
-	  if (!zero)
-	    {
-	      aux->speed->cons = 0;
-	      state_finish (aux->state);
-	      aux->pos = 0;
-	      aux->traj_mode = AUX_TRAJ_DONE;
-	    }
-	  break;
-	default:
-	  assert (0);
+	aux->speed->cons = 0;
+	state_finish (aux->state);
+	aux->pos = 0;
+	aux->traj_mode = AUX_TRAJ_DONE;
       }
 }
 
 /** Start find zero mode. */
 void
-aux_traj_find_zero_start (struct aux_t *aux, uint8_t seq)
+aux_traj_find_zero_start (struct aux_t *aux, int8_t speed, uint8_t seq)
 {
-    aux->traj_mode = AUX_TRAJ_FIND_ZERO_START;
+    aux->traj_mode = AUX_TRAJ_FIND_ZERO;
     aux->speed->use_pos = 0;
-    aux->speed->cons = aux->speed->max << 8;
+    aux->speed->cons = speed << 8;
     state_start (aux->state, MODE_TRAJ, seq);
 }
 
@@ -183,9 +158,7 @@ aux_traj_update_single (struct aux_t *aux)
 	  case AUX_TRAJ_GOTO_UNBLOCK:
 	    aux_traj_goto (aux);
 	    break;
-	  case AUX_TRAJ_FIND_ZERO_START:
-	  case AUX_TRAJ_FIND_ZERO_SLOW:
-	  case AUX_TRAJ_FIND_ZERO_BACK:
+	  case AUX_TRAJ_FIND_ZERO:
 	    aux_traj_find_zero (aux);
 	    break;
 	  case AUX_TRAJ_DONE:

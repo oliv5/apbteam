@@ -202,8 +202,7 @@ twi_proto_callback (u8 *buf, u8 size)
       case c ('B', 1):
 	/* Find the zero position of the arm.
 	 * - b: speed. */
-	speed_aux[0].max = buf[2];
-	aux_traj_find_zero_start (&aux[0], 0);
+	aux_traj_find_zero_start (&aux[0], buf[2], 0);
 	break;
       case c ('c', 3):
 	/* Move the aux1.
@@ -215,8 +214,7 @@ twi_proto_callback (u8 *buf, u8 size)
       case c ('C', 1):
 	/* Find the zero position of the aux1.
 	 * - b: speed. */
-	speed_aux[1].max = buf[2];
-	aux_traj_find_zero_start (&aux[1], 0);
+	aux_traj_find_zero_start (&aux[1], buf[2], 0);
 	break;
       case c ('p', x):
 	/* Set parameters. */
