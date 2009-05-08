@@ -47,6 +47,7 @@
 #include "sharp.h"	/* sharp module */
 #include "pwm.h"
 #include "playground.h"
+#include "contact.h"
 
 #include "io.h"
 
@@ -161,6 +162,8 @@ main_init (void)
     pwm_init ();
     /* Servo pos init. */
     servo_pos_init ();
+    /* Contact. */
+    contact_init ();
 
     /* io initialization done */
     proto_send0 ('z');
