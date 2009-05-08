@@ -74,19 +74,24 @@ pwm_set (int16_t value, uint16_t timer)
       {
 	PWM_OCR = 0;
       }
-    else if (value > 0)
-      {
-	IO_PORT (PWM_DIR_IO) |= IO_BV (PWM_DIR_IO);
-	if (PWM_LMD18200_DELAY_US)
-	    utils_delay_us (PWM_LMD18200_DELAY_US);
-	PWM_OCR = value;
-      }
     else
       {
-	IO_PORT (PWM_DIR_IO) &= ~IO_BV (PWM_DIR_IO);
-	if (PWM_LMD18200_DELAY_US)
-	    utils_delay_us (PWM_LMD18200_DELAY_US);
-	PWM_OCR = -value;
+	/* Ensure value is not over PWM_MAX. */
+	UTILS_BOUND (value, -PWM_MAX, PWM_MAX);
+	if (value > 0)
+	  {
+	    IO_PORT (PWM_DIR_IO) |= IO_BV (PWM_DIR_IO);
+	    if (PWM_LMD18200_DELAY_US)
+		utils_delay_us (PWM_LMD18200_DELAY_US);
+	    PWM_OCR = value;
+	  }
+	else
+	  {
+	    IO_PORT (PWM_DIR_IO) &= ~IO_BV (PWM_DIR_IO);
+	    if (PWM_LMD18200_DELAY_US)
+		utils_delay_us (PWM_LMD18200_DELAY_US);
+	    PWM_OCR = -value;
+	  }
       }
     pwm_stop_timer = timer;
 }
