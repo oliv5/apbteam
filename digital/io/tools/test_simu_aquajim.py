@@ -49,8 +49,8 @@ class TestSimu (InterNode):
     """Interface, with simulated programs."""
 
     robot_start_pos = {
-            False: (200, 2100 - 70, math.radians (-90)),
-            True: (3000 - 200, 2100 - 70, math.radians (-90))
+            False: (300, 2100 - 305, math.radians (-270)),
+            True: (3000 - 300, 2100 - 305, math.radians (-270))
             }
 
     def __init__ (self, asserv_cmd, io_cmd):
