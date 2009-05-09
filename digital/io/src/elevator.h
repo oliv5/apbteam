@@ -30,4 +30,28 @@
  */
 extern uint8_t elevator_is_ready;
 
+/**
+ * nb puck in the elevator
+ */
+extern uint8_t nb_puck_in_elvt;
+
+/**
+ * elevator orders
+ */
+extern uint8_t elvt_order;
+/**
+ * conversion stop/millimeter
+ */
+
+#define STEP_BY_MM 72.34
+
+/**
+ * pwm constant for elevator doors
+ */
+
+#define OPEN_DOOR_PWM 200
+#define CLOSE_DOOR_PWM -200
+#define TIME_DOORS_PWM 0xcb
+#define TIME_LIGHT_DOORS_PWM 0xaa
+
 #endif // elevator_h

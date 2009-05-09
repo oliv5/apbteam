@@ -38,8 +38,8 @@
  *  ignored.
  */
 
-#define ASSERV_ARM_SPEED_DEFAULT 0x16
-#define ASSERV_ELVT_SPEED_DEFAULT 0x30
+#define ASSERV_ARM_SPEED_DEFAULT 0x18
+#define ASSERV_ELVT_SPEED_DEFAULT 0x46
 
 /**
  * Initialize the asserv control module.

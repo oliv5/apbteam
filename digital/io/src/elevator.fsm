@@ -5,6 +5,10 @@ elevator
 States:
  IDLE
   waiting for the beginning of the round
+ WAIT_JACK_IN
+  waiting for the jack
+ INIT
+  init the elevator
  GO_TO_POS_X
   go to a position to be ready to get a new puck
  WAIT_A_PUCK
@@ -12,9 +16,13 @@ States:
  WAIT_POS_ORDER
   waiting for position order (depending where we want to drop our column)
  GO_TO_POS_Y
-  go to a position to be ready to release pucks
+  go to a position + 1cm to be ready to release pucks
  WAIT_FOR_RELEASE_ORDER
   ready to open doors at your command
+ LAND_ELEVATOR
+  land elevator to the ground
+ MINI_CLOSE
+  try to unblock pucks
  OPEN_DOORS
   releasing pucks
  WAIT_FOR_CLOSE_ORDER
@@ -23,8 +31,12 @@ States:
   closing the elevator's doors
 
 Events:
- started
-  round had begun!
+ start
+  io power on!
+ jack_inserted_into_bot
+  jack into the bot
+ init_done
+  init done
  in_position
   elevator is in position
  new_puck
@@ -35,12 +47,20 @@ Events:
   we received a new order
  doors_opened
   doors are opened
- doors_closed
-  doors are closed
+ door_move_finished
+  doors move is done
  state_timeout
 
 IDLE:
- started -> GO_TO_POS_X
+ start -> WAIT_JACK_IN
+  waiting for jack
+
+WAIT_JACK_IN:
+ jack_inserted_into_bot -> INIT
+  make initializations
+
+INIT:
+ init_done -> GO_TO_POS_X
   match begin, we're going to be ready to get a new puck
 
 GO_TO_POS_X:
@@ -66,17 +86,27 @@ GO_TO_POS_Y:
   ready to release pucks at altitude Y
 
 WAIT_FOR_RELEASE_ORDER:
- order_received -> OPEN_DOORS
+ order_received -> LAND_ELEVATOR
+  make the elevator touch the target zone
+
+LAND_ELEVATOR:
+ in_position -> OPEN_DOORS
   release pucks to the target position (I hope)
 
 OPEN_DOORS:
  doors_opened -> WAIT_FOR_CLOSE_ORDER
   wait for close order
+ door_move_finished -> MINI_CLOSE
+  try to unblock doors
+
+MINI_CLOSE:
+ door_move_finished -> OPEN_DOORS
+  try to release pucks again
 
 WAIT_FOR_CLOSE_ORDER:
  order_received -> CLOSE_DOORS
   closing doors
 
 CLOSE_DOORS:
- doors_closed -> GO_TO_POS_X
+ door_move_finished -> GO_TO_POS_X
   pucks are released and elevator is ready to make a new column

@@ -671,7 +671,7 @@ asserv_arm_zero_position (void)
 void
 asserv_elevator_zero_position (void)
 {
-    asserv_twi_buffer_param[0] = ASSERV_ELVT_SPEED_DEFAULT;
+    asserv_twi_buffer_param[0] = -0x10;
     asserv_twi_send_command ('C', 1);
 }
 

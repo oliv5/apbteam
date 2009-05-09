@@ -29,6 +29,12 @@
  * State of the elevator
  */
 uint8_t elevator_is_ready;
+uint8_t nb_puck_in_elvt = 0;
+/**
+ * elevator orders
+ */
+uint8_t elvt_order;
+
 
 /* +AutoDec */
 /* -AutoDec */
