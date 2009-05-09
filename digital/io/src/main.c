@@ -89,6 +89,8 @@ uint8_t main_always_stop_for_obstacle = 1;
  */
 uint16_t main_move_wait_cycle;
 
+/* FIXME to be delete */
+uint8_t jack_emulation = 0;
 /**
  * The same for init FSM
  */
@@ -150,8 +152,8 @@ main_init (void)
     fsm_init(&elevator_fsm);
     fsm_init(&filterbridge_fsm);
     /* Start all FSM (except move FSM) */
-    fsm_handle_event (&top_fsm, TOP_EVENT_start);
-    fsm_handle_event (&init_fsm, INIT_EVENT_start);
+    //fsm_handle_event (&top_fsm, TOP_EVENT_start);
+    //fsm_handle_event (&init_fsm, INIT_EVENT_start);
     fsm_handle_event (&filterbridge_fsm, FILTERBRIDGE_EVENT_start);
     /* fsm_handle_event (&top_fsm, TOP_EVENT_start);
     fsm_handle_event (&top_fsm, TOP_EVENT_start);
@@ -391,6 +393,24 @@ main_loop (void)
 	    --main_init_wait_cycle;
 	if(!main_init_wait_cycle)
 	    FSM_HANDLE_EVENT (&init_fsm, INIT_EVENT_init_tempo_ended);
+	/* test filterbridge sensor */
+	if(!IO_GET (CONTACT_FILTER_BRIDGE_PUCK))
+	  {
+	    FSM_HANDLE_EVENT (&filterbridge_fsm,
+			      FILTERBRIDGE_EVENT_puck_on_pos2);
+	  }
+	else
+	  {
+	    FSM_HANDLE_EVENT (&filterbridge_fsm,
+			      FILTERBRIDGE_EVENT_no_puck_on_pos2);
+	  }
+	/* FIXME to be delete */
+	if(jack_emulation)
+	  {
+	    FSM_HANDLE_EVENT (&filterbridge_fsm,
+			      FILTERBRIDGE_EVENT_jack_inserted_into_bot);
+	  }
+
       }
 }
 
@@ -406,6 +426,9 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 #define c(cmd, size) (cmd << 8 | size)
     switch (c (cmd, size))
       {
+      case c ('j', 0):
+	jack_emulation = 1;
+	break;
       case c ('z', 0):
 	/* Reset */
 	utils_reset ();

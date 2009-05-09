@@ -29,6 +29,7 @@
 #include "init.h"
 #include "playground.h"
 #include "main.h"
+#include "aquajim.h"
 
 /*
  * GOTO_THE_WALL_AGAIN =move_done=>
@@ -86,7 +87,7 @@ init__TURN_90_DEGREES_CCW__move_done (void)
 fsm_branch_t
 init__GO_BACKWARD__move_done (void)
 {
-    asserv_move_angularly(90);
+    asserv_move_angularly(90*BOT_ANGLE_DEGREE);
     return init_next (GO_BACKWARD, move_done);
 }
 
@@ -136,7 +137,7 @@ init__WAIT_2_SEC__init_tempo_ended (void)
 fsm_branch_t
 init__GO_BACKWARD_AGAIN__move_done (void)
 {
-    asserv_move_angularly(180);
+    asserv_move_angularly(180*BOT_ANGLE_DEGREE);
     return init_next (GO_BACKWARD_AGAIN, move_done);
 }
 

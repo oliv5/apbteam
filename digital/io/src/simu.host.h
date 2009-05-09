@@ -25,6 +25,8 @@
  *
  * }}} */
 
+#include "common.h"
+
 #ifdef HOST
 
 extern uint8_t PORTC, PINC;

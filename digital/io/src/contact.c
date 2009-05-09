@@ -22,14 +22,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
-#include "common.h"
+
 #include "contact.h"
 #include "io.h"
 
 void
 contact_init (void)
 {
-    /* Pull-up. */
     IO_SET (CONTACT_FILTER_BRIDGE_PUCK);
     IO_SET (CONTACT_ELEVATOR_DOOR);
 }

@@ -45,4 +45,10 @@
 #define SERVO_DOOR_OPEN 0
 #define SERVO_DOOR_CLOSE 1
 
+/**
+ * How to compute a angle for giboulee?
+ * One degree is 65536 / 360
+ */
+#define BOT_ANGLE_DEGREE (65536 / 360)
+
 #endif /* aquajim_h */

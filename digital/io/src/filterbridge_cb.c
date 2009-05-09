@@ -68,19 +68,30 @@ filterbridge__CLOSE_DOOR__state_timeout (void)
  * WAIT_A_PUCK =puck_on_pos2=>
  * lift_not_ready => WAIT_A_PUCK
  *   Lift not ready, we stand by
- * lift_ready => OPEN_DOOR
- *   Lift ok, we deliver
+ * lift_ready => MARCEL_WAIT
+ *   wait the puck is entirely on pos2
  */
 fsm_branch_t
 filterbridge__WAIT_A_PUCK__puck_on_pos2 (void)
 {
     if(elevator_is_ready)
       {
-	servo_pos_move_to(SERVO_DOOR_ID, SERVO_DOOR_OPEN);
 	return filterbridge_next_branch (WAIT_A_PUCK, puck_on_pos2, lift_ready);
       }
     else
 	return filterbridge_next_branch (WAIT_A_PUCK, puck_on_pos2, lift_not_ready);
+}
+
+/*
+ * MARCEL_WAIT =state_timeout=>
+ *  => OPEN_DOOR
+ *   lift ready, we deliver
+ */
+fsm_branch_t
+filterbridge__MARCEL_WAIT__state_timeout (void)
+{
+    servo_pos_move_to(SERVO_DOOR_ID, SERVO_DOOR_OPEN);
+    return filterbridge_next (MARCEL_WAIT, state_timeout);
 }
 
 /*
