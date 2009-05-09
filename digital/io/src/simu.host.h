@@ -27,6 +27,8 @@
 
 #ifdef HOST
 
+extern uint8_t PORTC, PINC;
+
 /** Hooked, do nothing. */
 void
 switch_init (void);

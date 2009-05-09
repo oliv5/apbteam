@@ -69,6 +69,9 @@ uint8_t simu_switches;
 uint16_t OCR1A;
 uint8_t PORTB;
 
+/** Contact registers. */
+uint8_t PORTC, PINC;
+
 /** Initialise simulation. */
 void
 simu_init (void)

@@ -24,6 +24,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "simu.host.h"
 
 #define CONTACT_FILTER_BRIDGE_PUCK C, 0
 #define CONTACT_ELEVATOR_DOOR C, 1
