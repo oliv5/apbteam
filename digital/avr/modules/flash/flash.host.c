@@ -1,7 +1,7 @@
-/* test-flash.c */
+/* flash.host.c */
 /* avr.flash - AVR Flash SPI use. {{{
  *
- * Copyright (C) 2008 Nélio Laranjeiro
+ * Copyright (C) 2009 Nélio Laranjeiro
  *
  * APBTeam:
  *        Web: http://apbteam.org/
@@ -22,36 +22,50 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
-#include "modules/flash/flash.h"
-#include <stdio.h>
+#include "flash.h"
 
-int
-main (void)
+void
+flash_address (uint32_t addr){}
+
+void
+flash_erase (uint8_t cmd, uint32_t start_addr){}
+
+void
+flash_send_command (uint8_t cmd){}
+
+uint8_t
+flash_read_status (void)
 {
-    uint8_t status;
-    uint32_t addr;
-    uint8_t i;
-
-    status = flash_init ();
-    printf ("Flash status : %d\n", status);
-
-    flash_erase (FLASH_ERASE_FULL, 0);
-
-    for (i = 0; i < 10; i++)
-      {
-	status = flash_init ();
-	printf ("Flash status : %d\n", status);
-
-	// Get the first sector to begin.
-	addr = flash_first_sector ();
-	printf ("First sector : %x\n", addr);
-
-	flash_write (addr, 0xA);
-	flash_write (addr + 1, 0xB);
-
-	printf ("First data in the flash memory : %x\n", flash_read (addr));
-	printf ("Second data in the flash memory : %x\n", flash_read (addr + 1));
-      }
-
     return 0;
+}
+
+/** Initialise the flash memory.
+  * \return true if the flash is present, false otherwise.
+  */
+uint8_t
+flash_init (void)
+{
+    return 0;
+}
+
+void
+flash_write (uint32_t addr, uint8_t data) {}
+
+uint8_t
+flash_read (uint32_t addr) { return 0xff; }
+
+void
+flash_read_array (uint32_t addr, uint8_t *buffer, uint32_t length)
+{
+    memset (buffer, 0xFF, length);
+}
+
+void
+flash_write_array (uint32_t addr, uint8_t *data, uint32_t length)
+{}
+
+int8_t
+flash_log (uint8_t size, uint8_t *args)
+{
+    return 1;
 }
