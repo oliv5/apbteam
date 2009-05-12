@@ -25,4 +25,8 @@
  *
  * }}} */
 
+#include "common.h"
+
+extern uint8_t nb_puck_pf;
+
 #endif // filterbridge_h

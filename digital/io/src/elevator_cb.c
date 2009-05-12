@@ -28,15 +28,27 @@
 #include "elevator.h"
 #include "asserv.h"
 #include "pwm.h"
+#include "chrono.h"
+#include "filterbridge.h"
 
 /* Positions when waiting a puck*/
 uint16_t posx[4] = {0,0,0,0};
 /* Positions when we go to a target zone */
 uint16_t posy[3] = {0,0,0};
 
+/* nb puck on the elevator */
+uint8_t nb_puck_elvt = 0;
+
+/* ready flag */
+uint8_t elevator_is_ready = 0;
+
 /* increase/decrease of pos y */
 #define MAJ_POSY 100
 #define MIN_POSY 50
+
+/* time limit */
+/* TODO to be define */
+#define OK_TIME_LIMIT 20
 
 /*
  * IDLE =start=>
@@ -57,6 +69,7 @@ elevator__IDLE__start (void)
 fsm_branch_t
 elevator__WAIT_JACK_IN__jack_inserted_into_bot (void)
 {
+    asserv_elevator_zero_position();
     return elevator_next (WAIT_JACK_IN, jack_inserted_into_bot);
 }
 
@@ -68,9 +81,9 @@ elevator__WAIT_JACK_IN__jack_inserted_into_bot (void)
 fsm_branch_t
 elevator__INIT__init_done (void)
 {
+    elevator_is_ready = 0;
     asserv_move_elevator_absolute(posx[nb_puck_in_elvt],
 				  ASSERV_ELVT_SPEED_DEFAULT);
-    elevator_is_ready = 0;
     return elevator_next (INIT, init_done);
 }
 
@@ -98,10 +111,14 @@ elevator__GO_TO_POS_X__in_position (void)
 fsm_branch_t
 elevator__WAIT_A_PUCK__new_puck (void)
 {
+    elevator_is_ready = 0;
+    ++nb_puck_in_elvt;
     // TODO time_ok
-    //if(nb_puck_in_elvt < 4 && (time_ok || !fb-empty))
+    if(nb_puck_elvt < 4 &&
+       ((chrono_remaining_time() - OK_TIME_LIMIT > 0)
+       || nb_puck_pf != 0))
 	return elevator_next_branch (WAIT_A_PUCK, new_puck, ok_for_other_pucks);
-    //else
+    else
 	return elevator_next_branch (WAIT_A_PUCK, new_puck, not_ok_for_other_pucks);
 }
 
@@ -113,6 +130,7 @@ elevator__WAIT_A_PUCK__new_puck (void)
 fsm_branch_t
 elevator__WAIT_A_PUCK__time_up (void)
 {
+    elevator_is_ready = 0;
     return elevator_next (WAIT_A_PUCK, time_up);
 }
 
@@ -186,6 +204,7 @@ elevator__MINI_CLOSE__door_move_finished (void)
 fsm_branch_t
 elevator__OPEN_DOORS__doors_opened (void)
 {
+    nb_puck_elvt = 0;
     nb_puck_in_elvt = 0;
     return elevator_next (OPEN_DOORS, doors_opened);
 }

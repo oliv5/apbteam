@@ -24,6 +24,8 @@
  * }}} */
 #include "filterbridge.h"
 
+uint8_t nb_puck_pf;
+
 /* +AutoDec */
 /* -AutoDec */
 
