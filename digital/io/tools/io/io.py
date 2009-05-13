@@ -49,6 +49,12 @@ class Proto:
         self.proto.send ('z')
         self.proto.send ('z')
 
+    def servo_pos (self, servo, pos):
+        self.proto.send ('P', 'BB', servo, pos)
+
+    def servo (self, servo, high_time):
+        self.proto.send ('s', 'BB', servo, high_time)
+
     def close (self):
         self.reset ()
         self.wait (lambda: True)
