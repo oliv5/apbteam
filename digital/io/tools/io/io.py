@@ -33,8 +33,8 @@ class Proto:
 
     def send_param (self):
         p = self.param
-        for i, t in enumerate (p['trap']):
-            self.proto.send ('t', 'BBB', i, t[0], t[1])
+        for i, t in enumerate (p['servo_pos']):
+            self.proto.send ('p', 'BBB', i, *t)
         for i, t in enumerate (p['sharp_threshold']):
             self.proto.send ('h', 'BHH', i, t[0], t[1])
 
