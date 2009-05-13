@@ -39,7 +39,7 @@ class Bag:
                 2 * pi, 0, pi / 2)
         self.sorter = Sorter (table, link_bag.asserv.aux[0],
                 link_bag.asserv.aux[1], link_bag.io.servo[0:2],
-                self.elevator_door)
+                self.elevator_door, (self.position, ))
         self.distance_sensor = [
                 DistanceSensorSharps (link_bag.io.adc[0], scheduler, table,
                     (50, 130), 0, (self.position, )),

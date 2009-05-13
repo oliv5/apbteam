@@ -45,3 +45,15 @@ class Table:
                         return i
         return i
 
+    def nearest (self, pos, level = None, max = None):
+        """Return nearest object."""
+        no = None
+        nds = None
+        for o in self.obstacles:
+            if o.pos is not None and (level is None or level == o.level):
+                ds = (pos[0] - o.pos[0]) ** 2 + (pos[1] - o.pos[1]) ** 2
+                if (max is None or ds < max ** 2) and (nds is None or ds < nds):
+                    no = o
+                    nds = ds
+        return no
+

@@ -25,10 +25,12 @@
 from simu.inter.drawable import Drawable
 from math import pi, cos, sin
 
+from simu.view.table_eurobot2009 import puck_attr
+
 class Arm (Drawable):
 
-    width = 1
-    height = 1
+    width = 320
+    height = 320
 
     def __init__ (self, onto, model):
         Drawable.__init__ (self, onto)
@@ -42,18 +44,26 @@ class Arm (Drawable):
 
     def draw (self):
         self.reset ()
-        self.draw_arc ((0, 0), 0.45, start = 7 * pi / 12, extent = 10 * pi / 12,
+        self.draw_arc ((0, 0), 150, start = 7 * pi / 12, extent = 10 * pi / 12,
                 style = 'arc', outline = '#808080')
-        self.draw_arc ((0, 0), 0.45, start = -5 * pi / 12, extent = 10 * pi / 12,
+        self.draw_arc ((0, 0), 150, start = -5 * pi / 12, extent = 10 * pi / 12,
                 style = 'arc', outline = '#808080')
-        self.draw_arc ((0, 0), 0.25, start = -7 * pi / 12, extent = 14 * pi / 12,
+        self.draw_arc ((0, 0), 100, start = -7 * pi / 12, extent = 14 * pi / 12,
                 style = 'arc', outline = '#808080')
         if self.angle is not None:
-            self.trans_scale (0.4)
             self.trans_rotate (-self.angle)
-            self.draw_line ((0, 0), (0, 1))
-            self.draw_line ((0, 1), (0.3, 1), arrow = 'last', fill = '#808080')
-            self.draw_line ((0, 0), (cos (pi / 6), -sin (pi / 6)))
-            self.draw_line ((0, 0), (-cos (pi / 6), -sin (pi / 6)))
-            Drawable.draw (self)
+            for i in range (3):
+                self.draw_line ((0, 0), (0, 135))
+                self.draw_arc ((0, 0), 135, start = pi / 2, extent = pi / 3,
+                        style = 'arc')
+                if i == 0:
+                    self.draw_line ((0, 135), (70, 135), arrow = 'last',
+                            fill = '#808080')
+                a = -2 * pi / 3
+                self.trans_rotate (0.15 * a)
+                puck = self.model.arm_slot[i]
+                if puck is not None:
+                    self.draw_rectangle ((-35, 140), (35, 110),
+                            **puck_attr[puck.color])
+                self.trans_rotate ((1 - 0.15) * a)
 

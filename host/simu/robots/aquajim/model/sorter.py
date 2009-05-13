@@ -23,14 +23,16 @@
 # }}}
 """AquaJim pucks sorter."""
 from utils.observable import Observable
+from simu.utils.trans_matrix import TransMatrix
 from math import pi
 
 class Sorter (Observable):
 
     def __init__ (self, table, arm_motor_link, elevator_motor_link,
-            servo_links, elevator_door_model):
+            servo_links, elevator_door_model, into = None):
         Observable.__init__ (self)
         self.table = table
+        self.into = into or ()
         self.arm_motor_link = arm_motor_link
         self.arm_motor_link.register (self.__arm_motor_notified)
         self.__arm_motor_notified ()
@@ -39,9 +41,33 @@ class Sorter (Observable):
         self.__elevator_motor_notified ()
         self.servo_links = servo_links
         self.elevator_door = elevator_door_model
+        self.arm_slot = [ None, None, None ]
+
+    def __transform (self, pos):
+        m = TransMatrix ()
+        for i in self.into:
+            if i.pos is None:
+                return None
+            m.rotate (i.angle)
+            m.translate (i.pos)
+        return m.apply (pos)
 
     def __arm_motor_notified (self):
+        # Update angle.
         self.arm_angle = self.arm_motor_link.angle
+        if self.arm_angle is not None:
+            # Is there a puck at entry?
+            entry_pos = self.__transform ((150 - 40, 0))
+            if entry_pos is not None:
+                front_puck = self.table.nearest (entry_pos, level = 1, max = 35)
+                # For each arm.
+                for i in range (3):
+                    a = (self.arm_angle + i * 2 * pi / 3) % (2 * pi)
+                    # If arm is leaving, take puck.
+                    if (front_puck is not None and self.arm_slot[i] is None
+                            and a > 0 and a < pi / 16):
+                        self.arm_slot[i] = front_puck
+                        front_puck.pos = None
         self.notify ()
 
     def __elevator_motor_notified (self):
