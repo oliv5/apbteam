@@ -33,6 +33,9 @@ class Sorter (Observable):
         Observable.__init__ (self)
         self.table = table
         self.into = into or ()
+        self.arm_slot = [ None, None, None ]
+        self.bridge_slot = [ None, None ]
+        self.lost = [ ]
         self.arm_motor_link = arm_motor_link
         self.arm_motor_link.register (self.__arm_motor_notified)
         self.__arm_motor_notified ()
@@ -40,8 +43,11 @@ class Sorter (Observable):
         self.elevator_motor_link.register (self.__elevator_motor_notified)
         self.__elevator_motor_notified ()
         self.servo_links = servo_links
+        self.servo_links[0].register (self.__bridge_door_servo_notified)
+        self.__bridge_door_servo_notified ()
+        self.servo_links[1].register (self.__bridge_finger_servo_notified)
+        self.__bridge_finger_servo_notified ()
         self.elevator_door = elevator_door_model
-        self.arm_slot = [ None, None, None ]
 
     def __transform (self, pos):
         m = TransMatrix ()
@@ -68,6 +74,14 @@ class Sorter (Observable):
                             and a > 0 and a < pi / 16):
                         self.arm_slot[i] = front_puck
                         front_puck.pos = None
+                    # If arm is up, pass puck to bridge.
+                    if (self.arm_slot[i] is not None
+                            and a > pi and a < 17 * pi / 16):
+                        if self.bridge_slot[0] is None:
+                            self.bridge_slot[0] = self.arm_slot[i]
+                        else:
+                            self.lost.append (self.arm_slot[i])
+                        self.arm_slot[i] = None
         self.notify ()
 
     def __elevator_motor_notified (self):
@@ -75,5 +89,28 @@ class Sorter (Observable):
             self.elevator_height = None
         else:
             self.elevator_height = 150 - self.elevator_motor_link.angle * 5.5
+        self.notify ()
+
+    def __bridge_door_servo_notified (self):
+        self.bridge_door_servo_value = self.servo_links[0].value
+        if self.bridge_door_servo_value is not None:
+            if (self.bridge_door_servo_value < 0.1
+                    and self.bridge_slot[0] is not None
+                    and self.bridge_slot[1] is None):
+                # Pass the door.
+                self.bridge_slot[1] = self.bridge_slot[0]
+                self.bridge_slot[0] = None
+        self.notify ()
+
+    def __bridge_finger_servo_notified (self):
+        self.bridge_finger_servo_value = self.servo_links[1].value
+        if (self.bridge_finger_servo_value is not None
+                and self.bridge_door_servo_value is not None):
+            if (self.bridge_door_servo_value > 0.9
+                    and self.bridge_finger_servo_value > 0.5
+                    and self.bridge_slot[1] is not None):
+                # Drop until elevator is fully implemented.
+                self.lost.append (self.bridge_slot[1])
+                self.bridge_slot[1] = None
         self.notify ()
 

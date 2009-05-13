@@ -27,6 +27,7 @@ from simu.view.distance_sensor import DistanceSensor
 from simu.view.path import Path
 from simu.robots.aquajim.view.robot import Robot
 from simu.robots.aquajim.view.arm import Arm
+from simu.robots.aquajim.view.bridge import Bridge
 from simu.robots.aquajim.view.elevator import Elevator
 
 class Bag:
@@ -38,6 +39,8 @@ class Bag:
         self.robot = Robot (table, model_bag.position)
         self.arm = Arm (actuator_view.add_view (Arm.width, Arm.height),
                 model_bag.sorter)
+        self.bridge = Bridge (actuator_view.add_view (Bridge.width,
+            Bridge.height), model_bag.sorter)
         self.elevator = Elevator (actuator_view.add_view (Elevator.width,
             Elevator.height), model_bag.sorter)
         self.distance_sensor = [DistanceSensor (self.robot, ds)
