@@ -48,6 +48,7 @@
 #include "pwm.h"
 #include "playground.h"
 #include "contact.h"
+#include "elevator.h"
 
 #include "io.h"
 
@@ -155,6 +156,7 @@ main_init (void)
     //fsm_handle_event (&top_fsm, TOP_EVENT_start);
     //fsm_handle_event (&init_fsm, INIT_EVENT_start);
     fsm_handle_event (&filterbridge_fsm, FILTERBRIDGE_EVENT_start);
+    fsm_handle_event (&elevator_fsm, ELEVATOR_EVENT_start);
     /* fsm_handle_event (&top_fsm, TOP_EVENT_start);
     fsm_handle_event (&top_fsm, TOP_EVENT_start);
     fsm_handle_event (&top_fsm, TOP_EVENT_start); */
@@ -277,6 +279,36 @@ main_loop (void)
 		FSM_HANDLE_EVENT (&move_fsm,
 				  MOVE_EVENT_bot_move_failed);
 	      }
+	    /* elevator asserv status */
+	    asserv_status_e elevator_status = asserv_last_cmd_ack()
+		? asserv_elevator_cmd_status() : none;
+	    if (elevator_status == success)
+	      {
+		/* TODO le init init juste la position 0 du robal */
+		FSM_HANDLE_EVENT (&elevator_fsm,
+				  ELEVATOR_EVENT_init_done);
+		FSM_HANDLE_EVENT (&elevator_fsm,
+				  ELEVATOR_EVENT_in_position);
+	      }
+	    /*else if (elevator_status == failed)
+	      {
+	          TODO when asserv elevator can failed
+	      }
+	    */
+	    /* send event if elevator received an order */
+	    if(elvt_order)
+		FSM_HANDLE_EVENT (&elevator_fsm,
+				  ELEVATOR_EVENT_order_received);
+
+
+	    /* elevator new puck (set by filterbridge) */
+	    if(elvt_new_puck)
+		FSM_HANDLE_EVENT (&elevator_fsm,
+				  ELEVATOR_EVENT_new_puck);
+	    /* elvt door switch */
+	    if(!IO_GET (CONTACT_ELEVATOR_DOOR))
+		FSM_HANDLE_EVENT (&elevator_fsm,
+				  ELEVATOR_EVENT_doors_opened);
 	    /* Jack */
 	    if(switch_get_jack())
 	      {
@@ -289,6 +321,8 @@ main_loop (void)
 				  TOP_EVENT_jack_inserted_into_bot);
 		FSM_HANDLE_EVENT (&init_fsm,
 				  INIT_EVENT_jack_inserted_into_bot);
+		FSM_HANDLE_EVENT (&elevator_fsm,
+				  ELEVATOR_EVENT_jack_inserted_into_bot);
 	      }
 	    /*
 	    FSM_HANDLE_EVENT (&top_fsm, switch_get_jack () ?

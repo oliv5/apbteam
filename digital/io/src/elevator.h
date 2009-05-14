@@ -36,9 +36,15 @@ extern uint8_t elevator_is_ready;
 extern uint8_t nb_puck_in_elvt;
 
 /**
+ * new_puck information (from filterbridge)
+ */
+extern uint8_t elvt_new_puck;
+
+/**
  * elevator orders
  */
 extern uint8_t elvt_order;
+
 /**
  * conversion stop/millimeter
  */

@@ -32,15 +32,12 @@
 #include "filterbridge.h"
 
 /* Positions when waiting a puck*/
-uint16_t posx[4] = {0,0,0,0};
+uint16_t posx[4] = {0,25,55,85};
 /* Positions when we go to a target zone */
-uint16_t posy[3] = {0,0,0};
+uint16_t posy[3] = {125,95,65};
 
 /* nb puck on the elevator */
 uint8_t nb_puck_elvt = 0;
-
-/* ready flag */
-uint8_t elevator_is_ready = 0;
 
 /* increase/decrease of pos y */
 #define MAJ_POSY 100
@@ -113,6 +110,7 @@ elevator__WAIT_A_PUCK__new_puck (void)
 {
     elevator_is_ready = 0;
     ++nb_puck_in_elvt;
+    elvt_new_puck = 0;
     // TODO time_ok
     if(nb_puck_elvt < 4 &&
        ((chrono_remaining_time() - OK_TIME_LIMIT > 0)
@@ -123,6 +121,7 @@ elevator__WAIT_A_PUCK__new_puck (void)
 }
 
 /*
+ * TODO time_up
  * WAIT_A_PUCK =time_up=>
  *  => WAIT_POS_ORDER
  *   no more time to wait a new puck

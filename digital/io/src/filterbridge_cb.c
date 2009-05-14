@@ -114,6 +114,7 @@ filterbridge__OPEN_DOOR__state_timeout (void)
 fsm_branch_t
 filterbridge__PUSH_PUCK__no_puck_on_pos2 (void)
 {
+    elvt_new_puck = 1;
     servo_pos_move_to(SERVO_FINGER_ID, SERVO_FINGER_IDLE);
     servo_pos_move_to(SERVO_DOOR_ID, SERVO_DOOR_CLOSE);
     return filterbridge_next (PUSH_PUCK, no_puck_on_pos2);

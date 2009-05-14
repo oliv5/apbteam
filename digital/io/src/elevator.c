@@ -28,12 +28,16 @@
 /**
  * State of the elevator
  */
-uint8_t elevator_is_ready;
+uint8_t elevator_is_ready = 0;
 uint8_t nb_puck_in_elvt = 0;
 /**
  * elevator orders
  */
 uint8_t elvt_order;
+/**
+ * new_puck information (from filterbridge)
+ */
+uint8_t elvt_new_puck = 0;
 
 
 /* +AutoDec */
