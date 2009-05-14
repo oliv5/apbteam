@@ -91,6 +91,8 @@ typedef struct asserv_struct_s
 {
     /** Status flags. */
     uint8_t status;
+    /** Asserv board input port. */
+    uint8_t input_port;
     /** Sequence number. */
     uint8_t seq;
     /** Bot position. */
@@ -242,19 +244,20 @@ asserv_update_status (void)
     /* Status buffer used to receive data from the asserv */
     static uint8_t status_buffer[AC_ASSERV_STATUS_LENGTH];
     /* Read data from the asserv card */
-    twi_ms_read (AC_ASSERV_TWI_ADDRESS, status_buffer , AC_ASSERV_STATUS_LENGTH);
+    twi_ms_read (AC_ASSERV_TWI_ADDRESS, status_buffer, AC_ASSERV_STATUS_LENGTH);
     /* Update until done */
     asserv_twi_update ();
     /* Parse received data and store them */
     asserv_status.status = status_buffer[0];
-    asserv_status.seq = status_buffer[1];
-    asserv_status.position.x = ((int32_t) v8_to_v32 (status_buffer[2], status_buffer[3],
-				     status_buffer[4], 0)) >> 8;
-    asserv_status.position.y = ((int32_t) v8_to_v32 (status_buffer[5], status_buffer[6],
-				     status_buffer[7], 0)) >> 8;
-    asserv_status.position.a = v8_to_v16 (status_buffer[8], status_buffer[9]);
-    asserv_status.arm_position = v8_to_v16 (status_buffer[10], status_buffer[11]);
-    asserv_status.elevator_position = v8_to_v16 (status_buffer[12], status_buffer[13]);
+    asserv_status.input_port = status_buffer[1];
+    asserv_status.seq = status_buffer[2];
+    asserv_status.position.x = ((int32_t) v8_to_v32 (status_buffer[3], status_buffer[4],
+				     status_buffer[5], 0)) >> 8;
+    asserv_status.position.y = ((int32_t) v8_to_v32 (status_buffer[6], status_buffer[7],
+				     status_buffer[8], 0)) >> 8;
+    asserv_status.position.a = v8_to_v16 (status_buffer[9], status_buffer[10]);
+    asserv_status.arm_position = v8_to_v16 (status_buffer[11], status_buffer[12]);
+    asserv_status.elevator_position = v8_to_v16 (status_buffer[13], status_buffer[14]);
 }
 
 /* Is last command sent to the asserv board is being executed? */

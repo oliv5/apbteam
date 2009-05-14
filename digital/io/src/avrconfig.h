@@ -105,6 +105,6 @@
 /** TWI address of the asserv board. */
 #define AC_ASSERV_TWI_ADDRESS 4
 /** Length of the status buffer maintains by the asserv board. */
-#define AC_ASSERV_STATUS_LENGTH 14
+#define AC_ASSERV_STATUS_LENGTH 15
 
 #endif /* avrconfig_h */

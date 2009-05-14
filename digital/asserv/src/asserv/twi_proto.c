@@ -40,6 +40,10 @@
 #include "traj.h"
 #include "aux.h"
 
+#ifdef HOST
+# include "simu.host.h"
+#endif
+
 struct twi_proto_t
 {
     u8 seq;
@@ -70,7 +74,7 @@ twi_proto_update (void)
     while (twi_sl_poll (buf, sizeof (buf)))
 	twi_proto_callback (buf, sizeof (buf));
     /* Update status. */
-    u8 status[14];
+    u8 status[15];
     status[0] = 0
 	| (state_aux[1].blocked << 7)
 	| (state_aux[1].finished << 6)
@@ -80,19 +84,20 @@ twi_proto_update (void)
 	| (speed_theta.cur > 0 ? (1 << 2) : 0)
 	| (state_main.blocked << 1)
 	| (state_main.finished << 0);
-    status[1] = twi_proto.seq;
-    status[2] = v32_to_v8 (postrack_x, 3);
-    status[3] = v32_to_v8 (postrack_x, 2);
-    status[4] = v32_to_v8 (postrack_x, 1);
-    status[5] = v32_to_v8 (postrack_y, 3);
-    status[6] = v32_to_v8 (postrack_y, 2);
-    status[7] = v32_to_v8 (postrack_y, 1);
-    status[8] = v32_to_v8 (postrack_a, 2);
-    status[9] = v32_to_v8 (postrack_a, 1);
-    status[10] = v16_to_v8 (aux[0].pos, 1);
-    status[11] = v16_to_v8 (aux[0].pos, 0);
-    status[12] = v16_to_v8 (aux[1].pos, 1);
-    status[13] = v16_to_v8 (aux[1].pos, 0);
+    status[1] = PINC;
+    status[2] = twi_proto.seq;
+    status[3] = v32_to_v8 (postrack_x, 3);
+    status[4] = v32_to_v8 (postrack_x, 2);
+    status[5] = v32_to_v8 (postrack_x, 1);
+    status[6] = v32_to_v8 (postrack_y, 3);
+    status[7] = v32_to_v8 (postrack_y, 2);
+    status[8] = v32_to_v8 (postrack_y, 1);
+    status[9] = v32_to_v8 (postrack_a, 2);
+    status[10] = v32_to_v8 (postrack_a, 1);
+    status[11] = v16_to_v8 (aux[0].pos, 1);
+    status[12] = v16_to_v8 (aux[0].pos, 0);
+    status[13] = v16_to_v8 (aux[1].pos, 1);
+    status[14] = v16_to_v8 (aux[1].pos, 0);
     twi_sl_update (status, sizeof (status));
 }
 
