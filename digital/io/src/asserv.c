@@ -29,6 +29,7 @@
 #include "modules/twi/twi.h"	/* twi_* */
 #include "modules/utils/byte.h"	/* v*_to_v* */
 #include "modules/math/fixed/fixed.h"
+#include "modules/utils/crc.h"
 #include "giboulee.h"		/* BOT_* */
 #include "io.h"
 
@@ -77,12 +78,12 @@ static uint8_t asserv_twi_seq;
 /**
  * Shared buffer used to send commands to the asserv.
  */
-static uint8_t asserv_twi_buffer[14];
+static uint8_t asserv_twi_buffer[15];
 
 /**
  * Pointer to access the buffer to put the parameters list.
  */
-static uint8_t *asserv_twi_buffer_param = &asserv_twi_buffer[2];
+static uint8_t *asserv_twi_buffer_param = &asserv_twi_buffer[3];
 
 /**
  * Status structure maintains by the update command.
@@ -195,12 +196,15 @@ asserv_twi_send_command (uint8_t command, uint8_t length)
     assert (asserv_last_cmd_ack ());
 
     /* Put the sequence number */
-    asserv_twi_buffer[0] = ++asserv_twi_seq;
+    asserv_twi_buffer[1] = ++asserv_twi_seq;
     /* Put the command into the buffer */
-    asserv_twi_buffer[1] = command;
+    asserv_twi_buffer[2] = command;
+
+    /* Compute CRC. */
+    asserv_twi_buffer[0] = crc_compute (&asserv_twi_buffer[1], length + 2);
 
     /* Send the prepared command */
-    return asserv_twi_send (length + 2);
+    return asserv_twi_send (length + 3);
 }
 
 /* Send a prepared command to the asserv board using TWI module. */
@@ -242,11 +246,18 @@ void
 asserv_update_status (void)
 {
     /* Status buffer used to receive data from the asserv */
-    static uint8_t status_buffer[AC_ASSERV_STATUS_LENGTH];
+    static uint8_t buffer[AC_ASSERV_STATUS_LENGTH + 1];
+    uint8_t *status_buffer = &buffer[1];
+
     /* Read data from the asserv card */
-    twi_ms_read (AC_ASSERV_TWI_ADDRESS, status_buffer, AC_ASSERV_STATUS_LENGTH);
+    twi_ms_read (AC_ASSERV_TWI_ADDRESS, buffer, AC_ASSERV_STATUS_LENGTH + 1);
     /* Update until done */
     asserv_twi_update ();
+    /* Check CRC. */
+    uint8_t crc = crc_compute (status_buffer, AC_ASSERV_STATUS_LENGTH);
+    if (crc != buffer[0])
+	return;
+
     /* Parse received data and store them */
     asserv_status.status = status_buffer[0];
     asserv_status.input_port = status_buffer[1];

@@ -27,6 +27,7 @@
 
 #include "modules/utils/utils.h"
 #include "modules/utils/byte.h"
+#include "modules/utils/crc.h"
 #include "modules/twi/twi.h"
 #include "io.h"
 
@@ -70,11 +71,13 @@ void
 twi_proto_update (void)
 {
     u8 buf[AC_TWI_SL_RECV_BUFFER_SIZE];
+    u8 read_data;
     /* Handle incoming command. */
-    while (twi_sl_poll (buf, sizeof (buf)))
-	twi_proto_callback (buf, sizeof (buf));
+    while ((read_data = twi_sl_poll (buf, sizeof (buf))))
+	twi_proto_callback (buf, read_data);
     /* Update status. */
-    u8 status[15];
+    u8 status_with_crc[16];
+    u8 *status = &status_with_crc[1];
     status[0] = 0
 	| (state_aux[1].blocked << 7)
 	| (state_aux[1].finished << 6)
@@ -98,13 +101,26 @@ twi_proto_update (void)
     status[12] = v16_to_v8 (aux[0].pos, 0);
     status[13] = v16_to_v8 (aux[1].pos, 1);
     status[14] = v16_to_v8 (aux[1].pos, 0);
-    twi_sl_update (status, sizeof (status));
+    /* Compute CRC. */
+    status_with_crc[0] = crc_compute (&status_with_crc[1],
+                                      sizeof (status_with_crc) - 1);
+    twi_sl_update (status_with_crc, sizeof (status_with_crc));
 }
 
 /** Handle one command. */
 static void
 twi_proto_callback (u8 *buf, u8 size)
 {
+    /* Check CRC. */
+    if (crc_compute (buf + 1, size - 1) != buf[0])
+	return;
+    else
+      {
+	/* Remove the CRC of the buffer. */
+	buf += 1;
+	size -= 1;
+      }
+
     if (buf[0] == twi_proto.seq)
 	return;
 #define c(cmd, size) (cmd)
