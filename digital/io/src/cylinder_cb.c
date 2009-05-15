@@ -25,111 +25,127 @@
 #include "common.h"
 #include "fsm.h"
 #include "cylinder_cb.h"
+#include "asserv.h"
+#include "cylinder.h"
+#include "filterbridge.h"
+
 
 /*
- * WAIT_FOR_BRIDGE_READY =bridge_ready=>
- *  => TURN_PLUS_2_AGAIN
- *   bridge clear, delivering puck...
+ * IDLE =start=>
+ *  => WAIT_FOR_JACK_IN
+ *   we wait the jack before moving anything
  */
 fsm_branch_t
-cylinder__WAIT_FOR_BRIDGE_READY__bridge_ready (void)
+cylinder__IDLE__start (void)
 {
-    return cylinder_next (WAIT_FOR_BRIDGE_READY, bridge_ready);
+    return cylinder_next (IDLE, start);
 }
 
 /*
- * WAIT_A_PUCK =new_puck=>
- * bridge_ready => TURN_PLUS_4
- *   put puck to the bridge
- * bridge_full => TURN_PLUS_2
- *   bridge full, waiting before release puck to the bridge
+ * WAIT_FOR_JACK_IN =jack_inserted_into_bot=>
+ *  => INIT
+ *   we init the cylinder position
  */
 fsm_branch_t
-cylinder__WAIT_A_PUCK__new_puck (void)
+cylinder__WAIT_FOR_JACK_IN__jack_inserted_into_bot (void)
 {
-    return cylinder_next_branch (WAIT_A_PUCK, new_puck, bridge_ready);
-    return cylinder_next_branch (WAIT_A_PUCK, new_puck, bridge_full);
+    asserv_arm_zero_position();
+    return cylinder_next (WAIT_FOR_JACK_IN, jack_inserted_into_bot);
 }
 
 /*
- * INIT =init_done=>
+ * INIT =move_done=>
  *  => WAIT_A_PUCK
  *   the cylinder is ready to get pucks
  */
 fsm_branch_t
-cylinder__INIT__init_done (void)
+cylinder__INIT__move_done (void)
 {
-    return cylinder_next (INIT, init_done);
+    return cylinder_next (INIT, move_done);
 }
 
 /*
- * WAIT_FOR_PUCKS_RELEASE =lift_ready=>
- *  => TURN_PLUS_1
- *   robot ready for new puck, open door
+ * WAIT_A_PUCK =new_puck=>
+ *  => TURN_PLUS_3
+ *   turn cylinder 3 position after
  */
 fsm_branch_t
-cylinder__WAIT_FOR_PUCKS_RELEASE__lift_ready (void)
+cylinder__WAIT_A_PUCK__new_puck (void)
 {
-    return cylinder_next (WAIT_FOR_PUCKS_RELEASE, lift_ready);
+    ++nb_puck_cylinder;
+    asserv_move_arm(3*60*ASSERV_ARM_STEP_BY_DEGREE,
+		    ASSERV_ARM_SPEED_DEFAULT);
+    return cylinder_next (WAIT_A_PUCK, new_puck);
 }
 
 /*
- * IDLE =jack_in=>
- *  => INIT
- *   initialize robot
- */
-fsm_branch_t
-cylinder__IDLE__jack_in (void)
-{
-    return cylinder_next (IDLE, jack_in);
-}
-
-/*
- * TURN_PLUS_2 =move_done=>
+ * TURN_PLUS_3 =move_done=>
  *  => WAIT_FOR_BRIDGE_READY
  *   bridge full, waiting for Bison Fute's clearance
  */
 fsm_branch_t
-cylinder__TURN_PLUS_2__move_done (void)
+cylinder__TURN_PLUS_3__move_done (void)
 {
-    return cylinder_next (TURN_PLUS_2, move_done);
+    return cylinder_next (TURN_PLUS_3, move_done);
 }
 
 /*
- * PROBE_OF =probe_done=>
- * puck_detected_and_lift_full => TURN_MINUS_3
- *   BAD CASE, there is an undesirable puck to the cylinder
- * puck_detected_and_lift_ready => WAIT_FOR_BRIDGE_READY
- *   there is a puck, we take a shortcut...
- * cylinder_empty_and_lift_ready => WAIT_A_PUCK
- *   ready for a new puck
- * cylinder_empty_and_lift_full => TURN_MINUS_1
- *   stop accepting new puck
+ * WAIT_FOR_BRIDGE_READY =bridge_ready=>
+ * no_puck_bo => TURN_PLUS_1
+ *   bridge clear, and no other puck on cylinder
+ * puck_bo => TURN_PLUS_1_LOOP
+ *   bridge clear, an another puck is in the cylinder
  */
 fsm_branch_t
-cylinder__PROBE_OF__probe_done (void)
+cylinder__WAIT_FOR_BRIDGE_READY__bridge_ready (void)
 {
-    return cylinder_next_branch (PROBE_OF, probe_done, puck_detected_and_lift_full);
-    return cylinder_next_branch (PROBE_OF, probe_done, puck_detected_and_lift_ready);
-    return cylinder_next_branch (PROBE_OF, probe_done, cylinder_empty_and_lift_ready);
-    return cylinder_next_branch (PROBE_OF, probe_done, cylinder_empty_and_lift_full);
+    ++nb_puck_fb;
+    asserv_move_arm(1*60*ASSERV_ARM_STEP_BY_DEGREE,
+		    ASSERV_ARM_SPEED_DEFAULT);
+    if(!of_state)
+      {
+	--nb_puck_cylinder;
+	return cylinder_next_branch (WAIT_FOR_BRIDGE_READY, bridge_ready, no_puck_bo);
+      }
+    return cylinder_next_branch (WAIT_FOR_BRIDGE_READY, bridge_ready, puck_bo);
 }
 
 /*
  * TURN_PLUS_1 =move_done=>
- *  => WAIT_A_PUCK
- *   door opened, ready for a new puck
+ * ok_for_other_puck => WAIT_A_PUCK
+ *   cylinder empty and ready for new puck
+ * not_ok_for_other_puck => TURN_MINUS_1
+ *   bot full, closing cylinder
  */
 fsm_branch_t
 cylinder__TURN_PLUS_1__move_done (void)
 {
-    return cylinder_next (TURN_PLUS_1, move_done);
+    if(nb_puck_fb < 4)
+	return cylinder_next_branch (TURN_PLUS_1, move_done, ok_for_other_puck);
+    asserv_move_arm(-1*60*ASSERV_ARM_STEP_BY_DEGREE,
+		    ASSERV_ARM_SPEED_DEFAULT);
+    return cylinder_next_branch (TURN_PLUS_1, move_done, not_ok_for_other_puck);
+}
+
+/*
+ * TURN_PLUS_1_LOOP =move_done=>
+ * ok_for_other_puck => WAIT_FOR_BRIDGE_READY
+ *   we test bo again
+ * not_ok_for_other_puck => WAIT_FOR_PUCKS_RELEASE
+ *   bot full, eject hypothetical puck and close the cylinder
+ */
+fsm_branch_t
+cylinder__TURN_PLUS_1_LOOP__move_done (void)
+{
+    if(nb_puck_fb < 4)
+	return cylinder_next_branch (TURN_PLUS_1_LOOP, move_done, ok_for_other_puck);
+    return cylinder_next_branch (TURN_PLUS_1_LOOP, move_done, not_ok_for_other_puck);
 }
 
 /*
  * TURN_MINUS_1 =move_done=>
  *  => WAIT_FOR_PUCKS_RELEASE
- *   robot entrance closed
+ *   cylinder close, you shall not pass (but try again later)
  */
 fsm_branch_t
 cylinder__TURN_MINUS_1__move_done (void)
@@ -138,36 +154,26 @@ cylinder__TURN_MINUS_1__move_done (void)
 }
 
 /*
- * TURN_MINUS_3 =move_done=>
- *  => WAIT_FOR_PUCKS_RELEASE
- *   evil puck dropped and robot entrance closed
+ * WAIT_FOR_PUCKS_RELEASE =bot_empty=>
+ *  => TURN_PLUS_1_AGAIN
  */
 fsm_branch_t
-cylinder__TURN_MINUS_3__move_done (void)
+cylinder__WAIT_FOR_PUCKS_RELEASE__bot_empty (void)
 {
-    return cylinder_next (TURN_MINUS_3, move_done);
+    asserv_move_arm(1*60*ASSERV_ARM_STEP_BY_DEGREE,
+		    ASSERV_ARM_SPEED_DEFAULT);
+    return cylinder_next (WAIT_FOR_PUCKS_RELEASE, bot_empty);
 }
 
 /*
- * TURN_PLUS_2_AGAIN =move_done=>
- *  => PROBE_OF
- *   there is a puck to the cylinder?
+ * TURN_PLUS_1_AGAIN =move_done=>
+ *  => WAIT_A_PUCK
+ *   cylinder ready
  */
 fsm_branch_t
-cylinder__TURN_PLUS_2_AGAIN__move_done (void)
+cylinder__TURN_PLUS_1_AGAIN__move_done (void)
 {
-    return cylinder_next (TURN_PLUS_2_AGAIN, move_done);
-}
-
-/*
- * TURN_PLUS_4 =move_done=>
- *  => PROBE_OF
- *   there is a puck to the cylinder?
- */
-fsm_branch_t
-cylinder__TURN_PLUS_4__move_done (void)
-{
-    return cylinder_next (TURN_PLUS_4, move_done);
+    return cylinder_next (TURN_PLUS_1_AGAIN, move_done);
 }
 
 

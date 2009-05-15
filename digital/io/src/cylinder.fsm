@@ -29,7 +29,7 @@ States:
 Events:
  start
   start event
- jack_in
+ jack_inserted_into_bot
   the init signal
  new_puck
   there is a puck in position 1
@@ -46,7 +46,7 @@ IDLE:
   we wait the jack before moving anything
 
 WAIT_FOR_JACK_IN:
- jack_in -> INIT
+ jack_inserted_into_bot -> INIT
   we init the cylinder position
 
 INIT:

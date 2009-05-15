@@ -25,4 +25,12 @@
  *
  * }}} */
 
+#include "common.h"
+
+/* last state of optical fence */
+extern uint8_t of_state;
+
+/* nb puck in cylinder */
+extern uint8_t nb_puck_cylinder;
+
 #endif /* cylinder_h */

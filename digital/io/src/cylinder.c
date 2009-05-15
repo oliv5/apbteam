@@ -23,3 +23,9 @@
  *
  * }}} */
 #include "cylinder.h"
+
+/* last state of optical fence */
+uint8_t of_state = 0;
+
+/* nb puck in cylinder */
+uint8_t nb_puck_cylinder = 0;

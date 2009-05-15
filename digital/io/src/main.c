@@ -49,6 +49,8 @@
 #include "playground.h"
 #include "contact.h"
 #include "elevator.h"
+#include "filterbridge.h"
+#include "cylinder.h"
 
 #include "io.h"
 
@@ -92,6 +94,7 @@ uint16_t main_move_wait_cycle;
 
 /* FIXME to be delete */
 uint8_t jack_emulation = 0;
+uint8_t cylinder_puck1_emulation = 0;
 /**
  * The same for init FSM
  */
@@ -157,9 +160,8 @@ main_init (void)
     //fsm_handle_event (&init_fsm, INIT_EVENT_start);
     fsm_handle_event (&filterbridge_fsm, FILTERBRIDGE_EVENT_start);
     fsm_handle_event (&elevator_fsm, ELEVATOR_EVENT_start);
-    /* fsm_handle_event (&top_fsm, TOP_EVENT_start);
-    fsm_handle_event (&top_fsm, TOP_EVENT_start);
-    fsm_handle_event (&top_fsm, TOP_EVENT_start); */
+    fsm_handle_event (&cylinder_fsm, CYLINDER_EVENT_start);
+    /* fsm_handle_event (&top_fsm, TOP_EVENT_start); */
     /* Sharp module */
     sharp_init ();
     /* PWM module */
@@ -295,6 +297,14 @@ main_loop (void)
 	          TODO when asserv elevator can failed
 	      }
 	    */
+	    /* cylinder asserv status */
+	    asserv_status_e cylinder_status = asserv_last_cmd_ack()
+		? asserv_arm_cmd_status() : none;
+	    if (cylinder_status == success)
+	      {
+		FSM_HANDLE_EVENT (&cylinder_fsm,
+				  CYLINDER_EVENT_move_done);
+	      }
 	    /* send event if elevator received an order */
 	    if(elvt_order)
 		FSM_HANDLE_EVENT (&elevator_fsm,
@@ -309,6 +319,16 @@ main_loop (void)
 	    if(!IO_GET (CONTACT_ELEVATOR_DOOR))
 		FSM_HANDLE_EVENT (&elevator_fsm,
 				  ELEVATOR_EVENT_doors_opened);
+	    /* bridge ready */
+	    if(nb_puck_fb)
+		FSM_HANDLE_EVENT (&cylinder_fsm,
+				  CYLINDER_EVENT_bridge_ready);
+	    /* bot empty */
+	    if(!nb_puck_fb && !nb_puck_in_elvt && !nb_puck_cylinder)
+		FSM_HANDLE_EVENT (&cylinder_fsm,
+				  CYLINDER_EVENT_bot_empty);
+
+
 	    /* Jack */
 	    if(switch_get_jack())
 	      {
@@ -323,15 +343,9 @@ main_loop (void)
 				  INIT_EVENT_jack_inserted_into_bot);
 		FSM_HANDLE_EVENT (&elevator_fsm,
 				  ELEVATOR_EVENT_jack_inserted_into_bot);
+		FSM_HANDLE_EVENT (&cylinder_fsm,
+				  CYLINDER_EVENT_jack_inserted_into_bot);
 	      }
-	    /*
-	    FSM_HANDLE_EVENT (&top_fsm, switch_get_jack () ?
-			      TOP_EVENT_jack_removed_from_bot :
-			      TOP_EVENT_jack_inserted_into_bot);
-	    FSM_HANDLE_EVENT (&init_fsm, switch_get_jack () ?
-			      INIT_EVENT_jack_removed_from_bot :
-			      INIT_EVENT_jack_inserted_into_bot);
-			      */
 	    /* Settings acknowledge */
 	    /*
 	    if (main_top_generate_settings_ack_event)
@@ -438,6 +452,14 @@ main_loop (void)
 	    FSM_HANDLE_EVENT (&filterbridge_fsm,
 			      FILTERBRIDGE_EVENT_no_puck_on_pos2);
 	  }
+	/* test cylinder sensor */
+	/* if(!IO_GET (CON */
+	if(cylinder_puck1_emulation)
+	  {
+	    FSM_HANDLE_EVENT (&cylinder_fsm,
+			      CYLINDER_EVENT_new_puck);
+	  }
+
 	/* FIXME to be delete */
 	if(jack_emulation)
 	  {

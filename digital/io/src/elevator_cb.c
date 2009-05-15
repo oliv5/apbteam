@@ -114,7 +114,7 @@ elevator__WAIT_A_PUCK__new_puck (void)
     // TODO time_ok
     if(nb_puck_elvt < 4 &&
        ((chrono_remaining_time() - OK_TIME_LIMIT > 0)
-       || nb_puck_pf != 0))
+       || nb_puck_fb != 0))
 	return elevator_next_branch (WAIT_A_PUCK, new_puck, ok_for_other_pucks);
     else
 	return elevator_next_branch (WAIT_A_PUCK, new_puck, not_ok_for_other_pucks);

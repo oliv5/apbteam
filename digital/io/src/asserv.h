@@ -41,6 +41,8 @@
 #define ASSERV_ARM_SPEED_DEFAULT 0x18
 #define ASSERV_ELVT_SPEED_DEFAULT 0x46
 
+#define ASSERV_ARM_STEP_BY_DEGREE 14.814814
+
 /**
  * Initialize the asserv control module.
  * This functions does not initialize the asserv board, but the underling
