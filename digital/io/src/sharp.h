@@ -89,9 +89,8 @@ void sharp_init (void);
  * Update read data from sharps.
  * This function is blocking. To get the value you have to use the get
  * function (@a sharp_get_raw).
- * @param sharp_mask list of sharps (using a mask) to update.
  */
-void sharp_update (uint8_t sharp_mask);
+void sharp_update (void);
 
 /**
  * Get raw cached data from sharps.

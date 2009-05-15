@@ -27,6 +27,7 @@
 #include "sharp.h"
 
 #include "modules/adc/adc.h"	/* ADC functions */
+#include "modules/utils/utils.h"
 #include "io.h"
 
 /** Sharp conversion table. 
@@ -39,6 +40,12 @@ uint16_t sharp_conv_table[SHARP_NB_ELEMENT_TABLE_CONV][2] =
       {250, 220}, {200, 280}, {140, 400},
       {100, 480}, {90, 500}, {80, 500}};
 
+
+/**
+ * Raw filter iteration.
+ * How many values should we get when reading a sharp?
+ */
+#define SHARP_RAW_FILTER 2
 
 /**
  * Cached array of raw sharp values.
@@ -130,27 +137,40 @@ sharp_init (void)
 
 /* Update read data from sharps. */
 void
-sharp_update (uint8_t sharp_mask)
+sharp_update (void)
 {
-    uint8_t compt;
+    static uint8_t sharp_filter_count = SHARP_RAW_FILTER;
+    static uint8_t sharp_id = 0;
+    static uint16_t min_value = 0xFFFF;
+    uint16_t current;
 
-    /* Go through the bit mask */
-    for (compt = 0; compt < SHARP_NUMBER; compt++)
-      {
-	/* Check if the bit/sharp id is set */
-	if (bit_is_set (sharp_mask, compt))
-	  {
-	    /* Start the capture */
-	    adc_start (compt);
-	    /* Wait until ADC mesure is finished */
-	    while (!adc_checkf ())
-		;
-	    /* Store the value */
-	    sharp_values_[compt] = adc_read ();
-	    /* Update interpreted cached value */
-	    sharp_cache_interpreted_[compt] = sharp_update_interpreted (compt);
-	  }
-      }
+    /* Start the capture */
+    adc_start (sharp_id);
+    /* Wait until ADC mesure is finished */
+    while (!adc_checkf ())
+        ;
+    /* Get the value */
+    current = adc_read ();
+    /* Only keep the minimum. */
+    min_value = UTILS_MIN (min_value, current);
+    /* Filter decrement. */
+    sharp_filter_count--;
+
+    /* Enough reading? */
+    if (!sharp_filter_count)
+    {
+        /* Store value. */
+        sharp_values_[sharp_id] = min_value;
+        /* Update interpreted cached value */
+        sharp_cache_interpreted_[sharp_id] = sharp_update_interpreted
+            (sharp_id);
+        /* Next sharp. */
+        sharp_id++;
+        sharp_id %= SHARP_NUMBER;
+        /* Reset. */
+        min_value = 0xFFFF;
+        sharp_filter_count = SHARP_RAW_FILTER;
+    }
 }
 
 /* Get raw cached data from sharps. */

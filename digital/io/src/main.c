@@ -117,16 +117,6 @@ static uint8_t main_stats_asserv_, main_stats_asserv_cpt_;
 static uint8_t main_stats_timer_;
 
 /**
- * Update frequency of sharps.
- */
-#define MAIN_SHARP_UPDATE_FREQ 5
-
-/**
- * Sharps frequency counter.
- */
-uint8_t main_sharp_freq_counter_;
-
-/**
  * Initialize the main and all its subsystems.
  */
 static void
@@ -246,15 +236,8 @@ main_loop (void)
 	    /* Update wait flag for move FSM */
 	    if (main_move_wait_cycle)
 		main_move_wait_cycle--;
-	    /* Update sharp module if required and only every
-	     * MAIN_SHARP_UPDATE_FREQ cycles */
-	    if (++main_sharp_freq_counter_ == MAIN_SHARP_UPDATE_FREQ)
-	      {
-		/* Update sharps */
-		sharp_update (0xff);
-		/* Reset counter */
-		main_sharp_freq_counter_ = 0;
-	      }
+            /* Update sharps */
+            sharp_update ();
 	    /* Update FSM timeouts. */
 	    FSM_HANDLE_TIMEOUT (&move_fsm);
 	    FSM_HANDLE_TIMEOUT (&top_fsm);
