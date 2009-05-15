@@ -1,0 +1,4 @@
+# Servo Configuration
+# Last update, Saturday 09 may (pre-coupe Origin, with Marcel).
+!p002573
+!p017028
