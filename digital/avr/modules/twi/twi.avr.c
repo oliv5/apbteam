@@ -274,6 +274,7 @@ SIGNAL (SIG_2WIRE_SERIAL)
       case TW_SR_STOP:
 	//uart0_putc ('q');
 	data_ready_sl = 1;
+	TWCR &= ~_BV(TWEA);
 	TWCR |= _BV(TWINT);
 	break;
 #endif /* AC_TWI_SLAVE_ENABLE */
