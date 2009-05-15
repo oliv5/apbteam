@@ -12,22 +12,7 @@ Use
 The trace tool is divided in two parts, the one which generate the enumerator
 and the one which interpret the memory data to print it on screen.
 
-To generate the enumerator
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-python trace.py create [Options] <file in>
-
-Options:
-
-  * -e <enum_id> : enumerator identifier for the source files.
-  * -o <outfile> : The output file to write the enumerator.
-
-To interpret the memory data
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-python trace.py inter <file in>
-
-The interpreted data is directly print on the std output.
+python trace.py -h to have all the possibilities.
 
 Trace definition file
 ---------------------

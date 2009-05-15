@@ -6,21 +6,25 @@ sys.path.append ('../../host/')
 from tcreator.tcreator import *
 from tinter.tinter import *
 
+INTER_MODE=" (only available on interpretor  mode)."
+CREATE_MODE=" (only available on create mode)."
+
 print "Trace System v1.0 by APBTeam\n"
 
 parser = OptionParser()
 parser.add_option("-e", "--enum-name", dest="enum_name",
-        help="provide the enumerator name", metavar="ENUM")
+        help="provide the enumerator name" + CREATE_MODE,
+        metavar="ENUM")
 parser.add_option("-o", "--output", dest="outfile",
-        help="Store the eunerator on the output file")
+        help="Store the enumerator on the output file" + CREATE_MODE)
 parser.add_option("-i", "--infile", dest="infile",
         help="Read the data from the file")
 parser.add_option("-t", "--type", dest="type",
         help="create to create the enumeration, inter to read the log from the flash.")
 parser.add_option("-l", "--list", dest="list_trace", action="store_true",
-        help="List the number of the traces.")
+        help="List the number of the traces" + INTER_MODE)
 parser.add_option("-n", "--num", type="int", dest="trace",
-        help="Dump the trace num provided, only used in inter mode.")
+        help="Dump the trace number provided" + INTER_MODE)
 
 [options, args] = parser.parse_args()
 
