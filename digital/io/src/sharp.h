@@ -35,35 +35,42 @@
  */
 
 /**
- * Number of sharps.
- * If you change it, you _must_ update the key of the eeprom module!
+ * List of sharps supported (and their identifier).
+ * Making a change to this list required an update to the EEPROM module key.
  */
-#define SHARP_NUMBER 5
-
-/**
- * Front left sharp.
- */
-#define SHARP_FRONT_LEFT 0
-
-/**
- * Front middle sharp.
- */
-#define SHARP_FRONT_MIDDLE 1
-
-/**
- * Front right sharp.
- */
-#define SHARP_FRONT_RIGHT 2
-
-/**
- * Back left sharp.
- */
-#define SHARP_BACK_LEFT 3
-
-/**
- * Back right sharp.
- */
-#define SHARP_BACK_RIGHT 4
+typedef enum sharp_list
+{
+    /**
+     * Front left sharp.
+     */
+    SHARP_FRONT_LEFT = 0,
+    /**
+     * Front middle sharp.
+     */
+    SHARP_FRONT_MIDDLE = 1,
+    /**
+     * Front right sharp.
+     */
+    SHARP_FRONT_RIGHT = 2,
+    /**
+     * Back left sharp.
+     */
+    SHARP_BACK_LEFT = 3,
+    /**
+     * Back right sharp.
+     */
+    SHARP_BACK_RIGHT = 4,
+    /**
+     * Middle back sharp. It used to know if there are some pucks in the back
+     * of the bot.
+     */
+    SHARP_BACK_MIDDLE = 5,
+    /**
+     * Number of sharps.
+     * It must be the last member.
+     */
+    SHARP_NUMBER
+} sharp_list;
 
 /** Sharps conversion table number of elements. */
 #define SHARP_NB_ELEMENT_TABLE_CONV 12
