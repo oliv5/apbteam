@@ -60,6 +60,7 @@ static volatile uint8_t send_buf_sl2[AC_TWI_SL_SEND_BUFFER_SIZE];
 static volatile uint8_t *send_sys_sl, *send_user_sl;
 static volatile uint8_t update_sl; /* lock pour savoir si on peut switcher les buffers sans risque */
 static volatile uint8_t send_switch_sl;
+static volatile uint8_t rcpt_idx_sl = 0;
 #endif /* AC_TWI_SLAVE_ENABLE */
 #if AC_TWI_MASTER_ENABLE
 static volatile int8_t state_ms;
@@ -101,11 +102,20 @@ twi_sl_poll (uint8_t *buffer, uint8_t size)
     if (data_ready_sl)
       {
 	data_ready_sl = 0;
-	while (size --)
-	    buffer[size] = rcpt_buf_sl[size];
+	uint8_t to_read, read;
+	/* Get how many data we can really read. */
+	if (size < rcpt_idx_sl)
+	    /* FIXME: this case sucks. */
+	    to_read = size;
+	else
+	    to_read = rcpt_idx_sl;
+	/* Copy amount of data read. */
+	read = to_read;
+	while (to_read --)
+	    buffer[to_read] = rcpt_buf_sl[to_read];
 	/* de nouveau dispo pour traiter de nouvelles requetes */
 	TWCR |= _BV (TWEA); 
-	return 1;
+	return read;
       }
     else
 	return 0;
@@ -193,7 +203,6 @@ SIGNAL (SIG_2WIRE_SERIAL)
 {
 #if AC_TWI_SLAVE_ENABLE
     static uint8_t send_idx_sl = 0;
-    static uint8_t rcpt_idx_sl = 0;
 #endif  /* AC_TWI_SLAVE_ENABLE */
 #if AC_TWI_MASTER_ENABLE 
     static uint8_t idx_ms;

@@ -46,6 +46,8 @@ static uint8_t twi_address;
 
 /** Received data. */
 static uint8_t rcpt_buf_sl[AC_TWI_SL_RECV_BUFFER_SIZE];
+/** Received data size. */
+static uint8_t rcpt_size_sl;
 /** Whether new received data are ready. */
 static uint8_t data_ready_sl;
 /** Data sent on master request. */
@@ -79,12 +81,15 @@ twi_init (uint8_t addr)
 uint8_t 
 twi_sl_poll (uint8_t *buffer, uint8_t size)
 {
+    uint8_t i;
     if (data_ready_sl)
       {
 	data_ready_sl = 0;
-	while (size--)
-	    buffer[size] = rcpt_buf_sl[size];
-	return 1;
+	if (size > rcpt_size_sl)
+	    size = rcpt_size_sl;
+	for (i = 0; i < size; i++)
+	    buffer[i] = rcpt_buf_sl[i];
+	return size;
       }
     else
 	return 0;
@@ -124,6 +129,7 @@ twi_handle_WRITE (void *user, mex_msg_t *msg)
 	size = mex_msg_len (msg);
 	assert (size <= AC_TWI_SL_RECV_BUFFER_SIZE);
 	memcpy (rcpt_buf_sl, mex_msg_pop_buffer (msg), size);
+	rcpt_size_sl = size;
 	data_ready_sl = 1;
       }
 }

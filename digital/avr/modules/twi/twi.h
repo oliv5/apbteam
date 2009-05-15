@@ -30,7 +30,9 @@ void
 twi_init (uint8_t addr);
 
 #if AC_TWI_SLAVE_ENABLE
-/** Récupère dans buffer les données recues en tant qu'esclave */
+/** Récupère dans buffer les données recues en tant qu'esclave.
+ * @return  the amout of read data.
+ */
 uint8_t 
 twi_sl_poll (uint8_t *buffer, uint8_t size);
 /** Met à jour le buffer de donnée à envoyer */
