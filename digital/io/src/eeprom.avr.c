@@ -48,7 +48,7 @@
  * @warning: you must update this value every time you change the structure of
  * data stored into the EEPROM.
  */
-#define EEPROM_PARAM_KEY 0x05
+#define EEPROM_PARAM_KEY 0x06
 
 /** @} */
 
