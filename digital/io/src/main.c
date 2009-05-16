@@ -303,7 +303,7 @@ main_loop (void)
 		FSM_HANDLE_EVENT (&elevator_fsm,
 				  ELEVATOR_EVENT_doors_opened);
 	    /* bridge ready */
-	    if(nb_puck_fb)
+	    if(nb_puck_fb < 2)
 		FSM_HANDLE_EVENT (&cylinder_fsm,
 				  CYLINDER_EVENT_bridge_ready);
 	    /* bot empty */
@@ -328,6 +328,8 @@ main_loop (void)
 				  ELEVATOR_EVENT_jack_inserted_into_bot);
 		FSM_HANDLE_EVENT (&cylinder_fsm,
 				  CYLINDER_EVENT_jack_inserted_into_bot);
+		FSM_HANDLE_EVENT (&filterbridge_fsm,
+				  FILTERBRIDGE_EVENT_jack_inserted_into_bot);
 	      }
 	    /* Settings acknowledge */
 	    /*
@@ -436,7 +438,13 @@ main_loop (void)
 			      FILTERBRIDGE_EVENT_no_puck_on_pos2);
 	  }
 	/* test cylinder sensor */
-	/* if(!IO_GET (CON */
+	/* TODO check if we need !IO_GET or IO_GET */
+	if(!IO_GET(CONTACT_PUCK_CYLINDER))
+	  {
+	    FSM_HANDLE_EVENT (&cylinder_fsm,
+			      CYLINDER_EVENT_new_puck);
+	  }
+	/* FIXME to be delete */
 	if(cylinder_puck1_emulation)
 	  {
 	    FSM_HANDLE_EVENT (&cylinder_fsm,

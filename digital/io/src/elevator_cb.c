@@ -109,7 +109,6 @@ fsm_branch_t
 elevator__WAIT_A_PUCK__new_puck (void)
 {
     elevator_is_ready = 0;
-    ++nb_puck_in_elvt;
     elvt_new_puck = 0;
     // TODO time_ok
     if(nb_puck_elvt < 4 &&
@@ -168,6 +167,7 @@ elevator__WAIT_FOR_RELEASE_ORDER__order_received (void)
 {
     asserv_move_elevator_absolute(posy[elvt_order] - MIN_POSY,
 				  ASSERV_ELVT_SPEED_DEFAULT);
+    elvt_order = 0;
     return elevator_next (WAIT_FOR_RELEASE_ORDER, order_received);
 }
 

@@ -28,6 +28,7 @@
 
 #define CONTACT_FILTER_BRIDGE_PUCK C, 0
 #define CONTACT_ELEVATOR_DOOR C, 1
+#define CONTACT_PUCK_CYLINDER C, 2
 
 /**
  * Initialize the contact module.
