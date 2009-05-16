@@ -114,6 +114,177 @@ static uint8_t main_stats_asserv_, main_stats_asserv_cpt_;
 static uint8_t main_stats_timer_;
 
 /**
+ * Main events management.
+ * This function is responsible to get all events and send them to the
+ * different FSM that want its.
+ */
+void
+main_event_to_fsm (void)
+{
+#define FSM_HANDLE_EVENT(fsm,event) \
+      { if (fsm_handle_event (fsm,event)) \
+	  { \
+	    return; \
+	  } \
+      }
+#define FSM_HANDLE_TIMEOUT(fsm) \
+      { if (fsm_handle_timeout (fsm)) \
+	  { \
+	    return; \
+	  } \
+      }
+    /* Update FSM timeouts. */
+    FSM_HANDLE_TIMEOUT (&move_fsm);
+    FSM_HANDLE_TIMEOUT (&top_fsm);
+    FSM_HANDLE_TIMEOUT (&init_fsm);
+    FSM_HANDLE_TIMEOUT (&filterbridge_fsm);
+    FSM_HANDLE_TIMEOUT (&elevator_fsm);
+    FSM_HANDLE_TIMEOUT (&cylinder_fsm);
+
+    /* FIXME: rename and generalise this event. */
+    FSM_HANDLE_EVENT (&top_fsm, TOP_EVENT_settings_acknowledged);
+
+    asserv_status_e
+	move_status = none,
+	arm_status = none,
+	elevator_status = none;
+
+    /* Get status of move, arm and elevator. */
+    move_status = asserv_move_cmd_status ();
+    arm_status = asserv_arm_cmd_status ();
+    elevator_status = asserv_elevator_cmd_status ();
+
+    /* Check commands move status. */
+    if (move_status == success)
+      {
+	/* Pass it to all the FSM that need it. */
+	FSM_HANDLE_EVENT (&move_fsm,
+			  MOVE_EVENT_bot_move_succeed);
+	FSM_HANDLE_EVENT (&init_fsm,
+			  INIT_EVENT_move_done);
+      }
+    else if (move_status == failure)
+      {
+	/* Move failed. */
+	FSM_HANDLE_EVENT (&move_fsm,
+			  MOVE_EVENT_bot_move_failed);
+      }
+
+    /* Check elevator status. */
+    if (elevator_status == success)
+      {
+	/* FIXME: only have one event here. */
+	FSM_HANDLE_EVENT (&elevator_fsm,
+			  ELEVATOR_EVENT_init_done);
+	FSM_HANDLE_EVENT (&elevator_fsm,
+			  ELEVATOR_EVENT_in_position);
+      }
+    else if (elevator_status == failure)
+      {
+	/* TODO: */
+      }
+    /* FIXME: use general setting ack. */
+    /* send event if elevator received an order */
+    if(elvt_order)
+	FSM_HANDLE_EVENT (&elevator_fsm,
+			  ELEVATOR_EVENT_order_received);
+
+
+    /* FIXME: use general setting ack or not? */
+    /* elevator new puck (set by filterbridge) */
+    if(elvt_new_puck)
+	FSM_HANDLE_EVENT (&elevator_fsm,
+			  ELEVATOR_EVENT_new_puck);
+    /* elvt door switch */
+    if(!IO_GET (CONTACT_ELEVATOR_DOOR))
+	FSM_HANDLE_EVENT (&elevator_fsm,
+			  ELEVATOR_EVENT_doors_opened);
+    /* bridge ready */
+    if(nb_puck_fb < 2)
+	FSM_HANDLE_EVENT (&cylinder_fsm,
+			  CYLINDER_EVENT_bridge_ready);
+    /* bot empty */
+    if(!nb_puck_fb && !nb_puck_in_elvt && !nb_puck_cylinder)
+	FSM_HANDLE_EVENT (&cylinder_fsm,
+			  CYLINDER_EVENT_bot_empty);
+
+    /* Jack */
+    if(switch_get_jack())
+      {
+	FSM_HANDLE_EVENT (&top_fsm,
+			  TOP_EVENT_jack_removed_from_bot);
+      }
+    else
+      {
+	FSM_HANDLE_EVENT (&init_fsm,
+			  INIT_EVENT_jack_inserted_into_bot);
+	FSM_HANDLE_EVENT (&top_fsm,
+			  TOP_EVENT_jack_inserted_into_bot);
+	FSM_HANDLE_EVENT (&elevator_fsm,
+			  ELEVATOR_EVENT_jack_inserted_into_bot);
+	FSM_HANDLE_EVENT (&cylinder_fsm,
+			  CYLINDER_EVENT_jack_inserted_into_bot);
+	FSM_HANDLE_EVENT (&filterbridge_fsm,
+			  CYLINDER_EVENT_jack_inserted_into_bot);
+      }
+
+    /* Event generated at the end of the sub FSM to post to the top FSM */
+    if (main_post_event_for_top_fsm != 0xFF)
+      {
+	/* We must post the event at the end of this block because it
+	 * will issue a continue and every instruction after will
+	 * never be executed. */
+	/* We need to save the event before reseting it */
+	uint8_t save_event = main_post_event_for_top_fsm;
+	/* Reset */
+	main_post_event_for_top_fsm = 0xFF;
+	/* Post the event */
+	FSM_HANDLE_EVENT (&top_fsm, save_event);
+      }
+    /* Sharps event for move FSM */
+    /* If we do not need to ignore sharp event */
+    if (!main_sharp_ignore_event)
+      {
+	/* Get the current direction of the bot */
+	uint8_t moving_direction = asserv_get_moving_direction ();
+	/* If we are moving */
+	if (moving_direction)
+	  {
+	    if (sharp_path_obstrued (moving_direction))
+	      {
+		/* Generate an event for move FSM */
+		FSM_HANDLE_EVENT (&move_fsm,
+				  MOVE_EVENT_bot_move_obstacle);
+	      }
+	  }
+      }
+    /* Wait flag for move FSM */
+    if (!main_move_wait_cycle)
+      {
+	FSM_HANDLE_EVENT (&move_fsm, MOVE_EVENT_wait_finished);
+      }
+    /* TODO: Check other sensors */
+    /* TODO: implement filterbridge events */
+    if(!IO_GET (CONTACT_FILTER_BRIDGE_PUCK))
+      {
+	FSM_HANDLE_EVENT (&filterbridge_fsm,
+			  FILTERBRIDGE_EVENT_puck_on_pos2);
+      }
+    else
+      {
+	FSM_HANDLE_EVENT (&filterbridge_fsm,
+			  FILTERBRIDGE_EVENT_no_puck_on_pos2);
+      }
+    /* TODO check if we need !IO_GET or IO_GET */
+    if(!IO_GET(CONTACT_PUCK_CYLINDER))
+      {
+	FSM_HANDLE_EVENT (&cylinder_fsm,
+			  CYLINDER_EVENT_new_puck);
+      }
+
+}
+
+/**
  * Initialize the main and all its subsystems.
  */
 static void
@@ -142,13 +313,12 @@ main_init (void)
     fsm_init(&cylinder_fsm);
     fsm_init(&elevator_fsm);
     fsm_init(&filterbridge_fsm);
-    /* Start all FSM (except move FSM) */
-    //fsm_handle_event (&top_fsm, TOP_EVENT_start);
-    //fsm_handle_event (&init_fsm, INIT_EVENT_start);
+    /* Start all FSM (except move and top FSM) */
+    /* FIXME: who sould start top? init?. */
+    fsm_handle_event (&init_fsm, INIT_EVENT_start);
     fsm_handle_event (&filterbridge_fsm, FILTERBRIDGE_EVENT_start);
     fsm_handle_event (&elevator_fsm, ELEVATOR_EVENT_start);
     fsm_handle_event (&cylinder_fsm, CYLINDER_EVENT_start);
-    /* fsm_handle_event (&top_fsm, TOP_EVENT_start); */
     /* Sharp module */
     sharp_init ();
     /* PWM module */
@@ -168,19 +338,6 @@ main_init (void)
 static void
 main_loop (void)
 {
-#define FSM_HANDLE_EVENT(fsm,event) \
-      { if (fsm_handle_event (fsm,event)) \
-	  { \
-	    continue; \
-	  } \
-      }
-#define FSM_HANDLE_TIMEOUT(fsm) \
-      { if (fsm_handle_timeout (fsm)) \
-	  { \
-	    continue; \
-	  } \
-      }
-
     /* Infinite loop */
     while (1)
       {
@@ -235,146 +392,10 @@ main_loop (void)
 		main_move_wait_cycle--;
             /* Update sharps */
             sharp_update ();
-	    /* Update FSM timeouts. */
-	    FSM_HANDLE_TIMEOUT (&move_fsm);
-	    FSM_HANDLE_TIMEOUT (&top_fsm);
-	    FSM_HANDLE_TIMEOUT (&filterbridge_fsm);
-	    FSM_HANDLE_TIMEOUT (&elevator_fsm);
-	    FSM_HANDLE_TIMEOUT (&cylinder_fsm);
 
-	    /* Update main */
-	    asserv_status_e move_status = asserv_last_cmd_ack ()
-		? asserv_move_cmd_status () : none;
-
-	    /* Check commands move status */
-	    if (move_status == success)
-	      {
-		/* Pass it to all the FSM that need it */
-		FSM_HANDLE_EVENT (&move_fsm,
-				  MOVE_EVENT_bot_move_succeed);
-		FSM_HANDLE_EVENT (&init_fsm,
-				  INIT_EVENT_move_done);
-	      }
-	    else if (move_status == failure)
-	      {
-		/* Move failed */
-		FSM_HANDLE_EVENT (&move_fsm,
-				  MOVE_EVENT_bot_move_failed);
-	      }
-	    /* elevator asserv status */
-	    asserv_status_e elevator_status = asserv_last_cmd_ack()
-		? asserv_elevator_cmd_status() : none;
-	    if (elevator_status == success)
-	      {
-		/* TODO le init init juste la position 0 du robal */
-		FSM_HANDLE_EVENT (&elevator_fsm,
-				  ELEVATOR_EVENT_init_done);
-		FSM_HANDLE_EVENT (&elevator_fsm,
-				  ELEVATOR_EVENT_in_position);
-	      }
-	    /*else if (elevator_status == failed)
-	      {
-	          TODO when asserv elevator can failed
-	      }
-	    */
-	    /* cylinder asserv status */
-	    asserv_status_e cylinder_status = asserv_last_cmd_ack()
-		? asserv_arm_cmd_status() : none;
-	    if (cylinder_status == success)
-	      {
-		FSM_HANDLE_EVENT (&cylinder_fsm,
-				  CYLINDER_EVENT_move_done);
-	      }
-	    /* send event if elevator received an order */
-	    if(elvt_order)
-		FSM_HANDLE_EVENT (&elevator_fsm,
-				  ELEVATOR_EVENT_order_received);
-
-
-	    /* elevator new puck (set by filterbridge) */
-	    if(elvt_new_puck)
-		FSM_HANDLE_EVENT (&elevator_fsm,
-				  ELEVATOR_EVENT_new_puck);
-	    /* elvt door switch */
-	    if(!IO_GET (CONTACT_ELEVATOR_DOOR))
-		FSM_HANDLE_EVENT (&elevator_fsm,
-				  ELEVATOR_EVENT_doors_opened);
-	    /* bridge ready */
-	    if(nb_puck_fb < 2)
-		FSM_HANDLE_EVENT (&cylinder_fsm,
-				  CYLINDER_EVENT_bridge_ready);
-	    /* bot empty */
-	    if(!nb_puck_fb && !nb_puck_in_elvt && !nb_puck_cylinder)
-		FSM_HANDLE_EVENT (&cylinder_fsm,
-				  CYLINDER_EVENT_bot_empty);
-
-
-	    /* Jack */
-	    if(switch_get_jack())
-	      {
-		FSM_HANDLE_EVENT (&top_fsm,
-				  TOP_EVENT_jack_removed_from_bot);
-	      }
-	    else
-	      {
-		FSM_HANDLE_EVENT (&top_fsm,
-				  TOP_EVENT_jack_inserted_into_bot);
-		FSM_HANDLE_EVENT (&init_fsm,
-				  INIT_EVENT_jack_inserted_into_bot);
-		FSM_HANDLE_EVENT (&elevator_fsm,
-				  ELEVATOR_EVENT_jack_inserted_into_bot);
-		FSM_HANDLE_EVENT (&cylinder_fsm,
-				  CYLINDER_EVENT_jack_inserted_into_bot);
-		FSM_HANDLE_EVENT (&filterbridge_fsm,
-				  FILTERBRIDGE_EVENT_jack_inserted_into_bot);
-	      }
-	    /* Settings acknowledge */
-	    /*
-	    if (main_top_generate_settings_ack_event)
-	      {
-		FSM_HANDLE_EVENT (&top_fsm, TOP_EVENT_settings_acknowledged);
-	      }
-	      */
-	    FSM_HANDLE_EVENT (&top_fsm, TOP_EVENT_settings_acknowledged);
-	    /* Event generated at the end of the sub FSM to post to the top FSM */
-	    if (main_post_event_for_top_fsm != 0xFF)
-	      {
-		/* We must post the event at the end of this block because it
-		 * will issue a continue and every instruction after will
-		 * never be executed. */
-		/* We need to save the event before reseting it */
-		uint8_t save_event = main_post_event_for_top_fsm;
-		/* Reset */
-		main_post_event_for_top_fsm = 0xFF;
-		/* Post the event */
-		FSM_HANDLE_EVENT (&top_fsm, save_event);
-	      }
-	    /* Sharps event for move FSM */
-	    /* If we do not need to ignore sharp event */
-	    if (!main_sharp_ignore_event)
-	      {
-		/* Get the current direction of the bot */
-		uint8_t moving_direction = asserv_get_moving_direction ();
-		/* If we are moving */
-		if (moving_direction)
-		  {
-		    if (sharp_path_obstrued (moving_direction))
-		      {
-			/* Generate an event for move FSM */
-			FSM_HANDLE_EVENT (&move_fsm,
-					  MOVE_EVENT_bot_move_obstacle);
-		      }
-		  }
-	      }
-	    /* Wait flag for move FSM */
-	    if (!main_move_wait_cycle)
-	      {
-		FSM_HANDLE_EVENT (&move_fsm, MOVE_EVENT_wait_finished);
-	      }
-	    /* TODO: Check other sensors */
+	    /* Manage events. */
+	    main_event_to_fsm ();
 	  }
-
-	/* TODO: implement filterbridge events */
 
 	/* Send Sharps raw stats. */
 	if (main_stats_sharps && !--main_stats_sharps_cpt)
@@ -418,43 +439,6 @@ main_loop (void)
 	    /* Reset stats counter */
 	    main_stats_asserv_cpt_ = main_stats_asserv_;
 	  }
-	/* Init FSM timer */
-	if(main_init_wait_cycle)
-	    --main_init_wait_cycle;
-	if(!main_init_wait_cycle)
-	    FSM_HANDLE_EVENT (&init_fsm, INIT_EVENT_init_tempo_ended);
-	/* test filterbridge sensor */
-	if(!IO_GET (CONTACT_FILTER_BRIDGE_PUCK))
-	  {
-	    FSM_HANDLE_EVENT (&filterbridge_fsm,
-			      FILTERBRIDGE_EVENT_puck_on_pos2);
-	  }
-	else
-	  {
-	    FSM_HANDLE_EVENT (&filterbridge_fsm,
-			      FILTERBRIDGE_EVENT_no_puck_on_pos2);
-	  }
-	/* test cylinder sensor */
-	/* TODO check if we need !IO_GET or IO_GET */
-	if(!IO_GET(CONTACT_PUCK_CYLINDER))
-	  {
-	    FSM_HANDLE_EVENT (&cylinder_fsm,
-			      CYLINDER_EVENT_new_puck);
-	  }
-	/* FIXME to be delete */
-	if(cylinder_puck1_emulation)
-	  {
-	    FSM_HANDLE_EVENT (&cylinder_fsm,
-			      CYLINDER_EVENT_new_puck);
-	  }
-
-	/* FIXME to be delete */
-	if(jack_emulation)
-	  {
-	    FSM_HANDLE_EVENT (&filterbridge_fsm,
-			      FILTERBRIDGE_EVENT_jack_inserted_into_bot);
-	  }
-
       }
 }
 
