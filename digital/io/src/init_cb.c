@@ -30,31 +30,7 @@
 #include "playground.h"
 #include "main.h"
 #include "aquajim.h"
-
-/*
- * GOTO_THE_WALL_AGAIN =move_done=>
- *  => GO_BACKWARD_AGAIN
- *   go backward for INIT_DIST millimeters again
- */
-fsm_branch_t
-init__GOTO_THE_WALL_AGAIN__move_done (void)
-{
-    asserv_move_linearly(-INIT_DIST);
-    return init_next (GOTO_THE_WALL_AGAIN, move_done);
-}
-
-/*
- * TURN_180_DEGREES_CCW =move_done=>
- *  => SET_POSITION
- *   set real position to asserv
- */
-fsm_branch_t
-init__TURN_180_DEGREES_CCW__move_done (void)
-{
-    /* FIXME Value from spa^W marcel */
-    asserv_set_position(300, PG_HEIGHT - 305, 0);
-    return init_next (TURN_180_DEGREES_CCW, move_done);
-}
+#include "switch.h"
 
 /*
  * IDLE =start=>
@@ -68,27 +44,28 @@ init__IDLE__start (void)
 }
 
 /*
- * TURN_90_DEGREES_CCW =move_done=>
- *  => GOTO_THE_WALL_AGAIN
- *   go to the wall for the second time
+ * WAIT_JACK_IN =jack_inserted_into_bot=>
+ *  => WAIT_2_SEC
+ *   wait for the operator hand disappears
  */
 fsm_branch_t
-init__TURN_90_DEGREES_CCW__move_done (void)
+init__WAIT_JACK_IN__jack_inserted_into_bot (void)
 {
-    asserv_go_to_the_wall(0);
-    return init_next (TURN_90_DEGREES_CCW, move_done);
+    bot_color = switch_get_color ();
+    return init_next (WAIT_JACK_IN, jack_inserted_into_bot);
 }
 
 /*
- * GO_BACKWARD =move_done=>
- *  => TURN_90_DEGREES_CCW
- *   turn bot for 90 degrees counterclockwise
+ * WAIT_2_SEC =state_timeout=>
+ *  => GOTO_THE_WALL
+ *   go to the first wall
  */
 fsm_branch_t
-init__GO_BACKWARD__move_done (void)
+init__WAIT_2_SEC__state_timeout (void)
 {
-    asserv_move_angularly(90*BOT_ANGLE_DEGREE);
-    return init_next (GO_BACKWARD, move_done);
+    /* Move forward to the wall. */
+    asserv_go_to_the_wall (0);
+    return init_next (WAIT_2_SEC, state_timeout);
 }
 
 /*
@@ -99,46 +76,70 @@ init__GO_BACKWARD__move_done (void)
 fsm_branch_t
 init__GOTO_THE_WALL__move_done (void)
 {
-    asserv_move_linearly(-INIT_DIST);
+    asserv_move_linearly (-INIT_DIST);
     return init_next (GOTO_THE_WALL, move_done);
 }
 
 /*
- * WAIT_JACK_IN =jack_inserted_into_bot=>
- *  => WAIT_2_SEC
- *   wait for the operator hand disappears
+ * GO_BACKWARD =move_done=>
+ *  => TURN_90_DEGREES_CCW
+ *   turn bot for 90 degrees counterclockwise
  */
 fsm_branch_t
-init__WAIT_JACK_IN__jack_inserted_into_bot (void)
+init__GO_BACKWARD__move_done (void)
 {
-    /* launch the timer (2 sec)*/
-    main_init_wait_cycle = 450;
-    return init_next (WAIT_JACK_IN, jack_inserted_into_bot);
+    asserv_goto_angle (PG_A_VALUE_COMPUTING (90 * BOT_ANGLE_DEGREE));
+    return init_next (GO_BACKWARD, move_done);
 }
 
 /*
- * WAIT_2_SEC =init_tempo_ended=>
- *  => GOTO_THE_WALL
- *   go to the first wall
+ * TURN_90_DEGREES_CCW =move_done=>
+ *  => GOTO_THE_WALL_AGAIN
+ *   go to the wall for the second time
  */
 fsm_branch_t
-init__WAIT_2_SEC__init_tempo_ended (void)
+init__TURN_90_DEGREES_CCW__move_done (void)
 {
-    /* tell asserv to go FORWARD to the wall */
-    asserv_go_to_the_wall(0);
-    return init_next (WAIT_2_SEC, init_tempo_ended);
+    asserv_go_to_the_wall (0);
+    return init_next (TURN_90_DEGREES_CCW, move_done);
+}
+
+/*
+ * GOTO_THE_WALL_AGAIN =move_done=>
+ *  => GO_BACKWARD_AGAIN
+ *   go backward for INIT_DIST millimeters again
+ */
+fsm_branch_t
+init__GOTO_THE_WALL_AGAIN__move_done (void)
+{
+    asserv_move_linearly (-INIT_DIST);
+    return init_next (GOTO_THE_WALL_AGAIN, move_done);
 }
 
 /*
  * GO_BACKWARD_AGAIN =move_done=>
- *  => TURN_180_DEGREES_CCW
- *   turn bot for 180 degrees counterclockwise
+ *  => SET_POSITION
+ *   set real position to asserv
  */
 fsm_branch_t
 init__GO_BACKWARD_AGAIN__move_done (void)
 {
-    asserv_move_angularly(180*BOT_ANGLE_DEGREE);
+    asserv_set_position (PG_X_VALUE_COMPUTING (BOT_LENGTH / 2 + INIT_DIST),
+			 PG_HEIGHT - (BOT_WIDTH / 2 - INIT_DIST),
+			 PG_A_VALUE_COMPUTING (180 * BOT_ANGLE_DEGREE));
     return init_next (GO_BACKWARD_AGAIN, move_done);
+}
+
+/*
+ * SET_POSITION =move_done=>
+ *  => TURN_90_DEGREES_CCW
+ *   turn bot for 180 degrees counterclockwise
+ */
+fsm_branch_t
+init__SET_POSITION__move_done (void)
+{
+    asserv_goto_angle (PG_A_VALUE_COMPUTING (0 * BOT_ANGLE_DEGREE));
+    return init_next (SET_POSITION, move_done);
 }
 
 

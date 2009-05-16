@@ -25,7 +25,9 @@
  *
  * }}} */
 
-/* INIT_DIST is the distance the bot move backward during init FSM*/
-#define INIT_DIST 150
+/**
+ * We want to be at 50mm.
+ */
+#define INIT_DIST (PG_START_ZONE_LENGTH - BOT_LENGTH - 50)
 
 #endif /* init_h */

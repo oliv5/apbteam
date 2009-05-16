@@ -9,7 +9,7 @@ States:
   waiting for the beginning of the top FSM
  WAIT_JACK_IN
   waiting for the jack to be inserted into the bot
- WAIT_2_SEC
+ WAIT_2_SEC [timeout=450]
   waiting for operator's hand not on jack anymore
  GOTO_THE_WALL
   go to the wall for the first time
@@ -31,8 +31,6 @@ Events:
   initialize the FSM
  jack_inserted_into_bot
   the jack is inserted into the bot
- init_tempo_ended
-  the tempo is finished
  move_done
   the move is finished
  state_timeout
@@ -46,7 +44,7 @@ WAIT_JACK_IN:
   wait for the operator hand disappears
 
 WAIT_2_SEC:
- init_tempo_ended -> GOTO_THE_WALL
+ state_timeout -> GOTO_THE_WALL
   go to the first wall
 
 GOTO_THE_WALL:
@@ -66,9 +64,9 @@ GOTO_THE_WALL_AGAIN:
   go backward for INIT_DIST millimeters again
 
 GO_BACKWARD_AGAIN:
- move_done -> TURN_180_DEGREES_CCW
-  turn bot for 180 degrees counterclockwise
-
-TURN_180_DEGREES_CCW:
  move_done -> SET_POSITION
   set real position to asserv
+
+SET_POSITION:
+ move_done -> TURN_90_DEGREES_CCW
+  turn bot for 180 degrees counterclockwise
