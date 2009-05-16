@@ -92,9 +92,6 @@ uint8_t main_always_stop_for_obstacle = 1;
  */
 uint16_t main_move_wait_cycle;
 
-/* FIXME to be delete */
-uint8_t jack_emulation = 0;
-uint8_t cylinder_puck1_emulation = 0;
 /**
  * The same for init FSM
  */
@@ -474,7 +471,8 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
     switch (c (cmd, size))
       {
       case c ('j', 0):
-	jack_emulation = 1;
+	fsm_handle_event (&filterbridge_fsm,
+			  FILTERBRIDGE_EVENT_jack_inserted_into_bot);
 	break;
       case c ('z', 0):
 	/* Reset */
