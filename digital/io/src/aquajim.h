@@ -51,4 +51,10 @@
  */
 #define BOT_ANGLE_DEGREE (65536 / 360)
 
+/**
+ * The size of the bot.
+ */
+#define BOT_LENGTH 300
+#define BOT_WIDTH 310
+
 #endif /* aquajim_h */
