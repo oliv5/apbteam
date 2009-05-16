@@ -84,6 +84,8 @@ class TestSimu (InterNode):
                 self.robot_link)
         self.robot_view = robot_view.Bag (self.table, self.actuator_view,
                 self.sensor_frame, self.robot_model)
+	# Unused ADC.
+	self.robot_link.io.adc[5].value = 0
         # Color switch.
         self.robot_model.color_switch.register (self.change_color)
         self.change_color ()
