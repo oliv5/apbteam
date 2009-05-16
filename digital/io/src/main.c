@@ -605,7 +605,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	  }
 	break;
 
-	/* Asserv/arm */
+	/* Asserv */
       case c ('a', 1):
 	  {
 	    switch (args[0])
@@ -633,8 +633,20 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		/* Go to the wall */
 		asserv_go_to_the_wall (args[1]);
 		break;
+	      case 'z':
+		switch (args[1])
+		  {
+		  case 'e':
+		    asserv_elevator_zero_position ();
+		    break;
+		  case 'a':
+		    asserv_arm_zero_position ();
+		    break;
+		  }
+		break;
 	      }
 	  }
+	break;
       case c ('a', 3):
 	  {
 	    switch (args[0])
