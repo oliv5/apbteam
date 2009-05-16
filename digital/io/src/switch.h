@@ -59,7 +59,7 @@ switch_get_color (void);
  * Get the filtered value of the jack.
  * In comparison with the \a switch_get_jack_raw, this function ensure you the
  * state of the jack is the same during a defined period of time.
- * @return the filtered state of the jack.
+ * @return the filtered state of the jack (0 if the jack is present)
  */
 uint8_t
 switch_get_jack (void);
