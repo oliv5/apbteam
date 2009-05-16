@@ -119,4 +119,10 @@
  */
 #define PG_MOVE_DISTANCE 300
 
+/**
+ * Start zone.
+ */
+#define PG_START_ZONE_LENGTH 500
+#define PG_START_ZONE_WIDTH 500
+
 #endif // playground_h
