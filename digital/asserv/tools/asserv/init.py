@@ -12,8 +12,8 @@ host = dict (
         E = 0x3ff, D = 0x1ff,
         )
 target = dict (
-        scale = 0.0413530725332892, f = 0xcfa,
-        c = float (0xffefbe) / (1 << 24),
+        scale = 0.0413530725332892, f = 0xcf7,
+        c = float (0x0100b9e4) / (1 << 24),
         tkp = 1, tkd = 16,
         ta = 1.5, tsm = 0x60, tss = 0x20,
         akp = 2, akd = 16,
