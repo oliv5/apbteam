@@ -55,6 +55,9 @@ class Proto:
     def servo (self, servo, high_time):
         self.proto.send ('s', 'BB', servo, high_time)
 
+    def pwm_set (self, value, timer):
+        self.proto.send ('w', 'Hh', value, timer)
+
     def close (self):
         self.reset ()
         self.wait (lambda: True)

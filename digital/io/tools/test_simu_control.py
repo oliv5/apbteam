@@ -30,8 +30,6 @@ class TestSimuControl (TestSimu):
 
     def __init__ (self, asserv_cmd, io_cmd):
         TestSimu.__init__ (self, asserv_cmd, io_cmd)
-        self.door_pos = 0
-        self.finger_pos = 0
 
     def create_widgets (self):
         TestSimu.create_widgets (self)
@@ -41,12 +39,22 @@ class TestSimuControl (TestSimu):
         self.cylinder_button = Button (self.control_frame, text = 'Cylinder',
                 command = self.cylinder_command)
         self.cylinder_button.pack ()
-        self.door_button = Button (self.control_frame, text = 'Door',
-                command = self.door_command)
+        self.door_var = IntVar ()
+        self.door_button = Checkbutton (self.control_frame, text = 'Door',
+                indicatoron = False,
+                variable = self.door_var, command = self.door_command)
         self.door_button.pack ()
-        self.finger_button = Button (self.control_frame, text = 'Finger',
-                command = self.finger_command)
+        self.finger_var = IntVar ()
+        self.finger_button = Checkbutton (self.control_frame, text = 'Finger',
+                indicatoron = False,
+                variable = self.finger_var, command = self.finger_command)
         self.finger_button.pack ()
+        self.elevator_door_var = IntVar ()
+        self.elevator_door_button = Checkbutton (self.control_frame,
+                text = 'Elevator Door', indicatoron = False,
+                variable = self.elevator_door_var,
+                command = self.elevator_door_command)
+        self.elevator_door_button.pack ()
         self.table_view.bind ('<1>', self.move)
         self.table_view.bind ('<3>', self.orient)
 
@@ -65,12 +73,16 @@ class TestSimuControl (TestSimu):
         self.asserv.speed_pos ('a0', 5333 / 3)
 
     def door_command (self):
-        self.door_pos = 1 - self.door_pos
-        self.io.servo_pos (0, self.door_pos)
+        door_pos = self.door_var.get ()
+        self.io.servo_pos (0, door_pos)
 
     def finger_command (self):
-        self.finger_pos = 1 - self.finger_pos
-        self.io.servo_pos (1, self.finger_pos)
+        finger_pos = self.finger_var.get ()
+        self.io.servo_pos (1, finger_pos)
+
+    def elevator_door_command (self):
+        elevator_door_pos = self.elevator_door_var.get ()
+        self.io.pwm_set (elevator_door_pos == 1 and 512 or -512, 225)
 
     def change_color (self, *dummy):
         pass
