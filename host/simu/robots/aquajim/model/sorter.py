@@ -28,8 +28,11 @@ from math import pi
 
 class Sorter (Observable):
 
-    def __init__ (self, table, arm_motor_link, elevator_motor_link,
-            servo_links, elevator_door_model, into = None):
+    def __init__ (self, table,
+            arm_motor_link, cylinder_puck_contact,
+            servo_links, bridge_puck_contact,
+            elevator_motor_link, elevator_door_model, elevator_door_contact,
+            into = None):
         Observable.__init__ (self)
         self.table = table
         self.into = into or ()
@@ -39,15 +42,20 @@ class Sorter (Observable):
         self.arm_motor_link = arm_motor_link
         self.arm_motor_link.register (self.__arm_motor_notified)
         self.__arm_motor_notified ()
-        self.elevator_motor_link = elevator_motor_link
-        self.elevator_motor_link.register (self.__elevator_motor_notified)
-        self.__elevator_motor_notified ()
+        self.cylinder_puck_contact = cylinder_puck_contact
         self.servo_links = servo_links
+        self.bridge_puck_contact = bridge_puck_contact
         self.servo_links[0].register (self.__bridge_door_servo_notified)
         self.__bridge_door_servo_notified ()
         self.servo_links[1].register (self.__bridge_finger_servo_notified)
         self.__bridge_finger_servo_notified ()
+        self.elevator_motor_link = elevator_motor_link
+        self.elevator_motor_link.register (self.__elevator_motor_notified)
+        self.__elevator_motor_notified ()
         self.elevator_door = elevator_door_model
+        self.elevator_door_contact = elevator_door_contact
+        self.elevator_door.register (self.__elevator_door_notified)
+        self.__elevator_door_notified ()
 
     def __transform (self, pos):
         m = TransMatrix ()
@@ -66,6 +74,9 @@ class Sorter (Observable):
             entry_pos = self.__transform ((150 - 40, 0))
             if entry_pos is not None:
                 front_puck = self.table.nearest (entry_pos, level = 1, max = 35)
+                # Update puck cylinder contact.
+                self.cylinder_puck_contact.state = front_puck is None
+                self.cylinder_puck_contact.notify ()
                 # For each arm.
                 for i in range (3):
                     a = (self.arm_angle + i * 2 * pi / 3) % (2 * pi)
@@ -84,13 +95,6 @@ class Sorter (Observable):
                         self.arm_slot[i] = None
         self.notify ()
 
-    def __elevator_motor_notified (self):
-        if self.elevator_motor_link.angle is None:
-            self.elevator_height = None
-        else:
-            self.elevator_height = 150 - self.elevator_motor_link.angle * 5.5
-        self.notify ()
-
     def __bridge_door_servo_notified (self):
         self.bridge_door_servo_value = self.servo_links[0].value
         if self.bridge_door_servo_value is not None:
@@ -100,6 +104,7 @@ class Sorter (Observable):
                 # Pass the door.
                 self.bridge_slot[1] = self.bridge_slot[0]
                 self.bridge_slot[0] = None
+        self.__bridge_puck_update ()
         self.notify ()
 
     def __bridge_finger_servo_notified (self):
@@ -112,5 +117,23 @@ class Sorter (Observable):
                 # Drop until elevator is fully implemented.
                 self.lost.append (self.bridge_slot[1])
                 self.bridge_slot[1] = None
+        self.__bridge_puck_update ()
         self.notify ()
+
+    def __bridge_puck_update (self):
+        # Update bridge puck contact.
+        self.bridge_puck_contact.state = self.bridge_slot[1] is None
+        self.bridge_puck_contact.notify ()
+
+    def __elevator_motor_notified (self):
+        if self.elevator_motor_link.angle is None:
+            self.elevator_height = None
+        else:
+            self.elevator_height = 150 - self.elevator_motor_link.angle * 5.5
+        self.notify ()
+
+    def __elevator_door_notified (self):
+        self.elevator_door_contact.state = (self.elevator_door.angle
+                != self.elevator_door.max_stop)
+        self.elevator_door_contact.notify ()
 
