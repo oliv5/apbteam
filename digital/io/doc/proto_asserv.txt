@@ -99,6 +99,7 @@ This table describe the list of supported commands by the *asserv* card:
 +---------+-------+-----------------+------------------------------------------+
 |   'B'   |  Arm  | - speed (1b)    | Find the zero position of the arm        |
 |         |       |                 |   - speed: in step by cycle (4.44ms)     |
+|         |       |                 | Offset for mechanical zero is 0x43e      |
 +---------+-------+-----------------+------------------------------------------+
 |   'c'   | Elvt  | - position (2b) | Move the elevator to a desired position  |
 |         |       | - speed (1b)    | at a specific speed                      |
