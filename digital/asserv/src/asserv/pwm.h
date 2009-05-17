@@ -58,7 +58,7 @@ extern uint8_t pwm_reverse;
 #define PWM_MAX_FOR_(x) PWM_MAX_FOR_ ## x
 #define PWM_MAX_FOR_pwm_left PWM_MAX
 #define PWM_MAX_FOR_pwm_right PWM_MAX
-#define PWM_MAX_FOR_pwm_aux0 (PWM_MAX / 2)
+#define PWM_MAX_FOR_pwm_aux0 (PWM_MAX / 4)
 #define PWM_MAX_FOR_pwm_aux1 (PWM_MAX / 2)
 
 /** Define minimum PWM value for each output, if the value is less than the

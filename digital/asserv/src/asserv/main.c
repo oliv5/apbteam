@@ -661,7 +661,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		break;
 	      case c ('w', 2):
 		/* Set PWM direction.
-		 * - b: bits: 000[aux1][aux0][right][left]. */
+		 * - b: bits: 0000[aux1][aux0][right][left]. */
 		pwm_set_reverse (args[1]);
 		break;
 	      case c ('E', 2):
