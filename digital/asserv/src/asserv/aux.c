@@ -50,6 +50,8 @@ enum
     AUX_TRAJ_GOTO,
     /* Goto position, try to unblock. */
     AUX_TRAJ_GOTO_UNBLOCK,
+    /* Find zero mode, turn until zero is not seen. */
+    AUX_TRAJ_FIND_ZERO_NOT,
     /* Find zero mode, turn until zero is seen. */
     AUX_TRAJ_FIND_ZERO,
     /* Everything done. */
@@ -127,12 +129,21 @@ void
 aux_traj_find_zero (struct aux_t *aux)
 {
     uint8_t zero = *aux->zero_pin & aux->zero_bv;
-    if (!zero)
+    switch (aux->traj_mode)
       {
-	aux->speed->cons = 0;
-	state_finish (aux->state);
-	aux->pos = 0;
-	aux->traj_mode = AUX_TRAJ_DONE;
+      case AUX_TRAJ_FIND_ZERO_NOT:
+	if (zero)
+	    aux->traj_mode = AUX_TRAJ_FIND_ZERO;
+	break;
+      case AUX_TRAJ_FIND_ZERO:
+	if (!zero)
+	  {
+	    aux->speed->cons = 0;
+	    state_finish (aux->state);
+	    aux->pos = 0;
+	    aux->traj_mode = AUX_TRAJ_DONE;
+	  }
+	break;
       }
 }
 
@@ -140,7 +151,7 @@ aux_traj_find_zero (struct aux_t *aux)
 void
 aux_traj_find_zero_start (struct aux_t *aux, int8_t speed, uint8_t seq)
 {
-    aux->traj_mode = AUX_TRAJ_FIND_ZERO;
+    aux->traj_mode = AUX_TRAJ_FIND_ZERO_NOT;
     aux->speed->use_pos = 0;
     aux->speed->cons = speed << 8;
     state_start (aux->state, MODE_TRAJ, seq);
@@ -158,6 +169,7 @@ aux_traj_update_single (struct aux_t *aux)
 	  case AUX_TRAJ_GOTO_UNBLOCK:
 	    aux_traj_goto (aux);
 	    break;
+	  case AUX_TRAJ_FIND_ZERO_NOT:
 	  case AUX_TRAJ_FIND_ZERO:
 	    aux_traj_find_zero (aux);
 	    break;
