@@ -34,6 +34,7 @@ class Bag:
     def __init__ (self, scheduler, table, link_bag):
         self.jack = Switch (link_bag.io.jack)
         self.color_switch = Switch (link_bag.io.color_switch)
+        self.contact = [ Switch (contact) for contact in link_bag.io.contact ]
         self.position = Position (link_bag.asserv.position)
         self.elevator_door = MotorBasic (link_bag.io.pwm[0], scheduler,
                 2 * pi, 0, pi / 2)

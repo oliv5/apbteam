@@ -24,6 +24,7 @@
 """Mex interface to io."""
 
 from utils.observable import Observable
+import simu.mex.msg
 
 ID_JACK = 0xb0
 ID_COLOR = 0xb1
@@ -31,6 +32,7 @@ ID_SERVO = 0xb2
 ID_ADC = 0xb3
 ID_PATH = 0xb4
 ID_PWM = 0xb5
+ID_CONTACT = 0xb6
 
 SERVO_NB = 6
 SERVO_VALUE_MAX = 255
@@ -39,6 +41,9 @@ ADC_NB = 6
 
 PWM_NB = 1
 PWM_VALUE_MAX = 1024
+
+CONTACT_NB = 2
+CONTACT_INIT = 0x3f
 
 class Mex:
     """Handle communications with simulated io."""
@@ -157,6 +162,42 @@ class Mex:
                     pwm.value = float (value) / PWM_VALUE_MAX
                     pwm.notify ()
 
+    class Contact (Observable):
+        """Contact input.
+
+        - state: True (open) or False (closed).
+
+        """
+
+        def __init__ (self, pack, index):
+            Observable.__init__ (self)
+            self.pack = pack
+            self.index = index
+            self.state = None
+            self.register (self.__notified)
+
+        def __notified (self):
+            self.pack.set (self.index, self.state)
+
+        class Pack:
+            """Handle emission of several contacts for one message."""
+
+            def __init__ (self, node):
+                self.node = node
+                self.contacts = CONTACT_INIT
+
+            def set (self, index, state):
+                if state is None or state:
+                    self.contacts |= 1 << index
+                else:
+                    self.contacts &= ~(1 << index)
+                self.__send ()
+
+            def __send (self):
+                m = simu.mex.msg.Msg (ID_CONTACT)
+                m.push ('B', self.contacts)
+                self.node.send (m)
+
     def __init__ (self, node):
         self.jack = self.Switch (node, ID_JACK)
         self.color_switch = self.Switch (node, ID_COLOR)
@@ -167,4 +208,7 @@ class Mex:
         self.path = self.Path (node)
         self.pwm = tuple (self.PWM () for i in range (0, PWM_NB))
         self.__adc_pwm = self.PWM.Pack (node, self.pwm)
+        self.__contact_pack = self.Contact.Pack (node)
+        self.contact = tuple (self.Contact (self.__contact_pack, i)
+                for i in range (CONTACT_NB))
 

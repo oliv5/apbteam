@@ -44,6 +44,7 @@ enum
     MSG_SIMU_IO_SHARPS = 0xb3,
     MSG_SIMU_IO_PATH = 0xb4,
     MSG_SIMU_IO_PWM = 0xb5,
+    MSG_SIMU_IO_CONTACT = 0xb6,
 };
 
 /** Requested servo position. */
@@ -72,11 +73,19 @@ uint8_t PORTB;
 /** Contact registers. */
 uint8_t PORTC, PINC;
 
+void
+handle_contact (void *user, mex_msg_t *msg)
+{
+    mex_msg_pop (msg, "B", &PINC);
+}
+
 /** Initialise simulation. */
 void
 simu_init (void)
 {
     mex_node_connect ();
+    mex_node_register (MSG_SIMU_IO_CONTACT, handle_contact, 0);
+    PINC = 0x3f;
     simu_servo_update_cpt = 1;
     simu_switch_update_cpt = 1;
     simu_sharps_update_cpt = 1;
