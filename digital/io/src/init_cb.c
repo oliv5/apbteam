@@ -131,15 +131,15 @@ init__GO_BACKWARD_AGAIN__move_done (void)
 }
 
 /*
- * SET_POSITION =move_done=>
- *  => TURN_90_DEGREES_CCW
+ * SET_POSITION =asserv_last_cmd_ack=>
+ *  => IDLE
  *   turn bot for 180 degrees counterclockwise
  */
 fsm_branch_t
-init__SET_POSITION__move_done (void)
+init__SET_POSITION__asserv_last_cmd_ack (void)
 {
     asserv_goto_angle (PG_A_VALUE_COMPUTING (0 * BOT_ANGLE_DEGREE));
-    return init_next (SET_POSITION, move_done);
+    return init_next (SET_POSITION, asserv_last_cmd_ack);
 }
 
 

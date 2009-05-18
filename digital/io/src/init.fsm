@@ -34,6 +34,9 @@ Events:
  move_done
   the move is finished
  state_timeout
+  timeout.
+ asserv_last_cmd_ack
+  last command sent to the asserv board acquited.
 
 IDLE:
  start -> WAIT_JACK_IN
@@ -68,5 +71,5 @@ GO_BACKWARD_AGAIN:
   set real position to asserv
 
 SET_POSITION:
- move_done -> TURN_90_DEGREES_CCW
+ asserv_last_cmd_ack -> IDLE
   turn bot for 180 degrees counterclockwise

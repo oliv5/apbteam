@@ -141,8 +141,10 @@ main_event_to_fsm (void)
     FSM_HANDLE_TIMEOUT (&elevator_fsm);
     FSM_HANDLE_TIMEOUT (&cylinder_fsm);
 
-    /* FIXME: rename and generalise this event. */
-    FSM_HANDLE_EVENT (&top_fsm, TOP_EVENT_settings_acknowledged);
+    /* If we have entering this function, last command of the asserv board has
+     * been aquited.
+     * FIXME: other FSM need it? */
+    FSM_HANDLE_EVENT (&init_fsm, INIT_EVENT_asserv_last_cmd_ack);
 
     asserv_status_e
 	move_status = none,
