@@ -678,7 +678,7 @@ asserv_set_scale (uint32_t scale)
 void
 asserv_arm_zero_position (void)
 {
-    asserv_twi_buffer_param[0] = ASSERV_ARM_SPEED_DEFAULT;
+    asserv_twi_buffer_param[0] = 0x05;
     asserv_twi_send_command ('B', 1);
 }
 
