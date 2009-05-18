@@ -67,6 +67,7 @@ WAIT_FIRST_JACK_IN:
 WAIT_FIRST_JACK_OUT:
  jack_removed_from_bot -> WAIT_SECOND_JACK_IN
   start trace module.
+  get and store the color of the bot.
 
 WAIT_SECOND_JACK_IN:
  jack_inserted_into_bot -> WAIT_FOR_HANDS_OUT
@@ -90,7 +91,6 @@ SET_ANGULAR_POSITION:
 
 GO_AWAY_FROM_THE_WALL:
  bot_move_succeed -> FACE_OTHER_WALL
-  get and store the color of the bot.
   turn to face the other wall.
 
 FACE_OTHER_WALL:

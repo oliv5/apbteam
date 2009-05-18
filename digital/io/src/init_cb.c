@@ -59,12 +59,15 @@ init__WAIT_FIRST_JACK_IN__jack_inserted_into_bot (void)
  * WAIT_FIRST_JACK_OUT =jack_removed_from_bot=>
  *  => WAIT_SECOND_JACK_IN
  *   start trace module.
+ *   get and store the color of the bot.
  */
 fsm_branch_t
 init__WAIT_FIRST_JACK_OUT__jack_removed_from_bot (void)
 {
     /* Initialize trace module (erase the flash). */
     trace_init ();
+    /* Get the color. */
+    bot_color = switch_get_color ();
     return init_next (WAIT_FIRST_JACK_OUT, jack_removed_from_bot);
 }
 
@@ -140,8 +143,6 @@ init__SET_ANGULAR_POSITION__asserv_last_cmd_ack (void)
 fsm_branch_t
 init__GO_AWAY_FROM_THE_WALL__bot_move_succeed (void)
 {
-    /* Get the color. */
-    bot_color = switch_get_color ();
     /* Face the other wall. */
     asserv_goto_angle (PG_A_VALUE_COMPUTING (180 * BOT_ANGLE_DEGREE));
     return init_next (GO_AWAY_FROM_THE_WALL, bot_move_succeed);
