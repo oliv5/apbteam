@@ -30,8 +30,10 @@
 #include "modules/utils/byte.h"	/* v*_to_v* */
 #include "modules/math/fixed/fixed.h"
 #include "modules/utils/crc.h"
+#include "modules/trace/trace.h"
 #include "giboulee.h"		/* BOT_* */
 #include "io.h"
+#include "trace_event.h"
 
 /** Scaling factor. */
 uint32_t asserv_scale;
@@ -74,6 +76,7 @@ static uint32_t asserv_scale_inv;
  * It is used for the acknowledge of the command sent to the asserv.
  */
 static uint8_t asserv_twi_seq;
+static uint8_t trace_asserv_twi_seq;
 
 /**
  * Shared buffer used to send commands to the asserv.
@@ -215,6 +218,9 @@ asserv_twi_send (uint8_t length)
     if (twi_ms_send (AC_ASSERV_TWI_ADDRESS, asserv_twi_buffer, length) != 0)
 	return 1;
 
+    /* Sending a command. */
+    TRACE (TRACE_ASSERV__SEND, asserv_twi_buffer[1], asserv_twi_buffer[2]);
+
     /* Update until the command is sent */
     asserv_twi_update ();
     
@@ -237,6 +243,7 @@ asserv_init (void)
     asserv_update_status ();
     /* Reset sequence number */
     asserv_twi_seq = asserv_status.seq;
+    trace_asserv_twi_seq = asserv_twi_seq + 1;
     /* Scaling factor. */
     asserv_set_scale (BOT_SCALE * (1L << 24));
 }
@@ -269,6 +276,13 @@ asserv_update_status (void)
     asserv_status.position.a = v8_to_v16 (status_buffer[9], status_buffer[10]);
     asserv_status.arm_position = v8_to_v16 (status_buffer[11], status_buffer[12]);
     asserv_status.elevator_position = v8_to_v16 (status_buffer[13], status_buffer[14]);
+    if (trace_asserv_twi_seq == asserv_status.seq)
+      {
+	/* Next ack. */
+	trace_asserv_twi_seq++;
+	TRACE (TRACE_ASSERV__LAST_STATUS_ACK, asserv_status.seq,
+	       asserv_status.status);
+      }
 }
 
 /* Is last command sent to the asserv board is being executed? */
@@ -290,6 +304,7 @@ asserv_retransmit (void)
      * retransmission */
     if (--asserv_retransmit_counter == 0)
       {
+	TRACE (TRACE_ASSERV__RETRANSMIT, asserv_twi_buffer[1]);
 	/* Retransmit! */
 	asserv_twi_send (asserv_retransmit_length);
 	return 1;

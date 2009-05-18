@@ -8,7 +8,9 @@ States:
  IDLE
   waiting for the beginning of the top FSM
  WAIT_JACK_IN
-  waiting for the jack to be inserted into the bot
+  waiting for the jack to be inserted into the bot.
+  get color for the rest of the FSM.
+  erase flash.
  WAIT_2_SEC [timeout=450]
   waiting for operator's hand not on jack anymore
  GOTO_THE_WALL

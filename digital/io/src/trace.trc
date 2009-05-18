@@ -1,0 +1,3 @@
+EVENT asserv__retransmit seq 1 "Asserv[0x%02x]: retransmiting"
+EVENT asserv__send seq 1 cmd 1 "Asserv[0x%02x]: sending: !%c"
+EVENT asserv__last_status_ack seq 1 status 1 "Asserv[0x%02x]: status: %x"

@@ -28,6 +28,7 @@
 #include "modules/proto/proto.h"
 #include "modules/utils/utils.h"
 #include "modules/path/path.h"
+#include "modules/flash/flash.h"
 
 /* AVR include, non HOST */
 #ifndef HOST
@@ -717,9 +718,17 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	  }
 	break;
       default:
-	/* Unknown commands */
-	proto_send0 ('?');
-	return;
+	  {
+	    uint8_t error = 1;
+	    if (cmd == 'l')
+		error = flash_log (size, args);
+	    if (error)
+	      {
+		/* Unknown commands */
+		proto_send0 ('?');
+		return;
+	      }
+	  }
       }
     /* When no error, acknowledge commands */
     proto_send (cmd, size, args);

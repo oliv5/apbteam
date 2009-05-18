@@ -55,7 +55,7 @@
 /** If the send buffer is full when putc:
  *  - DROP: drop the new byte.
  *  - WAIT: wait until there is room in the send buffer. */
-#define AC_UART0_SEND_BUFFER_FULL DROP
+#define AC_UART0_SEND_BUFFER_FULL WAIT
 /** In HOST compilation:
  *  - STDIO: use stdin/out.
  *  - PTS: use pseudo terminal. */
@@ -109,5 +109,19 @@
  * This length should not include the CRC byte!
  */
 #define AC_ASSERV_STATUS_LENGTH 15
+
+/* spi - SPI module. */
+/** Select driver: HARD, SOFT, or NONE. */
+#define AC_SPI0_DRIVER HARD
+/** Same thing for an optionnal second SPI driver. */
+#define AC_SPI1_DRIVER NONE
+
+/* flash - Flash SPI AVR module. */
+/** Flash PORT used. */
+#define AC_FLASH_PORT PORTD
+/** Flash DDR used. */
+#define AC_FLASH_DDR DDRD
+/** Flash SS pin. */
+#define AC_FLASH_BIT_SS 5
 
 #endif /* avrconfig_h */

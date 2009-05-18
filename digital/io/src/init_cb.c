@@ -31,6 +31,7 @@
 #include "main.h"
 #include "aquajim.h"
 #include "switch.h"
+#include "modules/trace/trace.h"
 
 /*
  * IDLE =start=>
@@ -51,7 +52,10 @@ init__IDLE__start (void)
 fsm_branch_t
 init__WAIT_JACK_IN__jack_inserted_into_bot (void)
 {
+    /* Get the color. */
     bot_color = switch_get_color ();
+    /* Initialize trace module (erase the flash). */
+    trace_init ();
     return init_next (WAIT_JACK_IN, jack_inserted_into_bot);
 }
 
