@@ -29,12 +29,13 @@ class TInter:
             if cmd < len(events):
                 e = events[cmd]
                 string = e.string_get()
+		vals = [ ]
                 for i in range (0, e.param_nb()):
                     p = e.param_get(i)
                     size = p.length()
-                    val = get_size (memory, size)
+                    vals.append (get_size (memory, size))
                     memory = memory[size:]
-                    string = string.replace('%d', str(val), 1)
+		string = string % tuple (vals)
 
                 if self.__file == None:
                     print string[1:len(string)-1]

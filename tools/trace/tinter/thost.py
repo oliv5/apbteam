@@ -19,7 +19,7 @@ def log (x):
 class THost:
     """Class to connect to the flash memory."""
     def __init__(self):
-        self.__proto = Proto (serial.Serial ('/dev/ttyACM0'), time.time, 0.1)
+        self.__proto = Proto (serial.Serial ('/dev/ttyUSB0'), time.time, 0.1)
         self.__memory = list()
         self.__traces = []
 

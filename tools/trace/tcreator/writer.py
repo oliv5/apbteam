@@ -1,7 +1,10 @@
 import sys
 import time
+import os
 
 from lib.traceclass import *
+
+templatedir = os.path.split (__file__)[0]
 
 class Writer:
 
@@ -19,7 +22,7 @@ class Writer:
             return string.upper()
 
     def __read_template__ (self, string):
-        f = open ('tcreator/template.h', 'r')
+        f = open (templatedir + '/template.h', 'r')
         template = f.read()
         f.close()
 
