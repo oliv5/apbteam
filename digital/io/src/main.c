@@ -29,6 +29,8 @@
 #include "modules/utils/utils.h"
 #include "modules/path/path.h"
 #include "modules/flash/flash.h"
+#include "modules/trace/trace.h"
+#include "trace_event.h"
 
 /* AVR include, non HOST */
 #ifndef HOST
@@ -115,6 +117,28 @@ static uint8_t main_stats_asserv_, main_stats_asserv_cpt_;
 static uint8_t main_stats_timer_;
 
 /**
+ * Get short FSM name.
+ */
+char
+main_short_fsm_name (fsm_t *fsm)
+{
+    /* Dirty hack. */
+    char id = '?';
+    if (fsm == &top_fsm)
+        id = 'T';
+    else if (fsm == &init_fsm)
+        id = 'I';
+    else if (fsm == &move_fsm)
+        id = 'M';
+    else if (fsm == &elevator_fsm)
+        id = 'E';
+    else if (fsm == &cylinder_fsm)
+        id = 'C';
+    else if (fsm == &filterbridge_fsm)
+        id = 'F';
+}
+
+/**
  * Main events management.
  * This function is responsible to get all events and send them to the
  * different FSM that want its.
@@ -125,12 +149,14 @@ main_event_to_fsm (void)
 #define FSM_HANDLE_EVENT(fsm,event) \
       { if (fsm_handle_event (fsm,event)) \
 	  { \
+            TRACE (TRACE_FSM__HANDLE_EVENT, main_short_fsm_name (fsm), event); \
 	    return; \
 	  } \
       }
 #define FSM_HANDLE_TIMEOUT(fsm) \
       { if (fsm_handle_timeout (fsm)) \
 	  { \
+            TRACE (TRACE_FSM__HANDLE_TIMEOUT, main_short_fsm_name (fsm)); \
 	    return; \
 	  } \
       }
@@ -351,6 +377,12 @@ main_loop (void)
 	    uint8_t timer_count = main_timer_wait ();
 	    if (main_stats_timer_)
 		proto_send1b('M', timer_count);
+            if (timer_count == 1)
+            {
+                /* Main timer has reached overflow earlier!
+                   We are late and this is really bad. */
+                TRACE (TRACE_MAIN_TIMER__LATE);
+            }
 	  }
 
 	/* Get the data from the UART */
