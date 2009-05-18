@@ -41,6 +41,8 @@ States:
   go backward from the wall for a specific distance.
  GO_TO_START_POSITION
   go to the start position.
+ WAIT_SECOND_JACK_OUT
+  wait the jack to be removed from the bot for the second time.
 
 Events:
  start
@@ -114,6 +116,11 @@ GO_AWAY_FROM_THE_WALL_AGAIN:
   go to the start position with a go to movement.
 
 GO_TO_START_POSITION:
- bot_move_succeed -> IDLE
+ bot_move_succeed -> WAIT_SECOND_JACK_OUT
   nothing to do, the bot is at the start position.
+
+WAIT_SECOND_JACK_OUT:
+ jack_removed_from_bot -> IDLE
+  tell other FSM the match begins.
+  start the chrono.
 

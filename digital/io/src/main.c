@@ -54,6 +54,7 @@
 #include "elevator.h"
 #include "filterbridge.h"
 #include "cylinder.h"
+#include "init.h"
 
 #include "io.h"
 
@@ -172,7 +173,7 @@ main_event_to_fsm (void)
     /* If we have entering this function, last command of the asserv board has
      * been aquited. */
     FSM_HANDLE_EVENT (&init_fsm, INIT_EVENT_asserv_last_cmd_ack);
-    FSM_HANDLE_EVENT (&init_fsm, TOP_EVENT_asserv_last_cmd_ack);
+    FSM_HANDLE_EVENT (&top_fsm, TOP_EVENT_asserv_last_cmd_ack);
 
     asserv_status_e
 	move_status = none,
@@ -241,8 +242,6 @@ main_event_to_fsm (void)
     /* Jack */
     if(switch_get_jack())
       {
-	FSM_HANDLE_EVENT (&top_fsm,
-			  TOP_EVENT_jack_removed_from_bot);
 	FSM_HANDLE_EVENT (&init_fsm,
 			  INIT_EVENT_jack_removed_from_bot);
       }
@@ -250,14 +249,20 @@ main_event_to_fsm (void)
       {
 	FSM_HANDLE_EVENT (&init_fsm,
 			  INIT_EVENT_jack_inserted_into_bot);
-	FSM_HANDLE_EVENT (&top_fsm,
-			  TOP_EVENT_jack_inserted_into_bot);
 	FSM_HANDLE_EVENT (&elevator_fsm,
 			  ELEVATOR_EVENT_jack_inserted_into_bot);
 	FSM_HANDLE_EVENT (&cylinder_fsm,
 			  CYLINDER_EVENT_jack_inserted_into_bot);
 	FSM_HANDLE_EVENT (&filterbridge_fsm,
 			  CYLINDER_EVENT_jack_inserted_into_bot);
+      }
+
+    if (init_match_is_started)
+      {
+	FSM_HANDLE_EVENT (&top_fsm, TOP_EVENT_init_match_is_started);
+
+	/* This must be done in the last part of this block. */
+	init_match_is_started = 0;
       }
 
     /* Event generated at the end of the sub FSM to post to the top FSM */
@@ -348,6 +353,7 @@ main_init (void)
     /* Start all FSM (except move and top FSM) */
     /* FIXME: who sould start top? init?. */
     fsm_handle_event (&init_fsm, INIT_EVENT_start);
+    fsm_handle_event (&top_fsm, TOP_EVENT_start);
     fsm_handle_event (&filterbridge_fsm, FILTERBRIDGE_EVENT_start);
     fsm_handle_event (&elevator_fsm, ELEVATOR_EVENT_start);
     fsm_handle_event (&cylinder_fsm, CYLINDER_EVENT_start);

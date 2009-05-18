@@ -30,4 +30,10 @@
  */
 #define INIT_DIST (PG_START_ZONE_LENGTH - BOT_LENGTH - 50)
 
+/**
+ * The match begin!
+ * This variable is set to 1 when the match start.
+ */
+extern uint8_t init_match_is_started;
+
 #endif /* init_h */

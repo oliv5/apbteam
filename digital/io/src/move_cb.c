@@ -342,7 +342,7 @@ move__MOVING_TO_INTERMEDIATE_POSITION__bot_move_succeed (void)
 	(move_data.final.y == move_data.intermediate.y))
       {
 	/* Post an event for the top FSM to tell we have finished */
-	main_post_event_for_top_fsm = TOP_EVENT_move_fsm_finished;
+	main_post_event_for_top_fsm = TOP_EVENT_move_fsm_succeed;
 	return move_next_branch (MOVING_TO_INTERMEDIATE_POSITION, bot_move_succeed, final_position);
       }
     else
@@ -513,7 +513,7 @@ fsm_branch_t
 move__MOVING_TO_FINAL_POSITION__bot_move_succeed (void)
 {
     /* Post an event for the top FSM to tell we have finished */
-    main_post_event_for_top_fsm = TOP_EVENT_move_fsm_finished;
+    main_post_event_for_top_fsm = TOP_EVENT_move_fsm_succeed;
     return move_next (MOVING_TO_FINAL_POSITION, bot_move_succeed);
 }
 

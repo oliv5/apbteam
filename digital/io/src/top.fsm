@@ -5,50 +5,51 @@ top
 States:
  IDLE
   waiting for the beginning of the top FSM.
- WAIT_FIRST_JACK_IN
-  waiting for the jack to be inserted into the bot for the first time.
- WAIT_FIRST_JACK_OUT
-  waiting for the jack to be removed from the bot for the first time.
- WAIT_SECOND_JACK_IN
-  waiting for the jack to be inserted into the bot for the second time.
- WAIT_SECOND_JACK_OUT
-  waiting for the jack to be removed into the bot for the second time.
- GET_PUCK_FROM_THE_GROUND
-  get some pucks from the ground.
+ WAIT_INIT_TO_FINISH
+  waiting for the end of init.
+ GET_PUCK_FROM_THE_GROUND [timeout=1590]
+  get some pucks from the ground (with a timeout set to 7 seconds).
  GET_PUCK_FROM_DISTRIBUTOR
   get some pucks from the distributor.
-
+ STOP_TO_GO_TO_UNLOAD_AREA
+  stop the move FSM before starting a new one.
+ STOP_TO_GET_PUCK_FROM_DISTRIBUTOR
+  stop the move FSM before starting a new one.
 
 Events:
  start
   initialize the FSM.
- move_fsm_finished
-  when the move FSM returns.
- jack_inserted_into_bot
-  the jack is inserted into the bot.
- jack_removed_from_bot
-  the jack is removed from the bot.
+ move_fsm_succeed
+  when the move FSM returns with success.
+ move_fsm_failed
+  when the move FSM returns with an error.
+ init_match_is_started
+  when the init FSM has finished and the match start.
  state_timeout
   timeout in cycle count.
  asserv_last_cmd_ack
   last command sent to the asserv board has been acquitted.
+ bot_is_full_of_puck
+  the bot has four pucks inside.
 
 IDLE:
- start -> WAIT_FIRST_JACK_IN
+ start -> WAIT_INIT_TO_FINISH
   nothing to do.
 
-WAIT_FIRST_JACK_IN:
- jack_inserted_into_bot -> WAIT_FIRST_JACK_OUT
-  nothing to do.
-
-WAIT_FIRST_JACK_OUT:
- jack_removed_from_bot -> WAIT_SECOND_JACK_IN
-  nothing to do.
-
-WAIT_SECOND_JACK_IN:
- jack_removed_from_bot -> WAIT_SECOND_JACK_OUT
-  nothing to do.
-
-WAIT_SECOND_JACK_OUT:
- jack_removed_from_bot -> GET_PUCK_FROM_THE_GROUND
+WAIT_INIT_TO_FINISH:
+ init_match_is_started -> GET_PUCK_FROM_THE_GROUND
   the match start, try to get some puck from the ground.
+
+GET_PUCK_FROM_THE_GROUND:
+ move_fsm_succeed: already_six_pucks_or_no_next_position -> GET_PUCK_FROM_DISTRIBUTOR
+  get the next distributor position and launch move FSM to go there.
+ move_fsm_succeed: next_position_exists -> .
+  go to the next position using move FSM.
+ move_fsm_failed -> GET_PUCK_FROM_DISTRIBUTOR
+  we have failed to do a move, go the distributor.
+ bot_is_full_of_puck -> STOP_TO_GO_TO_UNLOAD_AREA
+  stop move FSM.
+ state_timeout -> STOP_TO_GET_PUCK_FROM_DISTRIBUTOR
+  too much time lost to get puck from the ground, stop move FSM.
+
+

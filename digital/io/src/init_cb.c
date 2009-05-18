@@ -31,6 +31,7 @@
 #include "main.h"
 #include "aquajim.h"
 #include "switch.h"
+#include "chrono.h"
 #include "modules/trace/trace.h"
 
 /*
@@ -216,13 +217,28 @@ init__GO_AWAY_FROM_THE_WALL_AGAIN__bot_move_succeed (void)
 
 /*
  * GO_TO_START_POSITION =bot_move_succeed=>
- *  => IDLE
+ *  => WAIT_SECOND_JACK_OUT
  *   nothing to do, the bot is at the start position.
  */
 fsm_branch_t
 init__GO_TO_START_POSITION__bot_move_succeed (void)
 {
     return init_next (GO_TO_START_POSITION, bot_move_succeed);
+}
+
+/*
+ * WAIT_SECOND_JACK_OUT =jack_removed_from_bot=>
+ *  => IDLE
+ *   tell other FSM the match begins.
+ */
+fsm_branch_t
+init__WAIT_SECOND_JACK_OUT__jack_removed_from_bot (void)
+{
+    /* Set the flag to transmit to other FSM. */
+    init_match_is_started = 1;
+    /* Start the chrono. */
+    chrono_init ();
+    return init_next (WAIT_SECOND_JACK_OUT, jack_removed_from_bot);
 }
 
 
