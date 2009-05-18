@@ -169,9 +169,9 @@ main_event_to_fsm (void)
     FSM_HANDLE_TIMEOUT (&cylinder_fsm);
 
     /* If we have entering this function, last command of the asserv board has
-     * been aquited.
-     * FIXME: other FSM need it? */
+     * been aquited. */
     FSM_HANDLE_EVENT (&init_fsm, INIT_EVENT_asserv_last_cmd_ack);
+    FSM_HANDLE_EVENT (&init_fsm, TOP_EVENT_asserv_last_cmd_ack);
 
     asserv_status_e
 	move_status = none,

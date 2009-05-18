@@ -4,39 +4,51 @@ top
 
 States:
  IDLE
-  waiting for the beginning of the top FSM
- WAIT_JACK_IN
-  waiting for the jack to be inserted into the bot
- WAIT_JACK_OUT
-  waiting for the jack to be removed from the bot
+  waiting for the beginning of the top FSM.
+ WAIT_FIRST_JACK_IN
+  waiting for the jack to be inserted into the bot for the first time.
+ WAIT_FIRST_JACK_OUT
+  waiting for the jack to be removed from the bot for the first time.
+ WAIT_SECOND_JACK_IN
+  waiting for the jack to be inserted into the bot for the second time.
+ WAIT_SECOND_JACK_OUT
+  waiting for the jack to be removed into the bot for the second time.
  GET_PUCK_FROM_THE_GROUND
-  get some pucks from the ground
+  get some pucks from the ground.
  GET_PUCK_FROM_DISTRIBUTOR
-  get some pucks from the distributor
+  get some pucks from the distributor.
 
 
 Events:
  start
-  initialize the FSM
+  initialize the FSM.
  move_fsm_finished
-  when the move FSM returns
+  when the move FSM returns.
  jack_inserted_into_bot
-  the jack is inserted into the bot
+  the jack is inserted into the bot.
  jack_removed_from_bot
-  the jack is removed from the bot
+  the jack is removed from the bot.
  state_timeout
-  timeout in cycle count
+  timeout in cycle count.
  asserv_last_cmd_ack
-  last command sent to the asserv board has been acquitted
+  last command sent to the asserv board has been acquitted.
 
 IDLE:
- start -> WAIT_JACK_IN
+ start -> WAIT_FIRST_JACK_IN
   nothing to do.
 
-WAIT_JACK_IN:
- jack_inserted_into_bot -> WAIT_JACK_OUT
-  configure the asserv board.
+WAIT_FIRST_JACK_IN:
+ jack_inserted_into_bot -> WAIT_FIRST_JACK_OUT
+  nothing to do.
 
-WAIT_JACK_OUT:
+WAIT_FIRST_JACK_OUT:
+ jack_removed_from_bot -> WAIT_SECOND_JACK_IN
+  nothing to do.
+
+WAIT_SECOND_JACK_IN:
+ jack_removed_from_bot -> WAIT_SECOND_JACK_OUT
+  nothing to do.
+
+WAIT_SECOND_JACK_OUT:
  jack_removed_from_bot -> GET_PUCK_FROM_THE_GROUND
-  the match start, start the chronometer
+  the match start, try to get some puck from the ground.

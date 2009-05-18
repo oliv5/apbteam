@@ -15,7 +15,7 @@
 
 /*
  * IDLE =start=>
- *  => WAIT_JACK_IN
+ *  => WAIT_FIRST_JACK_IN
  *   nothing to do.
  */
 fsm_branch_t
@@ -25,27 +25,49 @@ top__IDLE__start (void)
 }
 
 /*
- * WAIT_JACK_IN =jack_inserted_into_bot=>
- *  => WAIT_JACK_OUT
- *   configure the asserv board.
+ * WAIT_FIRST_JACK_IN =jack_inserted_into_bot=>
+ *  => WAIT_FIRST_JACK_OUT
+ *   nothing to do.
  */
 fsm_branch_t
-top__WAIT_JACK_IN__jack_inserted_into_bot (void)
+top__WAIT_FIRST_JACK_IN__jack_inserted_into_bot (void)
 {
-    return top_next (WAIT_JACK_IN, jack_inserted_into_bot);
+    return top_next (WAIT_FIRST_JACK_IN, jack_inserted_into_bot);
 }
 
 /*
- * WAIT_JACK_OUT =jack_removed_from_bot=>
- *  => GET_PUCK_FROM_THE_GROUND
- *   the match start, start the chronometer
+ * WAIT_FIRST_JACK_OUT =jack_removed_from_bot=>
+ *  => WAIT_SECOND_JACK_IN
+ *   nothing to do.
  */
 fsm_branch_t
-top__WAIT_JACK_OUT__jack_removed_from_bot (void)
+top__WAIT_FIRST_JACK_OUT__jack_removed_from_bot (void)
+{
+    return top_next (WAIT_FIRST_JACK_OUT, jack_removed_from_bot);
+}
+
+/*
+ * WAIT_SECOND_JACK_IN =jack_removed_from_bot=>
+ *  => WAIT_SECOND_JACK_OUT
+ *   nothing to do.
+ */
+fsm_branch_t
+top__WAIT_SECOND_JACK_IN__jack_removed_from_bot (void)
+{
+    return top_next (WAIT_SECOND_JACK_IN, jack_removed_from_bot);
+}
+
+/*
+ * WAIT_SECOND_JACK_OUT =jack_removed_from_bot=>
+ *  => GET_PUCK_FROM_THE_GROUND
+ *   the match start, try to get some puck from the ground.
+ */
+fsm_branch_t
+top__WAIT_SECOND_JACK_OUT__jack_removed_from_bot (void)
 {
     /* Start the chronometer */
     chrono_init ();
-    return top_next (WAIT_JACK_OUT, jack_removed_from_bot);
+    return top_next (WAIT_SECOND_JACK_OUT, jack_removed_from_bot);
 }
 
 
