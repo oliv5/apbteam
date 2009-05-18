@@ -385,11 +385,6 @@ main_loop (void)
             }
 	  }
 
-	/* Get the data from the UART */
-	while (uart0_poll ())
-	    /* Manage UART protocol */
-	    proto_accept (uart0_getc ());
-
 	/* Update chrono. */
 	chrono_update ();
 	/* Is match over? */
@@ -400,6 +395,11 @@ main_loop (void)
 	    /* Safety */
 	    return;
 	  }
+
+	/* Get the data from the UART */
+	while (uart0_poll ())
+	    /* Manage UART protocol */
+	    proto_accept (uart0_getc ());
 
 	/* Update PWM */
 	pwm_update ();
