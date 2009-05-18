@@ -57,7 +57,6 @@ flash_read (uint32_t addr) { return 0xff; }
 void
 flash_read_array (uint32_t addr, uint8_t *buffer, uint32_t length)
 {
-    memset (buffer, 0xFF, length);
 }
 
 void
