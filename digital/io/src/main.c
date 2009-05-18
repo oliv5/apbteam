@@ -136,6 +136,7 @@ main_short_fsm_name (fsm_t *fsm)
         id = 'C';
     else if (fsm == &filterbridge_fsm)
         id = 'F';
+    return id;
 }
 
 /**
