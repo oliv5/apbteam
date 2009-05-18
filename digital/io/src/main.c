@@ -213,7 +213,7 @@ main_event_to_fsm (void)
       }
 
     /* Check cylinder status */
-    if (arm_status == success)
+    if (arm_status != none)
       {
 	FSM_HANDLE_EVENT (&cylinder_fsm,
 			  CYLINDER_EVENT_move_done);
@@ -240,13 +240,17 @@ main_event_to_fsm (void)
 	FSM_HANDLE_EVENT (&elevator_fsm,
 			  ELEVATOR_EVENT_doors_opened);
     /* bridge ready */
+    /* 
     if(nb_puck_fb < 2)
 	FSM_HANDLE_EVENT (&cylinder_fsm,
 			  CYLINDER_EVENT_bridge_ready);
+    */
     /* bot empty */
+    /* 
     if(!nb_puck_fb && !nb_puck_in_elvt && !nb_puck_cylinder)
 	FSM_HANDLE_EVENT (&cylinder_fsm,
 			  CYLINDER_EVENT_bot_empty);
+    */
 
     /* Jack */
     if(switch_get_jack())

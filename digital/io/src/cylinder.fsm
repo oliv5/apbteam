@@ -13,20 +13,8 @@ States:
   initializing cylinder to a good position (open)
  WAIT_A_PUCK
   waiting a puck enter in cylinder
- TURN_PLUS_3
-  turn cylinder to 3 positions after
- WAIT_FOR_BRIDGE_READY
-  waiting for the bridge is ready
- TURN_PLUS_1
-  turn cylinder to 1 position after
- TURN_PLUS_2
-  turn cylinder to 2 position after
- TURN_MINUS_1
-  turn cylinder to 1 position before to prevent new puck enter in the robot
- WAIT_FOR_PUCKS_RELEASE
-  waiting for pucks release from the lift
- TURN_PLUS_1_AGAIN
-  open the puck entrance
+ TURN_PLUS_4
+  turn cylinder 4 position after
 
 Events:
  start
@@ -37,10 +25,6 @@ Events:
   there is a puck in position 1
  move_done
   cylinder move finished
- bridge_ready
-  bridge ready to get a new puck
- bot_empty
-  all pucks released
  state_timeout
 
 IDLE:
@@ -60,38 +44,9 @@ INIT_POS:
   the cylinder is ready to get pucks
 
 WAIT_A_PUCK:
- new_puck -> TURN_PLUS_3
-  turn cylinder 3 position after
+ new_puck -> TURN_PLUS_4
+  turn cylinder 4 position after
 
-TURN_PLUS_3:
- move_done -> WAIT_FOR_BRIDGE_READY
-  bridge full, waiting for Bison Fute's clearance
-
-WAIT_FOR_BRIDGE_READY:
- bridge_ready: no_puck_bo -> TURN_PLUS_1
-  bridge clear, and no other puck on cylinder
- bridge_ready: puck_bo -> TURN_PLUS_2
-  bridge clear, an another puck is in the cylinder
-
-TURN_PLUS_2:
- move_done: ok_for_other_puck -> WAIT_FOR_BRIDGE_READY
-  we test bo again
- move_done: not_ok_for_other_puck -> WAIT_FOR_PUCKS_RELEASE
-  bot full, eject hypothetical puck and close the cylinder
-
-TURN_PLUS_1:
- move_done: ok_for_other_puck -> WAIT_A_PUCK
-  cylinder empty and ready for new puck
- move_done: not_ok_for_other_puck -> TURN_MINUS_1
-  bot full, closing cylinder
-
-TURN_MINUS_1:
- move_done -> WAIT_FOR_PUCKS_RELEASE
-  cylinder close, you shall not pass (but try again later)
-
-WAIT_FOR_PUCKS_RELEASE:
- bot_empty -> TURN_PLUS_1_AGAIN
-
-TURN_PLUS_1_AGAIN:
+TURN_PLUS_4:
  move_done -> WAIT_A_PUCK
-  cylinder ready
+  wait a puck again

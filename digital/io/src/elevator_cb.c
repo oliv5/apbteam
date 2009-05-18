@@ -113,10 +113,16 @@ elevator__WAIT_A_PUCK__new_puck (void)
     elevator_is_ready = 0;
     elvt_new_puck = 0;
     // TODO time_ok
-    if(nb_puck_elvt < 4 &&
+    if(nb_puck_elvt < 4)
+      {
+/*	&&
        ((chrono_remaining_time() - OK_TIME_LIMIT > 0)
        || nb_puck_fb != 0))
+       */
+	asserv_move_elevator_absolute(posx[nb_puck_in_elvt],
+				      ASSERV_ELVT_SPEED_DEFAULT);
 	return elevator_next_branch (WAIT_A_PUCK, new_puck, ok_for_other_pucks);
+      }
     else
 	return elevator_next_branch (WAIT_A_PUCK, new_puck, not_ok_for_other_pucks);
 }
