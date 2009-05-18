@@ -1,11 +1,6 @@
 # Top FSM.
-# Some remarks on this FSM.
-# Maybe we can make only one state for the all the GO_TO_*DISTRIBUTOR. It is
-# more complicated, but it can be cleaner...
-# We do not manage some cases like, we have not get any balls from any
-# distributors.
 top
-  Top FSM with the Marcel's strategy
+  Main FSM calling other FSM.
 
 States:
  IDLE
@@ -14,12 +9,11 @@ States:
   waiting for the jack to be inserted into the bot
  WAIT_JACK_OUT
   waiting for the jack to be removed from the bot
- CONFIGURE_ASSERV
-  configuring the asserv board
- MOVE_FORWARD
-  move forward
- MOVE_BACKWARD
-  move backward
+ GET_PUCK_FROM_THE_GROUND
+  get some pucks from the ground
+ GET_PUCK_FROM_DISTRIBUTOR
+  get some pucks from the distributor
+
 
 Events:
  start
@@ -30,32 +24,19 @@ Events:
   the jack is inserted into the bot
  jack_removed_from_bot
   the jack is removed from the bot
- settings_acknowledged
-  the asserv board has acknowledged the settings sent
  state_timeout
+  timeout in cycle count
+ asserv_last_cmd_ack
+  last command sent to the asserv board has been acquitted
 
 IDLE:
  start -> WAIT_JACK_IN
-  wait for the jack to be inserted into the bot
+  nothing to do.
 
 WAIT_JACK_IN:
  jack_inserted_into_bot -> WAIT_JACK_OUT
-  wait for the jack to be removed from the bot
+  configure the asserv board.
 
 WAIT_JACK_OUT:
- jack_removed_from_bot -> CONFIGURE_ASSERV
+ jack_removed_from_bot -> GET_PUCK_FROM_THE_GROUND
   the match start, start the chronometer
-  we should also initialize all the subsystems of IO (get our color, ...)
-  set the settings of the asserv board (especially the position)
-
-CONFIGURE_ASSERV:
- settings_acknowledged -> MOVE_FORWARD
-  move the bot forward
-
-MOVE_FORWARD:
- move_fsm_finished -> MOVE_BACKWARD
-  return to initial position (yep it's useless but it's for test)
-
-MOVE_BACKWARD:
- move_fsm_finished -> MOVE_FORWARD
-  move forward again
