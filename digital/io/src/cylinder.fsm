@@ -7,7 +7,9 @@ States:
   waiting for init
  WAIT_FOR_JACK_IN
   waiting for jack
- INIT
+ RESET_POS
+  reset the cylinder position
+ INIT_POS
   initializing cylinder to a good position (open)
  WAIT_A_PUCK
   waiting a puck enter in cylinder
@@ -17,8 +19,8 @@ States:
   waiting for the bridge is ready
  TURN_PLUS_1
   turn cylinder to 1 position after
- TURN_PLUS_1_LOOP
-  turn cylinder to 1 position after
+ TURN_PLUS_2
+  turn cylinder to 2 position after
  TURN_MINUS_1
   turn cylinder to 1 position before to prevent new puck enter in the robot
  WAIT_FOR_PUCKS_RELEASE
@@ -46,10 +48,14 @@ IDLE:
   we wait the jack before moving anything
 
 WAIT_FOR_JACK_IN:
- jack_inserted_into_bot -> INIT
+ jack_inserted_into_bot -> RESET_POS
   we init the cylinder position
 
-INIT:
+RESET_POS:
+ move_done -> INIT_POS
+  move the cylinder to open it
+
+INIT_POS:
  move_done -> WAIT_A_PUCK
   the cylinder is ready to get pucks
 
@@ -64,10 +70,10 @@ TURN_PLUS_3:
 WAIT_FOR_BRIDGE_READY:
  bridge_ready: no_puck_bo -> TURN_PLUS_1
   bridge clear, and no other puck on cylinder
- bridge_ready: puck_bo -> TURN_PLUS_1_LOOP
+ bridge_ready: puck_bo -> TURN_PLUS_2
   bridge clear, an another puck is in the cylinder
 
-TURN_PLUS_1_LOOP:
+TURN_PLUS_2:
  move_done: ok_for_other_puck -> WAIT_FOR_BRIDGE_READY
   we test bo again
  move_done: not_ok_for_other_puck -> WAIT_FOR_PUCKS_RELEASE

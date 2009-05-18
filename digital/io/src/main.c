@@ -214,6 +214,18 @@ main_event_to_fsm (void)
       {
 	/* TODO: */
       }
+
+    /* Check cylinder status */
+    if (arm_status == success)
+      {
+	FSM_HANDLE_EVENT (&cylinder_fsm,
+			  CYLINDER_EVENT_move_done);
+      }
+    else if (elevator_status == failure)
+      {
+	/* TODO: */
+      }
+
     /* FIXME: use general setting ack. */
     /* send event if elevator received an order */
     if(elvt_order)

@@ -43,7 +43,7 @@ cylinder__IDLE__start (void)
 
 /*
  * WAIT_FOR_JACK_IN =jack_inserted_into_bot=>
- *  => INIT
+ *  => RESET_POS
  *   we init the cylinder position
  */
 fsm_branch_t
@@ -54,14 +54,27 @@ cylinder__WAIT_FOR_JACK_IN__jack_inserted_into_bot (void)
 }
 
 /*
- * INIT =move_done=>
+ * RESET_POS =move_done=>
+ *  => INIT_POS
+ *   move the cylinder to open it
+ */
+fsm_branch_t
+cylinder__RESET_POS__move_done (void)
+{
+    asserv_move_arm(CYLINDER_OFFSET,
+		    ASSERV_ARM_SPEED_DEFAULT);
+    return cylinder_next (RESET_POS, move_done);
+}
+
+/*
+ * INIT_POS =move_done=>
  *  => WAIT_A_PUCK
  *   the cylinder is ready to get pucks
  */
 fsm_branch_t
-cylinder__INIT__move_done (void)
+cylinder__INIT_POS__move_done (void)
 {
-    return cylinder_next (INIT, move_done);
+    return cylinder_next (INIT_POS, move_done);
 }
 
 /*
@@ -93,7 +106,7 @@ cylinder__TURN_PLUS_3__move_done (void)
  * WAIT_FOR_BRIDGE_READY =bridge_ready=>
  * no_puck_bo => TURN_PLUS_1
  *   bridge clear, and no other puck on cylinder
- * puck_bo => TURN_PLUS_1_LOOP
+ * puck_bo => TURN_PLUS_2
  *   bridge clear, an another puck is in the cylinder
  */
 fsm_branch_t
@@ -128,18 +141,18 @@ cylinder__TURN_PLUS_1__move_done (void)
 }
 
 /*
- * TURN_PLUS_1_LOOP =move_done=>
+ * TURN_PLUS_2 =move_done=>
  * ok_for_other_puck => WAIT_FOR_BRIDGE_READY
  *   we test bo again
  * not_ok_for_other_puck => WAIT_FOR_PUCKS_RELEASE
  *   bot full, eject hypothetical puck and close the cylinder
  */
 fsm_branch_t
-cylinder__TURN_PLUS_1_LOOP__move_done (void)
+cylinder__TURN_PLUS_2__move_done (void)
 {
     if(nb_puck_fb < 4)
-	return cylinder_next_branch (TURN_PLUS_1_LOOP, move_done, ok_for_other_puck);
-    return cylinder_next_branch (TURN_PLUS_1_LOOP, move_done, not_ok_for_other_puck);
+	return cylinder_next_branch (TURN_PLUS_2, move_done, ok_for_other_puck);
+    return cylinder_next_branch (TURN_PLUS_2, move_done, not_ok_for_other_puck);
 }
 
 /*

@@ -33,4 +33,7 @@ extern uint8_t of_state;
 /* nb puck in cylinder */
 extern uint8_t nb_puck_cylinder;
 
+/* mecanical offset */
+#define CYLINDER_OFFSET -0x43e
+
 #endif /* cylinder_h */
