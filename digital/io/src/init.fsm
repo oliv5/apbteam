@@ -1,77 +1,119 @@
 # init FSM
-# This FSM set the position of the bot with some move on wall
-# This FSM is required because the meca team is "relou"
+# This FSM is used to place the bot at a "start position" for a match. It is
+# more precise than a human hand and reset the asserv board to the start
+# position.
+# Some remarks:
+#  - for security reason, we need to insert the jack then removed it, then
+#  insert it back. Why? Because it can already be inserted.
+#  - other FSM can do a similar thing by using the first jack out to
+#  initialize.
 init
-  init FSM with setup move
+  place the bot in the start position for a match.
 
 States:
  IDLE
-  waiting for the beginning of the top FSM
- WAIT_JACK_IN
-  waiting for the jack to be inserted into the bot.
-  get color for the rest of the FSM.
-  erase flash.
- WAIT_2_SEC [timeout=450]
-  waiting for operator's hand not on jack anymore
- GOTO_THE_WALL
-  go to the wall for the first time
- GO_BACKWARD
-  go backward for INIT_DIST millimeters
- TURN_90_DEGREES_CCW
-  turn bot for 90 degrees counterclockwise
- GOTO_THE_WALL_AGAIN
-  go to the wall for the second time
- GO_BACKWARD_AGAIN
-  go backward for INIT_DIST millimeters again
- TURN_180_DEGREES_CCW
-  turn bot for 180 degrees counterclockwise
- SET_POSITION
-  tell the truth to asserv
+  waiting for the beginning of the top FSM.
+ WAIT_FIRST_JACK_IN
+  wait for the jack to be inserted into the bot for the first time.
+ WAIT_FIRST_JACK_OUT
+  wait the jack to be removed from the bot for the first time.
+ WAIT_SECOND_JACK_IN
+  wait for the jack to be inserted into the bot for the second time.
+ WAIT_FOR_HANDS_OUT[timeout=450]
+  just wait for operator hands to be removed from the jack.
+ GO_TO_THE_WALL
+  go to the wall for the first time.
+ SET_Y_POSITION
+  reset the Y position of the bot.
+ SET_ANGULAR_POSITION
+  reset the angular position of the bot.
+ GO_AWAY_FROM_THE_WALL
+  go backward from the wall for a specific distance.
+ FACE_OTHER_WALL
+  make the bot face the other wall.
+ WAIT_AFTER_ROTATION [timeout=100]
+  make sure rotation is really finished before continuing.
+ GO_TO_THE_WALL_AGAIN
+  go to the wall for the second time.
+ SET_X_POSITION
+  reset the X position of the bot.
+ GO_AWAY_FROM_THE_WALL_AGAIN
+  go backward from the wall for a specific distance.
+ GO_TO_START_POSITION
+  go to the start position.
 
 Events:
  start
-  initialize the FSM
+  initialize the FSM.
  jack_inserted_into_bot
-  the jack is inserted into the bot
- move_done
-  the move is finished
+  the jack is inserted into the bot.
+ jack_removed_from_bot
+  the jack is removed from the bot.
+ bot_move_succeed
+  the move is finished.
  state_timeout
   timeout.
  asserv_last_cmd_ack
-  last command sent to the asserv board acquited.
+  last command sent to the asserv board has been acquitted.
 
 IDLE:
- start -> WAIT_JACK_IN
-  wait for the jack to be inserted into the bot
+ start -> WAIT_FIRST_JACK_IN
+  do nothing.
 
-WAIT_JACK_IN:
- jack_inserted_into_bot -> WAIT_2_SEC
-  wait for the operator hand disappears
+WAIT_FIRST_JACK_IN:
+ jack_inserted_into_bot -> WAIT_FIRST_JACK_OUT
+  do nothing.
 
-WAIT_2_SEC:
- state_timeout -> GOTO_THE_WALL
-  go to the first wall
+WAIT_FIRST_JACK_OUT:
+ jack_removed_from_bot -> WAIT_SECOND_JACK_IN
+  start trace module.
 
-GOTO_THE_WALL:
- move_done -> GO_BACKWARD
-  go backward for INIT_DIST millimeters
+WAIT_SECOND_JACK_IN:
+ jack_inserted_into_bot -> WAIT_FOR_HANDS_OUT
+  do nothing.
 
-GO_BACKWARD:
- move_done -> TURN_90_DEGREES_CCW
-  turn bot for 90 degrees counterclockwise
+WAIT_FOR_HANDS_OUT:
+ state_timeout -> GO_TO_THE_WALL
+  fuck the wall in front.
 
-TURN_90_DEGREES_CCW:
- move_done -> GOTO_THE_WALL_AGAIN
-  go to the wall for the second time
+GO_TO_THE_WALL:
+ bot_move_succeed -> SET_Y_POSITION
+  reset the Y position of the bot.
 
-GOTO_THE_WALL_AGAIN:
- move_done -> GO_BACKWARD_AGAIN
-  go backward for INIT_DIST millimeters again
+SET_Y_POSITION:
+ asserv_last_cmd_ack -> SET_ANGULAR_POSITION
+  reset the angular position of the bot.
 
-GO_BACKWARD_AGAIN:
- move_done -> SET_POSITION
-  set real position to asserv
+SET_ANGULAR_POSITION:
+ asserv_last_cmd_ack -> GO_AWAY_FROM_THE_WALL
+  move away from the wall (linear move).
 
-SET_POSITION:
- asserv_last_cmd_ack -> IDLE
-  turn bot for 180 degrees counterclockwise
+GO_AWAY_FROM_THE_WALL:
+ bot_move_succeed -> FACE_OTHER_WALL
+  get and store the color of the bot.
+  turn to face the other wall.
+
+FACE_OTHER_WALL:
+ bot_move_succeed -> WAIT_AFTER_ROTATION
+  nothing to do.
+
+WAIT_AFTER_ROTATION:
+ state_timeout -> GO_TO_THE_WALL_AGAIN
+  fuck the wall in front.
+
+GO_TO_THE_WALL_AGAIN:
+ bot_move_succeed -> SET_X_POSITION
+  reset the X position of the bot.
+
+SET_X_POSITION:
+ asserv_last_cmd_ack -> GO_AWAY_FROM_THE_WALL_AGAIN
+  move away from the wall (linear move).
+
+GO_AWAY_FROM_THE_WALL_AGAIN:
+ bot_move_succeed -> GO_TO_START_POSITION
+  go to the start position with a go to movement.
+
+GO_TO_START_POSITION:
+ bot_move_succeed -> IDLE
+  nothing to do, the bot is at the start position.
+

@@ -164,7 +164,7 @@ main_event_to_fsm (void)
 	FSM_HANDLE_EVENT (&move_fsm,
 			  MOVE_EVENT_bot_move_succeed);
 	FSM_HANDLE_EVENT (&init_fsm,
-			  INIT_EVENT_move_done);
+			  INIT_EVENT_bot_move_succeed);
       }
     else if (move_status == failure)
       {
@@ -216,6 +216,8 @@ main_event_to_fsm (void)
       {
 	FSM_HANDLE_EVENT (&top_fsm,
 			  TOP_EVENT_jack_removed_from_bot);
+	FSM_HANDLE_EVENT (&init_fsm,
+			  INIT_EVENT_jack_removed_from_bot);
       }
     else
       {
@@ -309,7 +311,7 @@ main_init (void)
     switch_init ();
     /* Path module */
     path_init (PG_BORDER_DISTANCE, PG_BORDER_DISTANCE,
-	       PG_WIDTH - PG_BORDER_DISTANCE, PG_HEIGHT - PG_BORDER_DISTANCE);
+	       PG_WIDTH - PG_BORDER_DISTANCE, PG_LENGTH - PG_BORDER_DISTANCE);
     /* Init all FSM (except move FSM) */
     fsm_init(&top_fsm);
     fsm_init(&init_fsm);

@@ -42,9 +42,9 @@
 #define PG_WIDTH 3000
 
 /**
- * The height of the table, in millimeters.
+ * The length of the table, in millimeters.
  */
-#define PG_HEIGHT 2100
+#define PG_LENGTH 2100
 
 /**
  * The distance from table border for movements.

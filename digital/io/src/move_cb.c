@@ -96,7 +96,7 @@ move_obstacle_in_table (move_position_t pos)
 {
     if ((pos.x <= PG_WIDTH - MOVE_DETECTION_OFFSET) 
 	&& (pos.x > MOVE_DETECTION_OFFSET)
-	&& (pos.y <= PG_HEIGHT- MOVE_DETECTION_OFFSET)
+	&& (pos.y <= PG_LENGTH - MOVE_DETECTION_OFFSET)
 	&& (pos.y > MOVE_DETECTION_OFFSET))
 	return 0x1;
     else
