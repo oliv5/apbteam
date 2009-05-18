@@ -8,7 +8,7 @@ States:
  WAIT_JACK_IN
   waiting for the jack
  INIT
-  init the elevator
+  init the elevator position and open door
  GO_TO_POS_X
   go to a position to be ready to get a new puck
  WAIT_A_PUCK
@@ -30,13 +30,12 @@ States:
  CLOSE_DOORS
   closing the elevator's doors
 
+
 Events:
  start
   io power on!
  jack_inserted_into_bot
   jack into the bot
- init_done
-  init done
  in_position
   elevator is in position
  new_puck
@@ -57,11 +56,11 @@ IDLE:
 
 WAIT_JACK_IN:
  jack_inserted_into_bot -> INIT
-  make initializations
+  make initializations (elevator zero and open doors)
 
 INIT:
- init_done -> GO_TO_POS_X
-  match begin, we're going to be ready to get a new puck
+ doors_opened -> GO_TO_POS_X
+  make initializations (close doors)
 
 GO_TO_POS_X:
  in_position -> WAIT_A_PUCK

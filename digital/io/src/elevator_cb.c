@@ -61,27 +61,29 @@ elevator__IDLE__start (void)
 /*
  * WAIT_JACK_IN =jack_inserted_into_bot=>
  *  => INIT
- *   make initializations
+ *   make initializations (elevator zero and open doors)
  */
 fsm_branch_t
 elevator__WAIT_JACK_IN__jack_inserted_into_bot (void)
 {
+    pwm_set(OPEN_DOOR_PWM, TIME_DOORS_PWM);
     asserv_elevator_zero_position();
     return elevator_next (WAIT_JACK_IN, jack_inserted_into_bot);
 }
 
 /*
- * INIT =init_done=>
+ * INIT =doors_opened=>
  *  => GO_TO_POS_X
- *   match begin, we're going to be ready to get a new puck
+ *   make initializations (close doors)
  */
 fsm_branch_t
-elevator__INIT__init_done (void)
+elevator__INIT__doors_opened (void)
 {
     elevator_is_ready = 0;
+    pwm_set(CLOSE_DOOR_PWM, TIME_DOORS_PWM);
     asserv_move_elevator_absolute(posx[nb_puck_in_elvt],
 				  ASSERV_ELVT_SPEED_DEFAULT);
-    return elevator_next (INIT, init_done);
+    return elevator_next (INIT, doors_opened);
 }
 
 /*

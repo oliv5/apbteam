@@ -204,9 +204,6 @@ main_event_to_fsm (void)
     /* Check elevator status. */
     if (elevator_status == success)
       {
-	/* FIXME: only have one event here. */
-	FSM_HANDLE_EVENT (&elevator_fsm,
-			  ELEVATOR_EVENT_init_done);
 	FSM_HANDLE_EVENT (&elevator_fsm,
 			  ELEVATOR_EVENT_in_position);
       }
