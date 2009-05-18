@@ -223,7 +223,7 @@ asserv_twi_send (uint8_t length)
 
     /* Update until the command is sent */
     asserv_twi_update ();
-    
+
     /* Reset retransmit counter */
     asserv_retransmit_counter = ASSERV_RETRANSMIT_COUNT;
     /* Store length for retransmission */
@@ -675,7 +675,7 @@ uint8_t
 asserv_arm_position_reached (void)
 {
     /* If the position has been reached */
-    if (asserv_arm_notify_position && 
+    if (asserv_arm_notify_position &&
 	((int16_t) (asserv_get_arm_position ()
 		    - asserv_arm_notify_position) >= 0))
 	return 1;
