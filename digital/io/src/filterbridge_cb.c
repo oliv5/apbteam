@@ -28,6 +28,7 @@
 #include "elevator.h"
 #include "servo_pos.h"
 #include "aquajim.h"
+#include "filterbridge.h"
 
 /*
  * IDLE =start=>
@@ -115,6 +116,7 @@ fsm_branch_t
 filterbridge__PUSH_PUCK__no_puck_on_pos2 (void)
 {
     ++nb_puck_in_elvt;
+    --nb_puck_fb;
     elvt_new_puck = 1;
     servo_pos_move_to(SERVO_FINGER_ID, SERVO_FINGER_IDLE);
     servo_pos_move_to(SERVO_DOOR_ID, SERVO_DOOR_CLOSE);
