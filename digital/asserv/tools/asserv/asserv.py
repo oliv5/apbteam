@@ -225,11 +225,16 @@ class Proto:
         if a is not None:
             self.proto.send ('p', 'cl', 'A', self._angle_f824 (a))
 
-    def goto (self, x, y, backward_ok = False):
+    def goto (self, x, y, backward = False, revert_ok = False):
         """Go to position."""
         self.mseq += 1
-        self.proto.send (backward_ok and 'r' or 'x', 'llB',
-                self._dist_f248 (x), self._dist_f248 (y), self.mseq)
+        b = 0
+        if backward:
+            b |= 1
+        if revert_ok:
+            b |= 2
+        self.proto.send ('x', 'llBB',
+                self._dist_f248 (x), self._dist_f248 (y), b, self.mseq)
         self.wait (self.finished, auto = True)
 
     def goto_angle (self, a):
@@ -238,12 +243,17 @@ class Proto:
         self.proto.send ('x', 'HB', self._angle_f16 (a), self.mseq)
         self.wait (self.finished, auto = True)
 
-    def goto_xya (self, x, y, a, backward_ok = False):
+    def goto_xya (self, x, y, a, backward = False, revert_ok = False):
         """Go to position, then angle."""
         self.mseq += 1
-        self.proto.send (backward_ok and 'r' or 'x', 'llHB',
+        b = 0
+        if backward:
+            b |= 1
+        if revert_ok:
+            b |= 2
+        self.proto.send ('x', 'llHBB',
                 self._dist_f248 (x), self._dist_f248 (y),
-                self._angle_f16 (a), self.mseq)
+                self._angle_f16 (a), b, self.mseq)
         self.wait (self.finished, auto = True)
 
     def ftw (self, backward = True):

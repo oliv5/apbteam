@@ -172,46 +172,30 @@ twi_proto_callback (u8 *buf, u8 size)
 	/* Go to the dispenser. */
 	traj_gtd_start (0);
 	break;
-      case c ('x', 6):
+      case c ('x', 7):
 	/* Go to position.
 	 * - 3b: x position.
-	 * - 3b: y position. */
+	 * - 3b: y position.
+	 * - b: backward (see traj.h). */
 	traj_goto_start (v8_to_v32 (buf[2], buf[3], buf[4], 0),
 			 v8_to_v32 (buf[5], buf[6], buf[7], 0),
-			 0, 0);
-	break;
-      case c ('r', 6):
-	/* Go to position, backward allowed.
-	 * - 3b: x position.
-	 * - 3b: y position. */
-	traj_goto_start (v8_to_v32 (buf[2], buf[3], buf[4], 0),
-			 v8_to_v32 (buf[5], buf[6], buf[7], 0),
-			 1, 0);
+			 buf[8], 0);
 	break;
       case c ('y', 2):
 	/* Go to angle.
 	 * - w: angle. */
 	traj_goto_angle_start (v8_to_v32 (0, buf[2], buf[3], 0), 0);
 	break;
-      case c ('X', 8):
+      case c ('X', 9):
 	/* Go to position, then angle.
 	 * - 3b: x position.
 	 * - 3b: y position.
-	 * - w: angle. */
+	 * - w: angle.
+	 * - b: backward (see traj.h). */
 	traj_goto_xya_start (v8_to_v32 (buf[2], buf[3], buf[4], 0),
 			     v8_to_v32 (buf[5], buf[6], buf[7], 0),
 			     v8_to_v32 (0, buf[8], buf[9], 0),
-			     0, 0);
-	break;
-      case c ('R', 8):
-	/* Go to position, then angle, backward allowed.
-	 * - 3b: x position.
-	 * - 3b: y position.
-	 * - w: angle. */
-	traj_goto_xya_start (v8_to_v32 (buf[2], buf[3], buf[4], 0),
-			     v8_to_v32 (buf[5], buf[6], buf[7], 0),
-			     v8_to_v32 (0, buf[8], buf[9], 0),
-			     1, 0);
+			     buf[10], 0);
 	break;
       case c ('b', 3):
 	/* Move the aux0.

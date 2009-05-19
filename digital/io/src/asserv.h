@@ -43,6 +43,12 @@
 
 #define ASSERV_ARM_STEP_BY_DEGREE 14.814814
 
+/** Use backward movements. */
+#define ASSERV_BACKWARD 1
+/** Authorise reverse the requested movement direction, may be or'ed with the
+ * previous define. */
+#define ASSERV_REVERT_OK 2
+
 /**
  * Initialize the asserv control module.
  * This functions does not initialize the asserv board, but the underling

@@ -475,9 +475,11 @@ asserv_goto_xya (uint32_t x, uint32_t y, int16_t a)
     /* Put angle as parameter */
     asserv_twi_buffer_param[6] = v16_to_v8 (a, 1);
     asserv_twi_buffer_param[7] = v16_to_v8 (a, 0);
+    /* No backward. */
+    asserv_twi_buffer_param[8] = 0;
     /* Send the got to an absolute position and them absolute angle command to
      * the asserv board */
-    asserv_twi_send_command ('X', 8);
+    asserv_twi_send_command ('X', 9);
 }
 
 /* Go to the wall (moving backward). */
@@ -637,8 +639,10 @@ asserv_goto (uint32_t x, uint32_t y)
     asserv_twi_buffer_param[3] = v32_to_v8 (y, 2);
     asserv_twi_buffer_param[4] = v32_to_v8 (y, 1);
     asserv_twi_buffer_param[5] = v32_to_v8 (y, 0);
+    /* No backward. */
+    asserv_twi_buffer_param[6] = 0;
     /* Send the got to an absolute position command to the asserv board */
-    asserv_twi_send_command ('x', 6);
+    asserv_twi_send_command ('x', 7);
 }
 
 /* Go to an absolute position at (X, Y) with backward enabled. */
@@ -655,9 +659,10 @@ asserv_goto_back (uint32_t x, uint32_t y)
     asserv_twi_buffer_param[3] = v32_to_v8 (y, 2);
     asserv_twi_buffer_param[4] = v32_to_v8 (y, 1);
     asserv_twi_buffer_param[5] = v32_to_v8 (y, 0);
-    /* Send the goto to an absolute position with backward enabled command to
-     * the asserv board */
-    asserv_twi_send_command ('r', 6);
+    /* Authorise backward movements. */
+    asserv_twi_buffer_param[6] = ASSERV_REVERT_OK;
+    /* Send the goto to an absolute position command to the asserv board */
+    asserv_twi_send_command ('x', 7);
 }
 
 /* Notify get samples FSM when the arm reach desired position. */

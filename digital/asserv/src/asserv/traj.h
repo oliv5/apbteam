@@ -25,6 +25,9 @@
  *
  * }}} */
 
+#define TRAJ_BACKWARD 1
+#define TRAJ_REVERT_OK 2
+
 extern uint8_t traj_mode;
 extern int16_t traj_eps;
 extern int16_t traj_aeps;
@@ -46,13 +49,13 @@ void
 traj_gtd_start (uint8_t seq);
 
 void
-traj_goto_start (uint32_t x, uint32_t y, uint8_t backward_ok, uint8_t seq);
+traj_goto_start (uint32_t x, uint32_t y, uint8_t backward, uint8_t seq);
 
 void
 traj_goto_angle_start (uint32_t a, uint8_t seq);
 
 void
-traj_goto_xya_start (uint32_t x, uint32_t y, uint32_t a, uint8_t backward_ok,
+traj_goto_xya_start (uint32_t x, uint32_t y, uint32_t a, uint8_t backward,
 		     uint8_t seq);
 
 void

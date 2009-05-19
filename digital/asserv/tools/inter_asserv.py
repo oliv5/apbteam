@@ -67,10 +67,14 @@ class InterAsserv (Inter):
                 text = 'goto', value = 'goto',
                 variable = self.actionVar)
         self.actionGotoButton.pack ()
-        self.backwardOkVar = IntVar ()
-        self.backwardOkButton = Checkbutton (self.rightFrame,
-                text = 'backward ok', variable = self.backwardOkVar)
-        self.backwardOkButton.pack ()
+        self.backwardVar = IntVar ()
+        self.backwardButton = Checkbutton (self.rightFrame,
+                text = 'backward', variable = self.backwardVar)
+        self.backwardButton.pack ()
+        self.revertokVar = IntVar ()
+        self.revertokButton = Checkbutton (self.rightFrame,
+                text = 'revert ok', variable = self.revertokVar)
+        self.revertokButton.pack ()
         self.ftwButton = Button (self.rightFrame, text = 'FTW',
                 command = self.ftw)
         self.ftwButton.pack ()
@@ -101,7 +105,8 @@ class InterAsserv (Inter):
         if action == 'set_pos':
             self.a.set_pos (x, y)
         elif action == 'goto':
-            self.a.goto (x, y, self.backwardOkVar.get ())
+            self.a.goto (x, y, self.backwardVar.get (),
+                    self.revertokVar.get ())
         else:
             assert 0
 
@@ -119,7 +124,7 @@ class InterAsserv (Inter):
         self.a.free ()
 
     def ftw (self):
-        self.a.ftw (self.backwardOkVar.get ())
+        self.a.ftw (self.backwardVar.get ())
 
 if __name__ == '__main__':
     import sys

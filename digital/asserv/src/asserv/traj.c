@@ -93,9 +93,6 @@ static uint32_t traj_goto_x, traj_goto_y;
 /** Go to angle. */
 static uint32_t traj_goto_a;
 
-/** Allow backward movements. */
-static uint8_t traj_backward_ok;
-
 /** Initialise computed factors. */
 void
 traj_init (void)
@@ -238,7 +235,14 @@ traj_goto (void)
 	int32_t da = fixed_mul_f824 (dy, c) - fixed_mul_f824 (dx, s);
 	/* Compute arc length. */
 	int32_t arad = atan2 (da, dt) * (1L << 24);
-	if (traj_backward_ok)
+	if (traj_backward & TRAJ_BACKWARD)
+	  {
+	    if (arad > 0)
+		arad = - PI_F824 + arad;
+	    else
+		arad = PI_F824 + arad;
+	  }
+	if (traj_backward & TRAJ_REVERT_OK)
 	  {
 	    if (arad > TRAJ_GOTO_BACKWARD_THRESHOLD)
 		arad = - PI_F824 + arad;
@@ -263,12 +267,12 @@ traj_goto (void)
 
 /** Start go to position mode (x, y: f24.8). */
 void
-traj_goto_start (uint32_t x, uint32_t y, uint8_t backward_ok, uint8_t seq)
+traj_goto_start (uint32_t x, uint32_t y, uint8_t backward, uint8_t seq)
 {
     traj_mode = TRAJ_GOTO;
     traj_goto_x = x;
     traj_goto_y = y;
-    traj_backward_ok = backward_ok;
+    traj_backward = backward;
     speed_theta.use_pos = speed_alpha.use_pos = 1;
     speed_theta.pos_cons = pos_theta.cons;
     speed_alpha.pos_cons = pos_alpha.cons;
@@ -332,14 +336,14 @@ traj_goto_xya (void)
 
 /** Start go to position, then angle mode (x, y: f24.8, a: f8.24). */
 void
-traj_goto_xya_start (uint32_t x, uint32_t y, uint32_t a, uint8_t backward_ok,
+traj_goto_xya_start (uint32_t x, uint32_t y, uint32_t a, uint8_t backward,
 		     uint8_t seq)
 {
     traj_mode = TRAJ_GOTO_XYA;
     traj_goto_x = x;
     traj_goto_y = y;
     traj_goto_a = a;
-    traj_backward_ok = backward_ok;
+    traj_backward = backward;
     speed_theta.use_pos = speed_alpha.use_pos = 1;
     speed_theta.pos_cons = pos_theta.cons;
     speed_alpha.pos_cons = pos_alpha.cons;
