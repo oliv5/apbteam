@@ -52,7 +52,7 @@
  * Period of timer/counter 0 (in millisecond).
  */
 #define MT_TC0_PERIOD \
-    (1000 / (AC_FREQ / (MT_TC0_PRESCALER * (MT_TC0_TOP + 1))))
+    (1000.0 / (AC_FREQ / (MT_TC0_PRESCALER * (MT_TC0_TOP + 1))))
 
 /**
  * Initialize the main timer to 4.444 ms.

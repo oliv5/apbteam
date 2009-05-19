@@ -46,8 +46,9 @@
  * Number of overflows of the timer/counter 0 to wait before the match is
  * over.
  * Basically, it is match_duration / timer_counter_0_overflow_duration.
+ * Minus one is here for safety reason (because rounding is done at plus one).
  */
-#define CHRONO_MATCH_OVERFLOW_COUNT (MATCH_DURATION_MS / MT_TC0_PERIOD)
+#define CHRONO_MATCH_OVERFLOW_COUNT (MATCH_DURATION_MS / MT_TC0_PERIOD - 1)
 
 /**
  * Duration of a loop to emulate from the original behaviour, in ms.
