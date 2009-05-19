@@ -439,14 +439,14 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		break;
 	      case c ('P', 1):
 		/* Print current settings. */
-		proto_send1b ('E', EEPROM_KEY);
+		proto_send2b ('E', EEPROM_KEY, eeprom_loaded);
 		proto_send1b ('w', (output_aux[0].reverse ? 1 : 0)
 			      | (output_aux[1].reverse ? 2 : 0));
 		break;
 	      case c ('P', 2):
 		/* Print current settings for selected control.
 		 * - b: index. */
-		proto_send1b ('E', EEPROM_KEY);
+		proto_send2b ('E', EEPROM_KEY, eeprom_loaded);
 		proto_send1w ('a', speed->acc);
 		proto_send2b ('s', speed->max, speed->slow);
 		proto_send3w ('b', bd->error_limit, bd->speed_limit,

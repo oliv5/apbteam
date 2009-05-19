@@ -26,7 +26,9 @@
  * }}} */
 
 /** Change the eeprom key each time you change eeprom format. */
-#define EEPROM_KEY 0x4f
+#define EEPROM_KEY 0x50
+
+extern int8_t eeprom_loaded;
 
 void
 eeprom_read_params (void);

@@ -49,6 +49,9 @@
 /** Simulate some AVR regs. */
 uint8_t DDRF, PORTC, PORTD, PORTE, PORTF, PORTG, PINC;
 
+/** Index of loaded eeprom block. */
+int8_t eeprom_loaded = -1;
+
 /* Robot model. */
 const struct robot_t *simu_robot;
 

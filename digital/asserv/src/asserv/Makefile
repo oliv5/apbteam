@@ -16,4 +16,8 @@ AVR_MCU = atmega128
 OPTIMIZE = -O2
 HOST_LIBS = -lm
 
+AVR_DEFS = $(EEPROM_DEFAULTS:%=-DEEPROM_DEFAULTS=\"%\")
+
 include $(BASE)/make/Makefile.gen
+
+include eeprom.mak

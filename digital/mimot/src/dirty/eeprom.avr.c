@@ -25,97 +25,177 @@
 #include "common.h"
 #include "eeprom.h"
 
-#include "modules/utils/byte.h"
+#include "modules/utils/utils.h"
+#include "modules/utils/crc.h"
 
 #include <avr/eeprom.h>
+#include <avr/pgmspace.h>
 
 #include "cs.h"
 
-#define EEPROM_START 0
+#define EEPROM_INDEX_NB AC_ASSERV_AUX_NB
 
 /* WARNING:
  * If you change EEPROM format, be sure to change the EEPROM_KEY in header if
- * your new format is not compatible with the old one or you will load
+ * your new format is not compatible with the old one or you may load
  * garbages in parameters. */
+struct eeprom_t
+{
+    /** Identify parameters version. */
+    uint8_t key;
+    /** Saved parameters. */
+    struct {
+	uint8_t max;
+	uint8_t slow;
+	uint16_t acc;
+    } speed[EEPROM_INDEX_NB];
+    struct {
+	uint16_t kp;
+	uint16_t ki;
+	uint16_t kd;
+	uint16_t e_sat;
+	uint16_t i_sat;
+	uint16_t d_sat;
+    } pos[EEPROM_INDEX_NB];
+    struct {
+	uint16_t error_limit;
+	uint16_t speed_limit;
+	uint8_t counter_limit;
+    } bd[EEPROM_INDEX_NB];
+    struct {
+	uint8_t reverse;
+    } output[EEPROM_INDEX_NB];
+    /** CRC of the whole structure. */
+    uint8_t crc;
+};
+
+/* If EEPROM_DEFAULTS is defined, it should be the name of a file to include
+ * which defines the structure eeprom_defaults in PROGMEM and
+ * EEPROM_DEFAULTS_KEY which should match EEPROM_KEY.  Those defaults values
+ * are used when no EEPROM set is good. */
+#ifdef EEPROM_DEFAULTS
+# include EEPROM_DEFAULTS
+# if EEPROM_DEFAULTS_KEY != EEPROM_KEY
+#  error "EEPROM defaults are not compatible (key mismatch)"
+# endif
+#endif
+
+EEMEM struct eeprom_t eeprom_params[4];
+
+/** Index of loaded eeprom block. */
+int8_t eeprom_loaded;
+
+static void
+eeprom_read_params_helper (struct eeprom_t *loaded, uint8_t index,
+			   speed_control_t *speed, pos_control_t *pos,
+			   blocking_detection_t *bd, output_t *output)
+{
+    speed->max = loaded->speed[index].max;
+    speed->slow = loaded->speed[index].slow;
+    speed->acc = loaded->speed[index].acc;
+    pos->kp = loaded->pos[index].kp;
+    pos->ki = loaded->pos[index].ki;
+    pos->kd = loaded->pos[index].kd;
+    pos->e_sat = loaded->pos[index].e_sat;
+    pos->i_sat = loaded->pos[index].i_sat;
+    pos->d_sat = loaded->pos[index].d_sat;
+    bd->error_limit = loaded->bd[index].error_limit;
+    bd->speed_limit = loaded->bd[index].speed_limit;
+    bd->counter_limit = loaded->bd[index].counter_limit;
+    output_set_reverse (output, loaded->output[index].reverse);
+}
 
 /* Read parameters from eeprom. */
 void
 eeprom_read_params (void)
 {
-    uint8_t *p8 = (uint8_t *) EEPROM_START;
-    uint16_t *p16;
-    if (eeprom_read_byte (p8++) != EEPROM_KEY)
-	return;
-    cs_aux[0].speed.max = eeprom_read_byte (p8++);
-    cs_aux[1].speed.max = eeprom_read_byte (p8++);
-    cs_aux[0].speed.slow = eeprom_read_byte (p8++);
-    cs_aux[1].speed.slow = eeprom_read_byte (p8++);
-    output_set_reverse (&output_aux[0], eeprom_read_byte (p8++));
-    output_set_reverse (&output_aux[1], eeprom_read_byte (p8++));
-    p16 = (uint16_t *) p8;
-    cs_aux[0].speed.acc = eeprom_read_word (p16++);
-    cs_aux[1].speed.acc = eeprom_read_word (p16++);
-    cs_aux[0].pos.kp = eeprom_read_word (p16++);
-    cs_aux[1].pos.kp = eeprom_read_word (p16++);
-    cs_aux[0].pos.ki = eeprom_read_word (p16++);
-    cs_aux[1].pos.ki = eeprom_read_word (p16++);
-    cs_aux[0].pos.kd = eeprom_read_word (p16++);
-    cs_aux[1].pos.kd = eeprom_read_word (p16++);
-    cs_aux[0].blocking_detection.error_limit = eeprom_read_word (p16++);
-    cs_aux[0].blocking_detection.speed_limit = eeprom_read_word (p16++);
-    cs_aux[0].blocking_detection.counter_limit = eeprom_read_word (p16++);
-    cs_aux[1].blocking_detection.error_limit = eeprom_read_word (p16++);
-    cs_aux[1].blocking_detection.speed_limit = eeprom_read_word (p16++);
-    cs_aux[1].blocking_detection.counter_limit = eeprom_read_word (p16++);
-    cs_aux[0].pos.e_sat = eeprom_read_word (p16++);
-    cs_aux[0].pos.i_sat = eeprom_read_word (p16++);
-    cs_aux[0].pos.d_sat = eeprom_read_word (p16++);
-    cs_aux[1].pos.e_sat = eeprom_read_word (p16++);
-    cs_aux[1].pos.i_sat = eeprom_read_word (p16++);
-    cs_aux[1].pos.d_sat = eeprom_read_word (p16++);
+    uint8_t i;
+    struct eeprom_t loaded;
+    eeprom_loaded = -1;
+    /* Load first good set. */
+    for (i = 0; i < UTILS_COUNT (eeprom_params); i++)
+      {
+	/* Read EEPROM. */
+	eeprom_read_block (&loaded, &eeprom_params[i],
+			   sizeof (struct eeprom_t));
+	/* Check CRC. */
+	if (loaded.key == EEPROM_KEY
+	    && crc_compute ((uint8_t *) &loaded,
+			    sizeof (struct eeprom_t)) == 0)
+	  {
+	    /* Ok. */
+	    eeprom_loaded = i;
+	    break;
+	  }
+      }
+    /* Load defaults if no set is good. */
+#ifdef EEPROM_DEFAULTS
+    if (eeprom_loaded == -1)
+      {
+	memcpy_P (&loaded, &eeprom_defaults, sizeof (struct eeprom_t));
+	eeprom_loaded = 0xDF; /* DeFaults. */
+      }
+#endif
+    if (eeprom_loaded != -1)
+      {
+	/* Ok, load parameters. */
+	for (i = 0; i < AC_ASSERV_AUX_NB; i++)
+	    eeprom_read_params_helper (&loaded, i, &cs_aux[i].speed,
+				       &cs_aux[i].pos,
+				       &cs_aux[i].blocking_detection,
+				       &output_aux[i]);
+      }
+}
+
+static void
+eeprom_write_params_helper (struct eeprom_t *param, uint8_t index,
+			    speed_control_t *speed, pos_control_t *pos,
+			    blocking_detection_t *bd, output_t *output)
+{
+    param->speed[index].max = speed->max;
+    param->speed[index].slow = speed->slow;
+    param->speed[index].acc = speed->acc;
+    param->pos[index].kp = pos->kp;
+    param->pos[index].ki = pos->ki;
+    param->pos[index].kd = pos->kd;
+    param->pos[index].e_sat = pos->e_sat;
+    param->pos[index].i_sat = pos->i_sat;
+    param->pos[index].d_sat = pos->d_sat;
+    param->bd[index].error_limit = bd->error_limit;
+    param->bd[index].speed_limit = bd->speed_limit;
+    param->bd[index].counter_limit = bd->counter_limit;
+    param->output[index].reverse = output->reverse;
 }
 
 /* Write parameters to eeprom. */
 void
 eeprom_write_params (void)
 {
-    uint8_t *p8 = (uint8_t *) EEPROM_START;
-    uint16_t *p16;
-    eeprom_write_byte (p8++, EEPROM_KEY);
-    eeprom_write_byte (p8++, cs_aux[0].speed.max);
-    eeprom_write_byte (p8++, cs_aux[1].speed.max);
-    eeprom_write_byte (p8++, cs_aux[0].speed.slow);
-    eeprom_write_byte (p8++, cs_aux[1].speed.slow);
-    eeprom_write_byte (p8++, output_aux[0].reverse);
-    eeprom_write_byte (p8++, output_aux[1].reverse);
-    p16 = (uint16_t *) p8;
-    eeprom_write_word (p16++, cs_aux[0].speed.acc);
-    eeprom_write_word (p16++, cs_aux[1].speed.acc);
-    eeprom_write_word (p16++, cs_aux[0].pos.kp);
-    eeprom_write_word (p16++, cs_aux[1].pos.kp);
-    eeprom_write_word (p16++, cs_aux[0].pos.ki);
-    eeprom_write_word (p16++, cs_aux[1].pos.ki);
-    eeprom_write_word (p16++, cs_aux[0].pos.kd);
-    eeprom_write_word (p16++, cs_aux[1].pos.kd);
-    eeprom_write_word (p16++, cs_aux[0].blocking_detection.error_limit);
-    eeprom_write_word (p16++, cs_aux[0].blocking_detection.speed_limit);
-    eeprom_write_word (p16++, cs_aux[0].blocking_detection.counter_limit);
-    eeprom_write_word (p16++, cs_aux[1].blocking_detection.error_limit);
-    eeprom_write_word (p16++, cs_aux[1].blocking_detection.speed_limit);
-    eeprom_write_word (p16++, cs_aux[1].blocking_detection.counter_limit);
-    eeprom_write_word (p16++, cs_aux[0].pos.e_sat);
-    eeprom_write_word (p16++, cs_aux[0].pos.i_sat);
-    eeprom_write_word (p16++, cs_aux[0].pos.d_sat);
-    eeprom_write_word (p16++, cs_aux[1].pos.e_sat);
-    eeprom_write_word (p16++, cs_aux[1].pos.i_sat);
-    eeprom_write_word (p16++, cs_aux[1].pos.d_sat);
+    uint8_t i;
+    struct eeprom_t p;
+    /* Prepare parameters. */
+    p.key = EEPROM_KEY;
+    for (i = 0; i < AC_ASSERV_AUX_NB; i++)
+	eeprom_write_params_helper (&p, i, &cs_aux[i].speed,
+				    &cs_aux[i].pos,
+				    &cs_aux[i].blocking_detection,
+				    &output_aux[i]);
+    p.crc = crc_compute ((uint8_t *) &p, sizeof (p) - 1);
+    /* Write every sets. */
+    for (i = 0; i < UTILS_COUNT (eeprom_params); i++)
+      {
+	eeprom_write_block (&p, &eeprom_params[i],
+			    sizeof (struct eeprom_t));
+      }
 }
 
 /* Clear eeprom parameters. */
 void
 eeprom_clear_params (void)
 {
-    uint8_t *p = (uint8_t *) EEPROM_START;
-    eeprom_write_byte (p, 0xff);
+    uint8_t i;
+    /* Clear every sets. */
+    for (i = 0; i < UTILS_COUNT (eeprom_params); i++)
+	eeprom_write_byte (&eeprom_params[i].key, 0);
 }
 

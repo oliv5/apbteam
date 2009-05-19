@@ -699,7 +699,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		break;
 	      case c ('P', 1):
 		/* Print current settings. */
-		proto_send1b ('E', EEPROM_KEY);
+		proto_send2b ('E', EEPROM_KEY, eeprom_loaded);
 		proto_send1d ('c', encoder_right_corrector.correction);
 		proto_send1w ('f', postrack_footing);
 		proto_send2w ('e', traj_eps, traj_aeps);
@@ -712,7 +712,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	      case c ('P', 2):
 		/* Print current settings for selected control.
 		 * - b: index. */
-		proto_send1b ('E', EEPROM_KEY);
+		proto_send2b ('E', EEPROM_KEY, eeprom_loaded);
 		proto_send1w ('a', speed->acc);
 		proto_send2b ('s', speed->max, speed->slow);
 		proto_send3w ('b', bd->error_limit, bd->speed_limit,
