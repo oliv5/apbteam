@@ -17,6 +17,8 @@ States:
   release puck to the lift and block a new puck on pos1
  PUSH_PUCK
   push the puck to the lift
+ TEMPO_ELVETATOR_COMMUNICATION [timeout=225]
+  a temporisation for the communication between the eleveator and the FB.
 
 Events:
  start
@@ -57,5 +59,10 @@ OPEN_DOOR:
   we push the puck to the lift
 
 PUSH_PUCK:
- no_puck_on_pos2 -> CLOSE_DOOR
+ no_puck_on_pos2 -> TEMPO_ELVETATOR_COMMUNICATION
+  nothing to do.
+
+TEMPO_ELVETATOR_COMMUNICATION:
+ state_timeout -> CLOSE_DOOR
   the puck disappears, we close doors
+  tell the elevator we are ready.
