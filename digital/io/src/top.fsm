@@ -15,6 +15,28 @@ States:
   stop the move FSM before starting a new one.
  STOP_TO_GET_PUCK_FROM_DISTRIBUTOR
   stop the move FSM before starting a new one.
+ GO_TO_UNLOAD_AREA
+  when going to unload area.
+ FUCK_UNLOAD_AREA
+  when going backward in position for unload.
+ UNLOAD_PUCKS [timeout=1125]
+  when unloading all pucks from the bot.
+ ELEVATOR_READY_TO_GO_AWAY_TO_RETRY_UNLOAD [timeout=1275]
+  wait for the elevator to be ready for a bot movement.
+ GO_AWAY_TO_RETRY_UNLOAD
+  when unload failed, go away from the unload area to try a new one.
+ TRY_AGAIN_TO_GO_AWAY_TO_RETRY_UNLOAD
+  try again to go away to retry unloading pucks.
+ FUCK_THE_DISTRIBUTOR
+  fuck the distributor.
+ WAIT_FOR_PUCKS
+  wait until no more pucks or already full.
+ GO_AWAY_FROM_UNLOAD_AREA
+  go away from the unload area to turn freely.
+ TRY_AGAIN_TO_GO_AWAY_FROM_UNLOAD_AREA
+  try again to go away from the unload area.
+ CLEAN_FRONT_OF_DISTRIBUTOR
+  clean the front of the distributor to have no problem to fuck it.
 
 Events:
  start
@@ -23,14 +45,24 @@ Events:
   when the move FSM returns with success.
  move_fsm_failed
   when the move FSM returns with an error.
+ move_fsm_stopped
+  when the move FSM has stop the bot (as asked).
+ bot_move_succeed
+  when the bot has succeed its asserv movement.
+ bot_move_failed
+  when the bot has failed its asserv movement.
  init_match_is_started
   when the init FSM has finished and the match start.
  state_timeout
   timeout in cycle count.
  asserv_last_cmd_ack
   last command sent to the asserv board has been acquitted.
- bot_is_full_of_puck
+ bot_is_full_of_pucks
   the bot has four pucks inside.
+ empty_distributor
+  the cylinder has tried to get some pucks but none has been seen.
+ elevator_is_closed
+  the elevator has finished to unload the pucks.
 
 IDLE:
  start -> WAIT_INIT_TO_FINISH
@@ -46,10 +78,117 @@ GET_PUCK_FROM_THE_GROUND:
  move_fsm_succeed: next_position_exists -> .
   go to the next position using move FSM.
  move_fsm_failed -> GET_PUCK_FROM_DISTRIBUTOR
-  we have failed to do a move, go the distributor.
- bot_is_full_of_puck -> STOP_TO_GO_TO_UNLOAD_AREA
+  we have failed to do a move, go the distributor (get next distributor and go
+  there with move FSM).
+ bot_is_full_of_pucks -> STOP_TO_GO_TO_UNLOAD_AREA
   stop move FSM.
  state_timeout -> STOP_TO_GET_PUCK_FROM_DISTRIBUTOR
   too much time lost to get puck from the ground, stop move FSM.
 
+STOP_TO_GET_PUCK_FROM_DISTRIBUTOR:
+ move_fsm_stopped -> GET_PUCK_FROM_DISTRIBUTOR
+  get next distributor and go there.
 
+STOP_TO_GO_TO_UNLOAD_AREA:
+ move_fsm_stopped -> GO_TO_UNLOAD_AREA
+  compute an unload area.
+  ask move FSM to go there using backward move only.
+ move_fsm_succeed -> GO_TO_UNLOAD_AREA
+  do the same as bot_move_stopped.
+ bot_move_failed -> GO_TO_UNLOAD_AREA
+  do the same as bot_move_stopped.
+
+GO_TO_UNLOAD_AREA:
+ move_fsm_succeed -> FUCK_UNLOAD_AREA
+  make the bot do a fuck the wall in backward until blocked.
+# It can be dangerous to loop here with no condition to cancel this loop.
+ move_fsm_failed -> .
+  compute a new unload area.
+  ask move FSM to go to the position using backward only.
+
+FUCK_UNLOAD_AREA:
+ bot_move_succeed -> UNLOAD_PUCKS
+  unload all the pucks from the elevator.
+ bot_move_failed -> GO_AWAY_TO_RETRY_UNLOAD
+  move backward from the unload area using linear move.
+
+GO_AWAY_TO_RETRY_UNLOAD:
+ bot_move_succeed -> GO_TO_UNLOAD_AREA
+  compute a new unload area.
+  ask move FSM to go there using backward move only.
+ bot_move_failed: niceness -> TRY_AGAIN_TO_GO_AWAY_TO_RETRY_UNLOAD
+  decrement niceness.
+  move forward using linear move.
+ bot_move_failed: no_more_niceness -> GO_TO_UNLOAD_AREA
+  do the same as move succeed.
+
+TRY_AGAIN_TO_GO_AWAY_TO_RETRY_UNLOAD:
+ bot_move_succeed -> GO_AWAY_TO_RETRY_UNLOAD
+  move backward from the unload area using linear move.
+ bot_move_failed -> GO_AWAY_TO_RETRY_UNLOAD
+  do the same as succeed.
+
+GET_PUCK_FROM_DISTRIBUTOR:
+ move_fsm_succeed -> CLEAN_FRONT_OF_DISTRIBUTOR
+  really go to the front of the distributor (it clean front area).
+ move_fsm_failed: no_puck_or_still_time -> .
+  get the next distributor position and launch move FSM to go there.
+ move_fsm_failed: some_pucks_and_no_more_time -> GO_TO_UNLOAD_AREA
+  compute an unload area.
+  ask move FSM to go there.
+
+CLEAN_FRONT_OF_DISTRIBUTOR:
+ move_fsm_succeed -> FUCK_THE_DISTRIBUTOR
+  we are in front of the distributor: fuck it.
+ move_fsm_failed -> GET_PUCK_FROM_DISTRIBUTOR
+  get a new distributor and go there.
+
+FUCK_THE_DISTRIBUTOR:
+ bot_move_succeed -> WAIT_FOR_PUCKS
+  let's cylinder FSM works until finished.
+ bot_move_failed: no_puck_or_still_time -> GET_PUCK_FROM_DISTRIBUTOR
+  get a new distributor and go there.
+ bot_move_failed: some_pucks_and_no_more_time -> GO_TO_UNLOAD_AREA
+  compute an unload area.
+  ask move FSM to go there.
+
+WAIT_FOR_PUCKS:
+ bot_is_full_of_pucks -> GO_TO_UNLOAD_AREA
+  compute an unload area.
+  ask the move FSM to go there.
+ empty_distributor: no_puck_or_still_time -> GET_PUCK_FROM_DISTRIBUTOR
+  get a new distributor position and go there.
+ empty_distributor: some_pucks_and_no_more_time -> GO_TO_UNLOAD_AREA
+  compute an unload area and go there.
+
+UNLOAD_PUCKS:
+ elevator_is_closed -> GO_AWAY_FROM_UNLOAD_AREA
+  linear move.
+ state_timeout -> ELEVATOR_READY_TO_GO_AWAY_TO_RETRY_UNLOAD
+  we have failed, ask the elevator to put itself in a state where bot movement
+  will not damage something.
+
+GO_AWAY_FROM_UNLOAD_AREA:
+ bot_move_succeed: more_than_six_pucks_or_no_next_position -> GET_PUCK_FROM_DISTRIBUTOR
+  get the next distributor position and launch move FSM to go there.
+ bot_move_succeed: next_position_for_pucks_on_ground_exists -> GET_PUCK_FROM_THE_GROUND
+  go to the next position using move FSM.
+ bot_move_failed: niceness -> TRY_AGAIN_TO_GO_AWAY_FROM_UNLOAD_AREA
+  decrement niceness.
+  move forward using linear move.
+ bot_move_failed: no_more_niceness_and_more_than_six_pucks_or_no_next_position -> GET_PUCK_FROM_DISTRIBUTOR
+  go to the next position using move FSM.
+ bot_move_failed: no_more_niceness_and_next_position_for_pucks_on_ground_exists -> GET_PUCK_FROM_THE_GROUND
+  go to the next position using move FSM.
+
+TRY_AGAIN_TO_GO_AWAY_FROM_UNLOAD_AREA:
+ bot_move_succeed -> GO_AWAY_FROM_UNLOAD_AREA
+  move backward using linear move.
+ bot_move_failed -> GO_AWAY_FROM_UNLOAD_AREA
+  do the same as succeed.
+
+ELEVATOR_READY_TO_GO_AWAY_TO_RETRY_UNLOAD:
+ elevator_is_closed -> GO_AWAY_TO_RETRY_UNLOAD
+  move backward from the unload area using linear move.
+ state_timeout -> GO_AWAY_TO_RETRY_UNLOAD
+  do the same as elevator_ready.
