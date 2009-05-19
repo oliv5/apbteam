@@ -56,15 +56,18 @@ IDLE:
 
 WAIT_JACK_IN:
  jack_inserted_into_bot -> INIT
-  make initializations (elevator zero and open doors)
+  open doors.
+  find the zero of the elevator.
 
 INIT:
  doors_opened -> GO_TO_POS_X
-  make initializations (close doors)
+  doors opened, close doors.
 
 GO_TO_POS_X:
  in_position -> WAIT_A_PUCK
-  in position and ready to get a new puck
+# FIXME, we should go to a WAIT_FIRST_POS because we are not really ready to
+# load some pucks (but this will not happen...).
+  elevator in position zero, move to first position.
 
 WAIT_A_PUCK:
  new_puck: ok_for_other_pucks -> GO_TO_POS_X

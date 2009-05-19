@@ -55,9 +55,9 @@ extern uint8_t elvt_order;
  * pwm constant for elevator doors
  */
 
-#define OPEN_DOOR_PWM 200
-#define CLOSE_DOOR_PWM -200
-#define TIME_DOORS_PWM 0xcb
+#define OPEN_DOOR_PWM 0x200
+#define CLOSE_DOOR_PWM -0x200
+#define TIME_DOORS_PWM 0xB0
 #define TIME_LIGHT_DOORS_PWM 0xaa
 
 #endif // elevator_h

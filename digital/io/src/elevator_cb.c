@@ -34,10 +34,10 @@
 /* Positions when waiting a puck*/
 uint16_t posx[4] =
 {
-    0 * ELEVATOR_MM_TO_STEP,
-    25 * ELEVATOR_MM_TO_STEP,
-    55 * ELEVATOR_MM_TO_STEP,
-    85 * ELEVATOR_MM_TO_STEP
+    3 * ELEVATOR_MM_TO_STEP,
+    10 * ELEVATOR_MM_TO_STEP,
+    40 * ELEVATOR_MM_TO_STEP,
+    70 * ELEVATOR_MM_TO_STEP
 };
 /* Positions when we go to a target zone */
 uint16_t posy[3] =
@@ -72,40 +72,47 @@ elevator__IDLE__start (void)
 /*
  * WAIT_JACK_IN =jack_inserted_into_bot=>
  *  => INIT
- *   make initializations (elevator zero and open doors)
+ *   open doors.
+ *   find the zero of the elevator.
  */
 fsm_branch_t
 elevator__WAIT_JACK_IN__jack_inserted_into_bot (void)
 {
-    pwm_set(OPEN_DOOR_PWM, 0);
-    asserv_elevator_zero_position();
+    /* Open doors. */
+    pwm_set (OPEN_DOOR_PWM, 0);
+    /* Find the zero of the elevator. */
+    asserv_elevator_zero_position ();
     return elevator_next (WAIT_JACK_IN, jack_inserted_into_bot);
 }
 
 /*
  * INIT =doors_opened=>
  *  => GO_TO_POS_X
- *   make initializations (close doors)
+ *   doors opened, close doors.
  */
 fsm_branch_t
 elevator__INIT__doors_opened (void)
 {
+    /* FIXME: why this is here? */
     elevator_is_ready = 0;
-    pwm_set(CLOSE_DOOR_PWM, TIME_DOORS_PWM);
-    asserv_move_elevator_absolute(posx[nb_puck_in_elvt],
-				  ASSERV_ELVT_SPEED_DEFAULT);
+    /* Close the door. */
+    pwm_set (CLOSE_DOOR_PWM, TIME_DOORS_PWM);
     return elevator_next (INIT, doors_opened);
 }
 
 /*
  * GO_TO_POS_X =in_position=>
  *  => WAIT_A_PUCK
- *   in position and ready to get a new puck
+ *   elevator in position zero, move to first position.
  */
 fsm_branch_t
 elevator__GO_TO_POS_X__in_position (void)
 {
+    /* FIXME: this sucks, look at elevator.fsm for a real fix. */
     elevator_is_ready = 1;
+    /* move to first position. */
+    asserv_move_elevator_absolute(posx[nb_puck_in_elvt],
+				  ASSERV_ELVT_SPEED_DEFAULT);
     return elevator_next (GO_TO_POS_X, in_position);
 }
 
@@ -124,7 +131,7 @@ elevator__WAIT_A_PUCK__new_puck (void)
     elevator_is_ready = 0;
     elvt_new_puck = 0;
     // TODO time_ok
-    if(nb_puck_elvt < 4)
+    if(++nb_puck_elvt < 4)
       {
 /*	&&
        ((chrono_remaining_time() - OK_TIME_LIMIT > 0)
@@ -198,7 +205,7 @@ elevator__WAIT_FOR_RELEASE_ORDER__order_received (void)
 fsm_branch_t
 elevator__LAND_ELEVATOR__in_position (void)
 {
-    pwm_set(OPEN_DOOR_PWM, TIME_DOORS_PWM);
+    pwm_set(OPEN_DOOR_PWM, 0);
     return elevator_next (LAND_ELEVATOR, in_position);
 }
 
@@ -210,7 +217,7 @@ elevator__LAND_ELEVATOR__in_position (void)
 fsm_branch_t
 elevator__MINI_CLOSE__door_move_finished (void)
 {
-    pwm_set(OPEN_DOOR_PWM, TIME_DOORS_PWM);
+    pwm_set(OPEN_DOOR_PWM, 0);
     return elevator_next (MINI_CLOSE, door_move_finished);
 }
 
