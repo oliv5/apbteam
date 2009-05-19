@@ -151,7 +151,7 @@ main_event_to_fsm (void)
 #define FSM_HANDLE_EVENT(fsm,event) \
       { if (fsm_handle_event (fsm,event)) \
 	  { \
-            TRACE (TRACE_FSM__HANDLE_EVENT, main_short_fsm_name (fsm), event); \
+            TRACE (TRACE_FSM__HANDLE_EVENT, main_short_fsm_name (fsm), (u8) event); \
 	    return; \
 	  } \
       }
