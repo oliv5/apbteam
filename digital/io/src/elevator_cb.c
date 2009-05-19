@@ -32,9 +32,20 @@
 #include "filterbridge.h"
 
 /* Positions when waiting a puck*/
-uint16_t posx[4] = {0,25,55,85};
+uint16_t posx[4] =
+{
+    0 * ELEVATOR_MM_TO_STEP,
+    25 * ELEVATOR_MM_TO_STEP,
+    55 * ELEVATOR_MM_TO_STEP,
+    85 * ELEVATOR_MM_TO_STEP
+};
 /* Positions when we go to a target zone */
-uint16_t posy[3] = {125,95,65};
+uint16_t posy[3] =
+{
+    125 * ELEVATOR_MM_TO_STEP,
+    95 * ELEVATOR_MM_TO_STEP,
+    65 * ELEVATOR_MM_TO_STEP
+};
 
 /* nb puck on the elevator */
 uint8_t nb_puck_elvt = 0;
@@ -66,7 +77,7 @@ elevator__IDLE__start (void)
 fsm_branch_t
 elevator__WAIT_JACK_IN__jack_inserted_into_bot (void)
 {
-    pwm_set(OPEN_DOOR_PWM, TIME_DOORS_PWM);
+    pwm_set(OPEN_DOOR_PWM, 0);
     asserv_elevator_zero_position();
     return elevator_next (WAIT_JACK_IN, jack_inserted_into_bot);
 }

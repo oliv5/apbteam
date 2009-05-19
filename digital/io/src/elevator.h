@@ -49,7 +49,7 @@ extern uint8_t elvt_order;
  * conversion stop/millimeter
  */
 
-#define STEP_BY_MM 72.34
+#define ELEVATOR_MM_TO_STEP 72.34
 
 /**
  * pwm constant for elevator doors
