@@ -29,7 +29,13 @@
 #include "cylinder.h"
 #include "filterbridge.h"
 #include "elevator.h"
+#include "top.h"
 
+/* locales variables */
+/* is there a puck on pos 2 or 3 */
+uint8_t puck_on_cylinder = 0;
+/* is the cylinder are in of_offset mode */
+uint8_t of_offset_enabled = 0;
 
 /*
  * IDLE =start=>
@@ -80,20 +86,18 @@ cylinder__INIT_POS__move_done (void)
 
 /*
  * WAIT_A_PUCK =new_puck=>
- *  => TURN_PLUS_1
- *   turn cylinder 1 position after
+ *  => WAIT_BRIDGE_READY
+ *   look if the bridge is ready before move
  */
 fsm_branch_t
 cylinder__WAIT_A_PUCK__new_puck (void)
 {
-    asserv_move_arm(1*60*ASSERV_ARM_STEP_BY_DEGREE,
-		    ASSERV_ARM_SPEED_DEFAULT);
     return cylinder_next (WAIT_A_PUCK, new_puck);
 }
 
 /*
  * WAIT_A_PUCK =close_order=>
- *  => TURN_MINUS_1_CLOSE
+ *  => TURN_PLUS_1_CLOSE
  *   we close cylinder as requested
  */
 fsm_branch_t
@@ -116,84 +120,67 @@ cylinder__WAIT_A_PUCK__flush_order (void)
 }
 
 /*
- * TURN_PLUS_1 =move_done=>
- * of_no_puck => TURN_MINUS_1
- *   There is no puck, go backward
- * of_puck => WAIT_BRIDGE_READY
- *   There is a real puck, check if fb is ready to get puck
- */
-fsm_branch_t
-cylinder__TURN_PLUS_1__move_done (void)
-{
-    if(cylinder_puck_on_of)
-      {
-	++cylinder_nb_puck;
-	return cylinder_next_branch (TURN_PLUS_1, move_done, of_puck);
-      }
-    return cylinder_next_branch (TURN_PLUS_1, move_done, of_no_puck);
-}
-
-/*
- * TURN_MINUS_1 =move_done=>
- *  => WAIT_A_PUCK
- *   wait a puck again
- */
-fsm_branch_t
-cylinder__TURN_MINUS_1__move_done (void)
-{
-    return cylinder_next (TURN_MINUS_1, move_done);
-}
-
-/*
  * WAIT_BRIDGE_READY =bridge_ready=>
- *  => TURN_PLUS_1_AGAIN
- *   open cylinder after the puck existence confirmation
+ *  => TURN_PLUS_1_AND_OFO
+ *   open the cylinder with the puck or not.
  */
 fsm_branch_t
 cylinder__WAIT_BRIDGE_READY__bridge_ready (void)
 {
-    asserv_move_arm(1*60*ASSERV_ARM_STEP_BY_DEGREE,
+    of_offset_enabled = 1;
+    asserv_move_arm((1+CYLINDER_OF_OFFSET)*60*ASSERV_ARM_STEP_BY_DEGREE,
 		    ASSERV_ARM_SPEED_DEFAULT);
     return cylinder_next (WAIT_BRIDGE_READY, bridge_ready);
 }
 
 /*
- * TURN_PLUS_1_AGAIN =move_done=>
- * bot_not_full => WAIT_A_PUCK
- *   ready for a new puck
- * bot_full => TURN_MINUS_1_CLOSE
- *   bot full we close the cylinder
+ * TURN_PLUS_1_AND_OFO =move_done=>
+ * bot_not_full => TURN_PLUS_1_AND_MINUS_OFO
+ *   open the cylinder to wait a new puck
+ * bot_full => WAIT_BOT_NOT_FULL
+ *   bot full, waiting for pucks teleportation
  */
 fsm_branch_t
-cylinder__TURN_PLUS_1_AGAIN__move_done (void)
+cylinder__TURN_PLUS_1_AND_OFO__move_done (void)
 {
-    if(cylinder_nb_puck == 2)
+    /* we verify if we drop a puck to the bridge */
+    if(puck_on_cylinder)
       {
 	--cylinder_nb_puck;
 	++fb_nb_puck;
       }
-    if(fb_nb_puck+ cylinder_nb_puck + elvt_nb_puck < 4)
-	return cylinder_next_branch (TURN_PLUS_1_AGAIN, move_done, bot_not_full);
-    asserv_move_arm(-1*60*ASSERV_ARM_STEP_BY_DEGREE,
-		    ASSERV_ARM_SPEED_DEFAULT);
-    return cylinder_next_branch (TURN_PLUS_1_AGAIN, move_done, bot_full);
+    /* We probe the OF to see if we have a new puck */
+    puck_on_cylinder = asserv_arm_of_status();
+    if(puck_on_cylinder)
+      {
+	++top_total_puck_taken;
+	++top_puck_inside_bot;
+      }
+    if(top_puck_inside_bot < 4)
+      {
+	of_offset_enabled = 0;
+	asserv_move_arm((1-CYLINDER_OF_OFFSET)*60*ASSERV_ARM_STEP_BY_DEGREE,
+			ASSERV_ARM_SPEED_DEFAULT);
+	return cylinder_next_branch (TURN_PLUS_1_AND_OFO, move_done, bot_not_full);
+      }
+    return cylinder_next_branch (TURN_PLUS_1_AND_OFO, move_done, bot_full);
 }
 
 /*
- * TURN_MINUS_1_CLOSE =move_done=>
- *  => WAIT_BOT_NOT_FULL
- *   we wait the bot is not full to reopen cylinder
+ * TURN_PLUS_1_AND_MINUS_OFO =move_done=>
+ *  => WAIT_A_PUCK
+ *   ready for other pucks
  */
 fsm_branch_t
-cylinder__TURN_MINUS_1_CLOSE__move_done (void)
+cylinder__TURN_PLUS_1_AND_MINUS_OFO__move_done (void)
 {
-    return cylinder_next (TURN_MINUS_1_CLOSE, move_done);
+    return cylinder_next (TURN_PLUS_1_AND_MINUS_OFO, move_done);
 }
 
 /*
  * WAIT_BOT_NOT_FULL =bot_not_full=>
  *  => WAIT_CLEAR_ORDER
- *   first condition to reopen bot is reached
+ *   the bot is not full, we go testing the other close condition
  */
 fsm_branch_t
 cylinder__WAIT_BOT_NOT_FULL__bot_not_full (void)
@@ -204,46 +191,67 @@ cylinder__WAIT_BOT_NOT_FULL__bot_not_full (void)
 /*
  * WAIT_BOT_NOT_FULL =flush_order=>
  *  => TURN_PLUS_1_FLUSH
- *   flush gordon
+ *   flush order received, go open the cylinder
  */
 fsm_branch_t
 cylinder__WAIT_BOT_NOT_FULL__flush_order (void)
 {
-    asserv_move_arm(1*60*ASSERV_ARM_STEP_BY_DEGREE,
-		    ASSERV_ARM_SPEED_DEFAULT);
+    if(of_offset_enabled)
+      {
+	asserv_move_arm((1-CYLINDER_OF_OFFSET)*60*ASSERV_ARM_STEP_BY_DEGREE,
+			ASSERV_ARM_SPEED_DEFAULT);
+	of_offset_enabled = 0;
+      }
+    else
+	asserv_move_arm(1*60*ASSERV_ARM_STEP_BY_DEGREE,
+			ASSERV_ARM_SPEED_DEFAULT);
     return cylinder_next (WAIT_BOT_NOT_FULL, flush_order);
 }
 
 /*
  * WAIT_CLEAR_ORDER =no_close_order=>
  *  => TURN_PLUS_1_OPEN
- *   last condition to reopen bot reached, opening...
+ *   no close order, we reopen cylinder to get other pucks
  */
 fsm_branch_t
 cylinder__WAIT_CLEAR_ORDER__no_close_order (void)
 {
-    asserv_move_arm(1*60*ASSERV_ARM_STEP_BY_DEGREE,
-		    ASSERV_ARM_SPEED_DEFAULT);
+    if(of_offset_enabled)
+      {
+	asserv_move_arm((1-CYLINDER_OF_OFFSET)*60*ASSERV_ARM_STEP_BY_DEGREE,
+			ASSERV_ARM_SPEED_DEFAULT);
+	of_offset_enabled = 0;
+      }
+    else
+	asserv_move_arm(1*60*ASSERV_ARM_STEP_BY_DEGREE,
+			ASSERV_ARM_SPEED_DEFAULT);
     return cylinder_next (WAIT_CLEAR_ORDER, no_close_order);
 }
 
 /*
  * WAIT_CLEAR_ORDER =flush_order=>
  *  => TURN_PLUS_1_FLUSH
- *   flush gordon
+ *   flush order received, go open the cylinder
  */
 fsm_branch_t
 cylinder__WAIT_CLEAR_ORDER__flush_order (void)
 {
-    asserv_move_arm(1*60*ASSERV_ARM_STEP_BY_DEGREE,
-		    ASSERV_ARM_SPEED_DEFAULT);
+    if(of_offset_enabled)
+      {
+	asserv_move_arm((1-CYLINDER_OF_OFFSET)*60*ASSERV_ARM_STEP_BY_DEGREE,
+			ASSERV_ARM_SPEED_DEFAULT);
+	of_offset_enabled = 0;
+      }
+    else
+	asserv_move_arm(1*60*ASSERV_ARM_STEP_BY_DEGREE,
+			ASSERV_ARM_SPEED_DEFAULT);
     return cylinder_next (WAIT_CLEAR_ORDER, flush_order);
 }
 
 /*
  * TURN_PLUS_1_OPEN =move_done=>
  *  => WAIT_A_PUCK
- *   we wait a puck
+ *   cylinder ready to get other pucks
  */
 fsm_branch_t
 cylinder__TURN_PLUS_1_OPEN__move_done (void)
@@ -254,7 +262,7 @@ cylinder__TURN_PLUS_1_OPEN__move_done (void)
 /*
  * TURN_PLUS_1_FLUSH =move_done=>
  *  => WAIT_BRIDGE_READY_FLUSH
- *   cylinder open and ready to flush
+ *   we wait the bridge before moving
  */
 fsm_branch_t
 cylinder__TURN_PLUS_1_FLUSH__move_done (void)
@@ -264,30 +272,47 @@ cylinder__TURN_PLUS_1_FLUSH__move_done (void)
 
 /*
  * WAIT_BRIDGE_READY_FLUSH =bridge_ready=>
- *  => TURN_PLUS_2_FLUSH
- *   put a puck on the fb
+ *  => TURN_PLUS_3_FLUSH
+ *   bridge is ready, flush gordon
  */
 fsm_branch_t
 cylinder__WAIT_BRIDGE_READY_FLUSH__bridge_ready (void)
 {
+    asserv_move_arm(3*60*ASSERV_ARM_STEP_BY_DEGREE,
+		    ASSERV_ARM_SPEED_DEFAULT);
     return cylinder_next (WAIT_BRIDGE_READY_FLUSH, bridge_ready);
 }
 
 /*
- * TURN_PLUS_2_FLUSH =move_done=>
- * cylinder_empty => TURN_MINUS_1_CLOSE
- *   flush finished
- * cylinder_not_empty => WAIT_BRIDGE_READY_FLUSH
- *   flush again
+ * TURN_PLUS_3_FLUSH =move_done=>
+ *  => WAIT_BOT_NOT_FULL
+ *   cylinder flushed, we test the 2 close conditions before reopen cylinder
  */
 fsm_branch_t
-cylinder__TURN_PLUS_2_FLUSH__move_done (void)
+cylinder__TURN_PLUS_3_FLUSH__move_done (void)
 {
-    --cylinder_nb_puck;
-    ++fb_nb_puck;
-    if(!cylinder_nb_puck)
-	return cylinder_next_branch (TURN_PLUS_2_FLUSH, move_done, cylinder_empty);
-    return cylinder_next_branch (TURN_PLUS_2_FLUSH, move_done, cylinder_not_empty);
+    if(puck_on_cylinder)
+      {
+	--cylinder_nb_puck;
+	++fb_nb_puck;
+	puck_on_cylinder = 0;
+      }
+    return cylinder_next (TURN_PLUS_3_FLUSH, move_done);
 }
 
-
+/*
+ * TURN_PLUS_1_CLOSE =move_done=>
+ *  => WAIT_BOT_NOT_FULL
+ *   close order executed, test the 2 close conditions before reopen cylinder
+ */
+fsm_branch_t
+cylinder__TURN_PLUS_1_CLOSE__move_done (void)
+{
+    if(puck_on_cylinder)
+      {
+	--cylinder_nb_puck;
+	++fb_nb_puck;
+	puck_on_cylinder = 0;
+      }
+    return cylinder_next (TURN_PLUS_1_CLOSE, move_done);
+}

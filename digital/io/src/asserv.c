@@ -340,6 +340,15 @@ asserv_arm_cmd_status (void)
     return none;
 }
 
+/* Is the optical fence see a puck? */
+uint8_t
+asserv_arm_of_status(void)
+{
+    if(asserv_status.input_port & _BV (5))
+	return 1;
+    return 0;
+}
+
 /* Is last elevator class command has successfully ended? */
 asserv_status_e
 asserv_elevator_cmd_status (void)

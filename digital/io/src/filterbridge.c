@@ -24,7 +24,7 @@
  * }}} */
 #include "filterbridge.h"
 
-uint8_t fb_nb_puck;
+uint8_t fb_nb_puck = 0;
 
 /* +AutoDec */
 /* -AutoDec */

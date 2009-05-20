@@ -124,6 +124,15 @@ asserv_status_e
 asserv_arm_cmd_status (void);
 
 /**
+ *
+ * Is the optical fence see a puck?
+ * This function get the arm optical fence status
+ * @return the status of the arm optical fence
+ */
+uint8_t
+asserv_arm_of_status(void);
+
+/**
  * Is last elevator class command has successfully ended?
  * This function is used to know the status of the last elevator command. It
  * looks at the status register.

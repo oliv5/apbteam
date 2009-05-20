@@ -45,4 +45,6 @@ extern uint8_t cylinder_flush_order;
 /* mecanical offset */
 #define CYLINDER_OFFSET 0x43e
 
+/* mecanical offset for of probe */
+#define CYLINDER_OF_OFFSET 0.7
 #endif /* cylinder_h */

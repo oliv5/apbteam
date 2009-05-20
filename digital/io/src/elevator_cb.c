@@ -30,6 +30,7 @@
 #include "pwm.h"
 #include "chrono.h"
 #include "filterbridge.h"
+#include "top.h"
 
 /* Positions when waiting a puck*/
 uint16_t posx[4] =
@@ -166,7 +167,7 @@ elevator__WAIT_A_PUCK__time_up (void)
 fsm_branch_t
 elevator__WAIT_POS_ORDER__order_received (void)
 {
-    asserv_move_elevator_absolute(posy[elvt_order] + MAJ_POSY,
+    asserv_move_elevator_absolute(posy[elvt_order + 1] + MAJ_POSY,
 				  ASSERV_ELVT_SPEED_DEFAULT);
     elvt_order = 0;
     return elevator_next (WAIT_POS_ORDER, order_received);
@@ -191,7 +192,7 @@ elevator__GO_TO_POS_Y__in_position (void)
 fsm_branch_t
 elevator__WAIT_FOR_RELEASE_ORDER__order_received (void)
 {
-    asserv_move_elevator_absolute(posy[elvt_order] - MIN_POSY,
+    asserv_move_elevator_absolute(posy[elvt_order + 1] - MIN_POSY,
 				  ASSERV_ELVT_SPEED_DEFAULT);
     elvt_order = 0;
     return elevator_next (WAIT_FOR_RELEASE_ORDER, order_received);
@@ -230,6 +231,7 @@ fsm_branch_t
 elevator__OPEN_DOORS__doors_opened (void)
 {
     nb_puck_elvt = 0;
+    top_puck_inside_bot = 0;
     return elevator_next (OPEN_DOORS, doors_opened);
 }
 
