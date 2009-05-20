@@ -71,4 +71,10 @@ extern struct move_data_t move_data;
 void
 move_start (asserv_position_t position, uint8_t backward);
 
+/**
+ * Stop the move FSM and the bot.
+ */
+void
+move_stop (void);
+
 #endif /* move_h */

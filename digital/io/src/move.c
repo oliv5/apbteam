@@ -52,3 +52,7 @@ move_start (asserv_position_t position, uint8_t backward)
     fsm_handle_event (&move_fsm, MOVE_EVENT_start);
 }
 
+void
+move_stop (void)
+{
+}
