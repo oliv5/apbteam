@@ -215,8 +215,13 @@ simu_sensor_update_aquajim (void)
       }
     /** Top zero sensors. */
     double aa = simu_aux_model[0].th / simu_aux_model[0].m.i_G
-	- M_PI / 6 - 2 * M_PI / 3
-	+ 2 * M_PI * 0x43e / simu_robot->aux_encoder_steps[0];
+	/* Almost open. */
+	+ 2 * M_PI / 6 / 10
+	/* Turn at the next hole. */
+	- 2 * M_PI / 3
+	/* Mechanical offset. */
+	+ 2 * M_PI * 0x43e / simu_robot->aux_encoder_steps[0] /
+	simu_aux_model[0].m.i_G;
     double apos = aa / (2 * M_PI / 3);
     if (apos - floor (apos) > 0.5)
 	PINC |= IO_BV (CONTACT_AUX0_ZERO_IO);
