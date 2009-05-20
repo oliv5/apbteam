@@ -243,10 +243,10 @@ move_after_moving_backward (void)
     if (move_get_next_position (&move_data.intermediate))
       {
 	/* Go to the next position */
-	if (move_data.backward_movement_allowed)
-	    asserv_goto_back (move_data.intermediate.x, move_data.intermediate.y);
-	else
-	    asserv_goto (move_data.intermediate.x, move_data.intermediate.y);
+	asserv_goto_xya (move_data.intermediate.x,
+			 move_data.intermediate.y,
+			 move_data.intermediate.a,
+			 move_data.backward_movement_allowed);
 	return 1;
       }
     else
@@ -273,10 +273,9 @@ move__WAIT_FOR_CLEAR_PATH__wait_finished (void)
     if (!sharp_path_obstrued (1))
       {
 	/* Try to go to the final position */
-	if (move_data.backward_movement_allowed)
-	    asserv_goto_back (move_data.final.x, move_data.final.y);
-	else
-	    asserv_goto (move_data.final.x, move_data.final.y);
+	asserv_goto_xya (move_data.final.x, move_data.final.y,
+			 move_data.final.a,
+			 move_data.backward_movement_allowed);
 	return move_next_branch (WAIT_FOR_CLEAR_PATH, wait_finished, no_obstacle);
       }
     else
@@ -289,10 +288,10 @@ move__WAIT_FOR_CLEAR_PATH__wait_finished (void)
 	    /* Ignore sharps */
 	    main_sharp_ignore_event = MOVE_MAIN_IGNORE_SHARP_EVENT;
 	    /* Go to the next intermediate position */
-	    if (move_data.backward_movement_allowed)
-		asserv_goto_back (move_data.intermediate.x, move_data.intermediate.y);
-	    else
-		asserv_goto (move_data.intermediate.x, move_data.intermediate.y);
+	    asserv_goto_xya (move_data.intermediate.x,
+			     move_data.intermediate.y,
+			     move_data.intermediate.a,
+			     move_data.backward_movement_allowed);
 	    return move_next_branch (WAIT_FOR_CLEAR_PATH, wait_finished, obstacle_and_intermediate_path_found);
 	  }
 	else
@@ -317,10 +316,10 @@ fsm_branch_t
 move__IDLE__start (void)
 {
     /* Go to the destination position */
-    if (move_data.backward_movement_allowed)
-	asserv_goto_back (move_data.final.x, move_data.final.y);
-    else
-	asserv_goto (move_data.final.x, move_data.final.y);
+    asserv_goto_xya (move_data.final.x,
+		     move_data.final.y,
+		     move_data.final.a,
+		     move_data.backward_movement_allowed);
     return move_next (IDLE, start);
 }
 
@@ -351,10 +350,10 @@ move__MOVING_TO_INTERMEDIATE_POSITION__bot_move_succeed (void)
 	if (move_get_next_position (&move_data.intermediate))
 	  {
 	    /* Go to the next intermediate position */
-	    if (move_data.backward_movement_allowed)
-		asserv_goto_back (move_data.intermediate.x, move_data.intermediate.y);
-	    else
-		asserv_goto (move_data.intermediate.x, move_data.intermediate.y);
+	    asserv_goto_xya (move_data.intermediate.x,
+			     move_data.intermediate.y,
+			     move_data.intermediate.a,
+			     move_data.backward_movement_allowed);
 	    return move_next_branch (MOVING_TO_INTERMEDIATE_POSITION, bot_move_succeed, position_intermediary);
 	  }
 	else
@@ -392,10 +391,10 @@ move__MOVING_TO_INTERMEDIATE_POSITION__bot_move_obstacle (void)
     if (move_get_next_position (&move_data.intermediate))
       {
 	/* Go to the next intermediate position */
-	if (move_data.backward_movement_allowed)
-	    asserv_goto_back (move_data.intermediate.x, move_data.intermediate.y);
-	else
-	    asserv_goto (move_data.intermediate.x, move_data.intermediate.y);
+	asserv_goto_xya (move_data.intermediate.x,
+			 move_data.intermediate.y,
+			 move_data.intermediate.a,
+			 move_data.backward_movement_allowed);
 	return move_next_branch (MOVING_TO_INTERMEDIATE_POSITION, bot_move_obstacle, intermediate_path_found);
       }
     else
@@ -539,10 +538,10 @@ move__MOVING_TO_FINAL_POSITION__bot_move_obstacle (void)
     if (move_get_next_position (&move_data.intermediate))
       {
 	/* Go to the next intermediate position */
-	if (move_data.backward_movement_allowed)
-	    asserv_goto_back (move_data.intermediate.x, move_data.intermediate.y);
-	else
-	    asserv_goto (move_data.intermediate.x, move_data.intermediate.y);
+	asserv_goto_xya (move_data.intermediate.x,
+			 move_data.intermediate.y,
+			 move_data.intermediate.a,
+			 move_data.backward_movement_allowed);
 	return move_next_branch (MOVING_TO_FINAL_POSITION, bot_move_obstacle, intermediate_path_found);
       }
     else

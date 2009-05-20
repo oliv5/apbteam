@@ -211,7 +211,7 @@ init__GO_AWAY_FROM_THE_WALL_AGAIN__bot_move_succeed (void)
                                            - BOT_WIDTH / 2
                                            - 50),
                      PG_LENGTH - PG_START_ZONE_LENGTH + BOT_LENGTH / 2 + 50,
-		     PG_A_VALUE_COMPUTING (0 * BOT_ANGLE_DEGREE));
+		     PG_A_VALUE_COMPUTING (0 * BOT_ANGLE_DEGREE), 0);
     return init_next (GO_AWAY_FROM_THE_WALL_AGAIN, bot_move_succeed);
 }
 

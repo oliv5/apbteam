@@ -460,7 +460,7 @@ asserv_goto_angle (int16_t angle)
 
 /* Go to an absolute position and then an absolute angle. */
 void
-asserv_goto_xya (uint32_t x, uint32_t y, int16_t a)
+asserv_goto_xya (uint32_t x, uint32_t y, int16_t a, uint8_t backward)
 {
     x = fixed_mul_f824 (x, asserv_scale_inv);
     y = fixed_mul_f824 (y, asserv_scale_inv);
@@ -476,7 +476,7 @@ asserv_goto_xya (uint32_t x, uint32_t y, int16_t a)
     asserv_twi_buffer_param[6] = v16_to_v8 (a, 1);
     asserv_twi_buffer_param[7] = v16_to_v8 (a, 0);
     /* No backward. */
-    asserv_twi_buffer_param[8] = 0;
+    asserv_twi_buffer_param[8] = backward;
     /* Send the got to an absolute position and them absolute angle command to
      * the asserv board */
     asserv_twi_send_command ('X', 9);

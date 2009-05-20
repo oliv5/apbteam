@@ -25,6 +25,8 @@
  *
  * }}} */
 
+#include "asserv.h"
+
 /**
  * A position.
  */
@@ -34,6 +36,8 @@ typedef struct move_position_t
     uint16_t x;
     /** Y position. */
     uint16_t y;
+    /** A angle. */
+    uint16_t a;
 } move_position_t;
 
 /**
@@ -60,12 +64,11 @@ extern struct move_data_t move_data;
 
 /**
  * Go to a position with the start FSM.
- * @param position_x the X position.
- * @param position_y the Y position.
- * @param backward_movement_allowed do we allow backward movement?
+ * @param position the destination position.
+ * @param backward_movement_allowed 0, no backward, 1 backward is allowed, 2
+ * backward is compulsary.
  */
 void
-move_start (uint16_t position_x, uint16_t position_y, uint8_t
-	    backward_movement_allowed);
+move_start (asserv_position_t position, uint8_t backward);
 
 #endif /* move_h */

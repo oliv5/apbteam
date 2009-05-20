@@ -226,9 +226,10 @@ asserv_goto_angle (int16_t angle);
  * @param x the absolute position on the X axis.
  * @param y the absolute position on the Y axis.
  * @param a the absolute angle.
+ * @param backward 0 no backward, 1 backward possible, 2 backward compulsary.
  */
 void
-asserv_goto_xya (uint32_t x, uint32_t y, int16_t a);
+asserv_goto_xya (uint32_t x, uint32_t y, int16_t a, uint8_t backward);
 
 /**
  * Go to the wall (moving backward).

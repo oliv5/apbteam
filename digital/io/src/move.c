@@ -34,20 +34,14 @@
  */
 struct move_data_t move_data;
 
-/**
- * Go to a position with the start FSM.
- * @param position_x the X position.
- * @param position_y the Y position.
- * @param backward_movement_allowed do we allow backward movement?
- */
 void
-move_start (uint16_t position_x, uint16_t position_y, uint8_t
-	    backward_movement_allowed)
+move_start (asserv_position_t position, uint8_t backward)
 {
     /* Set parameters. */
-    move_data.final.x = position_x;
-    move_data.final.y = position_y;
-    move_data.backward_movement_allowed = backward_movement_allowed;
+    move_data.final.x = position.x;
+    move_data.final.y = position.y;
+    move_data.final.a = position.a;
+    move_data.backward_movement_allowed = backward;
     /* XXX */
     main_always_stop_for_obstacle = 1;
     /* Reset move FSM flags */
