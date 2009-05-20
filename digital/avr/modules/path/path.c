@@ -265,6 +265,7 @@ path_endpoints (int16_t sx, int16_t sy, int16_t dx, int16_t dy)
 void
 path_obstacle (uint8_t i, int16_t x, int16_t y, uint16_t r, uint16_t valid)
 {
+    assert (i < AC_PATH_OBSTACLES_POINTS_NB);
     path.obstacles[i].x = x;
     path.obstacles[i].y = y;
     path.obstacles[i].r = r;
