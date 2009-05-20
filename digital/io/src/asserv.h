@@ -226,7 +226,8 @@ asserv_goto_angle (int16_t angle);
  * @param x the absolute position on the X axis.
  * @param y the absolute position on the Y axis.
  * @param a the absolute angle.
- * @param backward 0 no backward, 1 backward possible, 2 backward compulsary.
+ * @param backward 0 no backward, ASSERV_BACKWARD backward compulsary,
+ * ASSERV_REVERT_OK backward allowed.
  */
 void
 asserv_goto_xya (uint32_t x, uint32_t y, int16_t a, uint8_t backward);
@@ -320,9 +321,11 @@ asserv_set_position (int32_t x, int32_t y, int16_t angle);
  * Go to an absolute position in (X, Y).
  * @param x the x position on the table.
  * @param y the y position on the table.
+ * @param backward 0 no backward, ASSERV_BACKWARD backward compulsary,
+ * ASSERV_REVERT_OK backward allowed.
  */
 void
-asserv_goto (uint32_t x, uint32_t y);
+asserv_goto (uint32_t x, uint32_t y, uint8_t backward);
 
 /**
  * Go to an absolute position at (X, Y) with backward enabled.

@@ -30,7 +30,9 @@ Events:
  state_timeout
 
 IDLE:
- start -> MOVING_TO_FINAL_POSITION
+ start: intermediate_path_found -> MOVING_TO_INTERMEDIATE_POSITION
+  ask the asserv to go to the intermediate position
+ start: no_intermediate_path_found -> MOVING_TO_FINAL_POSITION
   ask the asserv to go to the final position
 
 MOVING_TO_FINAL_POSITION:

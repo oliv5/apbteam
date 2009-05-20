@@ -32,7 +32,9 @@
 #include "aquajim.h"
 #include "switch.h"
 #include "chrono.h"
+#include "playground.h"
 #include "modules/trace/trace.h"
+#include "modules/path/path.h"
 
 /*
  * IDLE =start=>
@@ -238,6 +240,8 @@ init__WAIT_SECOND_JACK_OUT__jack_removed_from_bot (void)
     init_match_is_started = 1;
     /* Start the chrono. */
     chrono_init ();
+    /* Set the central round to path module. */
+    path_obstacle (0x01, PG_WIDTH / 2, PG_LENGTH / 2, 350, 0xFFFF);
     return init_next (WAIT_SECOND_JACK_OUT, jack_removed_from_bot);
 }
 

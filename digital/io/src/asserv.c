@@ -627,7 +627,7 @@ asserv_set_position (int32_t x, int32_t y, int16_t angle)
 
 /* Go to an absolute position in (X, Y). */
 void
-asserv_goto (uint32_t x, uint32_t y)
+asserv_goto (uint32_t x, uint32_t y, uint8_t backward)
 {
     x = fixed_mul_f824 (x, asserv_scale_inv);
     y = fixed_mul_f824 (y, asserv_scale_inv);
@@ -640,7 +640,7 @@ asserv_goto (uint32_t x, uint32_t y)
     asserv_twi_buffer_param[4] = v32_to_v8 (y, 1);
     asserv_twi_buffer_param[5] = v32_to_v8 (y, 0);
     /* No backward. */
-    asserv_twi_buffer_param[6] = 0;
+    asserv_twi_buffer_param[6] = backward;
     /* Send the got to an absolute position command to the asserv board */
     asserv_twi_send_command ('x', 7);
 }

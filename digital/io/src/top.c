@@ -82,16 +82,16 @@ top_get_next_position_to_get_distributor (asserv_position_t *clean_position,
     static const asserv_position_t distributor[DISTRIBUTOR_COUNT][2] =
       {
 	  /* First distributor. */
-	  { { 2500, 170, 0 }, { 2711, 170, 280 } },
+	  { { 2711, 270, 270 }, { 2711, 200, 270 } },
 	  /* Second distributor. */
-	  { { 2830, 600, 180 }, { 2830, 800, 0 } },
+	  { { 2730, 600, 180 }, { 2730, 800, 0 } },
 	  /* Third distributor. */
-	  { { 2830, 1100, 180 }, { 2830, 1300, 0 } },
+	  { { 2730, 1100, 180 }, { 2730, 1300, 0 } },
       };
     /* Maximum number of remaining puck by distributor. */
     static uint8_t distributor_puck_count[DISTRIBUTOR_COUNT] = { 5, 5, 5 };
     /* Current distributor. */
-    static uint8_t current_position = DISTRIBUTOR_COUNT;
+    static uint8_t current_position = DISTRIBUTOR_COUNT ;
     /* Keep track of how many pucks we have get. This variable will be used to
      * know how many puck were taken for each distributor. */
     static uint8_t previous_total_puck_taken = 0;

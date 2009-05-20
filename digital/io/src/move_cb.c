@@ -243,14 +243,62 @@ move_after_moving_backward (void)
     if (move_get_next_position (&move_data.intermediate))
       {
 	/* Go to the next position */
-	asserv_goto_xya (move_data.intermediate.x,
+	if (move_data.intermediate.x == move_data.final.x
+	    && move_data.intermediate.y == move_data.final.y)
+	    asserv_goto_xya (move_data.intermediate.x,
+			     move_data.intermediate.y,
+			     move_data.final.a,
+			     move_data.backward_movement_allowed);
+	else
+	    asserv_goto (move_data.intermediate.x,
 			 move_data.intermediate.y,
-			 move_data.intermediate.a,
 			 move_data.backward_movement_allowed);
+
+
 	return 1;
       }
     else
 	return 0;
+}
+
+/*
+ * IDLE =start=>
+ * intermediate_path_found => MOVING_TO_INTERMEDIATE_POSITION
+ *   ask the asserv to go to the intermediate position
+ * no_intermediate_path_found => MOVING_TO_FINAL_POSITION
+ *   ask the asserv to go to the final position
+ */
+fsm_branch_t
+move__IDLE__start (void)
+{
+    if (!move_get_next_position (&move_data.intermediate))
+      {
+	if (move_data.intermediate.x == move_data.final.x
+	    && move_data.intermediate.y == move_data.final.y)
+	  {
+	    /* Go to the destination position */
+	    asserv_goto_xya (move_data.final.x,
+			     move_data.final.y,
+			     move_data.final.a,
+			     move_data.backward_movement_allowed);
+	    return move_next_branch (IDLE, start, no_intermediate_path_found);
+	  }
+	else
+	  {
+	    asserv_goto (move_data.intermediate.x,
+			 move_data.intermediate.y,
+			 move_data.backward_movement_allowed);
+	    return move_next_branch (IDLE, start, intermediate_path_found);
+	  }
+      }
+    else
+      {
+	asserv_goto_xya (move_data.final.x,
+			 move_data.final.y,
+			 move_data.final.a,
+			 move_data.backward_movement_allowed);
+	return move_next_branch (IDLE, start, no_intermediate_path_found);
+      }
 }
 
 /*
@@ -287,11 +335,18 @@ move__WAIT_FOR_CLEAR_PATH__wait_finished (void)
 	  {
 	    /* Ignore sharps */
 	    main_sharp_ignore_event = MOVE_MAIN_IGNORE_SHARP_EVENT;
-	    /* Go to the next intermediate position */
-	    asserv_goto_xya (move_data.intermediate.x,
+	    if (move_data.intermediate.x == move_data.final.x
+		&& move_data.intermediate.y == move_data.final.y)
+		/* Go to the next intermediate position */
+		asserv_goto_xya (move_data.intermediate.x,
+				 move_data.intermediate.y,
+				 move_data.final.a,
+				 move_data.backward_movement_allowed);
+	    else
+		asserv_goto (move_data.intermediate.x,
 			     move_data.intermediate.y,
-			     move_data.intermediate.a,
 			     move_data.backward_movement_allowed);
+
 	    return move_next_branch (WAIT_FOR_CLEAR_PATH, wait_finished, obstacle_and_intermediate_path_found);
 	  }
 	else
@@ -307,21 +362,6 @@ move__WAIT_FOR_CLEAR_PATH__wait_finished (void)
       }
 }
 
-/*
- * IDLE =start=>
- *  => MOVING_TO_FINAL_POSITION
- *   ask the asserv to go to the final position
- */
-fsm_branch_t
-move__IDLE__start (void)
-{
-    /* Go to the destination position */
-    asserv_goto_xya (move_data.final.x,
-		     move_data.final.y,
-		     move_data.final.a,
-		     move_data.backward_movement_allowed);
-    return move_next (IDLE, start);
-}
 
 /*
  * MOVING_TO_INTERMEDIATE_POSITION =bot_move_succeed=>
@@ -349,11 +389,18 @@ move__MOVING_TO_INTERMEDIATE_POSITION__bot_move_succeed (void)
 	/* Get next position */
 	if (move_get_next_position (&move_data.intermediate))
 	  {
-	    /* Go to the next intermediate position */
-	    asserv_goto_xya (move_data.intermediate.x,
+	    if (move_data.intermediate.x == move_data.final.x
+		&& move_data.intermediate.y == move_data.final.y)
+		/* Go to the next intermediate position */
+		asserv_goto_xya (move_data.intermediate.x,
+				 move_data.intermediate.y,
+				 move_data.final.a,
+				 move_data.backward_movement_allowed);
+	    else
+		asserv_goto (move_data.intermediate.x,
 			     move_data.intermediate.y,
-			     move_data.intermediate.a,
 			     move_data.backward_movement_allowed);
+
 	    return move_next_branch (MOVING_TO_INTERMEDIATE_POSITION, bot_move_succeed, position_intermediary);
 	  }
 	else
@@ -390,11 +437,17 @@ move__MOVING_TO_INTERMEDIATE_POSITION__bot_move_obstacle (void)
     /* Get next position */
     if (move_get_next_position (&move_data.intermediate))
       {
-	/* Go to the next intermediate position */
-	asserv_goto_xya (move_data.intermediate.x,
-			 move_data.intermediate.y,
-			 move_data.intermediate.a,
-			 move_data.backward_movement_allowed);
+	    if (move_data.intermediate.x == move_data.final.x
+		&& move_data.intermediate.y == move_data.final.y)
+		/* Go to the next intermediate position */
+		asserv_goto_xya (move_data.intermediate.x,
+				 move_data.intermediate.y,
+				 move_data.final.a,
+				 move_data.backward_movement_allowed);
+	    else
+		asserv_goto (move_data.intermediate.x,
+			     move_data.intermediate.y,
+			     move_data.backward_movement_allowed);
 	return move_next_branch (MOVING_TO_INTERMEDIATE_POSITION, bot_move_obstacle, intermediate_path_found);
       }
     else
@@ -537,10 +590,16 @@ move__MOVING_TO_FINAL_POSITION__bot_move_obstacle (void)
     /* Get next position */
     if (move_get_next_position (&move_data.intermediate))
       {
-	/* Go to the next intermediate position */
-	asserv_goto_xya (move_data.intermediate.x,
+	if (move_data.intermediate.x == move_data.final.x
+	    && move_data.intermediate.y == move_data.final.y)
+	    /* Go to the next intermediate position */
+	    asserv_goto_xya (move_data.intermediate.x,
+			     move_data.intermediate.y,
+			     move_data.final.a,
+			     move_data.backward_movement_allowed);
+	else
+	    asserv_goto (move_data.intermediate.x,
 			 move_data.intermediate.y,
-			 move_data.intermediate.a,
 			 move_data.backward_movement_allowed);
 	return move_next_branch (MOVING_TO_FINAL_POSITION, bot_move_obstacle, intermediate_path_found);
       }

@@ -753,7 +753,8 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		 *  - 4b: y.
 		 */
 		asserv_goto (v8_to_v32 (args[1], args[2], args[3], args[4]),
-			     v8_to_v32 (args[5], args[6], args[7], args[8]));
+			     v8_to_v32 (args[5], args[6], args[7], args[8]),
+			     0);
 		break;
 	      case 'r':
 		/* Go to an absolute position (X,Y) in mm with backward

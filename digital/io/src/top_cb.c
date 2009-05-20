@@ -31,6 +31,7 @@
 #include "move.h"
 #include "chrono.h"
 #include "playground.h"
+#include "asserv.h"
 
 /**
  * Internal data.
@@ -87,7 +88,7 @@ top__GET_PUCK_FROM_THE_GROUND__move_fsm_succeed (void)
 	/* Go to distributor. */
 	top_get_next_position_to_get_distributor (&position, &front_position);
 	/* Go there. */
-	move_start (position, 0);
+	move_start (position, ASSERV_BACKWARD);
 	return top_next_branch (GET_PUCK_FROM_THE_GROUND, move_fsm_succeed, already_six_pucks_or_no_next_position);
       }
     else
@@ -112,7 +113,7 @@ top__GET_PUCK_FROM_THE_GROUND__move_fsm_failed (void)
     /* Go to distributor. */
     top_get_next_position_to_get_distributor (&position, &front_position);
     /* Go there. */
-    move_start (position, 0);
+    move_start (position, ASSERV_BACKWARD);
     return top_next (GET_PUCK_FROM_THE_GROUND, move_fsm_failed);
 }
 
@@ -151,7 +152,7 @@ fsm_branch_t
 top__GET_PUCK_FROM_DISTRIBUTOR__move_fsm_succeed (void)
 {
     /* Go in the front of the distributor. */
-    move_start (front_position, 1);
+    move_start (front_position, ASSERV_REVERT_OK);
     return top_next (GET_PUCK_FROM_DISTRIBUTOR, move_fsm_succeed);
 }
 
@@ -173,7 +174,7 @@ top__GET_PUCK_FROM_DISTRIBUTOR__move_fsm_failed (void)
 	/* Go to distributor. */
 	top_get_next_position_to_get_distributor (&position, &front_position);
 	/* Go there. */
-	move_start (position, 0);
+	move_start (position, ASSERV_BACKWARD);
 	return top_next_branch (GET_PUCK_FROM_DISTRIBUTOR, move_fsm_failed, no_puck_or_still_time);
       }
     else
@@ -182,7 +183,7 @@ top__GET_PUCK_FROM_DISTRIBUTOR__move_fsm_failed (void)
 	/* Go to unload area. */
 	top_get_next_position_to_unload_puck (&position);
 	/* Go there. */
-	move_start (position, 2);
+	move_start (position, ASSERV_BACKWARD);
 	return top_next_branch (GET_PUCK_FROM_DISTRIBUTOR, move_fsm_failed, some_pucks_and_no_more_time);
       }
 }
@@ -200,7 +201,7 @@ top__STOP_TO_GO_TO_UNLOAD_AREA__move_fsm_stopped (void)
     /* Go to unload area. */
     top_get_next_position_to_unload_puck (&position);
     /* Go there. */
-    move_start (position, 2);
+    move_start (position, ASSERV_BACKWARD);
     return top_next (STOP_TO_GO_TO_UNLOAD_AREA, move_fsm_stopped);
 }
 
@@ -243,7 +244,7 @@ top__STOP_TO_GET_PUCK_FROM_DISTRIBUTOR__move_fsm_stopped (void)
     /* Go to distributor. */
     top_get_next_position_to_get_distributor (&position, &front_position);
     /* Go there. */
-    move_start (position, 0);
+    move_start (position, ASSERV_BACKWARD);
     return top_next (STOP_TO_GET_PUCK_FROM_DISTRIBUTOR, move_fsm_stopped);
 }
 
@@ -273,7 +274,7 @@ top__GO_TO_UNLOAD_AREA__move_fsm_failed (void)
     /* Go to unload area. */
     top_get_next_position_to_unload_puck (&position);
     /* Go there. */
-    move_start (position, 2);
+    move_start (position, ASSERV_BACKWARD);
     return top_next (GO_TO_UNLOAD_AREA, move_fsm_failed);
 }
 
@@ -367,7 +368,7 @@ top__GO_AWAY_TO_RETRY_UNLOAD__bot_move_succeed (void)
     /* Go to unload area. */
     top_get_next_position_to_unload_puck (&position);
     /* Go there. */
-    move_start (position, 2);
+    move_start (position, ASSERV_BACKWARD);
     return top_next (GO_AWAY_TO_RETRY_UNLOAD, bot_move_succeed);
 }
 
@@ -451,7 +452,7 @@ top__FUCK_THE_DISTRIBUTOR__bot_move_failed (void)
 	/* Go to distributor. */
 	top_get_next_position_to_get_distributor (&position, &front_position);
 	/* Go there. */
-	move_start (position, 0);
+	move_start (position, ASSERV_BACKWARD);
 	return top_next_branch (FUCK_THE_DISTRIBUTOR, bot_move_failed,
 				no_puck_or_still_time);
       }
@@ -461,7 +462,7 @@ top__FUCK_THE_DISTRIBUTOR__bot_move_failed (void)
 	/* Go to unload area. */
 	top_get_next_position_to_unload_puck (&position);
 	/* Go there. */
-	move_start (position, 2);
+	move_start (position, ASSERV_BACKWARD);
 	return top_next_branch (FUCK_THE_DISTRIBUTOR, bot_move_failed,
 				some_pucks_and_no_more_time);
       }
@@ -480,7 +481,7 @@ top__WAIT_FOR_PUCKS__bot_is_full_of_pucks (void)
     /* Go to unload area. */
     top_get_next_position_to_unload_puck (&position);
     /* Go there. */
-    move_start (position, 2);
+    move_start (position, ASSERV_BACKWARD);
     return top_next (WAIT_FOR_PUCKS, bot_is_full_of_pucks);
 }
 
@@ -501,7 +502,7 @@ top__WAIT_FOR_PUCKS__empty_distributor (void)
 	/* Go to distributor. */
 	top_get_next_position_to_get_distributor (&position, &front_position);
 	/* Go there. */
-	move_start (position, 0);
+	move_start (position, ASSERV_BACKWARD);
 	return top_next_branch (WAIT_FOR_PUCKS, empty_distributor,
 				no_puck_or_still_time);
       }
@@ -511,7 +512,7 @@ top__WAIT_FOR_PUCKS__empty_distributor (void)
 	/* Go to unload area. */
 	top_get_next_position_to_unload_puck (&position);
 	/* Go there. */
-	move_start (position, 2);
+	move_start (position, ASSERV_BACKWARD);
 	return top_next_branch (WAIT_FOR_PUCKS, empty_distributor,
 				some_pucks_and_no_more_time);
       }
@@ -535,7 +536,7 @@ top__GO_AWAY_FROM_UNLOAD_AREA__bot_move_succeed (void)
 	/* Go to distributor. */
 	top_get_next_position_to_get_distributor (&position, &front_position);
 	/* Go there. */
-	move_start (position, 0);
+	move_start (position, ASSERV_BACKWARD);
 	return top_next_branch (GO_AWAY_FROM_UNLOAD_AREA, bot_move_succeed,
 				more_than_six_pucks_or_no_next_position);
       }
@@ -577,7 +578,7 @@ top__GO_AWAY_FROM_UNLOAD_AREA__bot_move_failed (void)
 	    /* Go to distributor. */
 	    top_get_next_position_to_get_distributor (&position, &front_position);
 	    /* Go there. */
-	    move_start (position, 0);
+	    move_start (position, ASSERV_BACKWARD);
 	    return top_next_branch (GO_AWAY_FROM_UNLOAD_AREA, bot_move_failed,
 				    no_more_niceness_and_more_than_six_pucks_or_no_next_position);
 	  }
@@ -643,7 +644,7 @@ top__CLEAN_FRONT_OF_DISTRIBUTOR__move_fsm_failed (void)
     /* Go to distributor. */
     top_get_next_position_to_get_distributor (&position, &front_position);
     /* Go there. */
-    move_start (position, 0);
+    move_start (position, ASSERV_BACKWARD);
     return top_next (CLEAN_FRONT_OF_DISTRIBUTOR, move_fsm_failed);
 }
 
