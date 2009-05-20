@@ -55,4 +55,11 @@ move_start (asserv_position_t position, uint8_t backward)
 void
 move_stop (void)
 {
+    /* This is a dirty hack. */
+    /* Re-init move FSM. */
+    fsm_init (&move_fsm);
+    /* Ask the asserv to stop the motor. */
+    asserv_stop_motor ();
+    /* Generate the event, move FSM stopped. */
+    main_post_event_for_top_fsm = TOP_EVENT_move_fsm_stopped;
 }
