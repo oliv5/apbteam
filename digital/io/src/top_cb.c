@@ -24,14 +24,23 @@
  * }}}
  * Main FSM calling other FSM.
  */
-
-
 #include "common.h"
 #include "fsm.h"
 #include "top_cb.h"
-#include "asserv.h"
+#include "top.h"
+#include "move.h"
+#include "chrono.h"
 #include "playground.h"
-#include "move.h"	/* move FSM */
+
+/**
+ * Internal data.
+ */
+asserv_position_t front_position;
+
+/**
+ * Time limit.
+ */
+#define TOP_TIME_LIMIT 15000
 
 /*
  * IDLE =start=>
@@ -52,6 +61,11 @@ top__IDLE__start (void)
 fsm_branch_t
 top__WAIT_INIT_TO_FINISH__init_match_is_started (void)
 {
+    /* Get next position. */
+    asserv_position_t position;
+    top_get_next_position_to_get_puck_on_the_ground (&position, 0);
+    /* Go there. */
+    move_start (position, 0);
     return top_next (WAIT_INIT_TO_FINISH, init_match_is_started);
 }
 
@@ -65,8 +79,23 @@ top__WAIT_INIT_TO_FINISH__init_match_is_started (void)
 fsm_branch_t
 top__GET_PUCK_FROM_THE_GROUND__move_fsm_succeed (void)
 {
-    return top_next_branch (GET_PUCK_FROM_THE_GROUND, move_fsm_succeed, already_six_pucks_or_no_next_position);
-    return top_next_branch (GET_PUCK_FROM_THE_GROUND, move_fsm_succeed, next_position_exists);
+    /* Get next position. */
+    asserv_position_t position;
+    if (!top_get_next_position_to_get_puck_on_the_ground (&position, 0)
+	|| top_total_puck_taken >= 6)
+      {
+	/* Go to distributor. */
+	top_get_next_position_to_get_distributor (&position, &front_position);
+	/* Go there. */
+	move_start (position, 0);
+	return top_next_branch (GET_PUCK_FROM_THE_GROUND, move_fsm_succeed, already_six_pucks_or_no_next_position);
+      }
+    else
+      {
+	/* Go there. */
+	move_start (position, 0);
+	return top_next_branch (GET_PUCK_FROM_THE_GROUND, move_fsm_succeed, next_position_exists);
+      }
 }
 
 /*
@@ -78,6 +107,12 @@ top__GET_PUCK_FROM_THE_GROUND__move_fsm_succeed (void)
 fsm_branch_t
 top__GET_PUCK_FROM_THE_GROUND__move_fsm_failed (void)
 {
+    /* Get next position. */
+    asserv_position_t position;
+    /* Go to distributor. */
+    top_get_next_position_to_get_distributor (&position, &front_position);
+    /* Go there. */
+    move_start (position, 0);
     return top_next (GET_PUCK_FROM_THE_GROUND, move_fsm_failed);
 }
 
@@ -89,6 +124,8 @@ top__GET_PUCK_FROM_THE_GROUND__move_fsm_failed (void)
 fsm_branch_t
 top__GET_PUCK_FROM_THE_GROUND__bot_is_full_of_pucks (void)
 {
+    /* Stop move FSM. */
+    move_stop ();
     return top_next (GET_PUCK_FROM_THE_GROUND, bot_is_full_of_pucks);
 }
 
@@ -100,6 +137,8 @@ top__GET_PUCK_FROM_THE_GROUND__bot_is_full_of_pucks (void)
 fsm_branch_t
 top__GET_PUCK_FROM_THE_GROUND__state_timeout (void)
 {
+    /* Stop move FSM. */
+    move_stop ();
     return top_next (GET_PUCK_FROM_THE_GROUND, state_timeout);
 }
 
@@ -111,6 +150,8 @@ top__GET_PUCK_FROM_THE_GROUND__state_timeout (void)
 fsm_branch_t
 top__GET_PUCK_FROM_DISTRIBUTOR__move_fsm_succeed (void)
 {
+    /* Go in the front of the distributor. */
+    move_start (front_position, 1);
     return top_next (GET_PUCK_FROM_DISTRIBUTOR, move_fsm_succeed);
 }
 
@@ -125,8 +166,25 @@ top__GET_PUCK_FROM_DISTRIBUTOR__move_fsm_succeed (void)
 fsm_branch_t
 top__GET_PUCK_FROM_DISTRIBUTOR__move_fsm_failed (void)
 {
-    return top_next_branch (GET_PUCK_FROM_DISTRIBUTOR, move_fsm_failed, no_puck_or_still_time);
-    return top_next_branch (GET_PUCK_FROM_DISTRIBUTOR, move_fsm_failed, some_pucks_and_no_more_time);
+    if (!top_puck_inside_bot || chrono_remaining_time () > TOP_TIME_LIMIT)
+      {
+	/* Get next position. */
+	asserv_position_t position;
+	/* Go to distributor. */
+	top_get_next_position_to_get_distributor (&position, &front_position);
+	/* Go there. */
+	move_start (position, 0);
+	return top_next_branch (GET_PUCK_FROM_DISTRIBUTOR, move_fsm_failed, no_puck_or_still_time);
+      }
+    else
+      {
+	asserv_position_t position;
+	/* Go to unload area. */
+	top_get_next_position_to_unload_puck (&position);
+	/* Go there. */
+	move_start (position, 2);
+	return top_next_branch (GET_PUCK_FROM_DISTRIBUTOR, move_fsm_failed, some_pucks_and_no_more_time);
+      }
 }
 
 /*
@@ -138,6 +196,11 @@ top__GET_PUCK_FROM_DISTRIBUTOR__move_fsm_failed (void)
 fsm_branch_t
 top__STOP_TO_GO_TO_UNLOAD_AREA__move_fsm_stopped (void)
 {
+    asserv_position_t position;
+    /* Go to unload area. */
+    top_get_next_position_to_unload_puck (&position);
+    /* Go there. */
+    move_start (position, 2);
     return top_next (STOP_TO_GO_TO_UNLOAD_AREA, move_fsm_stopped);
 }
 
@@ -149,6 +212,8 @@ top__STOP_TO_GO_TO_UNLOAD_AREA__move_fsm_stopped (void)
 fsm_branch_t
 top__STOP_TO_GO_TO_UNLOAD_AREA__move_fsm_succeed (void)
 {
+    /* Yerk. */
+    top__STOP_TO_GO_TO_UNLOAD_AREA__move_fsm_stopped ();
     return top_next (STOP_TO_GO_TO_UNLOAD_AREA, move_fsm_succeed);
 }
 
@@ -160,6 +225,8 @@ top__STOP_TO_GO_TO_UNLOAD_AREA__move_fsm_succeed (void)
 fsm_branch_t
 top__STOP_TO_GO_TO_UNLOAD_AREA__bot_move_failed (void)
 {
+    /* Yerk. */
+    top__STOP_TO_GO_TO_UNLOAD_AREA__move_fsm_stopped ();
     return top_next (STOP_TO_GO_TO_UNLOAD_AREA, bot_move_failed);
 }
 
@@ -171,6 +238,12 @@ top__STOP_TO_GO_TO_UNLOAD_AREA__bot_move_failed (void)
 fsm_branch_t
 top__STOP_TO_GET_PUCK_FROM_DISTRIBUTOR__move_fsm_stopped (void)
 {
+    /* Get next position. */
+    asserv_position_t position;
+    /* Go to distributor. */
+    top_get_next_position_to_get_distributor (&position, &front_position);
+    /* Go there. */
+    move_start (position, 0);
     return top_next (STOP_TO_GET_PUCK_FROM_DISTRIBUTOR, move_fsm_stopped);
 }
 
@@ -182,6 +255,8 @@ top__STOP_TO_GET_PUCK_FROM_DISTRIBUTOR__move_fsm_stopped (void)
 fsm_branch_t
 top__GO_TO_UNLOAD_AREA__move_fsm_succeed (void)
 {
+    /* Find the unload area. */
+    asserv_go_to_the_wall (1);
     return top_next (GO_TO_UNLOAD_AREA, move_fsm_succeed);
 }
 
@@ -194,6 +269,11 @@ top__GO_TO_UNLOAD_AREA__move_fsm_succeed (void)
 fsm_branch_t
 top__GO_TO_UNLOAD_AREA__move_fsm_failed (void)
 {
+    asserv_position_t position;
+    /* Go to unload area. */
+    top_get_next_position_to_unload_puck (&position);
+    /* Go there. */
+    move_start (position, 2);
     return top_next (GO_TO_UNLOAD_AREA, move_fsm_failed);
 }
 
@@ -205,6 +285,7 @@ top__GO_TO_UNLOAD_AREA__move_fsm_failed (void)
 fsm_branch_t
 top__FUCK_UNLOAD_AREA__bot_move_succeed (void)
 {
+    /* TODO: elevator order to unload. */
     return top_next (FUCK_UNLOAD_AREA, bot_move_succeed);
 }
 
@@ -216,6 +297,8 @@ top__FUCK_UNLOAD_AREA__bot_move_succeed (void)
 fsm_branch_t
 top__FUCK_UNLOAD_AREA__bot_move_failed (void)
 {
+    /* Move forward. */
+    asserv_move_linearly (PG_BORDER_DISTANCE);
     return top_next (FUCK_UNLOAD_AREA, bot_move_failed);
 }
 
@@ -227,6 +310,8 @@ top__FUCK_UNLOAD_AREA__bot_move_failed (void)
 fsm_branch_t
 top__UNLOAD_PUCKS__elevator_is_closed (void)
 {
+    /* Move forward. */
+    asserv_move_linearly (PG_BORDER_DISTANCE);
     return top_next (UNLOAD_PUCKS, elevator_is_closed);
 }
 
@@ -239,6 +324,7 @@ top__UNLOAD_PUCKS__elevator_is_closed (void)
 fsm_branch_t
 top__UNLOAD_PUCKS__state_timeout (void)
 {
+    /* TODO: elevator close. */
     return top_next (UNLOAD_PUCKS, state_timeout);
 }
 
@@ -250,6 +336,8 @@ top__UNLOAD_PUCKS__state_timeout (void)
 fsm_branch_t
 top__ELEVATOR_READY_TO_GO_AWAY_TO_RETRY_UNLOAD__elevator_is_closed (void)
 {
+    /* Move forward. */
+    asserv_move_linearly (PG_BORDER_DISTANCE);
     return top_next (ELEVATOR_READY_TO_GO_AWAY_TO_RETRY_UNLOAD, elevator_is_closed);
 }
 
@@ -261,6 +349,8 @@ top__ELEVATOR_READY_TO_GO_AWAY_TO_RETRY_UNLOAD__elevator_is_closed (void)
 fsm_branch_t
 top__ELEVATOR_READY_TO_GO_AWAY_TO_RETRY_UNLOAD__state_timeout (void)
 {
+    /* Yerk. */
+    top__ELEVATOR_READY_TO_GO_AWAY_TO_RETRY_UNLOAD__elevator_is_closed ();
     return top_next (ELEVATOR_READY_TO_GO_AWAY_TO_RETRY_UNLOAD, state_timeout);
 }
 
@@ -268,11 +358,16 @@ top__ELEVATOR_READY_TO_GO_AWAY_TO_RETRY_UNLOAD__state_timeout (void)
  * GO_AWAY_TO_RETRY_UNLOAD =bot_move_succeed=>
  *  => GO_TO_UNLOAD_AREA
  *   compute a new unload area.
- *   ask move FSM to go there using backward move only.
+ *   ask move FSM to go there using forward move only.
  */
 fsm_branch_t
 top__GO_AWAY_TO_RETRY_UNLOAD__bot_move_succeed (void)
 {
+    asserv_position_t position;
+    /* Go to unload area. */
+    top_get_next_position_to_unload_puck (&position);
+    /* Go there. */
+    move_start (position, 2);
     return top_next (GO_AWAY_TO_RETRY_UNLOAD, bot_move_succeed);
 }
 
@@ -280,25 +375,36 @@ top__GO_AWAY_TO_RETRY_UNLOAD__bot_move_succeed (void)
  * GO_AWAY_TO_RETRY_UNLOAD =bot_move_failed=>
  * niceness => TRY_AGAIN_TO_GO_AWAY_TO_RETRY_UNLOAD
  *   decrement niceness.
- *   move forward using linear move.
+ *   move backward using linear move.
  * no_more_niceness => GO_TO_UNLOAD_AREA
  *   do the same as move succeed.
  */
 fsm_branch_t
 top__GO_AWAY_TO_RETRY_UNLOAD__bot_move_failed (void)
 {
-    return top_next_branch (GO_AWAY_TO_RETRY_UNLOAD, bot_move_failed, niceness);
-    return top_next_branch (GO_AWAY_TO_RETRY_UNLOAD, bot_move_failed, no_more_niceness);
+    /* TODO: niceness. */
+    if (1)
+      {
+	/* Move backward. */
+	asserv_move_linearly (-PG_BORDER_DISTANCE);
+	return top_next_branch (GO_AWAY_TO_RETRY_UNLOAD, bot_move_failed, niceness);
+      }
+    else
+      {
+	return top_next_branch (GO_AWAY_TO_RETRY_UNLOAD, bot_move_failed, no_more_niceness);
+      }
 }
 
 /*
  * TRY_AGAIN_TO_GO_AWAY_TO_RETRY_UNLOAD =bot_move_succeed=>
  *  => GO_AWAY_TO_RETRY_UNLOAD
- *   move backward from the unload area using linear move.
+ *   move forward from the unload area using linear move.
  */
 fsm_branch_t
 top__TRY_AGAIN_TO_GO_AWAY_TO_RETRY_UNLOAD__bot_move_succeed (void)
 {
+    /* Move forward. */
+    asserv_move_linearly (PG_BORDER_DISTANCE);
     return top_next (TRY_AGAIN_TO_GO_AWAY_TO_RETRY_UNLOAD, bot_move_succeed);
 }
 
@@ -310,6 +416,8 @@ top__TRY_AGAIN_TO_GO_AWAY_TO_RETRY_UNLOAD__bot_move_succeed (void)
 fsm_branch_t
 top__TRY_AGAIN_TO_GO_AWAY_TO_RETRY_UNLOAD__bot_move_failed (void)
 {
+    /* Yerk. */
+    top__TRY_AGAIN_TO_GO_AWAY_TO_RETRY_UNLOAD__bot_move_succeed ();
     return top_next (TRY_AGAIN_TO_GO_AWAY_TO_RETRY_UNLOAD, bot_move_failed);
 }
 
@@ -321,6 +429,7 @@ top__TRY_AGAIN_TO_GO_AWAY_TO_RETRY_UNLOAD__bot_move_failed (void)
 fsm_branch_t
 top__FUCK_THE_DISTRIBUTOR__bot_move_succeed (void)
 {
+    /* FIXME: nothing to do? */
     return top_next (FUCK_THE_DISTRIBUTOR, bot_move_succeed);
 }
 
@@ -335,8 +444,27 @@ top__FUCK_THE_DISTRIBUTOR__bot_move_succeed (void)
 fsm_branch_t
 top__FUCK_THE_DISTRIBUTOR__bot_move_failed (void)
 {
-    return top_next_branch (FUCK_THE_DISTRIBUTOR, bot_move_failed, no_puck_or_still_time);
-    return top_next_branch (FUCK_THE_DISTRIBUTOR, bot_move_failed, some_pucks_and_no_more_time);
+    if (!top_puck_inside_bot || chrono_remaining_time () > TOP_TIME_LIMIT)
+      {
+	/* Get next position. */
+	asserv_position_t position;
+	/* Go to distributor. */
+	top_get_next_position_to_get_distributor (&position, &front_position);
+	/* Go there. */
+	move_start (position, 0);
+	return top_next_branch (FUCK_THE_DISTRIBUTOR, bot_move_failed,
+				no_puck_or_still_time);
+      }
+    else
+      {
+	asserv_position_t position;
+	/* Go to unload area. */
+	top_get_next_position_to_unload_puck (&position);
+	/* Go there. */
+	move_start (position, 2);
+	return top_next_branch (FUCK_THE_DISTRIBUTOR, bot_move_failed,
+				some_pucks_and_no_more_time);
+      }
 }
 
 /*
@@ -348,6 +476,11 @@ top__FUCK_THE_DISTRIBUTOR__bot_move_failed (void)
 fsm_branch_t
 top__WAIT_FOR_PUCKS__bot_is_full_of_pucks (void)
 {
+    asserv_position_t position;
+    /* Go to unload area. */
+    top_get_next_position_to_unload_puck (&position);
+    /* Go there. */
+    move_start (position, 2);
     return top_next (WAIT_FOR_PUCKS, bot_is_full_of_pucks);
 }
 
@@ -361,8 +494,27 @@ top__WAIT_FOR_PUCKS__bot_is_full_of_pucks (void)
 fsm_branch_t
 top__WAIT_FOR_PUCKS__empty_distributor (void)
 {
-    return top_next_branch (WAIT_FOR_PUCKS, empty_distributor, no_puck_or_still_time);
-    return top_next_branch (WAIT_FOR_PUCKS, empty_distributor, some_pucks_and_no_more_time);
+    if (!top_puck_inside_bot || chrono_remaining_time () > TOP_TIME_LIMIT)
+      {
+	/* Get next position. */
+	asserv_position_t position;
+	/* Go to distributor. */
+	top_get_next_position_to_get_distributor (&position, &front_position);
+	/* Go there. */
+	move_start (position, 0);
+	return top_next_branch (WAIT_FOR_PUCKS, empty_distributor,
+				no_puck_or_still_time);
+      }
+    else
+      {
+	asserv_position_t position;
+	/* Go to unload area. */
+	top_get_next_position_to_unload_puck (&position);
+	/* Go there. */
+	move_start (position, 2);
+	return top_next_branch (WAIT_FOR_PUCKS, empty_distributor,
+				some_pucks_and_no_more_time);
+      }
 }
 
 /*
@@ -375,15 +527,32 @@ top__WAIT_FOR_PUCKS__empty_distributor (void)
 fsm_branch_t
 top__GO_AWAY_FROM_UNLOAD_AREA__bot_move_succeed (void)
 {
-    return top_next_branch (GO_AWAY_FROM_UNLOAD_AREA, bot_move_succeed, more_than_six_pucks_or_no_next_position);
-    return top_next_branch (GO_AWAY_FROM_UNLOAD_AREA, bot_move_succeed, next_position_for_pucks_on_ground_exists);
+    /* Get next position. */
+    asserv_position_t position;
+    if (!top_get_next_position_to_get_puck_on_the_ground (&position, 0)
+	|| top_total_puck_taken >= 6)
+      {
+	/* Go to distributor. */
+	top_get_next_position_to_get_distributor (&position, &front_position);
+	/* Go there. */
+	move_start (position, 0);
+	return top_next_branch (GO_AWAY_FROM_UNLOAD_AREA, bot_move_succeed,
+				more_than_six_pucks_or_no_next_position);
+      }
+    else
+      {
+	/* Go there. */
+	move_start (position, 0);
+	return top_next_branch (GO_AWAY_FROM_UNLOAD_AREA, bot_move_succeed,
+				next_position_for_pucks_on_ground_exists);
+      }
 }
 
 /*
  * GO_AWAY_FROM_UNLOAD_AREA =bot_move_failed=>
  * niceness => TRY_AGAIN_TO_GO_AWAY_FROM_UNLOAD_AREA
  *   decrement niceness.
- *   move forward using linear move.
+ *   move backward using linear move.
  * no_more_niceness_and_more_than_six_pucks_or_no_next_position => GET_PUCK_FROM_DISTRIBUTOR
  *   go to the next position using move FSM.
  * no_more_niceness_and_next_position_for_pucks_on_ground_exists => GET_PUCK_FROM_THE_GROUND
@@ -392,19 +561,46 @@ top__GO_AWAY_FROM_UNLOAD_AREA__bot_move_succeed (void)
 fsm_branch_t
 top__GO_AWAY_FROM_UNLOAD_AREA__bot_move_failed (void)
 {
-    return top_next_branch (GO_AWAY_FROM_UNLOAD_AREA, bot_move_failed, niceness);
-    return top_next_branch (GO_AWAY_FROM_UNLOAD_AREA, bot_move_failed, no_more_niceness_and_more_than_six_pucks_or_no_next_position);
-    return top_next_branch (GO_AWAY_FROM_UNLOAD_AREA, bot_move_failed, no_more_niceness_and_next_position_for_pucks_on_ground_exists);
+    /* TODO: niceness. */
+    if (1)
+      {
+	/* Move backward. */
+	asserv_move_linearly (-PG_BORDER_DISTANCE);
+	return top_next_branch (GO_AWAY_FROM_UNLOAD_AREA, bot_move_failed, niceness);
+      }
+    else
+      {
+	asserv_position_t position;
+	if (!top_get_next_position_to_get_puck_on_the_ground (&position, 0)
+	    || top_total_puck_taken >= 6)
+	  {
+	    /* Go to distributor. */
+	    top_get_next_position_to_get_distributor (&position, &front_position);
+	    /* Go there. */
+	    move_start (position, 0);
+	    return top_next_branch (GO_AWAY_FROM_UNLOAD_AREA, bot_move_failed,
+				    no_more_niceness_and_more_than_six_pucks_or_no_next_position);
+	  }
+	else
+	  {
+	    /* Go there. */
+	    move_start (position, 0);
+	    return top_next_branch (GO_AWAY_FROM_UNLOAD_AREA, bot_move_failed,
+				    no_more_niceness_and_next_position_for_pucks_on_ground_exists);
+	  }
+      }
 }
 
 /*
  * TRY_AGAIN_TO_GO_AWAY_FROM_UNLOAD_AREA =bot_move_succeed=>
  *  => GO_AWAY_FROM_UNLOAD_AREA
- *   move backward using linear move.
+ *   move forward using linear move.
  */
 fsm_branch_t
 top__TRY_AGAIN_TO_GO_AWAY_FROM_UNLOAD_AREA__bot_move_succeed (void)
 {
+    /* Move forward. */
+    asserv_move_linearly (PG_BORDER_DISTANCE);
     return top_next (TRY_AGAIN_TO_GO_AWAY_FROM_UNLOAD_AREA, bot_move_succeed);
 }
 
@@ -416,6 +612,8 @@ top__TRY_AGAIN_TO_GO_AWAY_FROM_UNLOAD_AREA__bot_move_succeed (void)
 fsm_branch_t
 top__TRY_AGAIN_TO_GO_AWAY_FROM_UNLOAD_AREA__bot_move_failed (void)
 {
+    /* Yerk. */
+    top__TRY_AGAIN_TO_GO_AWAY_FROM_UNLOAD_AREA__bot_move_succeed ();
     return top_next (TRY_AGAIN_TO_GO_AWAY_FROM_UNLOAD_AREA, bot_move_failed);
 }
 
@@ -427,6 +625,8 @@ top__TRY_AGAIN_TO_GO_AWAY_FROM_UNLOAD_AREA__bot_move_failed (void)
 fsm_branch_t
 top__CLEAN_FRONT_OF_DISTRIBUTOR__move_fsm_succeed (void)
 {
+    /* Fuck the distributor. */
+    asserv_go_to_the_wall (0);
     return top_next (CLEAN_FRONT_OF_DISTRIBUTOR, move_fsm_succeed);
 }
 
@@ -438,6 +638,12 @@ top__CLEAN_FRONT_OF_DISTRIBUTOR__move_fsm_succeed (void)
 fsm_branch_t
 top__CLEAN_FRONT_OF_DISTRIBUTOR__move_fsm_failed (void)
 {
+    /* Get next position. */
+    asserv_position_t position;
+    /* Go to distributor. */
+    top_get_next_position_to_get_distributor (&position, &front_position);
+    /* Go there. */
+    move_start (position, 0);
     return top_next (CLEAN_FRONT_OF_DISTRIBUTOR, move_fsm_failed);
 }
 
