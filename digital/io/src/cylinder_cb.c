@@ -291,6 +291,7 @@ cylinder__WAIT_BRIDGE_READY_FLUSH__bridge_ready (void)
 fsm_branch_t
 cylinder__TURN_PLUS_3_FLUSH__move_done (void)
 {
+    cylinder_flush_order = 0;
     if(puck_on_cylinder)
       {
 	--cylinder_nb_puck;

@@ -256,6 +256,7 @@ fsm_branch_t
 elevator__WAIT_FOR_CLOSE_ORDER__order_received (void)
 {
     pwm_set(CLOSE_DOOR_PWM, TIME_DOORS_PWM);
+    elvt_order = 0;
     return elevator_next (WAIT_FOR_CLOSE_ORDER, order_received);
 }
 

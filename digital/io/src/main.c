@@ -253,7 +253,7 @@ main_event_to_fsm (void)
 	FSM_HANDLE_EVENT (&cylinder_fsm,
 			  CYLINDER_EVENT_close_order);
 
-    /* cylinder__flush_order */
+    /* cylinder_flush_order */
     if(cylinder_flush_order)
 	FSM_HANDLE_EVENT (&cylinder_fsm,
 			  CYLINDER_EVENT_flush_order);
@@ -517,6 +517,36 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 #define c(cmd, size) (cmd << 8 | size)
     switch (c (cmd, size))
       {
+	/* cylinder orders */
+      case c ('c', 1):
+	  {
+	    switch(args[0])
+	      {
+	      case 'f':
+		cylinder_flush_order = 1;
+		break;
+	      case 'C':
+		cylinder_close_order = 1;
+		break;
+	      case 'c':
+		cylinder_close_order = 0;
+		break;
+	      }
+	  }
+	break;
+
+	/* elevator (l like lift) */
+      case c('l', 2):
+	  {
+	    switch(args[0])
+	      {
+	      case 'o':
+		elvt_order = args[1];
+		break;
+	      }
+	  }
+	break;
+
       case c ('j', 0):
 	fsm_handle_event (&filterbridge_fsm,
 			  FILTERBRIDGE_EVENT_jack_inserted_into_bot);
