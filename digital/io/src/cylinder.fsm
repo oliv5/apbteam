@@ -13,8 +13,28 @@ States:
   initializing cylinder to a good position (open)
  WAIT_A_PUCK
   waiting a puck enter in cylinder
- TURN_PLUS_4
-  turn cylinder 4 position after
+ TURN_PLUS_1
+  turn 1 position after when we see a new puck
+ TURN_MINUS_1
+  turn 1 position before when the new puck dont really exist
+ WAIT_BRIDGE_READY
+  waiting fb is ready to accept new puck
+ TURN_PLUS_1_AGAIN
+  turn 1 position after to open cylinder after OF test
+ TURN_MINUS_1_CLOSE
+  turn 1 position before to close the cylinder (bot full/close_order)
+ WAIT_BOT_NOT_FULL
+  wait the bot to drop pucks
+ WAIT_CLEAR_ORDER
+  wait the clear order (unset close_order flags)
+ TURN_PLUS_1_OPEN
+  open cylinder after close (bot full/close_order)
+ TURN_PLUS_1_FLUSH
+  open cylinder to prepare cyliner flush
+ WAIT_BRIDGE_READY_FLUSH
+  we wait fb is ready during the flush
+ TURN_PLUS_2_FLUSH
+  drop 1 puck to the fb
 
 Events:
  start
@@ -25,7 +45,18 @@ Events:
   there is a puck in position 1
  move_done
   cylinder move finished
+ bridge_ready
+  the fb is ready to get new pucks
+ close_order
+  we receive the order to close the cylinder
+ no_close_order
+  we can reopen the cylinder
+ bot_not_full
+  the bot dont have 4 pucks
+ flush_order
+  we receive a flush order
  state_timeout
+  useless here
 
 IDLE:
  start -> WAIT_FOR_JACK_IN
@@ -44,9 +75,63 @@ INIT_POS:
   the cylinder is ready to get pucks
 
 WAIT_A_PUCK:
- new_puck -> TURN_PLUS_4
-  turn cylinder 4 position after
+ new_puck -> TURN_PLUS_1
+  turn cylinder 1 position after
+ close_order -> TURN_MINUS_1_CLOSE
+  we close cylinder as requested
+ flush_order -> WAIT_BRIDGE_READY_FLUSH
+  flush all pucks to the bridge
 
-TURN_PLUS_4:
+TURN_PLUS_1:
+ move_done: of_no_puck -> TURN_MINUS_1
+  There is no puck, go backward
+ move_done: of_puck -> WAIT_BRIDGE_READY
+  There is a real puck, check if fb is ready to get puck
+
+TURN_MINUS_1:
  move_done -> WAIT_A_PUCK
   wait a puck again
+
+WAIT_BRIDGE_READY:
+ bridge_ready -> TURN_PLUS_1_AGAIN
+  open cylinder after the puck existence confirmation
+
+TURN_PLUS_1_AGAIN:
+ move_done: bot_not_full -> WAIT_A_PUCK
+  ready for a new puck
+ move_done: bot_full -> TURN_MINUS_1_CLOSE
+  bot full we close the cylinder
+
+TURN_MINUS_1_CLOSE:
+ move_done -> WAIT_BOT_NOT_FULL
+  we wait the bot is not full to reopen cylinder
+
+WAIT_BOT_NOT_FULL:
+ bot_not_full -> WAIT_CLEAR_ORDER
+  first condition to reopen bot is reached
+ flush_order -> TURN_PLUS_1_FLUSH
+  flush gordon
+
+WAIT_CLEAR_ORDER:
+ no_close_order -> TURN_PLUS_1_OPEN
+  last condition to reopen bot reached, opening...
+ flush_order -> TURN_PLUS_1_FLUSH
+  flush gordon
+
+TURN_PLUS_1_OPEN:
+ move_done -> WAIT_A_PUCK
+  we wait a puck
+
+TURN_PLUS_1_FLUSH:
+ move_done -> WAIT_BRIDGE_READY_FLUSH
+  cylinder open and ready to flush
+
+WAIT_BRIDGE_READY_FLUSH:
+ bridge_ready -> TURN_PLUS_2_FLUSH
+  put a puck on the fb
+
+TURN_PLUS_2_FLUSH:
+ move_done: cylinder_empty -> TURN_MINUS_1_CLOSE
+  flush finished
+ move_done: cylinder_not_empty -> WAIT_BRIDGE_READY_FLUSH
+  flush again

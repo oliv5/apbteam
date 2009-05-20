@@ -25,7 +25,17 @@
 #include "cylinder.h"
 
 /* last state of optical fence */
-uint8_t of_state = 0;
+uint8_t cylinder_of_state = 0;
 
 /* nb puck in cylinder */
-uint8_t nb_puck_cylinder = 0;
+uint8_t cylinder_nb_puck = 0;
+
+uint8_t cylinder_puck_on_of = 0;
+
+/* force cylinder to be closed */
+uint8_t cylinder_close_order = 0;
+
+/* flush puck on the cylinder */
+uint8_t cylinder_flush_order = 0;
+
+/* cylinder order */

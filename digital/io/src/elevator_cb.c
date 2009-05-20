@@ -94,7 +94,7 @@ fsm_branch_t
 elevator__INIT__doors_opened (void)
 {
     /* FIXME: why this is here? */
-    elevator_is_ready = 0;
+    elvt_is_ready = 0;
     /* Close the door. */
     pwm_set (CLOSE_DOOR_PWM, TIME_DOORS_PWM);
     return elevator_next (INIT, doors_opened);
@@ -109,9 +109,9 @@ fsm_branch_t
 elevator__GO_TO_POS_X__in_position (void)
 {
     /* FIXME: this sucks, look at elevator.fsm for a real fix. */
-    elevator_is_ready = 1;
+    elvt_is_ready = 1;
     /* move to first position. */
-    asserv_move_elevator_absolute(posx[nb_puck_in_elvt],
+    asserv_move_elevator_absolute(posx[nb_puck_elvt],
 				  ASSERV_ELVT_SPEED_DEFAULT);
     return elevator_next (GO_TO_POS_X, in_position);
 }
@@ -128,7 +128,7 @@ elevator__GO_TO_POS_X__in_position (void)
 fsm_branch_t
 elevator__WAIT_A_PUCK__new_puck (void)
 {
-    elevator_is_ready = 0;
+    elvt_is_ready = 0;
     elvt_new_puck = 0;
     // TODO time_ok
     if(++nb_puck_elvt < 4)
@@ -137,7 +137,7 @@ elevator__WAIT_A_PUCK__new_puck (void)
        ((chrono_remaining_time() - OK_TIME_LIMIT > 0)
        || nb_puck_fb != 0))
        */
-	asserv_move_elevator_absolute(posx[nb_puck_in_elvt],
+	asserv_move_elevator_absolute(posx[nb_puck_elvt],
 				      ASSERV_ELVT_SPEED_DEFAULT);
 	return elevator_next_branch (WAIT_A_PUCK, new_puck, ok_for_other_pucks);
       }
@@ -154,7 +154,7 @@ elevator__WAIT_A_PUCK__new_puck (void)
 fsm_branch_t
 elevator__WAIT_A_PUCK__time_up (void)
 {
-    elevator_is_ready = 0;
+    elvt_is_ready = 0;
     return elevator_next (WAIT_A_PUCK, time_up);
 }
 
@@ -230,7 +230,6 @@ fsm_branch_t
 elevator__OPEN_DOORS__doors_opened (void)
 {
     nb_puck_elvt = 0;
-    nb_puck_in_elvt = 0;
     return elevator_next (OPEN_DOORS, doors_opened);
 }
 
@@ -266,7 +265,7 @@ elevator__WAIT_FOR_CLOSE_ORDER__order_received (void)
 fsm_branch_t
 elevator__CLOSE_DOORS__door_move_finished (void)
 {
-    asserv_move_elevator_absolute(posx[nb_puck_in_elvt],
+    asserv_move_elevator_absolute(posx[nb_puck_elvt],
 				  ASSERV_ELVT_SPEED_DEFAULT);
     return elevator_next (CLOSE_DOORS, door_move_finished);
 }

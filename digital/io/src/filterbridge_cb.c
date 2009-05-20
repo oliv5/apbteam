@@ -75,7 +75,7 @@ filterbridge__CLOSE_DOOR__state_timeout (void)
 fsm_branch_t
 filterbridge__WAIT_A_PUCK__puck_on_pos2 (void)
 {
-    if(elevator_is_ready)
+    if(elvt_is_ready)
       {
 	return filterbridge_next_branch (WAIT_A_PUCK, puck_on_pos2, lift_ready);
       }
@@ -127,8 +127,8 @@ filterbridge__PUSH_PUCK__no_puck_on_pos2 (void)
 fsm_branch_t
 filterbridge__TEMPO_ELVETATOR_COMMUNICATION__state_timeout (void)
 {
-    ++nb_puck_in_elvt;
-    --nb_puck_fb;
+    ++elvt_nb_puck;
+    --fb_nb_puck;
     elvt_new_puck = 1;
     servo_pos_move_to(SERVO_FINGER_ID, SERVO_FINGER_IDLE);
     servo_pos_move_to(SERVO_DOOR_ID, SERVO_DOOR_CLOSE);

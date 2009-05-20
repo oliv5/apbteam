@@ -240,17 +240,23 @@ main_event_to_fsm (void)
 	FSM_HANDLE_EVENT (&elevator_fsm,
 			  ELEVATOR_EVENT_doors_opened);
     /* bridge ready */
-    /* 
-    if(nb_puck_fb < 2)
+    if(fb_nb_puck < 2)
 	FSM_HANDLE_EVENT (&cylinder_fsm,
 			  CYLINDER_EVENT_bridge_ready);
-    */
     /* bot empty */
-    /* 
-    if(!nb_puck_fb && !nb_puck_in_elvt && !nb_puck_cylinder)
+    if(fb_nb_puck + elvt_nb_puck + cylinder_nb_puck < 4)
 	FSM_HANDLE_EVENT (&cylinder_fsm,
-			  CYLINDER_EVENT_bot_empty);
-    */
+			  CYLINDER_EVENT_bot_not_full);
+
+    /* cylinder_close_order */
+    if(cylinder_close_order)
+	FSM_HANDLE_EVENT (&cylinder_fsm,
+			  CYLINDER_EVENT_close_order);
+
+    /* cylinder__flush_order */
+    if(cylinder_flush_order)
+	FSM_HANDLE_EVENT (&cylinder_fsm,
+			  CYLINDER_EVENT_flush_order);
 
     /* Jack */
     if(switch_get_jack())

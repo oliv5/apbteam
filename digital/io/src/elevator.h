@@ -28,12 +28,12 @@
 /**
  * State of the elevator
  */
-extern uint8_t elevator_is_ready;
+extern uint8_t elvt_is_ready;
 
 /**
  * nb puck in the elevator
  */
-extern uint8_t nb_puck_in_elvt;
+extern uint8_t elvt_nb_puck;
 
 /**
  * new_puck information (from filterbridge)

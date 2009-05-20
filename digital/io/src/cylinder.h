@@ -28,10 +28,19 @@
 #include "common.h"
 
 /* last state of optical fence */
-extern uint8_t of_state;
+extern uint8_t cylinder_of_state;
 
 /* nb puck in cylinder */
-extern uint8_t nb_puck_cylinder;
+extern uint8_t cylinder_nb_puck;
+
+/* of state */
+extern uint8_t cylinder_puck_on_of;
+
+/* force cylinder to be closed */
+extern uint8_t cylinder_close_order;
+
+/* flush puck on the cylinder */
+extern uint8_t cylinder_flush_order;
 
 /* mecanical offset */
 #define CYLINDER_OFFSET 0x43e
