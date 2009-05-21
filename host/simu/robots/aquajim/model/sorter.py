@@ -38,6 +38,7 @@ class Sorter (Observable):
         self.into = into or ()
         self.arm_slot = [ None, None, None ]
         self.bridge_slot = [ None, None ]
+        self.elevator_slot = [ ]
         self.lost = [ ]
         self.arm_motor_link = arm_motor_link
         self.arm_motor_link.register (self.__arm_motor_notified)
@@ -115,8 +116,8 @@ class Sorter (Observable):
             if (self.bridge_door_servo_value > 0.9
                     and self.bridge_finger_servo_value > 0.5
                     and self.bridge_slot[1] is not None):
-                # Drop until elevator is fully implemented.
-                self.lost.append (self.bridge_slot[1])
+                # Pass to elevator.
+                self.elevator_slot.append (self.bridge_slot[1])
                 self.bridge_slot[1] = None
         self.__bridge_puck_update ()
         self.notify ()
@@ -134,7 +135,18 @@ class Sorter (Observable):
         self.notify ()
 
     def __elevator_door_notified (self):
+        # Contact.
         self.elevator_door_contact.state = (self.elevator_door.angle
                 != self.elevator_door.max_stop)
         self.elevator_door_contact.notify ()
+        # Puck exit.
+        if (self.elevator_door.angle == self.elevator_door.max_stop
+                and self.elevator_slot):
+            exit_pos = self.__transform ((-150, 0))
+            if exit_pos is not None:
+                for i in range (len (self.elevator_slot)):
+                    self.elevator_slot[i].pos = exit_pos
+                    self.elevator_slot[i].notify ()
+                    exit_pos = (exit_pos[0] + 2, exit_pos[1] + 2)
+                self.elevator_slot = [ ]
 

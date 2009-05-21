@@ -24,6 +24,8 @@
 """AquaJim elevator."""
 from simu.inter.drawable import Drawable
 
+from simu.view.table_eurobot2009 import puck_attr
+
 class Elevator (Drawable):
 
     width = 320 / 1.2
@@ -56,6 +58,11 @@ class Elevator (Drawable):
         self.reset ()
         self.trans_translate ((-35, -150))
         self.draw_line ((-10, 300), (-10, 0), (70, 0), fill = '#808080')
+        i = 15
+        for puck in self.model.lost:
+            self.draw_circle ((-40, i), 15,
+                    **puck_attr[puck.color])
+            i += 15
         if self.height is not None:
             self.trans_translate ((0, self.height))
             self.draw_line ((0, 150), (0, 0), (70, 0))
@@ -63,4 +70,9 @@ class Elevator (Drawable):
                 self.trans_translate ((5 + self.door_value * 70, 0))
                 self.draw_line ((0, 120), (0, 0),
                         fill = self.door_limit and 'red' or 'black')
+                i = 0
+                for puck in self.model.elevator_slot:
+                    self.draw_rectangle ((0, i), (70, i + 30),
+                            **puck_attr[puck.color])
+                    i += 30
 
