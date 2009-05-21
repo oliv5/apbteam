@@ -210,6 +210,8 @@ top__STOP_TO_GO_TO_UNLOAD_AREA__move_fsm_stopped (void)
 {
     /* Ensure cylinder is closed. */
     cylinder_close_order = 1;
+    /* Flush cylinder. */
+    cylinder_flush_order = 1;
     asserv_position_t position;
     /* Go to unload area. */
     top_get_next_position_to_unload_puck (&position);
