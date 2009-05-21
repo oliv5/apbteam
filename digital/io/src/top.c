@@ -83,7 +83,7 @@ top_get_next_position_to_get_distributor (asserv_position_t *clean_position,
     static const asserv_position_t distributor[DISTRIBUTOR_COUNT][2] =
       {
 	  /* First distributor. */
-	  { { 2711, 0 + DISTRIBUTOR_PROTECTION, 270 }, { 2711, 200, 270 } },
+	  { { 2711, 0 + DISTRIBUTOR_PROTECTION, 270 }, { 2711, DISTRIBUTOR_PROTECTION, 270 } },
 	  /* Second distributor. */
 	  { { PG_WIDTH - DISTRIBUTOR_PROTECTION, 600, 90 }, { PG_WIDTH - DISTRIBUTOR_PROTECTION, 800, 0 } },
 	  /* Third distributor. */
