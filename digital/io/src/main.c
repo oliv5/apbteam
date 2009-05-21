@@ -305,7 +305,7 @@ main_event_to_fsm (void)
       }
     /* Sharps event for move FSM */
     /* Get the current direction of the bot */
-    uint8_t moving_direction = asserv_get_moving_direction ();
+    uint8_t moving_direction = asserv_get_last_moving_direction ();
     /* If we are moving */
     if (moving_direction)
       {
