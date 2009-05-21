@@ -212,9 +212,9 @@ sharp_path_obstrued (uint8_t moving_direction)
     if (moving_direction == 1)
       {
 	/* Use only front sharps */
-	if (sharp_get_interpreted (SHARP_FRONT_LEFT) ||
-	    sharp_get_interpreted (SHARP_FRONT_MIDDLE) ||
-	    sharp_get_interpreted (SHARP_FRONT_RIGHT))
+	if (sharp_get_interpreted (SHARP_FRONT_LEFT) +
+	    sharp_get_interpreted (SHARP_FRONT_MIDDLE) +
+	    sharp_get_interpreted (SHARP_FRONT_RIGHT) >= 2)
 	    /* Something in front */
 	    return 1;
       }
