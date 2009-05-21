@@ -38,9 +38,6 @@ uint8_t cylinder_close_order = 0;
 /* flush puck on the cylinder */
 uint8_t cylinder_flush_order = 0;
 
-/* distributor mode switch */
-uint8_t cylinder_distributor_mode = 0;
-
 /* distributor fucked */
 uint8_t cylinder_distributor_fucked = 0;
 

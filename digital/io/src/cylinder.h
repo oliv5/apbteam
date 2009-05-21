@@ -42,11 +42,11 @@ extern uint8_t cylinder_close_order;
 /* flush puck on the cylinder */
 extern uint8_t cylinder_flush_order;
 
-/* distributor mode switch */
-extern uint8_t cylinder_distributor_mode;
-
 /* distributor fucked */
 extern uint8_t cylinder_distributor_fucked;
+
+/* distributor empty */
+extern uint8_t cylinder_distributor_empty;
 
 /* mecanical offset */
 #define CYLINDER_OFFSET 0x43e

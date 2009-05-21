@@ -92,8 +92,6 @@ cylinder__INIT_POS__move_done (void)
 fsm_branch_t
 cylinder__WAIT_A_PUCK__new_puck (void)
 {
-    cylinder_distributor_mode = 0;
-    cylinder_distributor_fucked = 0;
     return cylinder_next (WAIT_A_PUCK, new_puck);
 }
 
@@ -105,8 +103,6 @@ cylinder__WAIT_A_PUCK__new_puck (void)
 fsm_branch_t
 cylinder__WAIT_A_PUCK__close_order (void)
 {
-    cylinder_distributor_mode = 0;
-    cylinder_distributor_fucked = 0;
     asserv_move_arm(-1*60*ASSERV_ARM_STEP_BY_DEGREE,
 		    ASSERV_ARM_SPEED_DEFAULT);
     return cylinder_next (WAIT_A_PUCK, close_order);
@@ -120,22 +116,18 @@ cylinder__WAIT_A_PUCK__close_order (void)
 fsm_branch_t
 cylinder__WAIT_A_PUCK__flush_order (void)
 {
-    cylinder_distributor_mode = 0;
-    cylinder_distributor_fucked = 0;
     return cylinder_next (WAIT_A_PUCK, flush_order);
 }
 
 /*
- * WAIT_A_PUCK =approching_distributor=>
- *  => WAIT_DISTRIB_FUCKED
- *   We wait a distributor
+ * WAIT_A_PUCK =distrib_fucked=>
+ *  => WAIT_BRIDGE_READY_DISTRIB
+ *   we verify bridge
  */
 fsm_branch_t
-cylinder__WAIT_A_PUCK__approching_distributor (void)
+cylinder__WAIT_A_PUCK__distrib_fucked (void)
 {
-    cylinder_distributor_mode = 0;
-    cylinder_distributor_fucked = 0;
-    return cylinder_next (WAIT_A_PUCK, approching_distributor);
+    return cylinder_next (WAIT_A_PUCK, distrib_fucked);
 }
 
 /*
@@ -205,7 +197,6 @@ cylinder__TURN_PLUS_1_AND_MINUS_OFO__move_done (void)
 fsm_branch_t
 cylinder__WAIT_BOT_NOT_FULL__bot_not_full (void)
 {
-    cylinder_distributor_mode = 0;
     cylinder_distributor_fucked = 0;
     return cylinder_next (WAIT_BOT_NOT_FULL, bot_not_full);
 }
@@ -218,7 +209,6 @@ cylinder__WAIT_BOT_NOT_FULL__bot_not_full (void)
 fsm_branch_t
 cylinder__WAIT_BOT_NOT_FULL__flush_order (void)
 {
-    cylinder_distributor_mode = 0;
     cylinder_distributor_fucked = 0;
     if(of_offset_enabled)
       {
@@ -343,17 +333,6 @@ cylinder__TURN_PLUS_1_CLOSE__move_done (void)
 }
 
 /*
- * WAIT_DISTRIB_FUCKED =distrib_fucked=>
- *  => WAIT_BRIDGE_READY_DISTRIB
- *   We are on a distributor
- */
-fsm_branch_t
-cylinder__WAIT_DISTRIB_FUCKED__distrib_fucked (void)
-{
-    return cylinder_next (WAIT_DISTRIB_FUCKED, distrib_fucked);
-}
-
-/*
  * WAIT_BRIDGE_READY_DISTRIB =bridge_ready=>
  *  => TURN_PLUS_1_AND_OFO_DISTRIB
  *   we turn to check the of
@@ -439,6 +418,7 @@ cylinder__PROBE_OF__of_puck (void)
 fsm_branch_t
 cylinder__PROBE_OF__of_no_puck (void)
 {
+    cylinder_distributor_empty = 1;
     asserv_move_arm((1-CYLINDER_OF_OFFSET)*60*ASSERV_ARM_STEP_BY_DEGREE,
 		    ASSERV_ARM_SPEED_DEFAULT);
     of_offset_enabled = 0;

@@ -244,13 +244,10 @@ main_event_to_fsm (void)
 	FSM_HANDLE_EVENT (&elevator_fsm,
 			  ELEVATOR_EVENT_order_bypass);
 
-    if(cylinder_distributor_mode)
-	FSM_HANDLE_EVENT (&cylinder_fsm,
-			  CYLINDER_EVENT_approching_distributor);
-
     if(cylinder_distributor_fucked)
 	FSM_HANDLE_EVENT (&cylinder_fsm,
 			  CYLINDER_EVENT_distrib_fucked);
+
     /* bot empty */
     if(top_puck_inside_bot < 4)
 	FSM_HANDLE_EVENT (&cylinder_fsm,

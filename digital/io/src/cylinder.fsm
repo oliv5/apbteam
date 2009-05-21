@@ -33,8 +33,6 @@ States:
   drop 1 puck to the fb
  TURN_PLUS_1_CLOSE
   close the cylinder
- WAIT_DISTRIB_FUCKED
-  waiting for the bot are really on the distributor
  WAIT_BRIDGE_READY_DISTRIB
   waiting for the bridge
  TURN_PLUS_1_AND_OFO_DISTRIB
@@ -66,8 +64,6 @@ Events:
   the bot dont have 4 pucks
  flush_order
   we receive a flush order
- approching_distributor
-  we go in distributor mode
  distrib_fucked
   we are really in the distributor
  of_puck
@@ -100,12 +96,8 @@ WAIT_A_PUCK:
   we close cylinder as requested
  flush_order -> WAIT_BRIDGE_READY_FLUSH
   flush all pucks to the bridge
- approching_distributor -> WAIT_DISTRIB_FUCKED
-  We wait a distributor
-
-WAIT_DISTRIB_FUCKED:
  distrib_fucked -> WAIT_BRIDGE_READY_DISTRIB
-  We are on a distributor
+  we verify bridge
 
 WAIT_BRIDGE_READY_DISTRIB:
  bridge_ready -> TURN_PLUS_1_AND_OFO_DISTRIB
