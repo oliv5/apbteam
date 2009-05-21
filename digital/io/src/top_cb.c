@@ -76,6 +76,7 @@ top__WAIT_INIT_TO_FINISH__init_match_is_started (void)
 /*
  * GET_PUCK_FROM_THE_GROUND =move_fsm_succeed=>
  * already_six_pucks_or_no_next_position => GET_PUCK_FROM_DISTRIBUTOR
+ *   close cylinder.
  *   get the next distributor position and launch move FSM to go there.
  * next_position_exists => GET_PUCK_FROM_THE_GROUND
  *   go to the next position using move FSM.
@@ -106,21 +107,22 @@ top__GET_PUCK_FROM_THE_GROUND__move_fsm_succeed (void)
 
 /*
  * GET_PUCK_FROM_THE_GROUND =move_fsm_failed=>
- *  => GET_PUCK_FROM_DISTRIBUTOR
+ *  => STOP_TO_GO_TO_UNLOAD_AREA
+ *   close cylinder.
  *   we have failed to do a move, go the distributor (get next distributor and go
  *   there with move FSM).
  */
 fsm_branch_t
 top__GET_PUCK_FROM_THE_GROUND__move_fsm_failed (void)
 {
-    /* Get next position. */
     asserv_position_t position;
-    /* Close the cylinder. */
+    /* Ensure cylinder is close. */
     cylinder_close_order = 1;
-    /* Go to distributor. */
-    top_get_next_position_to_get_distributor (&position, &front_position);
+    /* Flush cylinder. */
+    cylinder_flush_order = 1;
+    top_get_next_position_to_get_puck_on_the_ground (&position, 0);
     /* Go there. */
-    move_start (position, ASSERV_BACKWARD);
+    move_start (position, 0);
     return top_next (GET_PUCK_FROM_THE_GROUND, move_fsm_failed);
 }
 
@@ -132,6 +134,10 @@ top__GET_PUCK_FROM_THE_GROUND__move_fsm_failed (void)
 fsm_branch_t
 top__GET_PUCK_FROM_THE_GROUND__bot_is_full_of_pucks (void)
 {
+    /* Ensure cylinder is close. */
+    cylinder_close_order = 1;
+    /* Flush cylinder. */
+    cylinder_flush_order = 1;
     /* Stop move FSM. */
     move_stop ();
     return top_next (GET_PUCK_FROM_THE_GROUND, bot_is_full_of_pucks);
@@ -161,8 +167,6 @@ top__GET_PUCK_FROM_THE_GROUND__state_timeout (void)
 fsm_branch_t
 top__GET_PUCK_FROM_DISTRIBUTOR__move_fsm_succeed (void)
 {
-    /* Open cylinder. */
-    cylinder_close_order = 0;
     /* Go in the front of the distributor. */
     move_start (front_position, ASSERV_REVERT_OK);
     return top_next (GET_PUCK_FROM_DISTRIBUTOR, move_fsm_succeed);
@@ -181,6 +185,8 @@ top__GET_PUCK_FROM_DISTRIBUTOR__move_fsm_failed (void)
 {
     if (!top_puck_inside_bot || chrono_remaining_time () > TOP_TIME_LIMIT)
       {
+	/* Close cylinder. */
+	cylinder_close_order = 1;
 	/* Get next position. */
 	asserv_position_t position;
 	/* Go to distributor. */
@@ -292,6 +298,10 @@ top__GO_TO_UNLOAD_AREA__move_fsm_succeed (void)
 fsm_branch_t
 top__GO_TO_UNLOAD_AREA__move_fsm_failed (void)
 {
+    /* Ensure cylinder is closed. */
+    cylinder_close_order = 1;
+    /* Flush cylinder. */
+    cylinder_flush_order = 1;
     asserv_position_t position;
     /* Go to unload area. */
     top_get_next_position_to_unload_puck (&position);
@@ -321,6 +331,8 @@ top__FUCK_UNLOAD_AREA__bot_move_succeed (void)
 fsm_branch_t
 top__FUCK_UNLOAD_AREA__bot_move_failed (void)
 {
+    /* Ensure cylinder is closed. */
+    cylinder_close_order = 1;
     /* Move forward. */
     asserv_move_linearly (PG_BORDER_DISTANCE);
     return top_next (FUCK_UNLOAD_AREA, bot_move_failed);
@@ -475,6 +487,8 @@ top__FUCK_THE_DISTRIBUTOR__bot_move_failed (void)
     cylinder_close_order = 1;
     if (!top_puck_inside_bot || chrono_remaining_time () > TOP_TIME_LIMIT)
       {
+	/* Ensure cylinder is closed. */
+	cylinder_close_order = 1;
 	/* Get next position. */
 	asserv_position_t position;
 	/* Go to distributor. */
@@ -486,6 +500,9 @@ top__FUCK_THE_DISTRIBUTOR__bot_move_failed (void)
       }
     else
       {
+	/* Ensure cylinder is closed. */
+	cylinder_close_order = 1;
+	cylinder_flush_order = 1;
 	asserv_position_t position;
 	/* Go to unload area. */
 	top_get_next_position_to_unload_puck (&position);
@@ -574,9 +591,11 @@ top__GO_AWAY_FROM_UNLOAD_AREA__bot_move_succeed (void)
 {
     /* Get next position. */
     asserv_position_t position;
-    if (!top_get_next_position_to_get_puck_on_the_ground (&position, 0)
+    if (!top_get_next_position_to_get_puck_on_the_ground (&position, 1)
 	|| top_total_puck_taken >= 6)
       {
+	/* Ensure cylinder is closed. */
+	cylinder_close_order = 1;
 	/* Go to distributor. */
 	top_get_next_position_to_get_distributor (&position, &front_position);
 	/* Go there. */
@@ -586,6 +605,7 @@ top__GO_AWAY_FROM_UNLOAD_AREA__bot_move_succeed (void)
       }
     else
       {
+	cylinder_close_order = 0;
 	/* Go there. */
 	move_start (position, 0);
 	return top_next_branch (GO_AWAY_FROM_UNLOAD_AREA, bot_move_succeed,
@@ -616,7 +636,7 @@ top__GO_AWAY_FROM_UNLOAD_AREA__bot_move_failed (void)
     else
       {
 	asserv_position_t position;
-	if (!top_get_next_position_to_get_puck_on_the_ground (&position, 0)
+	if (!top_get_next_position_to_get_puck_on_the_ground (&position, 1)
 	    || top_total_puck_taken >= 6)
 	  {
 	    /* Go to distributor. */
@@ -628,6 +648,7 @@ top__GO_AWAY_FROM_UNLOAD_AREA__bot_move_failed (void)
 	  }
 	else
 	  {
+	    cylinder_close_order = 0;
 	    /* Go there. */
 	    move_start (position, 0);
 	    return top_next_branch (GO_AWAY_FROM_UNLOAD_AREA, bot_move_failed,
@@ -685,6 +706,8 @@ top__CLEAN_FRONT_OF_DISTRIBUTOR__move_fsm_succeed (void)
 fsm_branch_t
 top__CLEAN_FRONT_OF_DISTRIBUTOR__move_fsm_failed (void)
 {
+    /* Ensure cylinder is closed. */
+    cylinder_close_order = 1;
     /* Get next position. */
     asserv_position_t position;
     /* Go to distributor. */
@@ -707,6 +730,8 @@ top__GO_AWAY_FROM_DISTRIBUTOR__bot_move_succeed (void)
 {
     if (remember_distributor)
       {
+	/* Ensure cylinder is closed. */
+	cylinder_close_order = 1;
 	/* Get next position. */
 	asserv_position_t position;
 	/* Go to distributor. */
@@ -718,6 +743,9 @@ top__GO_AWAY_FROM_DISTRIBUTOR__bot_move_succeed (void)
     else
       {
 
+	/* Ensure cylinder is closed. */
+	cylinder_close_order = 1;
+	cylinder_flush_order = 1;
 	asserv_position_t position;
 	/* Go to unload area. */
 	top_get_next_position_to_unload_puck (&position);
@@ -734,6 +762,9 @@ top__GO_AWAY_FROM_DISTRIBUTOR__bot_move_succeed (void)
  *   move forward using linear move.
  * no_more_niceness_and_go_to_distributor => GET_PUCK_FROM_DISTRIBUTOR
  *   get a new distributor position and go there.
+ * no_more_niceness_and_go_to_unload => GO_TO_UNLOAD_AREA
+ *   compute an unload area.
+ *   ask the move FSM to go there.
  */
 fsm_branch_t
 top__GO_AWAY_FROM_DISTRIBUTOR__bot_move_failed (void)
@@ -747,13 +778,30 @@ top__GO_AWAY_FROM_DISTRIBUTOR__bot_move_failed (void)
       }
     else
       {
-	/* Get next position. */
-	asserv_position_t position;
-	/* Go to distributor. */
-	top_get_next_position_to_get_distributor (&position, &front_position);
-	/* Go there. */
-	move_start (position, ASSERV_BACKWARD);
-	return top_next_branch (GO_AWAY_FROM_DISTRIBUTOR, bot_move_failed, no_more_niceness_and_go_to_distributor);
+	if (remember_distributor)
+	  {
+	    /* Ensure cylinder is closed. */
+	    cylinder_close_order = 1;
+	    /* Get next position. */
+	    asserv_position_t position;
+	    /* Go to distributor. */
+	    top_get_next_position_to_get_distributor (&position, &front_position);
+	    /* Go there. */
+	    move_start (position, ASSERV_BACKWARD);
+	    return top_next_branch (GO_AWAY_FROM_DISTRIBUTOR, bot_move_failed, no_more_niceness_and_go_to_distributor);
+	  }
+	else
+	  {
+	    /* Ensure cylinder is closed. */
+	    cylinder_close_order = 1;
+	    cylinder_flush_order = 1;
+	    asserv_position_t position;
+	    /* Go to unload area. */
+	    top_get_next_position_to_unload_puck (&position);
+	    /* Go there. */
+	    move_start (position, ASSERV_BACKWARD);
+	    return top_next_branch (GO_AWAY_FROM_DISTRIBUTOR, bot_move_failed, no_more_niceness_and_go_to_unload);
+	  }
       }
 }
 

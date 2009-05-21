@@ -84,7 +84,7 @@ GET_PUCK_FROM_THE_GROUND:
   get the next distributor position and launch move FSM to go there.
  move_fsm_succeed: next_position_exists -> .
   go to the next position using move FSM.
- move_fsm_failed -> GET_PUCK_FROM_DISTRIBUTOR
+ move_fsm_failed -> STOP_TO_GO_TO_UNLOAD_AREA
   close cylinder.
   we have failed to do a move, go the distributor (get next distributor and go
   there with move FSM).
