@@ -161,6 +161,8 @@ top__GET_PUCK_FROM_THE_GROUND__state_timeout (void)
 fsm_branch_t
 top__GET_PUCK_FROM_DISTRIBUTOR__move_fsm_succeed (void)
 {
+    /* Open cylinder. */
+    cylinder_close_order = 0;
     /* Go in the front of the distributor. */
     move_start (front_position, ASSERV_REVERT_OK);
     return top_next (GET_PUCK_FROM_DISTRIBUTOR, move_fsm_succeed);
