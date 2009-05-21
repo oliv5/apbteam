@@ -144,29 +144,18 @@ elevator__WAIT_A_PUCK__new_puck (void)
 }
 
 /*
- * WAIT_A_PUCK =order_received=>
- *  => WAIT_FB_EMPTY
+ * WAIT_A_PUCK =order_bypass=>
+ *  => GO_TO_POS_Y
  *   elevator filling has been shut, get ready to drop pucks
  */
 fsm_branch_t
-elevator__WAIT_A_PUCK__order_received (void)
-{
-    elvt_is_ready = 0;
-    return elevator_next (WAIT_A_PUCK, order_received);
-}
-
-/*
- * WAIT_FB_EMPTY =fb_empty=>
- *  => GO_TO_POS_Y
- *   execute order
- */
-fsm_branch_t
-elevator__WAIT_FB_EMPTY__fb_empty (void)
+elevator__WAIT_A_PUCK__order_bypass (void)
 {
     elvt_new_puck = 0;
+    elvt_is_ready = 0;
     asserv_move_elevator_absolute(posy[elvt_order - 1] - MAJ_POSY,
 				  ASSERV_ELVT_SPEED_DEFAULT);
-    return elevator_next (WAIT_FB_EMPTY, fb_empty);
+    return elevator_next (WAIT_A_PUCK, order_bypass);
 }
 
 /*
