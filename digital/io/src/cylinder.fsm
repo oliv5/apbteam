@@ -33,6 +33,19 @@ States:
   drop 1 puck to the fb
  TURN_PLUS_1_CLOSE
   close the cylinder
+ WAIT_DISTRIB_FUCKED
+  waiting for the bot are really on the distributor
+ WAIT_BRIDGE_READY_DISTRIB
+  waiting for the bridge
+ TURN_PLUS_1_AND_OFO_DISTRIB
+  get a puck on distrib
+ TURN_PLUS_1_AND_MINUS_OFO_DISTRIB
+  we neutralize the offset before return in normal mode
+ TURN_PLUS_1_AND_MINUS_OFO_DISTRIB_LOOP
+  blah
+ PROBE_OF
+  we probe the OF
+
 
 Events:
  start
@@ -53,6 +66,14 @@ Events:
   the bot dont have 4 pucks
  flush_order
   we receive a flush order
+ approching_distributor
+  we go in distributor mode
+ distrib_fucked
+  we are really in the distributor
+ of_puck
+  we see a puck to the of
+ of_no_puck
+  we don't see a puck in of
  state_timeout
   useless here
 
@@ -79,6 +100,32 @@ WAIT_A_PUCK:
   we close cylinder as requested
  flush_order -> WAIT_BRIDGE_READY_FLUSH
   flush all pucks to the bridge
+ approching_distributor -> WAIT_DISTRIB_FUCKED
+  We wait a distributor
+
+WAIT_DISTRIB_FUCKED:
+ distrib_fucked -> WAIT_BRIDGE_READY_DISTRIB
+  We are on a distributor
+
+WAIT_BRIDGE_READY_DISTRIB:
+ bridge_ready -> TURN_PLUS_1_AND_OFO_DISTRIB
+  we turn to check the of
+
+TURN_PLUS_1_AND_OFO_DISTRIB:
+ move_done -> PROBE_OF
+  We probe the puck
+
+PROBE_OF:
+ of_puck: bot_full -> WAIT_BOT_NOT_FULL
+  return to normal mode with a bot full of puck
+ of_puck: bot_not_full -> TURN_PLUS_1_AND_MINUS_OFO_DISTRIB_LOOP
+  we get a puck and we are hungry yet, go eat an another puck
+ of_no_puck -> TURN_PLUS_1_AND_MINUS_OFO_DISTRIB
+  Distributor empty, go elsewhere
+
+TURN_PLUS_1_AND_MINUS_OFO_DISTRIB_LOOP:
+ move_done -> WAIT_BRIDGE_READY_DISTRIB
+  ready to get another puck
 
 WAIT_BRIDGE_READY:
  bridge_ready -> TURN_PLUS_1_AND_OFO
@@ -89,6 +136,10 @@ TURN_PLUS_1_AND_OFO:
   open the cylinder to wait a new puck
  move_done: bot_full -> WAIT_BOT_NOT_FULL
   bot full, waiting for pucks teleportation
+
+TURN_PLUS_1_AND_MINUS_OFO_DISTRIB:
+ move_done -> WAIT_A_PUCK
+  bridge empty, return to normal mode
 
 TURN_PLUS_1_AND_MINUS_OFO:
  move_done -> WAIT_A_PUCK

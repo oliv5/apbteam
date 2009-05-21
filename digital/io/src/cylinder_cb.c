@@ -92,6 +92,8 @@ cylinder__INIT_POS__move_done (void)
 fsm_branch_t
 cylinder__WAIT_A_PUCK__new_puck (void)
 {
+    cylinder_distributor_mode = 0;
+    cylinder_distributor_fucked = 0;
     return cylinder_next (WAIT_A_PUCK, new_puck);
 }
 
@@ -103,6 +105,8 @@ cylinder__WAIT_A_PUCK__new_puck (void)
 fsm_branch_t
 cylinder__WAIT_A_PUCK__close_order (void)
 {
+    cylinder_distributor_mode = 0;
+    cylinder_distributor_fucked = 0;
     asserv_move_arm(-1*60*ASSERV_ARM_STEP_BY_DEGREE,
 		    ASSERV_ARM_SPEED_DEFAULT);
     return cylinder_next (WAIT_A_PUCK, close_order);
@@ -116,7 +120,22 @@ cylinder__WAIT_A_PUCK__close_order (void)
 fsm_branch_t
 cylinder__WAIT_A_PUCK__flush_order (void)
 {
+    cylinder_distributor_mode = 0;
+    cylinder_distributor_fucked = 0;
     return cylinder_next (WAIT_A_PUCK, flush_order);
+}
+
+/*
+ * WAIT_A_PUCK =approching_distributor=>
+ *  => WAIT_DISTRIB_FUCKED
+ *   We wait a distributor
+ */
+fsm_branch_t
+cylinder__WAIT_A_PUCK__approching_distributor (void)
+{
+    cylinder_distributor_mode = 0;
+    cylinder_distributor_fucked = 0;
+    return cylinder_next (WAIT_A_PUCK, approching_distributor);
 }
 
 /*
@@ -186,6 +205,8 @@ cylinder__TURN_PLUS_1_AND_MINUS_OFO__move_done (void)
 fsm_branch_t
 cylinder__WAIT_BOT_NOT_FULL__bot_not_full (void)
 {
+    cylinder_distributor_mode = 0;
+    cylinder_distributor_fucked = 0;
     return cylinder_next (WAIT_BOT_NOT_FULL, bot_not_full);
 }
 
@@ -197,6 +218,8 @@ cylinder__WAIT_BOT_NOT_FULL__bot_not_full (void)
 fsm_branch_t
 cylinder__WAIT_BOT_NOT_FULL__flush_order (void)
 {
+    cylinder_distributor_mode = 0;
+    cylinder_distributor_fucked = 0;
     if(of_offset_enabled)
       {
 	asserv_move_arm((1-CYLINDER_OF_OFFSET)*60*ASSERV_ARM_STEP_BY_DEGREE,
@@ -317,4 +340,107 @@ cylinder__TURN_PLUS_1_CLOSE__move_done (void)
 	puck_on_cylinder = 0;
       }
     return cylinder_next (TURN_PLUS_1_CLOSE, move_done);
+}
+
+/*
+ * WAIT_DISTRIB_FUCKED =distrib_fucked=>
+ *  => WAIT_BRIDGE_READY_DISTRIB
+ *   We are on a distributor
+ */
+fsm_branch_t
+cylinder__WAIT_DISTRIB_FUCKED__distrib_fucked (void)
+{
+    return cylinder_next (WAIT_DISTRIB_FUCKED, distrib_fucked);
+}
+
+/*
+ * WAIT_BRIDGE_READY_DISTRIB =bridge_ready=>
+ *  => TURN_PLUS_1_AND_OFO_DISTRIB
+ *   we turn to check the of
+ */
+fsm_branch_t
+cylinder__WAIT_BRIDGE_READY_DISTRIB__bridge_ready (void)
+{
+    asserv_move_arm((1+CYLINDER_OF_OFFSET)*60*ASSERV_ARM_STEP_BY_DEGREE,
+		    ASSERV_ARM_SPEED_DEFAULT);
+    of_offset_enabled = 1;
+    return cylinder_next (WAIT_BRIDGE_READY_DISTRIB, bridge_ready);
+}
+
+/*
+ * TURN_PLUS_1_AND_OFO_DISTRIB =move_done=>
+ *  => PROBE_OF
+ *   We probe the puck
+ */
+fsm_branch_t
+cylinder__TURN_PLUS_1_AND_OFO_DISTRIB__move_done (void)
+{
+    if(puck_on_cylinder)
+      {
+	--cylinder_nb_puck;
+	++fb_nb_puck;
+	puck_on_cylinder = 0;
+      }
+    return cylinder_next (TURN_PLUS_1_AND_OFO_DISTRIB, move_done);
+}
+
+/*
+ * TURN_PLUS_1_AND_MINUS_OFO_DISTRIB =move_done=>
+ *  => WAIT_A_PUCK
+ *   bridge empty, return to normal mode
+ */
+fsm_branch_t
+cylinder__TURN_PLUS_1_AND_MINUS_OFO_DISTRIB__move_done (void)
+{
+    return cylinder_next (TURN_PLUS_1_AND_MINUS_OFO_DISTRIB, move_done);
+}
+
+/*
+ * TURN_PLUS_1_AND_MINUS_OFO_DISTRIB_LOOP =move_done=>
+ *  => WAIT_BRIDGE_READY_DISTRIB
+ *   ready to get another puck
+ */
+fsm_branch_t
+cylinder__TURN_PLUS_1_AND_MINUS_OFO_DISTRIB_LOOP__move_done (void)
+{
+    return cylinder_next (TURN_PLUS_1_AND_MINUS_OFO_DISTRIB_LOOP, move_done);
+}
+
+/*
+ * PROBE_OF =of_puck=>
+ * bot_full => WAIT_BOT_NOT_FULL
+ *   return to normal mode with a bot full of puck
+ * bot_not_full => TURN_PLUS_1_AND_MINUS_OFO_DISTRIB_LOOP
+ *   we get a puck and we are hungry yet, go eat an another puck
+ */
+fsm_branch_t
+cylinder__PROBE_OF__of_puck (void)
+{
+    /* we have a new puck on cylinder */
+    puck_on_cylinder =1;
+    ++cylinder_nb_puck;
+    ++top_total_puck_taken;
+    ++top_puck_inside_bot;
+    if(top_puck_inside_bot < 4)
+      {
+	asserv_move_arm((1-CYLINDER_OF_OFFSET)*60*ASSERV_ARM_STEP_BY_DEGREE,
+			ASSERV_ARM_SPEED_DEFAULT);
+	of_offset_enabled = 0;
+	return cylinder_next_branch (PROBE_OF, of_puck, bot_not_full);
+      }
+    return cylinder_next_branch (PROBE_OF, of_puck, bot_full);
+}
+
+/*
+ * PROBE_OF =of_no_puck=>
+ *  => TURN_PLUS_1_AND_MINUS_OFO_DISTRIB
+ *   Distributor empty, go elsewhere
+ */
+fsm_branch_t
+cylinder__PROBE_OF__of_no_puck (void)
+{
+    asserv_move_arm((1-CYLINDER_OF_OFFSET)*60*ASSERV_ARM_STEP_BY_DEGREE,
+		    ASSERV_ARM_SPEED_DEFAULT);
+    of_offset_enabled = 0;
+    return cylinder_next (PROBE_OF, of_no_puck);
 }
