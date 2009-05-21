@@ -91,7 +91,7 @@ top_get_next_position_to_get_distributor (asserv_position_t *clean_position,
     /* Maximum number of remaining puck by distributor. */
     static uint8_t distributor_puck_count[DISTRIBUTOR_COUNT] = { 5, 5, 5 };
     /* Current distributor. */
-    static uint8_t current_position = DISTRIBUTOR_COUNT ;
+    static uint8_t current_position = DISTRIBUTOR_COUNT - 1;
     /* Keep track of how many pucks we have get. This variable will be used to
      * know how many puck were taken for each distributor. */
     static uint8_t previous_total_puck_taken = 0;
