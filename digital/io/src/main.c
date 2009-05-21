@@ -55,6 +55,7 @@
 #include "filterbridge.h"
 #include "cylinder.h"
 #include "init.h"
+#include "top.h"
 
 #include "io.h"
 
@@ -244,14 +245,19 @@ main_event_to_fsm (void)
 	FSM_HANDLE_EVENT (&cylinder_fsm,
 			  CYLINDER_EVENT_bridge_ready);
     /* bot empty */
-    if(fb_nb_puck + elvt_nb_puck + cylinder_nb_puck < 4)
+    if(top_puck_inside_bot < 4)
 	FSM_HANDLE_EVENT (&cylinder_fsm,
 			  CYLINDER_EVENT_bot_not_full);
 
     /* cylinder_close_order */
     if(cylinder_close_order)
+      {
 	FSM_HANDLE_EVENT (&cylinder_fsm,
 			  CYLINDER_EVENT_close_order);
+      }
+    else
+	FSM_HANDLE_EVENT (&cylinder_fsm,
+			  CYLINDER_EVENT_no_close_order);
 
     /* cylinder_flush_order */
     if(cylinder_flush_order)

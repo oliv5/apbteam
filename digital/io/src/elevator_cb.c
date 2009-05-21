@@ -48,12 +48,9 @@ uint16_t posy[3] =
     65 * ELEVATOR_MM_TO_STEP
 };
 
-/* nb puck on the elevator */
-uint8_t nb_puck_elvt = 0;
-
 /* increase/decrease of pos y */
-#define MAJ_POSY 100
-#define MIN_POSY 50
+#define MAJ_POSY (10 * ELEVATOR_MM_TO_STEP)
+#define MIN_POSY (5 * ELEVATOR_MM_TO_STEP)
 
 /* time limit */
 /* TODO to be define */
@@ -112,7 +109,7 @@ elevator__GO_TO_POS_X__in_position (void)
     /* FIXME: this sucks, look at elevator.fsm for a real fix. */
     elvt_is_ready = 1;
     /* move to first position. */
-    asserv_move_elevator_absolute(posx[nb_puck_elvt],
+    asserv_move_elevator_absolute(posx[elvt_nb_puck],
 				  ASSERV_ELVT_SPEED_DEFAULT);
     return elevator_next (GO_TO_POS_X, in_position);
 }
@@ -132,13 +129,13 @@ elevator__WAIT_A_PUCK__new_puck (void)
     elvt_is_ready = 0;
     elvt_new_puck = 0;
     // TODO time_ok
-    if(++nb_puck_elvt < 4)
+    if(elvt_nb_puck < 4)
       {
 /*	&&
        ((chrono_remaining_time() - OK_TIME_LIMIT > 0)
        || nb_puck_fb != 0))
        */
-	asserv_move_elevator_absolute(posx[nb_puck_elvt],
+	asserv_move_elevator_absolute(posx[elvt_nb_puck],
 				      ASSERV_ELVT_SPEED_DEFAULT);
 	return elevator_next_branch (WAIT_A_PUCK, new_puck, ok_for_other_pucks);
       }
@@ -167,7 +164,7 @@ elevator__WAIT_A_PUCK__time_up (void)
 fsm_branch_t
 elevator__WAIT_POS_ORDER__order_received (void)
 {
-    asserv_move_elevator_absolute(posy[elvt_order + 1] + MAJ_POSY,
+    asserv_move_elevator_absolute(posy[elvt_order - 1] - MAJ_POSY,
 				  ASSERV_ELVT_SPEED_DEFAULT);
     elvt_order = 0;
     return elevator_next (WAIT_POS_ORDER, order_received);
@@ -192,7 +189,7 @@ elevator__GO_TO_POS_Y__in_position (void)
 fsm_branch_t
 elevator__WAIT_FOR_RELEASE_ORDER__order_received (void)
 {
-    asserv_move_elevator_absolute(posy[elvt_order + 1] - MIN_POSY,
+    asserv_move_elevator_absolute(posy[elvt_order - 1] + MIN_POSY,
 				  ASSERV_ELVT_SPEED_DEFAULT);
     elvt_order = 0;
     return elevator_next (WAIT_FOR_RELEASE_ORDER, order_received);
@@ -211,15 +208,15 @@ elevator__LAND_ELEVATOR__in_position (void)
 }
 
 /*
- * MINI_CLOSE =door_move_finished=>
+ * MINI_CLOSE =state_timeout=>
  *  => OPEN_DOORS
  *   try to release pucks again
  */
 fsm_branch_t
-elevator__MINI_CLOSE__door_move_finished (void)
+elevator__MINI_CLOSE__state_timeout (void)
 {
     pwm_set(OPEN_DOOR_PWM, 0);
-    return elevator_next (MINI_CLOSE, door_move_finished);
+    return elevator_next (MINI_CLOSE, state_timeout);
 }
 
 /*
@@ -230,21 +227,22 @@ elevator__MINI_CLOSE__door_move_finished (void)
 fsm_branch_t
 elevator__OPEN_DOORS__doors_opened (void)
 {
-    nb_puck_elvt = 0;
+    elvt_nb_puck = 0;
     top_puck_inside_bot = 0;
+    pwm_set(0,0);
     return elevator_next (OPEN_DOORS, doors_opened);
 }
 
 /*
- * OPEN_DOORS =door_move_finished=>
+ * OPEN_DOORS =state_timeout=>
  *  => MINI_CLOSE
  *   try to unblock doors
  */
 fsm_branch_t
-elevator__OPEN_DOORS__door_move_finished (void)
+elevator__OPEN_DOORS__state_timeout (void)
 {
-    pwm_set(CLOSE_DOOR_PWM, TIME_LIGHT_DOORS_PWM);
-    return elevator_next (OPEN_DOORS, door_move_finished);
+    pwm_set(CLOSE_DOOR_PWM,0);
+    return elevator_next (OPEN_DOORS, state_timeout);
 }
 
 /*
@@ -255,22 +253,21 @@ elevator__OPEN_DOORS__door_move_finished (void)
 fsm_branch_t
 elevator__WAIT_FOR_CLOSE_ORDER__order_received (void)
 {
-    pwm_set(CLOSE_DOOR_PWM, TIME_DOORS_PWM);
+    pwm_set(CLOSE_DOOR_PWM, 0);
     elvt_order = 0;
     return elevator_next (WAIT_FOR_CLOSE_ORDER, order_received);
 }
 
 /*
- * CLOSE_DOORS =door_move_finished=>
+ * CLOSE_DOORS =state_timeout=>
  *  => GO_TO_POS_X
  *   pucks are released and elevator is ready to make a new column
  */
 fsm_branch_t
-elevator__CLOSE_DOORS__door_move_finished (void)
+elevator__CLOSE_DOORS__state_timeout (void)
 {
-    asserv_move_elevator_absolute(posx[nb_puck_elvt],
+    pwm_set(0,0);
+    asserv_move_elevator_absolute(posx[elvt_nb_puck],
 				  ASSERV_ELVT_SPEED_DEFAULT);
-    return elevator_next (CLOSE_DOORS, door_move_finished);
+    return elevator_next (CLOSE_DOORS, state_timeout);
 }
-
-

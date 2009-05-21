@@ -21,13 +21,13 @@ States:
   ready to open doors at your command
  LAND_ELEVATOR
   land elevator to the ground
- MINI_CLOSE
+ MINI_CLOSE[timeout=45]
   try to unblock pucks
- OPEN_DOORS
+ OPEN_DOORS[timeout=675]
   releasing pucks
  WAIT_FOR_CLOSE_ORDER
   ready to close doors at your command
- CLOSE_DOORS
+ CLOSE_DOORS[timeout=675]
   closing the elevator's doors
 
 
@@ -46,8 +46,6 @@ Events:
   we received a new order
  doors_opened
   doors are opened
- door_move_finished
-  doors move is done
  state_timeout
 
 IDLE:
@@ -98,11 +96,11 @@ LAND_ELEVATOR:
 OPEN_DOORS:
  doors_opened -> WAIT_FOR_CLOSE_ORDER
   wait for close order
- door_move_finished -> MINI_CLOSE
+ state_timeout -> MINI_CLOSE
   try to unblock doors
 
 MINI_CLOSE:
- door_move_finished -> OPEN_DOORS
+ state_timeout -> OPEN_DOORS
   try to release pucks again
 
 WAIT_FOR_CLOSE_ORDER:
@@ -110,5 +108,5 @@ WAIT_FOR_CLOSE_ORDER:
   closing doors
 
 CLOSE_DOORS:
- door_move_finished -> GO_TO_POS_X
+ state_timeout -> GO_TO_POS_X
   pucks are released and elevator is ready to make a new column

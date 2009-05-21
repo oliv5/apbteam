@@ -155,6 +155,7 @@ cylinder__TURN_PLUS_1_AND_OFO__move_done (void)
       {
 	++top_total_puck_taken;
 	++top_puck_inside_bot;
+	++cylinder_nb_puck;
       }
     if(top_puck_inside_bot < 4)
       {
