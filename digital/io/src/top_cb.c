@@ -190,6 +190,9 @@ top__GET_PUCK_FROM_DISTRIBUTOR__move_fsm_failed (void)
     else
       {
 	/* Ensure cylinder is closed. */
+	cylinder_close_order = 1;
+	/* Flush cylinder. */
+	cylinder_flush_order = 1;
 	asserv_position_t position;
 	/* Go to unload area. */
 	top_get_next_position_to_unload_puck (&position);
@@ -303,7 +306,7 @@ top__GO_TO_UNLOAD_AREA__move_fsm_failed (void)
 fsm_branch_t
 top__FUCK_UNLOAD_AREA__bot_move_succeed (void)
 {
-    /* Close elevator. */
+    /* Unload elevator. */
     elvt_order = 3;
     return top_next (FUCK_UNLOAD_AREA, bot_move_succeed);
 }
@@ -329,6 +332,8 @@ top__FUCK_UNLOAD_AREA__bot_move_failed (void)
 fsm_branch_t
 top__UNLOAD_PUCKS__elevator_order_done (void)
 {
+    /* Close elevator. */
+    elvt_order = 3;
     /* Move forward. */
     asserv_move_linearly (PG_BORDER_DISTANCE);
     return top_next (UNLOAD_PUCKS, elevator_order_done);
@@ -665,7 +670,6 @@ top__CLEAN_FRONT_OF_DISTRIBUTOR__move_fsm_succeed (void)
 {
     /* Open cylinder. */
     cylinder_close_order = 0;
-    /* TODO: alete cylinder to open. */
     /* Fuck the distributor. */
     asserv_go_to_the_wall (0);
     return top_next (CLEAN_FRONT_OF_DISTRIBUTOR, move_fsm_succeed);
