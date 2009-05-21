@@ -143,19 +143,19 @@ void
 main_event_to_fsm (void)
 {
 #define FSM_HANDLE_EVENT(fsm,event) \
-      { if (fsm_handle_event (fsm,event)) \
+      do { if (fsm_handle_event (fsm,event)) \
 	  { \
             TRACE (TRACE_FSM__HANDLE_EVENT, main_short_fsm_name (fsm), (u8) event); \
 	    return; \
 	  } \
-      }
+      } while (0)
 #define FSM_HANDLE_TIMEOUT(fsm) \
-      { if (fsm_handle_timeout (fsm)) \
+      do { if (fsm_handle_timeout (fsm)) \
 	  { \
             TRACE (TRACE_FSM__HANDLE_TIMEOUT, main_short_fsm_name (fsm)); \
 	    return; \
 	  } \
-      }
+      } while (0)
     /* Update FSM timeouts. */
     FSM_HANDLE_TIMEOUT (&move_fsm);
     FSM_HANDLE_TIMEOUT (&top_fsm);
