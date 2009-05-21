@@ -101,7 +101,7 @@ trace_init (void)
 	for (i = 0; i < TRACE_PAGE_PAGE_NB; i++)
 	  {
 	    val = flash_read (i * TRACE_PAGE);
-	    if (lesseq_mod8(new_trace_val, val))
+	    if (i == 0 || lesseq_mod8(new_trace_val, val))
 	      {
 		proto_send0 ('e');
 		new_trace_val = val;
