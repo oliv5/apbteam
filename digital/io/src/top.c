@@ -140,15 +140,18 @@ void
 top_get_next_position_to_unload_puck (asserv_position_t *position)
 {
     /* TODO: enahnce. */
+    static uint8_t index = 0;
     static const asserv_position_t unload[] =
       {
 	  { 1500, 600, 270 },
+	  { 1500, 2100 - 600, 90 },
       };
     /* Sanity check. */
     if (position)
       {
-	position->x = PG_X_VALUE_COMPUTING (unload->x);
-	position->y = unload->y;
-	position->a = PG_A_VALUE_COMPUTING (unload->a * BOT_ANGLE_DEGREE);
+	position->x = PG_X_VALUE_COMPUTING (unload[index].x);
+	position->y = unload[index].y;
+	position->a = PG_A_VALUE_COMPUTING (unload[index].a * BOT_ANGLE_DEGREE);
+	index = (index + 1) % 2;
       }
 }
