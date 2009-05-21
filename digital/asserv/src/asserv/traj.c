@@ -140,6 +140,10 @@ traj_ftw (void)
     if (!left && !right)
       {
 	/* Backward. */
+#ifndef HOST
+	/* No angular control. */
+	state_main.variant = 2;
+#endif
       }
     else if (!left || !right)
       {
