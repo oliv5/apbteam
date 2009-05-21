@@ -375,6 +375,8 @@ move__WAIT_FOR_CLEAR_PATH__state_timeout (void)
 	/* Error, no new position, should we try again? */
 	if (--move_data.try_again_counter == 0)
 	  {
+	    /* Post an event for the top FSM to generate a failure. */
+	    main_post_event_for_top_fsm = TOP_EVENT_move_fsm_failed;
 	    return move_next_branch (WAIT_FOR_CLEAR_PATH, state_timeout,
 				     obstacle_and_no_intermediate_path_found_and_no_try_again);
 	  }
