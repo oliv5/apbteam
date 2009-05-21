@@ -74,7 +74,7 @@ fsm_handle_event (fsm_t *fsm, u8 event)
 #ifdef HOST
 	assert (((br >> 16) & 0xff) == fsm->state_current);
 	assert (((br >> 8) & 0xff) == event);
-	printf ("%s %s =%s=> %s\n", fsm->name,
+	fprintf (stderr, "%s %s =%s=> %s\n", fsm->name,
 		fsm->states_names[fsm->state_current],
 		fsm->events_names[event], fsm->states_names[br & 0xff]);
 	fsm->state_current = br & 0xff;

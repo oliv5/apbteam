@@ -33,7 +33,8 @@
 
 #ifdef HOST
 #include <stdio.h>
-#define DPRINTF(format, args...) do { printf ((format), ## args); } while (0)
+#define DPRINTF(format, args...) \
+    do { fprintf (stderr, (format), ## args); } while (0)
 #else /* HOST */
 #define DPRINTF(format, args...)
 #endif /* HOST */
