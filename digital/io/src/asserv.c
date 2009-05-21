@@ -353,6 +353,9 @@ asserv_arm_cmd_status (void)
 uint8_t
 asserv_arm_of_status(void)
 {
+#ifdef HOST
+    return 1;
+#endif
     if(asserv_status.input_port & _BV (5))
 	return 1;
     return 0;
