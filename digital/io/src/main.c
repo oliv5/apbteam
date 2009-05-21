@@ -187,12 +187,16 @@ main_event_to_fsm (void)
 			  MOVE_EVENT_bot_move_succeed);
 	FSM_HANDLE_EVENT (&init_fsm,
 			  INIT_EVENT_bot_move_succeed);
+	FSM_HANDLE_EVENT (&top_fsm,
+			  TOP_EVENT_bot_move_succeed);
       }
     else if (move_status == failure)
       {
 	/* Move failed. */
 	FSM_HANDLE_EVENT (&move_fsm,
 			  MOVE_EVENT_bot_move_failed);
+	FSM_HANDLE_EVENT (&top_fsm,
+			  TOP_EVENT_bot_move_failed);
       }
 
     /* Check elevator status. */
@@ -212,16 +216,15 @@ main_event_to_fsm (void)
 	FSM_HANDLE_EVENT (&cylinder_fsm,
 			  CYLINDER_EVENT_move_done);
       }
-    else if (elevator_status == failure)
-      {
-	/* TODO: */
-      }
 
     /* FIXME: use general setting ack. */
     /* send event if elevator received an order */
-    if(elvt_order)
+    if (elvt_order)
 	FSM_HANDLE_EVENT (&elevator_fsm,
 			  ELEVATOR_EVENT_order_received);
+    else
+	FSM_HANDLE_EVENT (&top_fsm,
+			  TOP_EVENT_elevator_order_done);
 
 
     /* FIXME: use general setting ack or not? */
@@ -328,6 +331,11 @@ main_event_to_fsm (void)
 			  CYLINDER_EVENT_new_puck);
       }
 
+    if (top_puck_inside_bot >= 4)
+      {
+	FSM_HANDLE_EVENT (&top_fsm,
+			  TOP_EVENT_bot_is_full_of_pucks);
+      }
 }
 
 /**

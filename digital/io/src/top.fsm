@@ -7,8 +7,8 @@ States:
   waiting for the beginning of the top FSM.
  WAIT_INIT_TO_FINISH
   waiting for the end of init.
- GET_PUCK_FROM_THE_GROUND [timeout=1590]
-  get some pucks from the ground (with a timeout set to 7 seconds).
+ GET_PUCK_FROM_THE_GROUND [timeout=1575]
+  get some pucks from the ground.
  GET_PUCK_FROM_DISTRIBUTOR
   get some pucks from the distributor.
  STOP_TO_GO_TO_UNLOAD_AREA
@@ -21,7 +21,7 @@ States:
   when going backward in position for unload.
  UNLOAD_PUCKS [timeout=1125]
   when unloading all pucks from the bot.
- ELEVATOR_READY_TO_GO_AWAY_TO_RETRY_UNLOAD [timeout=1275]
+ ELEVATOR_READY_TO_GO_AWAY_TO_RETRY_UNLOAD [timeout=1125]
   wait for the elevator to be ready for a bot movement.
  GO_AWAY_TO_RETRY_UNLOAD
   when unload failed, go away from the unload area to try a new one.
@@ -29,7 +29,7 @@ States:
   try again to go away to retry unloading pucks.
  FUCK_THE_DISTRIBUTOR
   fuck the distributor.
- WAIT_FOR_PUCKS
+ WAIT_FOR_PUCKS [timeout=1575]
   wait until no more pucks or already full.
  GO_AWAY_FROM_UNLOAD_AREA
   go away from the unload area to turn freely.
@@ -61,8 +61,8 @@ Events:
   the bot has four pucks inside.
  empty_distributor
   the cylinder has tried to get some pucks but none has been seen.
- elevator_is_closed
-  the elevator has finished to unload the pucks.
+ elevator_order_done
+  the elevator has executed my order (go up, open door, close door).
 
 IDLE:
  start -> WAIT_INIT_TO_FINISH
@@ -74,15 +74,18 @@ WAIT_INIT_TO_FINISH:
 
 GET_PUCK_FROM_THE_GROUND:
  move_fsm_succeed: already_six_pucks_or_no_next_position -> GET_PUCK_FROM_DISTRIBUTOR
+  close cylinder.
   get the next distributor position and launch move FSM to go there.
  move_fsm_succeed: next_position_exists -> .
   go to the next position using move FSM.
  move_fsm_failed -> GET_PUCK_FROM_DISTRIBUTOR
+  close cylinder.
   we have failed to do a move, go the distributor (get next distributor and go
   there with move FSM).
  bot_is_full_of_pucks -> STOP_TO_GO_TO_UNLOAD_AREA
   stop move FSM.
  state_timeout -> STOP_TO_GET_PUCK_FROM_DISTRIBUTOR
+  close cylinder.
   too much time lost to get puck from the ground, stop move FSM.
 
 STOP_TO_GET_PUCK_FROM_DISTRIBUTOR:
@@ -160,9 +163,13 @@ WAIT_FOR_PUCKS:
   get a new distributor position and go there.
  empty_distributor: some_pucks_and_no_more_time -> GO_TO_UNLOAD_AREA
   compute an unload area and go there.
+ state_timeout: no_puck_or_still_time -> GET_PUCK_FROM_DISTRIBUTOR
+  do the same as empty distributor.
+ state_timeout: some_pucks_and_no_more_time -> GO_TO_UNLOAD_AREA
+  do the same as empty distributor.
 
 UNLOAD_PUCKS:
- elevator_is_closed -> GO_AWAY_FROM_UNLOAD_AREA
+ elevator_order_done -> GO_AWAY_FROM_UNLOAD_AREA
   linear move.
  state_timeout -> ELEVATOR_READY_TO_GO_AWAY_TO_RETRY_UNLOAD
   we have failed, ask the elevator to put itself in a state where bot movement
@@ -188,7 +195,7 @@ TRY_AGAIN_TO_GO_AWAY_FROM_UNLOAD_AREA:
   do the same as succeed.
 
 ELEVATOR_READY_TO_GO_AWAY_TO_RETRY_UNLOAD:
- elevator_is_closed -> GO_AWAY_TO_RETRY_UNLOAD
+ elevator_order_done -> GO_AWAY_TO_RETRY_UNLOAD
   move backward from the unload area using linear move.
  state_timeout -> GO_AWAY_TO_RETRY_UNLOAD
   do the same as elevator_ready.
