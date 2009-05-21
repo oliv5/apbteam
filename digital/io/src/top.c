@@ -53,8 +53,10 @@ top_get_next_position_to_get_puck_on_the_ground (asserv_position_t *position,
       };
     static uint8_t current_position = 0;
 
+    if (restart && current_position != 0)
+	current_position--;
     if (current_position >= (sizeof (ground_puck)
-			    / sizeof (asserv_position_t)))
+			     / sizeof (asserv_position_t)))
 	/* No more position. */
 	return 0;
     /* Sanity check. */
@@ -65,10 +67,8 @@ top_get_next_position_to_get_puck_on_the_ground (asserv_position_t *position,
 	position->y = ground_puck[current_position].y;
 	position->a = PG_A_VALUE_COMPUTING (ground_puck[current_position].a *
 					    BOT_ANGLE_DEGREE);
-	/* Go to next position only if we are restarting the procedure. */
-	if (!restart)
-	    current_position++;
       }
+    current_position++;
     return 1;
 }
 
