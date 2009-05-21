@@ -364,7 +364,8 @@ main_init (void)
     switch_init ();
     /* Path module */
     path_init (PG_BORDER_DISTANCE, PG_BORDER_DISTANCE,
-	       PG_WIDTH - PG_BORDER_DISTANCE, PG_LENGTH - PG_BORDER_DISTANCE);
+	       PG_WIDTH - PG_BORDER_DISTANCE, PG_LENGTH - PG_BORDER_DISTANCE -
+	       PG_BOTTOM_UNUSABLE_ZONE);
     /* Init all FSM (except move FSM) */
     fsm_init(&top_fsm);
     fsm_init(&init_fsm);

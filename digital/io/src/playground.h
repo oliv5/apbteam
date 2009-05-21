@@ -125,4 +125,9 @@
 #define PG_START_ZONE_LENGTH 500
 #define PG_START_ZONE_WIDTH 500
 
+/**
+ * The bottom of the table is not usable.
+ */
+#define PG_BOTTOM_UNUSABLE_ZONE 150
+
 #endif // playground_h
