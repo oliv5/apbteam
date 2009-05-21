@@ -85,13 +85,6 @@ uint8_t main_post_event_for_top_fsm = 0xFF;
 uint16_t main_sharp_ignore_event;
 
 /**
- * Flag for homologation, to disable the path finding and always stop in front
- * of an obstacle and wait.
- * Do not touch anymore ! XXX FIXME TODO
- */
-uint8_t main_always_stop_for_obstacle = 1;
-
-/**
  * Post an event for the main loop to wake up the move FSM in a certain count
  * of cycles.
  */
@@ -304,26 +297,17 @@ main_event_to_fsm (void)
 	FSM_HANDLE_EVENT (&top_fsm, save_event);
       }
     /* Sharps event for move FSM */
-    /* If we do not need to ignore sharp event */
-    if (!main_sharp_ignore_event)
+    /* Get the current direction of the bot */
+    uint8_t moving_direction = asserv_get_moving_direction ();
+    /* If we are moving */
+    if (moving_direction)
       {
-	/* Get the current direction of the bot */
-	uint8_t moving_direction = asserv_get_moving_direction ();
-	/* If we are moving */
-	if (moving_direction)
+	if (sharp_path_obstrued (moving_direction))
 	  {
-	    if (sharp_path_obstrued (moving_direction))
-	      {
-		/* Generate an event for move FSM */
-		FSM_HANDLE_EVENT (&move_fsm,
-				  MOVE_EVENT_bot_move_obstacle);
-	      }
+	    /* Generate an event for move FSM */
+	    FSM_HANDLE_EVENT (&move_fsm,
+			      MOVE_EVENT_obstacle_in_front);
 	  }
-      }
-    /* Wait flag for move FSM */
-    if (!main_move_wait_cycle)
-      {
-	FSM_HANDLE_EVENT (&move_fsm, MOVE_EVENT_wait_finished);
       }
     /* TODO: Check other sensors */
     /* TODO: implement filterbridge events */
@@ -802,16 +786,6 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 			     v8_to_v32 (args[5], args[6], args[7], args[8]));
 		break;
 	      }
-	  }
-	break;
-      case c ('o', 1):
-	  {
-	    /* Omo-logo-ation flag, to prevent avoiding obstacle and stop
-	     * instead.
-	     *   - 1b: state of the flag (0 to disable, 1 to enable).
-	     * Do not touch anymore ! XXX FIXME TODO
-	     */
-	    main_always_stop_for_obstacle = args[0];
 	  }
 	break;
       default:

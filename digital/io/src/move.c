@@ -42,8 +42,7 @@ move_start (asserv_position_t position, uint8_t backward)
     move_data.final.y = position.y;
     move_data.final.a = position.a;
     move_data.backward_movement_allowed = backward;
-    /* XXX */
-    main_always_stop_for_obstacle = 1;
+    move_data.final_move = 0;
     /* Reset move FSM flags */
     main_sharp_ignore_event = 0;
     main_move_wait_cycle = 0;
