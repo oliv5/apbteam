@@ -44,6 +44,8 @@ struct aux_t
     volatile uint8_t *zero_pin;
     /** Top zero port bit value. */
     uint8_t zero_bv;
+    /** Handle blocking by aux instead of pos. */
+    uint8_t handle_blocking;
 };
 
 extern struct aux_t aux[AC_ASSERV_AUX_NB];

@@ -66,10 +66,12 @@ aux_init (void)
     aux[0].speed = &speed_aux[0];
     aux[0].zero_pin = &IO_PIN (CONTACT_AUX0_ZERO_IO);
     aux[0].zero_bv = IO_BV (CONTACT_AUX0_ZERO_IO);
+    aux[0].handle_blocking = 1;
     aux[1].state = &state_aux[1];
     aux[1].speed = &speed_aux[1];
     aux[1].zero_pin = &IO_PIN (CONTACT_AUX1_ZERO_IO);
     aux[1].zero_bv = IO_BV (CONTACT_AUX1_ZERO_IO);
+    aux[1].handle_blocking = 0;
 }
 
 /** Update positions. */
@@ -89,7 +91,8 @@ aux_traj_goto (struct aux_t *aux)
     switch (aux->traj_mode)
       {
       case AUX_TRAJ_GOTO:
-	if (aux->speed->pos->e_old > 500)
+	if (aux->speed->pos->blocked_counter
+	    > aux->speed->pos->blocked_counter_limit)
 	  {
 	    aux->traj_mode = AUX_TRAJ_GOTO_UNBLOCK;
 	    aux->speed->pos_cons = aux->speed->pos->cur;
@@ -100,6 +103,7 @@ aux_traj_goto (struct aux_t *aux)
 		 < 300)
 	  {
 	    aux->traj_mode = AUX_TRAJ_DONE;
+	    aux->state->variant = 0;
 	    state_finish (aux->state);
 	  }
 	break;
@@ -122,6 +126,8 @@ aux_traj_goto_start (struct aux_t *aux, uint16_t pos, uint8_t seq)
     aux->speed->pos_cons += (int16_t) (pos - aux->pos);
     aux->goto_pos = aux->speed->pos_cons;
     state_start (aux->state, MODE_TRAJ, seq);
+    if (aux->handle_blocking)
+	aux->state->variant = 4;
 }
 
 /** Find zero mode. */

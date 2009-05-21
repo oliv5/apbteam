@@ -163,7 +163,8 @@ pos_update_single (struct state_t *state, struct pos_t *pos,
 	    pos->blocked_counter++;
 	else
 	    pos->blocked_counter = 0;
-	if (pos->blocked_counter > pos->blocked_counter_limit)
+	if (!(state->variant & 4)
+	    && pos->blocked_counter > pos->blocked_counter_limit)
 	  {
 	    /* Blocked. */
 	    pos_reset (pos);

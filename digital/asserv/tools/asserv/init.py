@@ -20,8 +20,10 @@ target = dict (
         aa = 0.5, asm = 0x30, ass = 0x10,
         a0kp = 4,
         a0a = 0.5, a0sm = 0x0c, a0ss = 0x05,
+        a0be = 256, a0bs = 0x04, a0bc = 10,
         a1kp = 2,
         a1a = 16, a1sm = 0x46, a1ss = 0x10,
+        a1be = 256, a1bs = 0x0c, a1bc = 10,
         E = 0x3ff, D = 0x1ff,
         w = 0x08,
         )

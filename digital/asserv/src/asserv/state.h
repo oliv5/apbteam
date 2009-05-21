@@ -55,7 +55,8 @@ struct state_t
     /** Control mode variant.
      * Used for main motors:
      *  - bit 0: disable theta position control.
-     *  - bit 1: disable alpha position control. */
+     *  - bit 1: disable alpha position control.
+     *  - bit 2: disable blocking detection. */
     uint8_t variant;
     /** Sequence number of the currently processed command, should be between
      * 1 and 127.  When a command is received on the serial port it is ignored
