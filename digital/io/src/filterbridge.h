@@ -29,7 +29,4 @@
 
 extern uint8_t fb_nb_puck;
 
-/* Is servo moving ? */
-extern uint8_t fb_work_in_progress;
-
 #endif // filterbridge_h

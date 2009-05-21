@@ -240,9 +240,9 @@ main_event_to_fsm (void)
     if(fb_nb_puck < 2)
 	FSM_HANDLE_EVENT (&cylinder_fsm,
 			  CYLINDER_EVENT_bridge_ready);
-    if(!fb_work_in_progress)
+    if(!fb_nb_puck)
 	FSM_HANDLE_EVENT (&elevator_fsm,
-			  ELEVATOR_EVENT_fb_idle);
+			  ELEVATOR_EVENT_fb_empty);
 
     /* bot empty */
     if(top_puck_inside_bot < 4)

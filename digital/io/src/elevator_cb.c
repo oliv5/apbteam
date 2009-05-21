@@ -94,7 +94,7 @@ elevator__INIT__doors_opened (void)
     /* FIXME: why this is here? */
     elvt_is_ready = 0;
     /* Close the door. */
-    pwm_set (CLOSE_DOOR_PWM, TIME_DOORS_PWM);
+    pwm_set (CLOSE_DOOR_PWM, 2*TIME_DOORS_PWM);
     return elevator_next (INIT, doors_opened);
 }
 
@@ -145,7 +145,7 @@ elevator__WAIT_A_PUCK__new_puck (void)
 
 /*
  * WAIT_A_PUCK =order_received=>
- *  => WAIT_FB_IDLE
+ *  => WAIT_FB_EMPTY
  *   elevator filling has been shut, get ready to drop pucks
  */
 fsm_branch_t
@@ -156,17 +156,17 @@ elevator__WAIT_A_PUCK__order_received (void)
 }
 
 /*
- * WAIT_FB_IDLE =fb_idle=>
+ * WAIT_FB_EMPTY =fb_empty=>
  *  => GO_TO_POS_Y
  *   execute order
  */
 fsm_branch_t
-elevator__WAIT_FB_IDLE__fb_idle (void)
+elevator__WAIT_FB_EMPTY__fb_empty (void)
 {
     elvt_new_puck = 0;
     asserv_move_elevator_absolute(posy[elvt_order - 1] - MAJ_POSY,
 				  ASSERV_ELVT_SPEED_DEFAULT);
-    return elevator_next (WAIT_FB_IDLE, fb_idle);
+    return elevator_next (WAIT_FB_EMPTY, fb_empty);
 }
 
 /*
@@ -215,7 +215,6 @@ elevator__WAIT_FOR_RELEASE_ORDER__order_received (void)
 fsm_branch_t
 elevator__LAND_ELEVATOR__in_position (void)
 {
-    elvt_order = 0;
     pwm_set(OPEN_DOOR_PWM, 0);
     return elevator_next (LAND_ELEVATOR, in_position);
 }
@@ -243,6 +242,7 @@ elevator__OPEN_DOORS__doors_opened (void)
     top_puck_inside_bot -= elvt_nb_puck;
     elvt_nb_puck = 0;
     pwm_set(0,0);
+    elvt_order = 0;
     return elevator_next (OPEN_DOORS, doors_opened);
 }
 
