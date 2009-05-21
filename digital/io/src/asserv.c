@@ -39,6 +39,11 @@
 uint32_t asserv_scale;
 
 /**
+ * Last moving direction.
+ */
+uint8_t asserv_last_moving_direction = 0;
+
+/**
  * @defgroup AsservPrivate Asserv module private variables and functions
  * declarations and definitions
  * @{
@@ -276,6 +281,10 @@ asserv_update_status (void)
     asserv_status.position.a = v8_to_v16 (status_buffer[9], status_buffer[10]);
     asserv_status.arm_position = v8_to_v16 (status_buffer[11], status_buffer[12]);
     asserv_status.elevator_position = v8_to_v16 (status_buffer[13], status_buffer[14]);
+    /* Update moving direction. */
+    if (asserv_get_moving_direction () != 0)
+	asserv_last_moving_direction = asserv_get_moving_direction ();
+
     if (trace_asserv_twi_seq == asserv_status.seq)
       {
 	/* Next ack. */
@@ -718,3 +727,8 @@ asserv_elevator_zero_position (void)
     asserv_twi_send_command ('C', 1);
 }
 
+uint8_t
+asserv_get_last_moving_direction (void)
+{
+    return asserv_last_moving_direction;
+}

@@ -382,4 +382,11 @@ asserv_arm_zero_position (void);
 void
 asserv_elevator_zero_position (void);
 
+/**
+ * Get the last moving direction of the bot.
+ * @return 1 is forward, 0 is backward.
+ */
+uint8_t
+asserv_get_last_moving_direction (void);
+
 #endif /* asserv_h */
