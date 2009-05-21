@@ -13,6 +13,8 @@ States:
   go to a position to be ready to get a new puck
  WAIT_A_PUCK
   waiting for a new puck (hurry up filter bridge!)
+ WAIT_FB_IDLE
+  waiting for the fb is idle
  WAIT_POS_ORDER
   waiting for position order (depending where we want to drop our column)
  GO_TO_POS_Y
@@ -40,8 +42,8 @@ Events:
   elevator is in position
  new_puck
   we received a new puck from FB (filter bridge, not facebook)
- time_up
-  complex event (!time_ok . fb_empty)
+ fb_idle
+  filterbridge idle
  order_received
   we received a new order
  doors_opened
@@ -74,8 +76,12 @@ WAIT_A_PUCK:
  new_puck: not_ok_for_other_pucks -> WAIT_POS_ORDER
   incrementing nb_puck var
   no more time to wait a new puck
- time_up -> WAIT_POS_ORDER
-  no more time to wait a new puck
+ order_received -> WAIT_FB_IDLE
+  elevator filling has been shut, get ready to drop pucks
+
+WAIT_FB_IDLE:
+ fb_idle -> GO_TO_POS_Y
+  execute order
 
 WAIT_POS_ORDER:
  order_received -> GO_TO_POS_Y

@@ -49,6 +49,7 @@ filterbridge__IDLE__start (void)
 fsm_branch_t
 filterbridge__WAIT_JACK_IN__jack_inserted_into_bot (void)
 {
+    fb_work_in_progress = 1;
     servo_pos_move_to(SERVO_FINGER_ID, SERVO_FINGER_IDLE);
     servo_pos_move_to(SERVO_DOOR_ID, SERVO_DOOR_CLOSE);
     return filterbridge_next (WAIT_JACK_IN, jack_inserted_into_bot);
@@ -62,6 +63,7 @@ filterbridge__WAIT_JACK_IN__jack_inserted_into_bot (void)
 fsm_branch_t
 filterbridge__CLOSE_DOOR__state_timeout (void)
 {
+    fb_work_in_progress = 0;
     return filterbridge_next (CLOSE_DOOR, state_timeout);
 }
 
@@ -91,6 +93,7 @@ filterbridge__WAIT_A_PUCK__puck_on_pos2 (void)
 fsm_branch_t
 filterbridge__MARCEL_WAIT__state_timeout (void)
 {
+    fb_work_in_progress = 1;
     servo_pos_move_to(SERVO_DOOR_ID, SERVO_DOOR_OPEN);
     return filterbridge_next (MARCEL_WAIT, state_timeout);
 }

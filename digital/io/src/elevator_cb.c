@@ -144,16 +144,29 @@ elevator__WAIT_A_PUCK__new_puck (void)
 }
 
 /*
- * TODO time_up
- * WAIT_A_PUCK =time_up=>
- *  => WAIT_POS_ORDER
- *   no more time to wait a new puck
+ * WAIT_A_PUCK =order_received=>
+ *  => WAIT_FB_IDLE
+ *   elevator filling has been shut, get ready to drop pucks
  */
 fsm_branch_t
-elevator__WAIT_A_PUCK__time_up (void)
+elevator__WAIT_A_PUCK__order_received (void)
 {
     elvt_is_ready = 0;
-    return elevator_next (WAIT_A_PUCK, time_up);
+    return elevator_next (WAIT_A_PUCK, order_received);
+}
+
+/*
+ * WAIT_FB_IDLE =fb_idle=>
+ *  => GO_TO_POS_Y
+ *   execute order
+ */
+fsm_branch_t
+elevator__WAIT_FB_IDLE__fb_idle (void)
+{
+    elvt_new_puck = 0;
+    asserv_move_elevator_absolute(posy[elvt_order - 1] - MAJ_POSY,
+				  ASSERV_ELVT_SPEED_DEFAULT);
+    return elevator_next (WAIT_FB_IDLE, fb_idle);
 }
 
 /*
@@ -166,7 +179,6 @@ elevator__WAIT_POS_ORDER__order_received (void)
 {
     asserv_move_elevator_absolute(posy[elvt_order - 1] - MAJ_POSY,
 				  ASSERV_ELVT_SPEED_DEFAULT);
-    elvt_order = 0;
     return elevator_next (WAIT_POS_ORDER, order_received);
 }
 
@@ -178,6 +190,7 @@ elevator__WAIT_POS_ORDER__order_received (void)
 fsm_branch_t
 elevator__GO_TO_POS_Y__in_position (void)
 {
+    elvt_order = 0;
     return elevator_next (GO_TO_POS_Y, in_position);
 }
 
@@ -191,7 +204,6 @@ elevator__WAIT_FOR_RELEASE_ORDER__order_received (void)
 {
     asserv_move_elevator_absolute(posy[elvt_order - 1] + MIN_POSY,
 				  ASSERV_ELVT_SPEED_DEFAULT);
-    elvt_order = 0;
     return elevator_next (WAIT_FOR_RELEASE_ORDER, order_received);
 }
 
@@ -203,6 +215,7 @@ elevator__WAIT_FOR_RELEASE_ORDER__order_received (void)
 fsm_branch_t
 elevator__LAND_ELEVATOR__in_position (void)
 {
+    elvt_order = 0;
     pwm_set(OPEN_DOOR_PWM, 0);
     return elevator_next (LAND_ELEVATOR, in_position);
 }
@@ -227,8 +240,8 @@ elevator__MINI_CLOSE__state_timeout (void)
 fsm_branch_t
 elevator__OPEN_DOORS__doors_opened (void)
 {
+    top_puck_inside_bot -= elvt_nb_puck;
     elvt_nb_puck = 0;
-    top_puck_inside_bot = 0;
     pwm_set(0,0);
     return elevator_next (OPEN_DOORS, doors_opened);
 }
@@ -254,7 +267,6 @@ fsm_branch_t
 elevator__WAIT_FOR_CLOSE_ORDER__order_received (void)
 {
     pwm_set(CLOSE_DOOR_PWM, 0);
-    elvt_order = 0;
     return elevator_next (WAIT_FOR_CLOSE_ORDER, order_received);
 }
 
@@ -266,6 +278,7 @@ elevator__WAIT_FOR_CLOSE_ORDER__order_received (void)
 fsm_branch_t
 elevator__CLOSE_DOORS__state_timeout (void)
 {
+    elvt_order = 0;
     pwm_set(0,0);
     asserv_move_elevator_absolute(posx[elvt_nb_puck],
 				  ASSERV_ELVT_SPEED_DEFAULT);
