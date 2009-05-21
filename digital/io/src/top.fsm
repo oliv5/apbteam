@@ -37,6 +37,12 @@ States:
   try again to go away from the unload area.
  CLEAN_FRONT_OF_DISTRIBUTOR
   clean the front of the distributor to have no problem to fuck it.
+ GO_AWAY_FROM_DISTRIBUTOR
+  to correctly leave a distributor, we need to do a linear move.
+ TRY_AGAIN_TO_GO_AWAY_FROM_DISTRIBUTOR
+  try again to go away from the distributor.
+ PREPARE_ELEVATOR [timeout=2250]
+  prepare the elevator for unload.
 
 Events:
  start
@@ -102,12 +108,18 @@ STOP_TO_GO_TO_UNLOAD_AREA:
   do the same as bot_move_stopped.
 
 GO_TO_UNLOAD_AREA:
- move_fsm_succeed -> FUCK_UNLOAD_AREA
-  make the bot do a fuck the wall in backward until blocked.
+ move_fsm_succeed -> PREPARE_ELEVATOR
+  prepare the elevator.
 # It can be dangerous to loop here with no condition to cancel this loop.
  move_fsm_failed -> .
   compute a new unload area.
   ask move FSM to go to the position using backward only.
+
+PREPARE_ELEVATOR:
+ elevator_order_done -> FUCK_UNLOAD_AREA
+  make the bot do a fuck the wall in backward until blocked.
+ state_timeout -> GO_TO_UNLOAD_AREA
+  compute a new unload area and retry.
 
 FUCK_UNLOAD_AREA:
  bot_move_succeed -> UNLOAD_PUCKS
@@ -156,17 +168,37 @@ FUCK_THE_DISTRIBUTOR:
   ask move FSM to go there.
 
 WAIT_FOR_PUCKS:
- bot_is_full_of_pucks -> GO_TO_UNLOAD_AREA
+ bot_is_full_of_pucks -> GO_AWAY_FROM_DISTRIBUTOR
+  remember unload area.
+ empty_distributor: no_puck_or_still_time -> GO_AWAY_FROM_DISTRIBUTOR
+  remember distributor.
+ empty_distributor: some_pucks_and_no_more_time -> GO_AWAY_FROM_DISTRIBUTOR
+  remember unload area.
+ state_timeout: no_puck_or_still_time -> GO_AWAY_FROM_DISTRIBUTOR
+  remember distributor.
+ state_timeout: some_pucks_and_no_more_time -> GO_AWAY_FROM_DISTRIBUTOR
+  remember unload area.
+
+GO_AWAY_FROM_DISTRIBUTOR:
+ bot_move_succeed: go_to_distributor -> GET_PUCK_FROM_DISTRIBUTOR
+  get a new distributor position and go there.
+ bot_move_succeed: go_to_unload -> GO_TO_UNLOAD_AREA
   compute an unload area.
   ask the move FSM to go there.
- empty_distributor: no_puck_or_still_time -> GET_PUCK_FROM_DISTRIBUTOR
+ bot_move_failed: niceness -> TRY_AGAIN_TO_GO_AWAY_FROM_DISTRIBUTOR
+  decrement niceness.
+  move forward using linear move.
+ bot_move_failed: no_more_niceness_and_go_to_distributor -> GET_PUCK_FROM_DISTRIBUTOR
   get a new distributor position and go there.
- empty_distributor: some_pucks_and_no_more_time -> GO_TO_UNLOAD_AREA
-  compute an unload area and go there.
- state_timeout: no_puck_or_still_time -> GET_PUCK_FROM_DISTRIBUTOR
-  do the same as empty distributor.
- state_timeout: some_pucks_and_no_more_time -> GO_TO_UNLOAD_AREA
-  do the same as empty distributor.
+ bot_move_failed: no_more_niceness_and_go_to_unload -> GO_TO_UNLOAD_AREA
+  compute an unload area.
+  ask the move FSM to go there.
+
+TRY_AGAIN_TO_GO_AWAY_FROM_DISTRIBUTOR:
+ bot_move_succeed -> GO_AWAY_FROM_DISTRIBUTOR
+  move backward using linear move.
+ bot_move_failed -> GO_AWAY_FROM_DISTRIBUTOR
+  do the same as succeed.
 
 UNLOAD_PUCKS:
  elevator_order_done -> GO_AWAY_FROM_UNLOAD_AREA

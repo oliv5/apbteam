@@ -39,6 +39,7 @@
  * Internal data.
  */
 asserv_position_t front_position;
+uint8_t remember_distributor = 0;
 
 /**
  * Time limit.
@@ -139,6 +140,7 @@ top__GET_PUCK_FROM_THE_GROUND__bot_is_full_of_pucks (void)
 /*
  * GET_PUCK_FROM_THE_GROUND =state_timeout=>
  *  => STOP_TO_GET_PUCK_FROM_DISTRIBUTOR
+ *   close cylinder.
  *   too much time lost to get puck from the ground, stop move FSM.
  */
 fsm_branch_t
@@ -263,14 +265,14 @@ top__STOP_TO_GET_PUCK_FROM_DISTRIBUTOR__move_fsm_stopped (void)
 
 /*
  * GO_TO_UNLOAD_AREA =move_fsm_succeed=>
- *  => FUCK_UNLOAD_AREA
- *   make the bot do a fuck the wall in backward until blocked.
+ *  => PREPARE_ELEVATOR
+ *   prepare the elevator.
  */
 fsm_branch_t
 top__GO_TO_UNLOAD_AREA__move_fsm_succeed (void)
 {
-    /* Find the unload area. */
-    asserv_go_to_the_wall (1);
+    /* Prepare elevator. */
+    elvt_order = 3;
     return top_next (GO_TO_UNLOAD_AREA, move_fsm_succeed);
 }
 
@@ -487,81 +489,66 @@ top__FUCK_THE_DISTRIBUTOR__bot_move_failed (void)
 
 /*
  * WAIT_FOR_PUCKS =bot_is_full_of_pucks=>
- *  => GO_TO_UNLOAD_AREA
- *   compute an unload area.
- *   ask the move FSM to go there.
+ *  => GO_AWAY_FROM_DISTRIBUTOR
+ *   remember unload area.
  */
 fsm_branch_t
 top__WAIT_FOR_PUCKS__bot_is_full_of_pucks (void)
 {
-    asserv_position_t position;
-    /* Go to unload area. */
-    top_get_next_position_to_unload_puck (&position);
-    /* Go there. */
-    move_start (position, ASSERV_BACKWARD);
+    remember_distributor = 0;
+    /* Backward move. */
+    asserv_move_linearly (-PG_BORDER_DISTANCE);
     return top_next (WAIT_FOR_PUCKS, bot_is_full_of_pucks);
 }
 
 /*
  * WAIT_FOR_PUCKS =empty_distributor=>
- * no_puck_or_still_time => GET_PUCK_FROM_DISTRIBUTOR
- *   get a new distributor position and go there.
- * some_pucks_and_no_more_time => GO_TO_UNLOAD_AREA
- *   compute an unload area and go there.
+ * no_puck_or_still_time => GO_AWAY_FROM_DISTRIBUTOR
+ *   remember distributor.
+ * some_pucks_and_no_more_time => GO_AWAY_FROM_DISTRIBUTOR
+ *   remember unload area.
  */
 fsm_branch_t
 top__WAIT_FOR_PUCKS__empty_distributor (void)
 {
     if (!top_puck_inside_bot || chrono_remaining_time () > TOP_TIME_LIMIT)
       {
-	/* Get next position. */
-	asserv_position_t position;
-	/* Go to distributor. */
-	top_get_next_position_to_get_distributor (&position, &front_position);
-	/* Go there. */
-	move_start (position, ASSERV_BACKWARD);
-	return top_next_branch (WAIT_FOR_PUCKS, empty_distributor,
-				no_puck_or_still_time);
+	remember_distributor = 1;
+	/* Backward move. */
+	asserv_move_linearly (-PG_BORDER_DISTANCE);
+	return top_next_branch (WAIT_FOR_PUCKS, empty_distributor, no_puck_or_still_time);
       }
     else
       {
-	asserv_position_t position;
-	/* Go to unload area. */
-	top_get_next_position_to_unload_puck (&position);
-	/* Go there. */
-	move_start (position, ASSERV_BACKWARD);
-	return top_next_branch (WAIT_FOR_PUCKS, empty_distributor,
-				some_pucks_and_no_more_time);
+	remember_distributor = 0;
+	/* Backward move. */
+	asserv_move_linearly (-PG_BORDER_DISTANCE);
+	return top_next_branch (WAIT_FOR_PUCKS, empty_distributor, some_pucks_and_no_more_time);
       }
 }
 
 /*
  * WAIT_FOR_PUCKS =state_timeout=>
- * no_puck_or_still_time => GET_PUCK_FROM_DISTRIBUTOR
- *   do the same as empty distributor.
- * some_pucks_and_no_more_time => GO_TO_UNLOAD_AREA
- *   do the same as empty distributor.
+ * no_puck_or_still_time => GO_AWAY_FROM_DISTRIBUTOR
+ *   remember distributor.
+ * some_pucks_and_no_more_time => GO_AWAY_FROM_DISTRIBUTOR
+ *   remember unload area.
  */
 fsm_branch_t
 top__WAIT_FOR_PUCKS__state_timeout (void)
 {
     if (!top_puck_inside_bot || chrono_remaining_time () > TOP_TIME_LIMIT)
       {
-	/* Get next position. */
-	asserv_position_t position;
-	/* Go to distributor. */
-	top_get_next_position_to_get_distributor (&position, &front_position);
-	/* Go there. */
-	move_start (position, ASSERV_BACKWARD);
+	remember_distributor = 1;
+	/* Backward move. */
+	asserv_move_linearly (-PG_BORDER_DISTANCE);
 	return top_next_branch (WAIT_FOR_PUCKS, state_timeout, no_puck_or_still_time);
       }
     else
       {
-	asserv_position_t position;
-	/* Go to unload area. */
-	top_get_next_position_to_unload_puck (&position);
-	/* Go there. */
-	move_start (position, ASSERV_BACKWARD);
+	remember_distributor = 0;
+	/* Backward move. */
+	asserv_move_linearly (-PG_BORDER_DISTANCE);
 	return top_next_branch (WAIT_FOR_PUCKS, state_timeout, some_pucks_and_no_more_time);
       }
 }
@@ -699,4 +686,121 @@ top__CLEAN_FRONT_OF_DISTRIBUTOR__move_fsm_failed (void)
     return top_next (CLEAN_FRONT_OF_DISTRIBUTOR, move_fsm_failed);
 }
 
+/*
+ * GO_AWAY_FROM_DISTRIBUTOR =bot_move_succeed=>
+ * go_to_distributor => GET_PUCK_FROM_DISTRIBUTOR
+ *   get a new distributor position and go there.
+ * go_to_unload => GO_TO_UNLOAD_AREA
+ *   compute an unload area.
+ *   ask the move FSM to go there.
+ */
+fsm_branch_t
+top__GO_AWAY_FROM_DISTRIBUTOR__bot_move_succeed (void)
+{
+    if (remember_distributor)
+      {
+	/* Get next position. */
+	asserv_position_t position;
+	/* Go to distributor. */
+	top_get_next_position_to_get_distributor (&position, &front_position);
+	/* Go there. */
+	move_start (position, ASSERV_BACKWARD);
+	return top_next_branch (GO_AWAY_FROM_DISTRIBUTOR, bot_move_succeed, go_to_distributor);
+      }
+    else
+      {
 
+	asserv_position_t position;
+	/* Go to unload area. */
+	top_get_next_position_to_unload_puck (&position);
+	/* Go there. */
+	move_start (position, ASSERV_BACKWARD);
+	return top_next_branch (GO_AWAY_FROM_DISTRIBUTOR, bot_move_succeed, go_to_unload);
+      }
+}
+
+/*
+ * GO_AWAY_FROM_DISTRIBUTOR =bot_move_failed=>
+ * niceness => TRY_AGAIN_TO_GO_AWAY_FROM_DISTRIBUTOR
+ *   decrement niceness.
+ *   move forward using linear move.
+ * no_more_niceness_and_go_to_distributor => GET_PUCK_FROM_DISTRIBUTOR
+ *   get a new distributor position and go there.
+ */
+fsm_branch_t
+top__GO_AWAY_FROM_DISTRIBUTOR__bot_move_failed (void)
+{
+    /* TODO: niceness. */
+    if (1)
+      {
+	/* Linear move. */
+	asserv_move_linearly (PG_BORDER_DISTANCE);
+	return top_next_branch (GO_AWAY_FROM_DISTRIBUTOR, bot_move_failed, niceness);
+      }
+    else
+      {
+	/* Get next position. */
+	asserv_position_t position;
+	/* Go to distributor. */
+	top_get_next_position_to_get_distributor (&position, &front_position);
+	/* Go there. */
+	move_start (position, ASSERV_BACKWARD);
+	return top_next_branch (GO_AWAY_FROM_DISTRIBUTOR, bot_move_failed, no_more_niceness_and_go_to_distributor);
+      }
+}
+
+/*
+ * TRY_AGAIN_TO_GO_AWAY_FROM_DISTRIBUTOR =bot_move_succeed=>
+ *  => GO_AWAY_FROM_DISTRIBUTOR
+ *   move backward using linear move.
+ */
+fsm_branch_t
+top__TRY_AGAIN_TO_GO_AWAY_FROM_DISTRIBUTOR__bot_move_succeed (void)
+{
+    /* Backward move. */
+    asserv_move_linearly (-PG_BORDER_DISTANCE);
+    return top_next (TRY_AGAIN_TO_GO_AWAY_FROM_DISTRIBUTOR, bot_move_succeed);
+}
+
+/*
+ * TRY_AGAIN_TO_GO_AWAY_FROM_DISTRIBUTOR =bot_move_failed=>
+ *  => GO_AWAY_FROM_DISTRIBUTOR
+ *   do the same as succeed.
+ */
+fsm_branch_t
+top__TRY_AGAIN_TO_GO_AWAY_FROM_DISTRIBUTOR__bot_move_failed (void)
+{
+    /* Backward move. */
+    asserv_move_linearly (-PG_BORDER_DISTANCE);
+    return top_next (TRY_AGAIN_TO_GO_AWAY_FROM_DISTRIBUTOR, bot_move_failed);
+}
+
+/*
+ * PREPARE_ELEVATOR =elevator_order_done=>
+ *  => FUCK_UNLOAD_AREA
+ *   make the bot do a fuck the wall in backward until blocked.
+ */
+fsm_branch_t
+top__PREPARE_ELEVATOR__elevator_order_done (void)
+{
+    /* Find the unload area. */
+    asserv_go_to_the_wall (1);
+    return top_next (PREPARE_ELEVATOR, elevator_order_done);
+}
+
+/*
+ * PREPARE_ELEVATOR =state_timeout=>
+ *  => GO_TO_UNLOAD_AREA
+ *   compute a new unload area and retry.
+ */
+fsm_branch_t
+top__PREPARE_ELEVATOR__state_timeout (void)
+{
+    /* Get next position. */
+    asserv_position_t position;
+    /* Go to unload area. */
+    top_get_next_position_to_unload_puck (&position);
+    /* Go there. */
+    move_start (position, ASSERV_BACKWARD);
+    return top_next (PREPARE_ELEVATOR, state_timeout);
+}
