@@ -85,6 +85,7 @@ class Sorter (Observable):
                             and a > 0 and a < pi / 16):
                         self.arm_slot[i] = front_puck
                         front_puck.pos = None
+                        front_puck.notify ()
                     # If arm is up, pass puck to bridge.
                     if (self.arm_slot[i] is not None
                             and a > pi and a < 17 * pi / 16):
