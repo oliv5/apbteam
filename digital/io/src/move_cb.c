@@ -31,11 +31,13 @@
 #include "move.h"
 #include "sharp.h"
 #include "aquajim.h"
+#include "trace_event.h"
 
 #include "main.h"      /* main_post_event_for_top_fsm */
 #include "modules/math/fixed/fixed.h"	/* fixed_* */
 #include "modules/path/path.h"
 #include "modules/utils/utils.h"
+#include "modules/trace/trace.h"
 
 #include "debug.host.h"
 
@@ -125,6 +127,7 @@ move_get_next_position (move_position_t *dst)
     /* Give the current position of the bot to the path module */
     path_endpoints (current_pos.x, current_pos.y,
 		    move_data.final.x, move_data.final.y);
+    TRACE (TRACE_MOVE__PATH_UPDATE);
     /* Update the path module */
     path_update ();
 

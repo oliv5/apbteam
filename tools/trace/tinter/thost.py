@@ -6,7 +6,7 @@ from utils import *
 
 FLASH_MEMORY_HIGH = 0x1fffff
 FLASH_PAGE = 0x80000
-FLASH_BUFFER_SIZE = 128
+FLASH_BUFFER_SIZE = 16
 FLASH_CMD_INIT = 0
 FLASH_CMD_READ = 1
 
@@ -64,7 +64,7 @@ class THost:
         i -= FLASH_PAGE
 
         start_addr = i
-        end_addr = start_addr + FLASH_PAGE
+        end_addr = start_addr + 100 * 16
         print "Dump memory from address : " +  hex(start_addr) + " to " + \
                 hex(end_addr)
 

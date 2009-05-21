@@ -42,7 +42,7 @@ struct trace_t
 /** Flash status. */
     trace_status_t status;
     /** Flash start address */
-    const uint32_t addr_start;
+    uint32_t addr_start;
     /** Flash address. */
     uint32_t addr;
 };
@@ -122,7 +122,7 @@ trace_init (void)
 	  }
 	new_trace_val ++;
 	proto_send1b ('v', new_trace_val);
-	*((uint32_t*) &trace_global.addr_start) = new_trace_addr;
+	trace_global.addr_start = new_trace_addr;
 
 	/* Store the trace val. */
 	flash_write (new_trace_addr, new_trace_val);
