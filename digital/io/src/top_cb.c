@@ -44,7 +44,7 @@ uint8_t remember_distributor = 0;
 /**
  * Time limit.
  */
-#define TOP_TIME_LIMIT 15000
+#define TOP_TIME_LIMIT 25000
 
 /*
  * IDLE =start=>
