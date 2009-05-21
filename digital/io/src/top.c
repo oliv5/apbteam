@@ -78,15 +78,16 @@ top_get_next_position_to_get_distributor (asserv_position_t *clean_position,
 {
     /* Number of distributor. */
 #define DISTRIBUTOR_COUNT 3
+#define DISTRIBUTOR_PROTECTION 360
     /* Table of distributor, first index is clean, second is front. */
     static const asserv_position_t distributor[DISTRIBUTOR_COUNT][2] =
       {
 	  /* First distributor. */
-	  { { 2711, 270, 270 }, { 2711, 200, 270 } },
+	  { { 2711, 0 + DISTRIBUTOR_PROTECTION, 270 }, { 2711, 200, 270 } },
 	  /* Second distributor. */
-	  { { 2730, 600, 180 }, { 2730, 800, 0 } },
+	  { { PG_WIDTH - DISTRIBUTOR_PROTECTION, 600, 90 }, { PG_WIDTH - DISTRIBUTOR_PROTECTION, 800, 0 } },
 	  /* Third distributor. */
-	  { { 2730, 1100, 180 }, { 2730, 1300, 0 } },
+	  { { PG_WIDTH - DISTRIBUTOR_PROTECTION, 1100, 90 }, { PG_WIDTH - DISTRIBUTOR_PROTECTION, 1300, 0 } },
       };
     /* Maximum number of remaining puck by distributor. */
     static uint8_t distributor_puck_count[DISTRIBUTOR_COUNT] = { 5, 5, 5 };
@@ -141,7 +142,7 @@ top_get_next_position_to_unload_puck (asserv_position_t *position)
     /* TODO: enahnce. */
     static const asserv_position_t unload[] =
       {
-	  { 1500, 600, 90 },
+	  { 1500, 600, 270 },
       };
     /* Sanity check. */
     if (position)
