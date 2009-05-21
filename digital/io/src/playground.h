@@ -63,7 +63,7 @@
  * value of the angle depending on the color.
  */
 #define PG_A_VALUE_COMPUTING(a) \
-    (bot_color ? (a) : ((a) + BOT_ANGLE_DEGREE * 180))
+    (bot_color ? (a) : (BOT_ANGLE_DEGREE * 180) - (a))
 
 /**
  * The position where to reset the bot when it starts, depending on the color.
