@@ -247,6 +247,25 @@ top__GET_PUCK_FROM_DISTRIBUTOR__move_fsm_failed (void)
 }
 
 /*
+ * GET_PUCK_FROM_DISTRIBUTOR =state_timeout=>
+ *  => GET_PUCK_FROM_DISTRIBUTOR
+ *   get the next distributor position and launch move FSM to go there.
+ */
+fsm_branch_t
+top__GET_PUCK_FROM_DISTRIBUTOR__state_timeout (void)
+{
+    /* Close cylinder. */
+    cylinder_close_order = 1;
+    /* Get next position. */
+    asserv_position_t position;
+    /* Go to distributor. */
+    top_get_next_position_to_get_distributor (&position, &front_position);
+    /* Go there. */
+    move_start (position, ASSERV_BACKWARD);
+    return top_next (GET_PUCK_FROM_DISTRIBUTOR, state_timeout);
+}
+
+/*
  * STOP_TO_GO_TO_UNLOAD_AREA =move_fsm_stopped=>
  *  => GO_TO_UNLOAD_AREA
  *   compute an unload area.

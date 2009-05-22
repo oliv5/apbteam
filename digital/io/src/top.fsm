@@ -9,7 +9,7 @@ States:
   waiting for the end of init.
  GET_PUCK_FROM_THE_GROUND [timeout=1575]
   get some pucks from the ground.
- GET_PUCK_FROM_DISTRIBUTOR
+ GET_PUCK_FROM_DISTRIBUTOR [timeout=2250]
   get some pucks from the distributor.
  STOP_TO_GO_TO_UNLOAD_AREA
   stop the move FSM before starting a new one.
@@ -19,7 +19,7 @@ States:
   when going to unload area.
  FUCK_UNLOAD_AREA
   when going backward in position for unload.
- UNLOAD_PUCKS [timeout=11250]
+ UNLOAD_PUCKS [timeout=1125]
   when unloading all pucks from the bot.
  ELEVATOR_READY_TO_GO_AWAY_TO_RETRY_UNLOAD [timeout=1125]
   wait for the elevator to be ready for a bot movement.
@@ -157,6 +157,8 @@ GET_PUCK_FROM_DISTRIBUTOR:
  move_fsm_failed: some_pucks_and_no_more_time -> GO_TO_UNLOAD_AREA
   compute an unload area.
   ask move FSM to go there.
+ state_timeout -> .
+  get the next distributor position and launch move FSM to go there.
 
 CLEAN_FRONT_OF_DISTRIBUTOR:
  move_fsm_succeed -> FUCK_THE_DISTRIBUTOR
