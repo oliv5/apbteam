@@ -503,7 +503,7 @@ asserv_goto_xya (uint32_t x, uint32_t y, int16_t a, uint8_t backward)
     asserv_twi_send_command ('X', 9);
 }
 
-/* Go to the wall (moving backward). */
+/* Go to the wall. */
 void
 asserv_go_to_the_wall (uint8_t backward)
 {
@@ -517,8 +517,11 @@ asserv_go_to_the_wall (uint8_t backward)
 void
 asserv_go_to_distributor (void)
 {
-    /* Send the go the distributor command to the asserv board */
-    asserv_twi_send_command ('F', 0);
+    /* Put direction and delay as parameters */
+    asserv_twi_buffer_param[0] = 0;
+    asserv_twi_buffer_param[1] = 25;
+    /* Send the go the wall command to the asserv board */
+    asserv_twi_send_command ('g', 2);
 }
 
 /* Move the arm. */

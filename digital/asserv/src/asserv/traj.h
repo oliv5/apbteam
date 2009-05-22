@@ -46,6 +46,9 @@ void
 traj_ftw_start (uint8_t backward, uint8_t seq);
 
 void
+traj_ftw_start_center (uint8_t backward, uint8_t center_delay, uint8_t seq);
+
+void
 traj_gtd_start (uint8_t seq);
 
 void

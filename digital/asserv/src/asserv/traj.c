@@ -93,6 +93,12 @@ static uint32_t traj_goto_x, traj_goto_y;
 /** Go to angle. */
 static uint32_t traj_goto_a;
 
+/** Use center sensor. */
+static uint8_t traj_use_center;
+
+/** Center sensor delay. */
+static uint8_t traj_center_delay;
+
 /** Initialise computed factors. */
 void
 traj_init (void)
@@ -118,7 +124,7 @@ traj_angle_offset_start (int32_t angle, uint8_t seq)
 static void
 traj_ftw (void)
 {
-    uint8_t left, right;
+    uint8_t left, center, right;
     int16_t speed;
     speed = speed_theta.slow;
     speed *= 256;
@@ -133,6 +139,17 @@ traj_ftw (void)
 	left = !IO_GET (CONTACT_BACK_LEFT_IO);
 	right = !IO_GET (CONTACT_BACK_RIGHT_IO);
       }
+    center = 0;
+    if (traj_use_center)
+      {
+	if (!IO_GET (CONTACT_CENTER_IO))
+	  {
+	    if (traj_center_delay == 0)
+		center = 1;
+	    else
+		traj_center_delay--;
+	  }
+      }
     speed_theta.use_pos = speed_alpha.use_pos = 0;
     speed_theta.cons = speed;
     speed_alpha.cons = 0;
@@ -145,7 +162,7 @@ traj_ftw (void)
 	state_main.variant = 2;
 #endif
       }
-    else if (!left || !right)
+    else if (!center && (!left || !right))
       {
 #ifndef HOST
 	/* No angular control. */
@@ -178,6 +195,18 @@ traj_ftw_start (uint8_t backward, uint8_t seq)
 {
     traj_mode = TRAJ_FTW;
     traj_backward = backward;
+    traj_use_center = 0;
+    state_start (&state_main, MODE_TRAJ, seq);
+}
+
+/** Start go to the wall mode, with center sensor. */
+void
+traj_ftw_start_center (uint8_t backward, uint8_t center_delay, uint8_t seq)
+{
+    traj_mode = TRAJ_FTW;
+    traj_backward = backward;
+    traj_use_center = 1;
+    traj_center_delay = center_delay;
     state_start (&state_main, MODE_TRAJ, seq);
 }
 

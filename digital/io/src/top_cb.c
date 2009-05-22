@@ -743,7 +743,7 @@ top__CLEAN_FRONT_OF_DISTRIBUTOR__move_fsm_succeed (void)
     /* Open cylinder. */
     cylinder_close_order = 0;
     /* Fuck the distributor. */
-    asserv_go_to_the_wall (0);
+    asserv_go_to_distributor ();
     return top_next (CLEAN_FRONT_OF_DISTRIBUTOR, move_fsm_succeed);
 }
 

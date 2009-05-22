@@ -391,6 +391,15 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	    break;
 	traj_ftw_start (args[0], args[1]);
 	break;
+      case c ('f', 3):
+	/* Go to the wall, using center with a delay.
+	 * - b: 0: forward, 1: backward.
+	 * - b: delay.
+	 * - b: sequence number. */
+	if (args[1] == state_main.sequence)
+	    break;
+	traj_ftw_start_center (args[0], args[1], args[2]);
+	break;
       case c ('F', 1):
 	/* Go to the dispenser.
 	 * - b: sequence number. */

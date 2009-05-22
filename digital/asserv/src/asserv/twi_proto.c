@@ -163,10 +163,16 @@ twi_proto_callback (u8 *buf, u8 size)
 	 * - w: angle offset. */
 	traj_angle_offset_start (((int32_t) (int16_t) v8_to_v16 (buf[2], buf[3])) << 8, 0);
 	break;
-      case c ('f', 0):
+      case c ('f', 1):
 	/* Go to the wall.
 	 * - b: 0: forward, 1: backward. */
 	traj_ftw_start (buf[2], 0);
+	break;
+      case c ('g', 2):
+	/* Go to the wall using center sensor with delay.
+	 * - b: 0: forward, 1: backward.
+	 * - b: delay. */
+	traj_ftw_start_center (buf[2], buf[3], 0);
 	break;
       case c ('F', 0):
 	/* Go to the dispenser. */

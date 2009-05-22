@@ -73,6 +73,10 @@ This table describe the list of supported commands by the *asserv* card:
 |   'f'   | Move  | - direction (b) | Go to the wall                           |
 |         |       |                 |   - direction: 0 = forward, 1 = backward |
 +---------+-------+-----------------+------------------------------------------+
+|   'g'   | Move  | - direction (b) | Go to the wall, using center sensor      |
+|         |       | - delay (b)     |   - direction: 0 = forward, 1 = backward |
+|         |       |                 |   - delay: center sensor trigger delay   |
++---------+-------+-----------------+------------------------------------------+
 |   'F'   | Move  | None            | Go to a distributor (forward movement)   |
 +---------+-------+-----------------+------------------------------------------+
 |   'x'   | Move  | - x (3b)        | Go to an absolute position               |
