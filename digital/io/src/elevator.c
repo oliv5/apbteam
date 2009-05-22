@@ -43,7 +43,76 @@ uint8_t elvt_new_puck = 0;
 /**
  * elevator orders
  */
-uint8_t elvt_order = 0;
+elvt_order_e elvt_order_position = CLOSE;
+uint8_t elvt_order_in_progress = 0;
+uint8_t elvt_degraded_mode = 0;
+uint8_t elvt_position_required = 0;
+
+/**
+ * We prepare the elevator
+*/
+void
+elvt_prepare(uint8_t pos)
+{
+    if(elvt_order_position == CLOSE)
+      {
+	elvt_order_in_progress = 1;
+	elvt_order_position = PREPARE;
+	elvt_position_required = pos;
+      }
+    else /* if we are already prepared, just say it's done */
+	elvt_order_in_progress = 0;
+}
+
+/**
+ * We open the elevator
+*/
+void
+elvt_open(uint8_t pos)
+{
+    if(elvt_order_position == PREPARE)
+      {
+	elvt_order_in_progress = 1;
+	elvt_order_position = OPEN;
+	elvt_position_required = pos;
+	elvt_degraded_mode = 0;
+      }
+    else /* We are already open, just say it's done and whistle */
+	elvt_order_in_progress = 0;
+}
+
+/**
+ * We open the elevator in degradad mode
+*/
+void
+elvt_open_degraded(uint8_t pos)
+{
+    if(elvt_order_position == PREPARE)
+      {
+	elvt_order_in_progress = 1;
+	elvt_order_position = OPEN;
+	elvt_position_required = pos;
+	elvt_degraded_mode = 1;
+      }
+    else /* We are already open, just say it's done and whistle */
+	elvt_order_in_progress = 0;
+}
+
+
+/**
+ * We close the elevator and go away
+*/
+void
+elvt_close(void)
+{
+    if(elvt_order_position == OPEN)
+      {
+	elvt_order_in_progress = 1;
+	elvt_order_position = CLOSE;
+      }
+    else /* We are already close, just say it's done and play maracas */
+	elvt_order_in_progress = 0;
+}
 
 /* +AutoDec */
 /* -AutoDec */

@@ -331,7 +331,7 @@ fsm_branch_t
 top__GO_TO_UNLOAD_AREA__move_fsm_succeed (void)
 {
     /* Prepare elevator. */
-    elvt_order = 3;
+    elvt_prepare(3);
     return top_next (GO_TO_UNLOAD_AREA, move_fsm_succeed);
 }
 
@@ -365,7 +365,7 @@ fsm_branch_t
 top__FUCK_UNLOAD_AREA__bot_move_succeed (void)
 {
     /* Unload elevator. */
-    elvt_order = 3;
+    elvt_open(3);
     return top_next (FUCK_UNLOAD_AREA, bot_move_succeed);
 }
 
@@ -393,7 +393,7 @@ fsm_branch_t
 top__UNLOAD_PUCKS__elevator_order_done (void)
 {
     /* Close elevator. */
-    elvt_order = 3;
+    elvt_close();
     /* Move forward. */
     asserv_move_linearly (PG_BORDER_DISTANCE);
     return top_next (UNLOAD_PUCKS, elevator_order_done);
@@ -409,7 +409,7 @@ fsm_branch_t
 top__UNLOAD_PUCKS__state_timeout (void)
 {
     /* Elevator close. */
-    elvt_order = 3;
+    elvt_close();
     return top_next (UNLOAD_PUCKS, state_timeout);
 }
 

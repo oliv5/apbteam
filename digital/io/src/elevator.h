@@ -43,7 +43,35 @@ extern uint8_t elvt_new_puck;
 /**
  * elevator orders
  */
-extern uint8_t elvt_order;
+typedef enum elvt_order_e {CLOSE, PREPARE, OPEN} elvt_order_e;
+extern elvt_order_e elvt_order_position;
+extern uint8_t elvt_order_in_progress;
+extern uint8_t elvt_degraded_mode;
+extern uint8_t elvt_position_required;
+
+/**
+ * We prepare the elevator
+*/
+void
+elvt_prepare(uint8_t pos);
+
+/**
+ * We open the elevator
+*/
+void
+elvt_open(uint8_t pos);
+
+/**
+ * We open the elevator in degradad mode
+*/
+void
+elvt_open_degraded(uint8_t pos);
+
+/**
+ * We close the elevator and go away
+*/
+void
+elvt_close(void);
 
 /**
  * conversion stop/millimeter

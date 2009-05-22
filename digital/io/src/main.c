@@ -226,17 +226,20 @@ main_event_to_fsm (void)
 			  CYLINDER_EVENT_of_no_puck);
 
 
-    /* FIXME: use general setting ack. */
     /* send event if elevator received an order */
-    if (elvt_order)
+    if (elvt_order_in_progress)
 	FSM_HANDLE_EVENT (&elevator_fsm,
 			  ELEVATOR_EVENT_order_received);
     else
 	FSM_HANDLE_EVENT (&top_fsm,
 			  TOP_EVENT_elevator_order_done);
 
+    /* relou case to avoid a loop */
+    if(elvt_order_in_progress && !elvt_new_puck)
+	FSM_HANDLE_EVENT (&elevator_fsm,
+			  ELEVATOR_EVENT_order_bypass);
 
-    /* FIXME: use general setting ack or not? */
+
     /* elevator new puck (set by filterbridge) */
     if(elvt_new_puck)
 	FSM_HANDLE_EVENT (&elevator_fsm,
@@ -249,10 +252,6 @@ main_event_to_fsm (void)
     if(fb_nb_puck < 2)
 	FSM_HANDLE_EVENT (&cylinder_fsm,
 			  CYLINDER_EVENT_bridge_ready);
-    if(elvt_order)
-	FSM_HANDLE_EVENT (&elevator_fsm,
-			  ELEVATOR_EVENT_order_bypass);
-
     if(cylinder_distributor_fucked)
 	FSM_HANDLE_EVENT (&cylinder_fsm,
 			  CYLINDER_EVENT_distrib_fucked);
@@ -566,7 +565,8 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	    switch(args[0])
 	      {
 	      case 'o':
-		elvt_order = args[1];
+		elvt_order_in_progress = 1;
+		elvt_position_required = args[1];
 		break;
 	      }
 	  }

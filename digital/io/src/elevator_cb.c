@@ -166,7 +166,7 @@ fsm_branch_t
 elevator__WAIT_BRIDGE_EMPTY__bridge_empty (void)
 {
     elvt_is_ready = 0;
-    asserv_move_elevator_absolute(posy[elvt_order - 1] - MAJ_POSY,
+    asserv_move_elevator_absolute(posy[elvt_position_required - 1] - MAJ_POSY,
 				  ASSERV_ELVT_SPEED_DEFAULT);
     return elevator_next (WAIT_BRIDGE_EMPTY, bridge_empty);
 }
@@ -182,7 +182,7 @@ elevator__WAIT_BRIDGE_EMPTY__state_timeout (void)
     elvt_is_ready = 0;
     /* XXX bridge is empty but he don't know it yet */
     fb_nb_puck = 0;
-    asserv_move_elevator_absolute(posy[elvt_order - 1] - MAJ_POSY,
+    asserv_move_elevator_absolute(posy[elvt_position_required - 1] - MAJ_POSY,
 				  ASSERV_ELVT_SPEED_DEFAULT);
     TRACE (TRACE_FSM__NBPUCKS, top_total_puck_taken, top_puck_inside_bot,
 			      cylinder_nb_puck, fb_nb_puck, elvt_nb_puck);
@@ -208,7 +208,7 @@ elevator__WAIT_BRIDGE_EMPTY__new_puck (void)
 fsm_branch_t
 elevator__WAIT_POS_ORDER__order_received (void)
 {
-    asserv_move_elevator_absolute(posy[elvt_order - 1] - MAJ_POSY,
+    asserv_move_elevator_absolute(posy[elvt_position_required - 1] - MAJ_POSY,
 				  ASSERV_ELVT_SPEED_DEFAULT);
     return elevator_next (WAIT_POS_ORDER, order_received);
 }
@@ -221,7 +221,7 @@ elevator__WAIT_POS_ORDER__order_received (void)
 fsm_branch_t
 elevator__GO_TO_POS_Y__in_position (void)
 {
-    elvt_order = 0;
+    elvt_order_in_progress = 0;
     return elevator_next (GO_TO_POS_Y, in_position);
 }
 
@@ -233,8 +233,9 @@ elevator__GO_TO_POS_Y__in_position (void)
 fsm_branch_t
 elevator__WAIT_FOR_RELEASE_ORDER__order_received (void)
 {
-    asserv_move_elevator_absolute(posy[elvt_order - 1] + MIN_POSY,
-				  ASSERV_ELVT_SPEED_DEFAULT);
+    uint16_t true_pos = elvt_degraded_mode?posy[elvt_position_required - 1]:
+	posy[elvt_position_required - 1] + MIN_POSY;
+    asserv_move_elevator_absolute(true_pos, ASSERV_ELVT_SPEED_DEFAULT);
     return elevator_next (WAIT_FOR_RELEASE_ORDER, order_received);
 }
 
@@ -273,7 +274,7 @@ elevator__OPEN_DOORS__doors_opened (void)
     top_puck_inside_bot -= elvt_nb_puck;
     elvt_nb_puck = 0;
     pwm_set(0,0);
-    elvt_order = 0;
+    elvt_order_in_progress = 0;
     TRACE (TRACE_FSM__NBPUCKS, top_total_puck_taken, top_puck_inside_bot,
 			      cylinder_nb_puck, fb_nb_puck, elvt_nb_puck);
     return elevator_next (OPEN_DOORS, doors_opened);
@@ -311,7 +312,7 @@ elevator__WAIT_FOR_CLOSE_ORDER__order_received (void)
 fsm_branch_t
 elevator__CLOSE_DOORS__state_timeout (void)
 {
-    elvt_order = 0;
+    elvt_order_in_progress = 0;
     pwm_set(0,0);
     asserv_move_elevator_absolute(posx[elvt_nb_puck],
 				  ASSERV_ELVT_SPEED_DEFAULT);
