@@ -39,16 +39,16 @@
 uint16_t posx[4] =
 {
     3 * ELEVATOR_MM_TO_STEP,
-    10 * ELEVATOR_MM_TO_STEP,
-    40 * ELEVATOR_MM_TO_STEP,
-    70 * ELEVATOR_MM_TO_STEP
+    20 * ELEVATOR_MM_TO_STEP,
+    50 * ELEVATOR_MM_TO_STEP,
+    80 * ELEVATOR_MM_TO_STEP
 };
 /* Positions when we go to a target zone */
 uint16_t posy[3] =
 {
-    125 * ELEVATOR_MM_TO_STEP,
-    95 * ELEVATOR_MM_TO_STEP,
-    65 * ELEVATOR_MM_TO_STEP
+    135 * ELEVATOR_MM_TO_STEP,
+    105 * ELEVATOR_MM_TO_STEP,
+    75 * ELEVATOR_MM_TO_STEP
 };
 
 /* increase/decrease of pos y */
