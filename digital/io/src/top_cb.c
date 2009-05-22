@@ -40,6 +40,8 @@
  */
 asserv_position_t front_position;
 uint8_t remember_distributor = 0;
+#define TOP_UNLOAD_RETRY_COUNT 1
+uint8_t unload_retry_count = TOP_UNLOAD_RETRY_COUNT;
 
 /**
  * Time limit.
@@ -371,17 +373,27 @@ top__FUCK_UNLOAD_AREA__bot_move_succeed (void)
 
 /*
  * FUCK_UNLOAD_AREA =bot_move_failed=>
- *  => GO_AWAY_TO_RETRY_UNLOAD
+ * try_again => GO_AWAY_TO_RETRY_UNLOAD
+ *   move backward from the unload area using linear move.
+ * no_more_try_again => UNLOAD_PUCKS
  *   move backward from the unload area using linear move.
  */
 fsm_branch_t
 top__FUCK_UNLOAD_AREA__bot_move_failed (void)
 {
-    /* Ensure cylinder is closed. */
-    cylinder_close_order = 1;
-    /* Move forward. */
-    asserv_move_linearly (PG_BORDER_DISTANCE);
-    return top_next (FUCK_UNLOAD_AREA, bot_move_failed);
+    if (unload_retry_count--)
+      {
+	/* Ensure cylinder is closed. */
+	cylinder_close_order = 1;
+	/* Move forward. */
+	asserv_move_linearly (PG_BORDER_DISTANCE);
+	return top_next_branch (FUCK_UNLOAD_AREA, bot_move_failed, try_again);
+      }
+    else
+      {
+	elvt_open_degraded (3);
+	return top_next_branch (FUCK_UNLOAD_AREA, bot_move_failed, no_more_try_again);
+      }
 }
 
 /*
@@ -394,6 +406,8 @@ top__UNLOAD_PUCKS__elevator_order_done (void)
 {
     /* Close elevator. */
     elvt_close();
+    /* Reset counter. */
+    unload_retry_count = TOP_UNLOAD_RETRY_COUNT;
     /* Move forward. */
     asserv_move_linearly (PG_BORDER_DISTANCE);
     return top_next (UNLOAD_PUCKS, elevator_order_done);

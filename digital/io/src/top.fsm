@@ -130,7 +130,9 @@ PREPARE_ELEVATOR:
 FUCK_UNLOAD_AREA:
  bot_move_succeed -> UNLOAD_PUCKS
   unload all the pucks from the elevator.
- bot_move_failed -> GO_AWAY_TO_RETRY_UNLOAD
+ bot_move_failed: try_again -> GO_AWAY_TO_RETRY_UNLOAD
+  move backward from the unload area using linear move.
+ bot_move_failed: no_more_try_again -> UNLOAD_PUCKS
   move backward from the unload area using linear move.
 
 GO_AWAY_TO_RETRY_UNLOAD:
