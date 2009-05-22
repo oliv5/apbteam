@@ -13,7 +13,7 @@ States:
   go to a position to be ready to get a new puck
  WAIT_A_PUCK
   waiting for a new puck (hurry up filter bridge!)
- WAIT_BRIDGE_EMPTY[timeout=1200]
+ WAIT_BRIDGE_EMPTY[timeout=450]
   waiting bridge empty
  WAIT_POS_ORDER
   waiting for position order (depending where we want to drop our column)
@@ -25,7 +25,7 @@ States:
   land elevator to the ground
  MINI_CLOSE[timeout=45]
   try to unblock pucks
- OPEN_DOORS[timeout=675]
+ OPEN_DOORS[timeout=450]
   releasing pucks
  WAIT_FOR_CLOSE_ORDER
   ready to close doors at your command
