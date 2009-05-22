@@ -150,6 +150,10 @@ class Proto:
             h = self.handlers[key]
             h[0] (*(frame.decode (h[1])))
 
+    def flush (self):
+        """Drop any pending frames."""
+        self.send_queue = [ ]
+
 class Frame:
 
     def __init__ (self, command = None, fmt = '', *args):

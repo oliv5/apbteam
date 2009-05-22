@@ -25,8 +25,13 @@ class THost:
 
     def __dump_callback (self, *memory):
         """Callback call on each data reception"""
+        not_ff = False
         for i in range(len (memory)):
+            if memory[i] != 0xff:
+                not_ff = True
             self.__memory.append (memory[i])
+        if not not_ff:
+            self.__proto.flush ()
         sys.stderr.write (".")
 
     def __trace_present (self, val):
@@ -64,7 +69,7 @@ class THost:
         i -= FLASH_PAGE
 
         start_addr = i
-        end_addr = start_addr + 100 * 16
+        end_addr = start_addr + FLASH_PAGE
         print "Dump memory from address : " +  hex(start_addr) + " to " + \
                 hex(end_addr)
 
