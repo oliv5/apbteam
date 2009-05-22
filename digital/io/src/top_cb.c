@@ -75,7 +75,10 @@ top__WAIT_INIT_TO_FINISH__init_match_is_started (void)
 
 /*
  * GET_PUCK_FROM_THE_GROUND =move_fsm_succeed=>
- * already_six_pucks_or_no_next_position => GET_PUCK_FROM_DISTRIBUTOR
+ * already_six_pucks_or_no_next_position_and_no_puck => GET_PUCK_FROM_DISTRIBUTOR
+ *   close cylinder.
+ *   get the next distributor position and launch move FSM to go there.
+ * already_six_pucks_or_no_next_position_and_some_puck => STOP_TO_GO_TO_UNLOAD_AREA
  *   close cylinder.
  *   get the next distributor position and launch move FSM to go there.
  * next_position_exists => GET_PUCK_FROM_THE_GROUND
@@ -91,11 +94,25 @@ top__GET_PUCK_FROM_THE_GROUND__move_fsm_succeed (void)
       {
 	/* Ensure cylinder is close. */
 	cylinder_close_order = 1;
-	/* Go to distributor. */
-	top_get_next_position_to_get_distributor (&position, &front_position);
-	/* Go there. */
-	move_start (position, ASSERV_BACKWARD);
-	return top_next_branch (GET_PUCK_FROM_THE_GROUND, move_fsm_succeed, already_six_pucks_or_no_next_position);
+	if (top_total_puck_taken)
+	  {
+	    /* Flush cylinder. */
+	    cylinder_flush_order = 1;
+	    asserv_position_t position;
+	    /* Go to unload area. */
+	    top_get_next_position_to_unload_puck (&position);
+	    return top_next_branch (GET_PUCK_FROM_THE_GROUND, move_fsm_succeed, already_six_pucks_or_no_next_position_and_some_puck);
+	  }
+	else
+	  {
+	    /* Go there. */
+	    move_start (position, ASSERV_BACKWARD);
+	    /* Go to distributor. */
+	    top_get_next_position_to_get_distributor (&position, &front_position);
+	    /* Go there. */
+	    move_start (position, ASSERV_BACKWARD);
+	    return top_next_branch (GET_PUCK_FROM_THE_GROUND, move_fsm_succeed, already_six_pucks_or_no_next_position_and_no_puck);
+	  }
       }
     else
       {
