@@ -501,6 +501,7 @@ fsm_branch_t
 top__FUCK_THE_DISTRIBUTOR__bot_move_succeed (void)
 {
     /* TODO: tell it to cylinder. */
+    cylinder_distributor_fucked = 1;
     return top_next (FUCK_THE_DISTRIBUTOR, bot_move_succeed);
 }
 
@@ -569,6 +570,8 @@ top__WAIT_FOR_PUCKS__bot_is_full_of_pucks (void)
 fsm_branch_t
 top__WAIT_FOR_PUCKS__empty_distributor (void)
 {
+    /* Rest empty distributor. */
+    cylinder_distributor_empty = 0;
     if (!top_puck_inside_bot || chrono_remaining_time () > TOP_TIME_LIMIT)
       {
 	remember_distributor = 1;

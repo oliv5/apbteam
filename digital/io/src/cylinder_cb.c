@@ -103,8 +103,9 @@ cylinder__WAIT_A_PUCK__new_puck (void)
 fsm_branch_t
 cylinder__WAIT_A_PUCK__close_order (void)
 {
-    asserv_move_arm(-1*60*ASSERV_ARM_STEP_BY_DEGREE,
+    asserv_move_arm(1*60*ASSERV_ARM_STEP_BY_DEGREE,
 		    ASSERV_ARM_SPEED_DEFAULT);
+    /*TODO check new puck */
     return cylinder_next (WAIT_A_PUCK, close_order);
 }
 
@@ -157,7 +158,7 @@ cylinder__TURN_PLUS_1_AND_OFO__move_done (void)
     /* we verify if we drop a puck to the bridge */
     if(puck_on_cylinder)
       {
-	--cylinder_nb_puck;
+	if(cylinder_nb_puck) --cylinder_nb_puck;
 	++fb_nb_puck;
       }
     /* We probe the OF to see if we have a new puck */
@@ -308,7 +309,7 @@ cylinder__TURN_PLUS_3_FLUSH__move_done (void)
     cylinder_flush_order = 0;
     if(puck_on_cylinder)
       {
-	--cylinder_nb_puck;
+	if(cylinder_nb_puck) --cylinder_nb_puck;
 	++fb_nb_puck;
 	puck_on_cylinder = 0;
       }
@@ -325,7 +326,7 @@ cylinder__TURN_PLUS_1_CLOSE__move_done (void)
 {
     if(puck_on_cylinder)
       {
-	--cylinder_nb_puck;
+	if(cylinder_nb_puck) --cylinder_nb_puck;
 	++fb_nb_puck;
 	puck_on_cylinder = 0;
       }
@@ -356,7 +357,7 @@ cylinder__TURN_PLUS_1_AND_OFO_DISTRIB__move_done (void)
 {
     if(puck_on_cylinder)
       {
-	--cylinder_nb_puck;
+	if(cylinder_nb_puck) --cylinder_nb_puck;
 	++fb_nb_puck;
 	puck_on_cylinder = 0;
       }

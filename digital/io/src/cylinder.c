@@ -41,4 +41,7 @@ uint8_t cylinder_flush_order = 0;
 /* distributor fucked */
 uint8_t cylinder_distributor_fucked = 0;
 
+/* distributor empty */
+uint8_t cylinder_distributor_empty = 0;
+
 /* cylinder order */

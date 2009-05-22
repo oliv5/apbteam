@@ -268,6 +268,11 @@ main_event_to_fsm (void)
 	FSM_HANDLE_EVENT (&cylinder_fsm,
 			  CYLINDER_EVENT_flush_order);
 
+    /* Generate the cylinder empty distributor. */
+    if (cylinder_distributor_empty)
+	FSM_HANDLE_EVENT (&top_fsm,
+			  TOP_EVENT_empty_distributor);
+
     /* Jack */
     if(switch_get_jack())
       {
