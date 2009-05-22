@@ -127,7 +127,6 @@ move_get_next_position (move_position_t *dst)
     /* Give the current position of the bot to the path module */
     path_endpoints (current_pos.x, current_pos.y,
 		    move_data.final.x, move_data.final.y);
-    TRACE (TRACE_MOVE__PATH_UPDATE);
     /* Update the path module */
     path_update ();
 
@@ -151,6 +150,8 @@ move_get_next_position (move_position_t *dst)
 	    asserv_goto_xya (dst->x, dst->y, move_data.final.a,
 			     move_data.backward_movement_allowed);
 	  }
+	TRACE (TRACE_MOVE__GO_TO, (u16) current_pos.x, (u16) current_pos.y,
+	       current_pos.a, dst->y, dst->y, move_data.final.a);
 	/* Reset try counter. */
 	move_data.try_again_counter = 3;
 	return 1;

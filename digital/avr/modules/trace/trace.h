@@ -76,6 +76,15 @@
      TRACE_PRINT_ARG_TYPE(arg4);\
      TRACE_PRINT_ARG_TYPE(arg5);})
 
+#define TRACE_PRINT7(arg0, arg1, arg2, arg3, arg4, arg5, arg6)\
+    ({ TRACE_PRINT_ARG_TYPE(arg0);\
+     TRACE_PRINT_ARG_TYPE(arg1);\
+     TRACE_PRINT_ARG_TYPE(arg2);\
+     TRACE_PRINT_ARG_TYPE(arg3);\
+     TRACE_PRINT_ARG_TYPE(arg4);\
+     TRACE_PRINT_ARG_TYPE(arg5);\
+     TRACE_PRINT_ARG_TYPE(arg6);})
+
 #define TRACE_PRINT_ARG_TYPE(arg)\
     do\
     {\
