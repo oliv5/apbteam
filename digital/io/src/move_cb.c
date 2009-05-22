@@ -151,7 +151,7 @@ move_get_next_position (move_position_t *dst)
 			     move_data.backward_movement_allowed);
 	  }
 	TRACE (TRACE_MOVE__GO_TO, (u16) current_pos.x, (u16) current_pos.y,
-	       current_pos.a, dst->y, dst->y, move_data.final.a);
+	       current_pos.a, dst->x, dst->y, move_data.final.a);
 	/* Reset try counter. */
 	move_data.try_again_counter = 3;
 	return 1;
@@ -214,6 +214,10 @@ move_obstacle_here (void)
 		       MOVE_OBSTACLE_RADIUS, MOVE_OBSTACLE_VALIDITY);
 	DPRINTF ("Obstacle pos x : %d, pos y : %d\n", move_data.obstacle.x,
 		 move_data.obstacle.y);
+	TRACE (TRACE_MOVE__OBSTACLE, move_data.obstacle.x,
+	       move_data.obstacle.y);
+	TRACE (TRACE_MOVE__SHARP, sharp_get_raw (0), sharp_get_raw (1),
+	       sharp_get_raw (2), sharp_get_raw (3), sharp_get_raw (4));
       }
     else
       {
