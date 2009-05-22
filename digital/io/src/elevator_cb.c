@@ -145,17 +145,54 @@ elevator__WAIT_A_PUCK__new_puck (void)
 
 /*
  * WAIT_A_PUCK =order_bypass=>
- *  => GO_TO_POS_Y
+ *  => WAIT_BRIDGE_EMPTY
  *   elevator filling has been shut, get ready to drop pucks
  */
 fsm_branch_t
 elevator__WAIT_A_PUCK__order_bypass (void)
 {
-    elvt_new_puck = 0;
+    return elevator_next (WAIT_A_PUCK, order_bypass);
+}
+
+/*
+ * WAIT_BRIDGE_EMPTY =bridge_empty=>
+ *  => GO_TO_POS_Y
+ *   bridge is empty, we are happy, we drop the column
+ */
+fsm_branch_t
+elevator__WAIT_BRIDGE_EMPTY__bridge_empty (void)
+{
     elvt_is_ready = 0;
     asserv_move_elevator_absolute(posy[elvt_order - 1] - MAJ_POSY,
 				  ASSERV_ELVT_SPEED_DEFAULT);
-    return elevator_next (WAIT_A_PUCK, order_bypass);
+    return elevator_next (WAIT_BRIDGE_EMPTY, bridge_empty);
+}
+
+/*
+ * WAIT_BRIDGE_EMPTY =state_timeout=>
+ *  => GO_TO_POS_Y
+ *   we suppose bridge is empty and we said it to the fsm
+ */
+fsm_branch_t
+elevator__WAIT_BRIDGE_EMPTY__state_timeout (void)
+{
+    elvt_is_ready = 0;
+    /* XXX bridge is empty but he don't know it yet */
+    fb_nb_puck = 0;
+    asserv_move_elevator_absolute(posy[elvt_order - 1] - MAJ_POSY,
+				  ASSERV_ELVT_SPEED_DEFAULT);
+    return elevator_next (WAIT_BRIDGE_EMPTY, state_timeout);
+}
+
+/*
+ * WAIT_BRIDGE_EMPTY =new_puck=>
+ *  => WAIT_A_PUCK
+ *   We have a new puck, elevator must move, we go to WAIT_A_PUCK
+ */
+fsm_branch_t
+elevator__WAIT_BRIDGE_EMPTY__new_puck (void)
+{
+    return elevator_next (WAIT_BRIDGE_EMPTY, new_puck);
 }
 
 /*

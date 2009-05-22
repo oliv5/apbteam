@@ -217,6 +217,15 @@ main_event_to_fsm (void)
 			  CYLINDER_EVENT_move_done);
       }
 
+    /* check of status */
+    if (asserv_arm_of_status())
+	FSM_HANDLE_EVENT (&cylinder_fsm,
+			  CYLINDER_EVENT_of_puck);
+    else
+	FSM_HANDLE_EVENT (&cylinder_fsm,
+			  CYLINDER_EVENT_of_no_puck);
+
+
     /* FIXME: use general setting ack. */
     /* send event if elevator received an order */
     if (elvt_order)
@@ -240,7 +249,7 @@ main_event_to_fsm (void)
     if(fb_nb_puck < 2)
 	FSM_HANDLE_EVENT (&cylinder_fsm,
 			  CYLINDER_EVENT_bridge_ready);
-    if(!fb_nb_puck && elvt_order)
+    if(elvt_order)
 	FSM_HANDLE_EVENT (&elevator_fsm,
 			  ELEVATOR_EVENT_order_bypass);
 
