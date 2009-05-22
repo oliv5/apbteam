@@ -94,13 +94,15 @@ top__GET_PUCK_FROM_THE_GROUND__move_fsm_succeed (void)
       {
 	/* Ensure cylinder is close. */
 	cylinder_close_order = 1;
-	if (top_total_puck_taken)
+	if (top_puck_inside_bot)
 	  {
 	    /* Flush cylinder. */
 	    cylinder_flush_order = 1;
 	    asserv_position_t position;
 	    /* Go to unload area. */
 	    top_get_next_position_to_unload_puck (&position);
+	    /* Go there. */
+	    move_start (position, ASSERV_BACKWARD);
 	    return top_next_branch (GET_PUCK_FROM_THE_GROUND, move_fsm_succeed, already_six_pucks_or_no_next_position_and_some_puck);
 	  }
 	else
@@ -174,13 +176,15 @@ top__GET_PUCK_FROM_THE_GROUND__state_timeout (void)
 {
     /* Ensure cylinder is close. */
     cylinder_close_order = 1;
-    if (top_total_puck_taken)
+    if (top_puck_inside_bot)
       {
 	/* Flush cylinder. */
 	cylinder_flush_order = 1;
 	asserv_position_t position;
 	/* Go to unload area. */
 	top_get_next_position_to_unload_puck (&position);
+	/* Go there. */
+	move_start (position, ASSERV_BACKWARD);
 	return top_next_branch (GET_PUCK_FROM_THE_GROUND, state_timeout, some_pucks);
       }
     else

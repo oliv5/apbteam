@@ -19,7 +19,7 @@ States:
   when going to unload area.
  FUCK_UNLOAD_AREA
   when going backward in position for unload.
- UNLOAD_PUCKS [timeout=112500]
+ UNLOAD_PUCKS [timeout=11250]
   when unloading all pucks from the bot.
  ELEVATOR_READY_TO_GO_AWAY_TO_RETRY_UNLOAD [timeout=1125]
   wait for the elevator to be ready for a bot movement.

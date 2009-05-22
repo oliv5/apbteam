@@ -372,6 +372,7 @@ cylinder__TURN_PLUS_1_AND_OFO_DISTRIB__move_done (void)
 fsm_branch_t
 cylinder__TURN_PLUS_1_AND_MINUS_OFO_DISTRIB__move_done (void)
 {
+    cylinder_distributor_fucked = 0;
     return cylinder_next (TURN_PLUS_1_AND_MINUS_OFO_DISTRIB, move_done);
 }
 
@@ -408,6 +409,7 @@ cylinder__PROBE_OF__of_puck (void)
 	of_offset_enabled = 0;
 	return cylinder_next_branch (PROBE_OF, of_puck, bot_not_full);
       }
+    cylinder_distributor_fucked = 0;
     return cylinder_next_branch (PROBE_OF, of_puck, bot_full);
 }
 
