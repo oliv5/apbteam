@@ -256,6 +256,10 @@ main_event_to_fsm (void)
     if(cylinder_distributor_fucked)
 	FSM_HANDLE_EVENT (&cylinder_fsm,
 			  CYLINDER_EVENT_distrib_fucked);
+    /* elevator is ready */
+    if(elvt_is_ready)
+	FSM_HANDLE_EVENT (&filterbridge_fsm,
+			  FILTERBRIDGE_EVENT_lift_ready);
 
     /* bot empty */
     if(top_puck_inside_bot < 4)

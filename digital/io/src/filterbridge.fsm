@@ -11,6 +11,8 @@ States:
   close access to the lift (and wait 1 sec)
  WAIT_A_PUCK
   waiting for a new puck
+ WAIT_LIFT_READY
+  waiting for elevator ready
  MARCEL_WAIT[timeout=45]
   waiting the puck is entirely in pos2
  OPEN_DOOR[timeout=225]
@@ -25,6 +27,8 @@ Events:
   robot start
  jack_inserted_into_bot
   jack into the bot
+ lift_ready
+  the elevator is ready
  puck_on_pos2
   a puck has been detected on bridge's position 2
  no_puck_on_pos2
@@ -45,10 +49,12 @@ CLOSE_DOOR:
   we are ready, we wait a puck
 
 WAIT_A_PUCK:
- puck_on_pos2: lift_not_ready -> .
-  Lift not ready, we stand by
- puck_on_pos2: lift_ready -> MARCEL_WAIT
-  wait the puck is entirely on pos2
+ puck_on_pos2 -> WAIT_LIFT_READY
+  Puck ready to be dropped to the elevator. Test if elvt ready to get it.
+
+WAIT_LIFT_READY:
+ lift_ready -> MARCEL_WAIT
+  the lift is ready
 
 MARCEL_WAIT:
  state_timeout -> OPEN_DOOR
