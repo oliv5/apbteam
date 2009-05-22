@@ -24,12 +24,63 @@
  * }}} */
 #include "common.h"
 #include "top.h"
+#include "move.h"
 
 #include "playground.h"
+#include "modules/math/fixed/fixed.h"
+#include <math.h>
 
 /* Reset to 0. */
 uint8_t top_total_puck_taken = 0;
 uint8_t top_puck_inside_bot = 0;
+
+/**
+ * Number of unload position.
+ */
+#define TOP_UNLOAD_POSITION_COUNT 8
+
+#define TOP_UNLOAD_DISTANCE_TO_CENTER (PG_LENGTH / 2 - 600)
+
+/**
+ * Structure of a unload position with costs.
+ */
+typedef struct top_unload_position_t
+{
+    move_position_t position;
+    uint8_t cost;
+} top_unload_position_t;
+
+top_unload_position_t top_unload_position[TOP_UNLOAD_POSITION_COUNT];
+
+void
+top_init (void)
+{
+    uint8_t i, cost;
+    uint32_t angle;
+    for (i = 0; i < TOP_UNLOAD_POSITION_COUNT; i++)
+      {
+	/* Compute predefined positions. */
+	angle = 0x1000000 * i / TOP_UNLOAD_POSITION_COUNT;
+	top_unload_position[i].position.x = PG_WIDTH / 2
+	    + fixed_mul_f824 (TOP_UNLOAD_DISTANCE_TO_CENTER,
+			      fixed_cos_f824 (angle));
+	top_unload_position[i].position.y = PG_LENGTH / 2
+	    + fixed_mul_f824 (TOP_UNLOAD_DISTANCE_TO_CENTER,
+			      fixed_sin_f824 (angle));
+	top_unload_position[i].position.a = angle >> 8;
+	/* Initialize costs. */
+	if (i < TOP_UNLOAD_POSITION_COUNT / 4
+	    || i > TOP_UNLOAD_POSITION_COUNT * 3 / 4)
+	    cost = bot_color ? 6 : 0;
+	else if (i > TOP_UNLOAD_POSITION_COUNT / 4 && i <
+		 TOP_UNLOAD_POSITION_COUNT * 3 / 4)
+	    cost = bot_color ? 0 : 6;
+	else
+	    cost = 0;
+	top_unload_position[i].cost = cost;
+      }
+}
+
 
 uint8_t
 top_get_next_position_to_get_puck_on_the_ground (asserv_position_t *position,
@@ -139,19 +190,49 @@ top_get_next_position_to_get_distributor (asserv_position_t *clean_position,
 void
 top_get_next_position_to_unload_puck (asserv_position_t *position)
 {
-    /* TODO: enahnce. */
-    static uint8_t index = 0;
-    static const asserv_position_t unload[] =
+    uint8_t i, pos, diff;
+    uint8_t dynamic_cost[TOP_UNLOAD_POSITION_COUNT];
+    /* Compute angle from table center to current position, and find the
+     * nearest position. */
+    asserv_position_t current_position;
+    asserv_get_position (&current_position);
+    pos = (uint8_t) (atan2 (PG_LENGTH / 2 - (int16_t) current_position.y,
+			    PG_WIDTH / 2 - (int16_t) current_position.x)
+		     * (1.0 / (2 * M_PI)) * TOP_UNLOAD_DISTANCE_TO_CENTER
+		     + 1.0 / (TOP_UNLOAD_POSITION_COUNT * 2))
+	% TOP_UNLOAD_POSITION_COUNT;
+    /* Compute dynamic cost. Nearest position costs 0, near half circle costs
+     * 1, far half circle costs 2. */
+    for (i = 0; i < TOP_UNLOAD_POSITION_COUNT; i++)
       {
-	  { 1500, 600, 270 },
-	  { 1500, 2100 - 600, 90 },
-      };
+	/* Compute difference between this position and nearest position. */
+	diff = (i - pos + TOP_UNLOAD_POSITION_COUNT)
+	    % TOP_UNLOAD_POSITION_COUNT;
+	if (diff > TOP_UNLOAD_POSITION_COUNT / 2)
+	    diff = TOP_UNLOAD_POSITION_COUNT - diff;
+	/* Apply cost.  Always add diff to split draws. */
+	dynamic_cost[i] = top_unload_position[i].cost
+	    * TOP_UNLOAD_POSITION_COUNT;
+	if (diff == 0)
+	    dynamic_cost[i] += 0 + diff;
+	else if (diff <= TOP_UNLOAD_POSITION_COUNT / 4)
+	    dynamic_cost[i] += 1 * TOP_UNLOAD_POSITION_COUNT + diff;
+	else
+	    dynamic_cost[i] += 2 * TOP_UNLOAD_POSITION_COUNT + diff;
+      }
+    /* Now find the cheapest position. */
+    uint8_t best_pos = 0;
+    for (i = 1; i < TOP_UNLOAD_POSITION_COUNT; i++)
+      {
+	if (dynamic_cost[i] < dynamic_cost[best_pos])
+	    best_pos = i;
+      }
     /* Sanity check. */
     if (position)
       {
-	position->x = PG_X_VALUE_COMPUTING (unload[index].x);
-	position->y = unload[index].y;
-	position->a = PG_A_VALUE_COMPUTING (unload[index].a * BOT_ANGLE_DEGREE);
-	index = (index + 1) % 2;
+	position->x = top_unload_position[best_pos].position.x;
+	position->y = top_unload_position[best_pos].position.y;
+	position->a = top_unload_position[best_pos].position.a;
       }
+    top_unload_position[best_pos].cost++;
 }

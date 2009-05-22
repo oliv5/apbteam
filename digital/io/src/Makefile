@@ -14,6 +14,7 @@ CONFIGFILE = avrconfig.h
 AVR_MCU = atmega128
 # Optimize for speed.
 OPTIMIZE = -O2
+HOST_LIBS = -lm
 
 # FSMs.
 FSM_SOURCES := top move filterbridge elevator cylinder init

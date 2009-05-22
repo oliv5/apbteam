@@ -32,6 +32,7 @@
 #include "aquajim.h"
 #include "switch.h"
 #include "chrono.h"
+#include "top.h"
 #include "playground.h"
 #include "modules/trace/trace.h"
 #include "modules/path/path.h"
@@ -71,6 +72,8 @@ init__WAIT_FIRST_JACK_OUT__jack_removed_from_bot (void)
     trace_init ();
     /* Get the color. */
     bot_color = switch_get_color ();
+    /* Top initialization. */
+    top_init ();
     return init_next (WAIT_FIRST_JACK_OUT, jack_removed_from_bot);
 }
 

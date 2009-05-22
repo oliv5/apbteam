@@ -28,6 +28,12 @@
 #include "asserv.h"
 
 /**
+ * Initialize top module.
+ */
+void
+top_init (void);
+
+/**
  * Get the next position to get pucks on the ground.
  * About the @p restart parameter, you need to set to 1 when for example, you
  * have unload some pucks and restart the procedure to get new one.
