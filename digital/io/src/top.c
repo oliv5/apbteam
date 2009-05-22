@@ -53,12 +53,12 @@ top_get_next_position_to_get_puck_on_the_ground (asserv_position_t *position,
       };
     static uint8_t current_position = 0;
 
-    if (restart && current_position != 0)
-	current_position--;
     if (current_position >= (sizeof (ground_puck)
 			     / sizeof (asserv_position_t)))
 	/* No more position. */
 	return 0;
+    else if (restart && current_position != 0)
+	current_position--;
     /* Sanity check. */
     if (position)
       {
