@@ -85,9 +85,9 @@ top_get_next_position_to_get_distributor (asserv_position_t *clean_position,
 	  /* First distributor. */
 	  { { 2711, 0 + DISTRIBUTOR_PROTECTION, 270 }, { 2711, DISTRIBUTOR_PROTECTION, 270 } },
 	  /* Second distributor. */
-	  { { PG_WIDTH - DISTRIBUTOR_PROTECTION, 600, 90 }, { PG_WIDTH - DISTRIBUTOR_PROTECTION, 800, 0 } },
+	  { { PG_WIDTH - DISTRIBUTOR_PROTECTION, 600, 270 }, { PG_WIDTH - DISTRIBUTOR_PROTECTION, 800, 0 } },
 	  /* Third distributor. */
-	  { { PG_WIDTH - DISTRIBUTOR_PROTECTION, 1100, 90 }, { PG_WIDTH - DISTRIBUTOR_PROTECTION, 1300, 0 } },
+	  { { PG_WIDTH - DISTRIBUTOR_PROTECTION, 1100, 270 }, { PG_WIDTH - DISTRIBUTOR_PROTECTION, 1300, 0 } },
       };
     /* Maximum number of remaining puck by distributor. */
     static uint8_t distributor_puck_count[DISTRIBUTOR_COUNT] = { 5, 5, 5 };
