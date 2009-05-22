@@ -31,6 +31,8 @@
 #include "filterbridge.h"
 #include "top.h"
 #include "cylinder.h"
+#include "modules/trace/trace.h"
+#include "trace_event.h"
 
 /*
  * IDLE =start=>
@@ -135,6 +137,8 @@ filterbridge__TEMPO_ELVETATOR_COMMUNICATION__state_timeout (void)
     elvt_new_puck = 1;
     servo_pos_move_to(SERVO_FINGER_ID, SERVO_FINGER_IDLE);
     servo_pos_move_to(SERVO_DOOR_ID, SERVO_DOOR_CLOSE);
+    TRACE (TRACE_FSM__NBPUCKS, top_total_puck_taken, top_puck_inside_bot,
+			      cylinder_nb_puck, fb_nb_puck, elvt_nb_puck);
     return filterbridge_next (TEMPO_ELVETATOR_COMMUNICATION, state_timeout);
 }
 

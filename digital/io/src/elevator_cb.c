@@ -31,6 +31,9 @@
 #include "chrono.h"
 #include "filterbridge.h"
 #include "top.h"
+#include "modules/trace/trace.h"
+#include "trace_event.h"
+#include "cylinder.h"
 
 /* Positions when waiting a puck*/
 uint16_t posx[4] =
@@ -181,6 +184,8 @@ elevator__WAIT_BRIDGE_EMPTY__state_timeout (void)
     fb_nb_puck = 0;
     asserv_move_elevator_absolute(posy[elvt_order - 1] - MAJ_POSY,
 				  ASSERV_ELVT_SPEED_DEFAULT);
+    TRACE (TRACE_FSM__NBPUCKS, top_total_puck_taken, top_puck_inside_bot,
+			      cylinder_nb_puck, fb_nb_puck, elvt_nb_puck);
     return elevator_next (WAIT_BRIDGE_EMPTY, state_timeout);
 }
 
@@ -269,6 +274,8 @@ elevator__OPEN_DOORS__doors_opened (void)
     elvt_nb_puck = 0;
     pwm_set(0,0);
     elvt_order = 0;
+    TRACE (TRACE_FSM__NBPUCKS, top_total_puck_taken, top_puck_inside_bot,
+			      cylinder_nb_puck, fb_nb_puck, elvt_nb_puck);
     return elevator_next (OPEN_DOORS, doors_opened);
 }
 

@@ -30,6 +30,8 @@
 #include "filterbridge.h"
 #include "elevator.h"
 #include "top.h"
+#include "modules/trace/trace.h"
+#include "trace_event.h"
 
 /* locales variables */
 /* is there a puck on pos 2 or 3 */
@@ -169,6 +171,8 @@ cylinder__TURN_PLUS_1_AND_OFO__move_done (void)
 	++top_puck_inside_bot;
 	++cylinder_nb_puck;
       }
+    TRACE (TRACE_FSM__NBPUCKS, top_total_puck_taken, top_puck_inside_bot,
+			      cylinder_nb_puck, fb_nb_puck, elvt_nb_puck);
     if(top_puck_inside_bot < 4)
       {
 	of_offset_enabled = 0;
@@ -313,6 +317,8 @@ cylinder__TURN_PLUS_3_FLUSH__move_done (void)
 	++fb_nb_puck;
 	puck_on_cylinder = 0;
       }
+    TRACE (TRACE_FSM__NBPUCKS, top_total_puck_taken, top_puck_inside_bot,
+			      cylinder_nb_puck, fb_nb_puck, elvt_nb_puck);
     return cylinder_next (TURN_PLUS_3_FLUSH, move_done);
 }
 
@@ -330,6 +336,8 @@ cylinder__TURN_PLUS_1_CLOSE__move_done (void)
 	++fb_nb_puck;
 	puck_on_cylinder = 0;
       }
+    TRACE (TRACE_FSM__NBPUCKS, top_total_puck_taken, top_puck_inside_bot,
+			      cylinder_nb_puck, fb_nb_puck, elvt_nb_puck);
     return cylinder_next (TURN_PLUS_1_CLOSE, move_done);
 }
 
@@ -361,6 +369,8 @@ cylinder__TURN_PLUS_1_AND_OFO_DISTRIB__move_done (void)
 	++fb_nb_puck;
 	puck_on_cylinder = 0;
       }
+    TRACE (TRACE_FSM__NBPUCKS, top_total_puck_taken, top_puck_inside_bot,
+			      cylinder_nb_puck, fb_nb_puck, elvt_nb_puck);
     return cylinder_next (TURN_PLUS_1_AND_OFO_DISTRIB, move_done);
 }
 
@@ -410,6 +420,8 @@ cylinder__PROBE_OF__of_puck (void)
 	return cylinder_next_branch (PROBE_OF, of_puck, bot_not_full);
       }
     cylinder_distributor_fucked = 0;
+    TRACE (TRACE_FSM__NBPUCKS, top_total_puck_taken, top_puck_inside_bot,
+			      cylinder_nb_puck, fb_nb_puck, elvt_nb_puck);
     return cylinder_next_branch (PROBE_OF, of_puck, bot_full);
 }
 
