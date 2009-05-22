@@ -126,23 +126,37 @@ top__GET_PUCK_FROM_THE_GROUND__move_fsm_succeed (void)
 
 /*
  * GET_PUCK_FROM_THE_GROUND =move_fsm_failed=>
- *  => GO_TO_UNLOAD_AREA
+ * some_pucks => GO_TO_UNLOAD_AREA
  *   close cylinder.
- *   we have failed to do a move, go the distributor (get next distributor and go
- *   there with move FSM).
+ *   we have failed to do a move, unload pucks.
+ * no_puck => GET_PUCK_FROM_DISTRIBUTOR
+ *   close cylinder.
+ *   get the next distributor position and launch move FSM to go there.
  */
 fsm_branch_t
 top__GET_PUCK_FROM_THE_GROUND__move_fsm_failed (void)
 {
+    /* Ensure cylinder is close. */
     cylinder_close_order = 1;
-    /* Flush cylinder. */
-    cylinder_flush_order = 1;
     asserv_position_t position;
-    /* Go to unload area. */
-    top_get_next_position_to_unload_puck (&position);
-    /* Go there. */
-    move_start (position, ASSERV_BACKWARD);
-    return top_next (GET_PUCK_FROM_THE_GROUND, move_fsm_failed);
+    if (top_puck_inside_bot)
+      {
+	/* Flush cylinder. */
+	cylinder_flush_order = 1;
+	/* Go to unload area. */
+	top_get_next_position_to_unload_puck (&position);
+	/* Go there. */
+	move_start (position, ASSERV_BACKWARD);
+	return top_next_branch (GET_PUCK_FROM_THE_GROUND, move_fsm_failed, some_pucks);
+      }
+    else
+      {
+	/* Go to distributor. */
+	top_get_next_position_to_get_distributor (&position, &front_position);
+	/* Go there. */
+	move_start (position, ASSERV_BACKWARD);
+	return top_next_branch (GET_PUCK_FROM_THE_GROUND, move_fsm_failed, no_puck);
+      }
 }
 
 /*
