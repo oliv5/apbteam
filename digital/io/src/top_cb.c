@@ -162,18 +162,33 @@ top__GET_PUCK_FROM_THE_GROUND__bot_is_full_of_pucks (void)
 
 /*
  * GET_PUCK_FROM_THE_GROUND =state_timeout=>
- *  => STOP_TO_GET_PUCK_FROM_DISTRIBUTOR
+ * no_puck => STOP_TO_GET_PUCK_FROM_DISTRIBUTOR
+ *   close cylinder.
+ *   too much time lost to get puck from the ground, stop move FSM.
+ * some_pucks => STOP_TO_GO_TO_UNLOAD_AREA
  *   close cylinder.
  *   too much time lost to get puck from the ground, stop move FSM.
  */
 fsm_branch_t
 top__GET_PUCK_FROM_THE_GROUND__state_timeout (void)
 {
-    /* Stop move FSM. */
-    move_stop ();
-    /* Close cylinder. */
+    /* Ensure cylinder is close. */
     cylinder_close_order = 1;
-    return top_next (GET_PUCK_FROM_THE_GROUND, state_timeout);
+    if (top_total_puck_taken)
+      {
+	/* Flush cylinder. */
+	cylinder_flush_order = 1;
+	asserv_position_t position;
+	/* Go to unload area. */
+	top_get_next_position_to_unload_puck (&position);
+	return top_next_branch (GET_PUCK_FROM_THE_GROUND, state_timeout, some_pucks);
+      }
+    else
+      {
+	/* Stop move FSM. */
+	move_stop ();
+	return top_next_branch (GET_PUCK_FROM_THE_GROUND, state_timeout, no_puck);
+      }
 }
 
 /*

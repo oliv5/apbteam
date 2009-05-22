@@ -93,7 +93,10 @@ GET_PUCK_FROM_THE_GROUND:
   there with move FSM).
  bot_is_full_of_pucks -> STOP_TO_GO_TO_UNLOAD_AREA
   stop move FSM.
- state_timeout -> STOP_TO_GET_PUCK_FROM_DISTRIBUTOR
+ state_timeout: no_puck -> STOP_TO_GET_PUCK_FROM_DISTRIBUTOR
+  close cylinder.
+  too much time lost to get puck from the ground, stop move FSM.
+ state_timeout: some_pucks -> STOP_TO_GO_TO_UNLOAD_AREA
   close cylinder.
   too much time lost to get puck from the ground, stop move FSM.
 
