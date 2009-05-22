@@ -19,7 +19,7 @@ States:
   release puck to the lift and block a new puck on pos1
  PUSH_PUCK
   push the puck to the lift
- TEMPO_ELVETATOR_COMMUNICATION [timeout=450]
+ TEMPO_ELVETATOR_COMMUNICATION [timeout=225]
   a temporisation for the communication between the eleveator and the FB.
 
 Events:
