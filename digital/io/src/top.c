@@ -142,6 +142,13 @@ top_get_next_position_to_get_distributor (asserv_position_t *clean_position,
       };
     /* Maximum number of remaining puck by distributor. */
     static uint8_t distributor_puck_count[DISTRIBUTOR_COUNT] = { 5, 5, 5 };
+    /* Distributor cost:
+     * 7 for a distributor suposed to be not present.
+     * 7 for a empty distributor.
+     * 1 for a visited distributor.
+     * -1 for every puck in distributor.
+     */
+    static int8_t distributor_cost[DISTRIBUTOR_COUNT];
     /* Current distributor. */
     static uint8_t current_position = DISTRIBUTOR_COUNT - 1;
     /* Keep track of how many pucks we have get. This variable will be used to
@@ -161,16 +168,28 @@ top_get_next_position_to_get_distributor (asserv_position_t *clean_position,
 	    /* Remove them. */
 	    distributor_puck_count[current_position] -= (top_total_puck_taken -
 							 previous_total_puck_taken);
-	  }
-	/* If no puck taken or distributor empty. */
-	if (puck_count == 0 || distributor_puck_count[current_position] == 0)
-	  {
-	    /* Next distributor. */
-	    current_position++;
-	    current_position %= 3;
+	    /* If empty. */
+	    if (distributor_puck_count[current_position] == 0)
+		distributor_cost[current_position] += 7;
+	    /* Supose the other one is not present. */
+	    if (current_position != 0)
+		distributor_cost[current_position == 1 ? 2 : 1] += 7;
+	    /* Any time, add cost. */
+	    distributor_cost[current_position]++;
 	  }
 	/* Update taken pucks. */
 	previous_total_puck_taken = top_total_puck_taken;
+	/* Choose best distributor. */
+	uint8_t best = 0;
+	uint8_t i;
+	for (i = 1; i < DISTRIBUTOR_COUNT; i++)
+	  {
+	    if (distributor_cost[i] - distributor_puck_count[i] <
+		distributor_cost[best] - distributor_puck_count[best])
+		best = i;
+	  }
+	/* Take the best one. */
+	current_position = best;
 
 	/* Fill the clean position. */
 	clean_position->x = PG_X_VALUE_COMPUTING
