@@ -13,7 +13,7 @@ States:
   go to a position to be ready to get a new puck
  WAIT_A_PUCK
   waiting for a new puck (hurry up filter bridge!)
- WAIT_BRIDGE_EMPTY[timeout=450]
+ WAIT_BRIDGE_EMPTY[timeout=675]
   waiting bridge empty
  WAIT_POS_ORDER
   waiting for position order (depending where we want to drop our column)
