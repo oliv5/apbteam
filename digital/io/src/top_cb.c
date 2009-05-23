@@ -668,7 +668,7 @@ top__GO_AWAY_FROM_UNLOAD_AREA__bot_move_succeed (void)
 {
     /* Get next position. */
     asserv_position_t position;
-    if (!top_get_next_position_to_get_puck_on_the_ground (&position, 1)
+    if (1 || !top_get_next_position_to_get_puck_on_the_ground (&position, 1)
 	|| top_total_puck_taken >= 6)
       {
 	/* Ensure cylinder is closed. */
