@@ -10,6 +10,7 @@ host = dict (
         a1kp = 2,
         a1a = 16, a1sm = 0x46, a1ss = 0x10,
         E = 0x3ff, D = 0x1ff,
+        l = 0x1000,
         )
 target = dict (
         scale = 0.0413530725332892, f = 0xcf7,
@@ -25,5 +26,6 @@ target = dict (
         a1a = 16, a1sm = 0x46, a1ss = 0x10,
         a1be = 256, a1bs = 0x0c, a1bc = 10,
         E = 0x3ff, D = 0x1ff,
+        l = 0x1000,
         w = 0x08,
         )
