@@ -174,9 +174,9 @@ top_get_next_position_to_get_distributor (asserv_position_t *clean_position,
 	    /* Supose the other one is not present. */
 	    if (current_position != 0)
 		distributor_cost[current_position == 1 ? 2 : 1] += 7;
-	    /* Any time, add cost. */
-	    distributor_cost[current_position]++;
 	  }
+	/* Any time, add cost. */
+	distributor_cost[current_position]++;
 	/* Update taken pucks. */
 	previous_total_puck_taken = top_total_puck_taken;
 	/* Choose best distributor. */
