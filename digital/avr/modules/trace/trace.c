@@ -103,7 +103,6 @@ trace_init (void)
 	    val = flash_read (i * TRACE_PAGE);
 	    if (i == 0 || lesseq_mod8(new_trace_val, val))
 	      {
-		proto_send0 ('e');
 		new_trace_val = val;
 		new_trace_addr = i * TRACE_PAGE;
 	      }
@@ -113,7 +112,6 @@ trace_init (void)
 	/* Flash not empty */
 	if (!((new_trace_val == 0x0) && (new_trace_addr == 0)))
 	  {
-	    proto_send0 ('h');
 	    new_trace_addr = (new_trace_addr + TRACE_PAGE)
 		& FLASH_ADDRESS_HIGH;
 
@@ -121,8 +119,7 @@ trace_init (void)
 	    trace_erase_page (new_trace_addr);
 	  }
 	new_trace_val ++;
-	proto_send1b ('v', new_trace_val);
-	trace_global.addr_start = new_trace_addr;
+	*((uint32_t*) &trace_global.addr_start) = new_trace_addr;
 
 	/* Store the trace val. */
 	flash_write (new_trace_addr, new_trace_val);

@@ -121,8 +121,6 @@ flash_init (void)
     if (rsp[0] != 0xBF)
         return 0;
 
-    proto_send3b ('f',rsp[0], rsp[1], rsp[2]);
-
     if (flash_status_aai())
       {
         flash_send_command (FLASH_WEDI);
@@ -137,9 +135,7 @@ flash_init (void)
     AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
 
     /* Read the flash status. */
-    proto_send1b ('s', flash_read_status());
-
-    return 1;
+    return flash_read_status();
 }
 
 /** Write in the flash byte provided in parameter.
