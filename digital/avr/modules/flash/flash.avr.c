@@ -134,8 +134,7 @@ flash_init (void)
     spi_send (0);
     AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
 
-    /* Read the flash status. */
-    return flash_read_status();
+    return 1;
 }
 
 /** Write in the flash byte provided in parameter.
