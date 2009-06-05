@@ -119,7 +119,7 @@ trace_init (void)
 	    trace_erase_page (new_trace_addr);
 	  }
 	new_trace_val ++;
-	*((uint32_t*) &trace_global.addr_start) = new_trace_addr;
+        trace_global.addr_start = new_trace_addr;
 
 	/* Store the trace val. */
 	flash_write (new_trace_addr, new_trace_val);
