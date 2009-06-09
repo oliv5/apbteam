@@ -1,7 +1,8 @@
-BASE = ../../../..
-AVR_PROGS = test-trace flood
+BASE = ../../..
+AVR_PROGS = test_trace flood
+HOST_PROGS = test_trace flood
 
-test-trace_SOURCES = test-trace.c
+test_trace_SOURCES = test-trace.c
 flood_SOURCES = flood.c
 
 MODULES = utils spi flash proto uart trace
