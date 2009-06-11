@@ -25,7 +25,7 @@
 import re
 
 from Tkinter import *
-from inter.drawable import *
+from simu.inter.drawable import *
 from subprocess import Popen, PIPE
 
 class Obstacle:
@@ -47,6 +47,9 @@ class Area (Drawable):
         self.dst = None
         self.obstacles = [ ]
         self.path = [ ]
+        self.points = { }
+        self.arcs = [ ]
+        self.draw_arcs = True
 
     def draw (self):
         self.reset ()
@@ -58,6 +61,10 @@ class Area (Drawable):
             self.draw_circle (self.src, 10, fill = 'green')
         if self.dst is not None:
             self.draw_circle (self.dst, 10, fill = 'red')
+        if self.draw_arcs and self.arcs:
+            fmt = dict (fill = 'gray75')
+            for a in self.arcs:
+                self.draw_line (self.points[a[0]], self.points[a[1]], **fmt)
         if len (self.path) > 1:
             fmt = dict (fill = 'blue', arrow = LAST)
             self.draw_line (*self.path, **fmt)
@@ -79,12 +86,23 @@ class Area (Drawable):
         output = p.communicate ()[0]
         del p
         output = output.split ('\n')
-        r = re.compile ('^// (\d+), (\d+)$')
+        r = re.compile ('^// (-?\d+), (-?\d+)$')
+        r_point = re.compile ('^ (\d+) .* pos = "(-?\d+),(-?\d+)"')
+        r_arc = re.compile ('^  (-?\d+) -- (-?\d+) .* label = "(\d+)"')
         self.path = [ ]
+        self.points = { }
+        self.arcs = [ ]
         for line in output:
             m = r.match (line)
             if m is not None:
                 self.path.append (tuple (int (s) for s in m.groups ()))
+            m = r_point.match (line)
+            if m is not None:
+                self.points[int (m.group (1))] = tuple (int (s)
+                        for s in m.group (2, 3))
+            m = r_arc.match (line)
+            if m is not None:
+                self.arcs.append (tuple (int (s) for s in m.groups ()))
 
 class AreaView (DrawableCanvas):
 
@@ -117,12 +135,20 @@ class TestPath (Frame):
         self.rightFrame.pack (side = 'right', fill = 'y')
         self.quitButton = Button (self.rightFrame, text = 'Quit', command = self.quit)
         self.quitButton.pack (side = 'top', fill = 'x')
+        self.arcsVar = IntVar ()
+        self.arcsVar.set (1)
+        self.arcsButton = Checkbutton (self.rightFrame,
+                variable = self.arcsVar, command = self.arcs_toggle,
+                text = 'Arcs', indicatoron = True)
+        self.arcsButton.pack (side = 'top')
         self.areaview = AreaView (border_min, border_max, self)
         self.areaview.pack (expand = True, fill = 'both')
         self.areaview.bind ('<1>', self.click)
 
     def clear (self):
         self.areaview.area.path = [ ]
+        self.areaview.area.points = { }
+        self.areaview.area.arcs = [ ]
         self.areaview.area.draw ()
 
     def update (self):
@@ -146,6 +172,7 @@ class TestPath (Frame):
                 dy = obj[0][1] - pos[1]
                 if dx * dx + dy * dy < obj[1] * obj[1]:
                     self.move = obj[2]
+                    break
             if self.move is not None:
                 self.move (None)
                 self.clear ()
@@ -153,6 +180,11 @@ class TestPath (Frame):
             self.move (pos)
             self.update ()
             self.move = None
+
+    def arcs_toggle (self):
+        self.areaview.area.draw_arcs = self.arcsVar.get () != 0
+        print self.areaview.area.draw_arcs
+        self.areaview.area.draw ()
 
 if __name__ == '__main__':
     app = TestPath ((0, 0), (1500, 1500))

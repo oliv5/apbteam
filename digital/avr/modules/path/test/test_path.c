@@ -35,7 +35,9 @@ syntax (void)
 	     "test_path borders source destination [obstacles (0-%d)]\n"
 	     "  borders: xmin,ymin,xmax,ymax\n"
 	     "  source, destination: x,y\n"
-	     "  obstacles: x,y,r\n",
+	     "  obstacles: x,y,r\n"
+	     "example: test_path 0,0,1500,1500 300,750 1200,750 600,680,100"
+	     " 900,820,100\n",
 	     AC_PATH_OBSTACLES_NB);
     exit (1);
 }

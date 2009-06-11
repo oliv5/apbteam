@@ -40,7 +40,7 @@ This interface only gives you the first point of the path because it is
 assumed that the path will not be up to date any more once the mobile arrives
 at the first point.  This will change in the future.
 
-when the path is updated, a user callback can be called by the path module to
+When the path is updated, a user callback can be called by the path module to
 report the found path.  It receives the list of points of the path and the
 list of obstacles.  The callback is defined in the ``avrconfig.h`` file.
 
