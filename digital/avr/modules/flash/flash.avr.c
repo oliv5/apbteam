@@ -27,9 +27,6 @@
 #include "modules/spi/spi.h"
 #include "modules/utils/utils.h"
 
-#define FLASH_LOG_PAGE_SIZE 0x80000
-#define FLASH_LOG_BUFFER_SIZE 16
-
 /** Flash access.
  * The flash contains an address of 21 bits in a range from 0x0-0x1fffff.
  * This function shall access the memory directly by the SPI.
@@ -214,44 +211,4 @@ flash_write_array (uint32_t addr, uint8_t *data, uint32_t length)
       {
         flash_write (addr + i, data[i]);
       }
-}
-
-int8_t
-flash_log (uint8_t size, uint8_t *args)
-{
-    uint8_t buf[FLASH_LOG_BUFFER_SIZE+1];
-    int8_t error = 0x0;
-    uint32_t addr = 0;
-
-    if (size >= 4)
-	addr = (((uint32_t) args[1]) << 16)
-	    | (((uint32_t) args[2]) << 8) | args[3];
-
-    switch (args[0])
-      {
-      case FLASH_CMD_INIT:
-	error = !flash_init ();
-	proto_send1b ('s', error ? 0 : 1);
-	break;
-      case FLASH_CMD_READ:
-	if ((size == 5)
-	    && (args[4] <= sizeof(buf)))
-	  {
-	    flash_read_array (addr, buf, args[4]);
-	    proto_send ('r', args[4], buf);
-	    error = 0;
-	  }
-	else if (size == 4)
-	  {
-	    proto_send1b ('r', flash_read (addr));
-	    error = 0;
-	  }
-	else
-	    error = 2;
-	break;
-      default:
-	return 3;
-      }
-
-    return error;
 }

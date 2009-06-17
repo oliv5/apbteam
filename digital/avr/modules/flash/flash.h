@@ -50,6 +50,9 @@
 
 #define FLASH_TBP_US 10
 
+#define FLASH_LOG_PAGE_SIZE 0x80000
+#define FLASH_LOG_BUFFER_SIZE 16
+
 enum
 {
     FLASH_CMD_INIT,

@@ -35,7 +35,8 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 {
     /* May be unused. */
     uint32_t addr = v8_to_v32 (0, args[0], args[1], args[2]);
-    uint8_t buf[16];
+    uint8_t buf[FLASH_LOG_BUFFER_SIZE+1];
+    uint8_t status;
 #define c(cmd, size) (cmd << 8 | size)
     switch (c (cmd, size))
       {
@@ -86,6 +87,10 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	 *  - 1b: byte. */
 	flash_write (addr, args[3]);
 	break;
+      case c ('i', 0):
+	status = flash_init ();
+	proto_send1b ('f', status);
+	break;
       default:
 	if (cmd == 'w' && size > 4)
 	  {
@@ -109,12 +114,8 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 int
 main (void)
 {
-    uint8_t status;
     uart0_init ();
     proto_send0 ('z');
-    proto_send0 ('c');
-    status = flash_init ();
-    proto_send1b ('f', status);
 
     while (1)
 	proto_accept (uart0_getc ());
