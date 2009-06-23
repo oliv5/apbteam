@@ -10,11 +10,12 @@ except:
 
 class TInter:
 
-    def __init__(self, infile, outfile):
+    def __init__(self, infile, outfile, prgm):
         self.__infile = infile
         self.__events = None
         self.__outfile = outfile
         self.__file = None
+        self.__prgm = prgm
 
     def __events_get (self):
         infile = open (self.__infile, 'r')
@@ -48,7 +49,7 @@ class TInter:
 
     def __dump (self, val):
         print "Dump trace ", val
-        host = THost()
+        host = THost(self.__prgm)
         host.dump_memory (val)
         memory = host.get_trace ()
 
@@ -64,7 +65,7 @@ class TInter:
             self.__file.close ()
 
     def available_traces (self):
-        host = THost()
+        host = THost(self.__prgm)
         traces = host.trace_list()
         print "Traces available "
         for i in traces:
@@ -72,7 +73,7 @@ class TInter:
 
     def trace_print (self, trace_num = None):
         events = self.__events_get ()
-        host = THost()
+        host = THost(self.__prgm)
 
         if trace_num:
             traces = host.trace_list()

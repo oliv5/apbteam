@@ -1,7 +1,9 @@
 import serial
 import time
 import sys
-from proto import *
+sys.path.append ('../../host/')
+from proto.proto import *
+from proto.popen_io import *
 from utils import *
 
 FLASH_MEMORY_HIGH = 0x1fffff
@@ -18,8 +20,12 @@ def log (x):
 
 class THost:
     """Class to connect to the flash memory."""
-    def __init__(self):
-        self.__proto = Proto (serial.Serial ('/dev/ttyUSB0'), time.time, 0.1)
+    def __init__(self, prgm):
+        if prgm[0] == '!':
+            self.__proto = Proto (PopenIO (prgm[1:]),
+                    time.time, 0.1)
+        else:
+            self.__proto = Proto (serial.Serial (prgm), time.time, 0.1)
         self.__memory = list()
         self.__traces = []
 

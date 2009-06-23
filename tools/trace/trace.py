@@ -2,14 +2,13 @@
 
 from optparse import OptionParser
 import sys
-sys.path.append ('../../host/')
 from tcreator.tcreator import *
 from tinter.tinter import *
 
 INTER_MODE=" (only available on interpretor  mode)."
 CREATE_MODE=" (only available on create mode)."
 
-print "Trace System v1.0 by APBTeam\n"
+print "Trace System v1.1 by APBTeam\n"
 
 parser = OptionParser()
 parser.add_option("-e", "--enum-name", dest="enum_name",
@@ -32,7 +31,7 @@ if options.type == 'create':
     cre = TCreator (options.infile, options.outfile, options.enum_name)
     cre.create ()
 elif options.type == "inter":
-    inter = TInter (options.infile, options.outfile)
+    inter = TInter (options.infile, options.outfile, args[0])
     if options.list_trace:
         inter.available_traces ()
     elif options.trace:
