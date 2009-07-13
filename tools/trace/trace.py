@@ -34,7 +34,7 @@ elif options.type == "inter":
     inter = TInter (options.infile, options.outfile, args[0])
     if options.list_trace:
         inter.available_traces ()
-    elif options.trace:
+    elif options.trace != None:
         inter.trace_print (options.trace)
     else:
         inter.trace_print()

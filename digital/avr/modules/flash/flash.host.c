@@ -161,7 +161,7 @@ flash_read (uint32_t addr)
 	res = read (flash_global.file, &data, sizeof (uint8_t));
 
 	if (res == 0)
-	    flash_global.status = 0;
+	    flash_deactivate ();
 
 	return data;
       }
@@ -174,20 +174,22 @@ flash_read_array (uint32_t addr, uint8_t *buffer, uint32_t length)
 {
     if (flash_global.status)
       {
-	uint32_t nb;
-	int8_t res;
-	/* Set the stream to the position required. */
+	uint8_t res;
+	uint8_t deactivate = 1;
+
+	/* Set the stream to the position of address. */
 	res = lseek (flash_global.file, addr, SEEK_SET);
-	if (res == -1)
+	if (res == addr)
 	  {
-	    flash_deactivate();
-	    return;
+	    res = read (flash_global.file, buffer, length);
+	    printf ("read: %d\n", res);
+
+	    if (res == length)
+		deactivate = 0x0;
 	  }
 
-	nb = read (flash_global.file, buffer, length);
-
-	if (nb != length)
-	    flash_deactivate();
+	if (deactivate == 0x1)
+	    flash_deactivate ();
       }
 }
 

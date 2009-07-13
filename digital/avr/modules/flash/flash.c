@@ -47,19 +47,30 @@ flash_log (uint8_t size, uint8_t *args)
 	    && (args[4] <= sizeof(buf)))
 	  {
 	    flash_read_array (addr, buf, args[4]);
+	    proto_send4b ('a', 0, addr >> 16, addr >> 8, addr);
 	    proto_send ('r', args[4], buf);
-	    error = 0;
 	  }
-	else if (size == 4)
+      case FLASH_CMD_READ_BYTE:
+	if (size == 4)
 	  {
 	    proto_send1b ('r', flash_read (addr));
-	    error = 0;
 	  }
-	else
-	    error = 2;
 	break;
-      default:
-	return 3;
+      case FLASH_CMD_WRITE_BYTE:
+	if (size == 5)
+	  {
+	    proto_send1b ('w', args[4]);
+	    flash_write (addr, args[4]);
+	  }
+	break;
+      case FLASH_CMD_WRITE:
+	if ((size == 5)
+	    && (args[4] <= sizeof(buf)))
+	  {
+	    flash_write_array (addr, buf, args[4]);
+	    proto_send ('w', args[4], buf);
+	  }
+	break;
       }
 
     return error;

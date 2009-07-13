@@ -27,18 +27,29 @@ class THost:
         else:
             self.__proto = Proto (serial.Serial (prgm), time.time, 0.1)
         self.__memory = list()
+        self.__memory_addr = list()
         self.__traces = []
+
+    def __dump_callback_addr (self, addr):
+        """Callback providing the address of the data which will be
+        returned."""
+        self.__memory_addr.append (addr)
 
     def __dump_callback (self, *memory):
         """Callback call on each data reception"""
-        not_ff = False
+        not_ffff = False
+        data = []
         for i in range(len (memory)):
-            if memory[i] != 0xff:
-                not_ff = True
-            self.__memory.append (memory[i])
-        if not not_ff:
+            if (i < len(memory) -1) and ((memory[i] << 8)
+                    | (memory[i+1])) != 0xffff:
+                    not_ffff = True
+            data.append (memory[i])
+
+        if not not_ffff:
             self.__proto.flush ()
         sys.stderr.write (".")
+
+        self.__memory.append (data)
 
     def __trace_present (self, val):
         """Get the trace value and the first byte following."""
@@ -62,7 +73,7 @@ class THost:
         # Initialise the flash access.
         self.__proto.register ('r', FLASH_BUFFER_SIZE * 'B',
                 self.__dump_callback)
-        self.__proto.register ('r', 'B', self.__trace_present)
+        self.__proto.register ('a', 'I', self.__dump_callback_addr)
 
         i = 0
         self.__traces.append (0x100)
@@ -72,7 +83,6 @@ class THost:
             self.__proto.send ('l', 4*'b', FLASH_CMD_READ, addr, 0, 0)
             self.__proto.wait (lambda: True)
             i += FLASH_PAGE
-        i -= FLASH_PAGE
 
         start_addr = i
         end_addr = start_addr + FLASH_PAGE
@@ -87,4 +97,17 @@ class THost:
 
     def get_trace (self):
         """Return the traces dumped from the flash memory."""
-        return self.__memory[1:]
+        mem = []
+        i = 0
+        while i < len (self.__memory_addr):
+            if self.__memory_addr[i] == self.__memory_addr[i-1]:
+                self.__memory_addr.remove(self.__memory_addr[i])
+                self.__memory.remove(self.__memory[i])
+            else:
+                i += 1
+
+        for i in self.__memory:
+            for j in i:
+                mem.append (j)
+
+        return mem[1:]

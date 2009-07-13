@@ -42,6 +42,7 @@ flood (void)
     uint32_t addr;
     uint32_t count;
 
+    uint16_t id;
     uint32_t speed;
     uint32_t position;
     uint16_t acc;
@@ -67,9 +68,12 @@ flood (void)
 	arg1 = 1;
 	arg2 = 2;
 	arg3 = 3;
-	TRACE (TRACE_ASSERV__RIGHT_MOTOR, speed, position, acc);
-	TRACE (TRACE_ASSERV__LEFT_MOTOR, speed, position, acc);
-	TRACE (TRACE_IA__IA_CMD, arg1, arg2, arg3);
+	id = TRACE_ASSERV__RIGHT_MOTOR;
+	TRACE (id, speed, position, acc);
+	id = TRACE_ASSERV__LEFT_MOTOR;
+	TRACE (id, speed, position, acc);
+	id = TRACE_IA__IA_CMD;
+	TRACE (id, arg1, arg2, arg3);
       }
 
     /* Print the end of the address. */

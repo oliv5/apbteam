@@ -92,7 +92,11 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	proto_send1b ('f', status);
 	break;
       default:
-	if (cmd == 'w' && size > 4)
+	if (cmd == 'l')
+	  {
+	    flash_log (size, args);
+	  }
+	else if (cmd == 'w' && size > 4)
 	  {
 	    /* Write several bytes:
 	     *  - 3b: address.
