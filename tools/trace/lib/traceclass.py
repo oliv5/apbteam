@@ -21,6 +21,7 @@ class TraceEvent:
         self.__name = name
         self.__param_list = list()
         self.__string = ""
+        self.callback = None
 
     def name (self):
         return self.__name
@@ -28,7 +29,7 @@ class TraceEvent:
     def param_add (self, name, length):
         param = TraceParam (name, length)
         self.__param_list.append(param)
-    
+
     def param_get (self, pos):
         if pos <= len (self.__param_list):
             return self.__param_list[pos]

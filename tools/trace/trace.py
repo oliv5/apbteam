@@ -24,6 +24,8 @@ parser.add_option("-l", "--list", dest="list_trace", action="store_true",
         help="List the number of the traces" + INTER_MODE)
 parser.add_option("-n", "--num", type="int", dest="trace",
         help="Dump the trace number provided" + INTER_MODE)
+parser.add_option("-c", "--callback", dest="cb",
+        help="The callback file containing the functions" + INTER_MODE)
 
 [options, args] = parser.parse_args()
 
@@ -31,7 +33,7 @@ if options.type == 'create':
     cre = TCreator (options.infile, options.outfile, options.enum_name)
     cre.create ()
 elif options.type == "inter":
-    inter = TInter (options.infile, options.outfile, args[0])
+    inter = TInter (options.infile, options.outfile, args[0], options.cb)
     if options.list_trace:
         inter.available_traces ()
     elif options.trace != None:

@@ -10,12 +10,13 @@ except:
 
 class TInter:
 
-    def __init__(self, infile, outfile, prgm):
+    def __init__(self, infile, outfile, prgm, cb):
         self.__infile = infile
         self.__events = None
         self.__outfile = outfile
         self.__file = None
         self.__host = THost(prgm)
+        self.__cb_file = cb.strip('.py').replace('/', '.')
 
     def __events_get (self):
         infile = open (self.__infile, 'r')
@@ -23,20 +24,28 @@ class TInter:
         infile.close()
         return events
 
+    def __callback (self, event, data):
+        if event.callback == None:
+            string = event.string_get()
+            string = string % tuple (data)
+        else:
+            exec "from " + self.__cb_file + " import " + event.callback
+            string = locals()[event.callback](data)
+        return string
+
     def __event_print (self, events, memory):
         if len(memory) > 0:
             cmd = get_size (memory, 2)
             memory = memory[2:]
             if cmd < len(events):
                 e = events[cmd]
-                string = e.string_get()
                 vals = [ ]
                 for i in range (0, e.param_nb()):
                     p = e.param_get(i)
                     size = p.length()
                     vals.append (get_size (memory, size))
                     memory = memory[size:]
-                string = string % tuple (vals)
+                string = self.__callback (e, vals)
 
                 if self.__file == None:
                     print string[1:len(string)-1]
