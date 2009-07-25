@@ -33,6 +33,10 @@ def norm (v):
     """Compute vector norm."""
     return sqrt (sum (v ** 2))
 
+def rotate (v):
+    """Rotate a vector by pi/2."""
+    return array ([-v[1], v[0]])
+
 def angle (o, a, b):
     """Compute angle (v_oa, v_ob)."""
     v_oa = a - o
@@ -96,6 +100,21 @@ def solve3 (alpha1, alpha2, alpha3):
     o = array ([B3[0] - cos (beta3 - theta3 / 2) * a3, B3[1] + sin (beta3 - theta3 / 2) * a3])
     return (o, beta3, a3)
 
+def solve_cvra (alpha1, alpha2, alpha3):
+    """Solve using CVRA method, slightly modified for simpler vector based
+    computations."""
+    # Find circle on which B1, B2 and o are located.
+    v = (B2 - B1) / 2
+    cc2 = B1 + v + rotate (v) / tan (alpha1)
+    # Find circle on which B1, B3 and o are located.
+    v = (B3 - B1) / 2
+    cc1 = B1 + v - rotate (v) / tan (alpha3)
+    # Find the circles intersection... knowing that B1 is a solution.
+    v = cc2 - B1
+    n = (cc1 - cc2) / norm (cc1 - cc2)
+    o = B1 + (v + n * dot (-v, n)) * 2
+    return (o, cc2[0], cc2[1], cc1[0], cc1[1])
+
 def trace (o, f, output, factor):
     """Trace f()[output] * factor for alphan corresponding to the point o."""
     # Compute angles.
@@ -121,13 +140,15 @@ def compute_prec (o, f, prec):
 
 if __name__ == '__main__':
     # Parameters.
-    method = solve1
-    prec = 0.5 * pi / 180
+    method = solve_cvra
+    prec = 2 * pi / 2200
     plot = 'prec'
-    style = 'iso'
+    style = '3d'
     hardcopy = None
+    zrange = (0, 150)
     # Setup gnuplot.
-    g = Gnuplot.Gnuplot (persist = True)
+    persist = False
+    g = Gnuplot.Gnuplot (persist = persist)
     g ('set term x11')
     g ('set data style lines')
     if style == '3d':
@@ -141,6 +162,8 @@ if __name__ == '__main__':
             g ('set contour')
     g.set_range ('xrange', (0,3000))
     g.set_range ('yrange', (0,2100))
+    if zrange:
+        g.set_range ('zrange', zrange)
     x = arange (25, 3000, 50)
     y = arange (25, 2100, 50)
     # Plot:
@@ -153,6 +176,11 @@ if __name__ == '__main__':
         g ('set cbrange [0:100]')
         g.splot (Gnuplot.funcutils.compute_GridData (x, y,
             lambda x, y: compute_prec (array ([x, y]), method, prec), binary=0))
+    else:
+        g.splot (Gnuplot.funcutils.compute_GridData (x, y,
+            lambda x, y: trace (array ([x, y]), method, plot, 1), binary=0))
     # Hardcopy:
     if hardcopy:
         g.hardcopy (filename = hardcopy, terminal = 'png')
+    if not persist:
+        raw_input ("Pause...")
