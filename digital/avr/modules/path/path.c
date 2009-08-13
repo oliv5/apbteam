@@ -116,16 +116,16 @@ path_compute_points (void)
 	    uint32_t x, y, nx;
 	    x = path.obstacles[i].r; y = 0;
 	    x = fixed_mul_f824 (x, path.margin);
-	    path.points[p].x = path.obstacles[i].x + (uint16_t) x;
-	    path.points[p].y = path.obstacles[i].y;
-	    p++;
-	    for (j = 0; j < PATH_OBSTACLES_POINTS_NB - 1; j++)
+	    for (j = 0; j < PATH_OBSTACLES_POINTS_NB; j++)
 	      {
-		nx = fixed_mul_f824 (x, path.rot_a)
-		    - fixed_mul_f824 (y, path.rot_b);
-		y = fixed_mul_f824 (y, path.rot_a)
-		    + fixed_mul_f824 (x, path.rot_b);
-		x = nx;
+		if (j != 0)
+		  {
+		    nx = fixed_mul_f824 (x, path.rot_a)
+			- fixed_mul_f824 (y, path.rot_b);
+		    y = fixed_mul_f824 (y, path.rot_a)
+			+ fixed_mul_f824 (x, path.rot_b);
+		    x = nx;
+		  }
 		path.points[p].x = path.obstacles[i].x + (uint16_t) x;
 		path.points[p].y = path.obstacles[i].y + (uint16_t) y;
 		/* Check it is in playground. */
