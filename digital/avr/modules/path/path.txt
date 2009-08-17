@@ -25,8 +25,8 @@ radius) using ``path_init``.
 
 You can place obstacles using the ``path_obstacle`` function.  Give it the
 obstacle index, its position and radius, and its life time.  Use a life time
-of 0xffff for infinite duration.  Call ``path_decay`` regularly to make
-obstacles disappear after the given delay.
+of PATH_OBSTACLE_VALID_ALWAYS for infinite duration.  Call ``path_decay``
+regularly to make obstacles disappear after the given delay.
 
 You can also set the source and destination position using the
 ``path_endpoints`` function.

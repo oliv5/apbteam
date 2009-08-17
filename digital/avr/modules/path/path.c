@@ -279,7 +279,8 @@ path_decay (void)
     uint8_t i;
     for (i = 0; i < PATH_OBSTACLES_NB; i++)
       {
-	if (path.obstacles[i].valid && path.obstacles[i].valid != 0xffff)
+	if (path.obstacles[i].valid
+	    && path.obstacles[i].valid != PATH_OBSTACLE_VALID_ALWAYS)
 	    path.obstacles[i].valid--;
       }
 }

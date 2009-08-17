@@ -25,6 +25,9 @@
  *
  * }}} */
 
+/** Infinite validity for an obstacle. */
+#define PATH_OBSTACLE_VALID_ALWAYS 0xffff
+
 /** Obstacle. */
 struct path_obstacle_t
 {
@@ -46,7 +49,7 @@ void
 path_endpoints (int16_t sx, int16_t sy, int16_t dx, int16_t dy);
 
 /** Set up an obstacle at given position with the given radius and validity
- * period, use 0xffff for infinite validity. */
+ * period. */
 void
 path_obstacle (uint8_t i, int16_t x, int16_t y, uint16_t r, uint16_t valid);
 
