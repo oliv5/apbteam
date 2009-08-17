@@ -244,7 +244,7 @@ init__WAIT_SECOND_JACK_OUT__jack_removed_from_bot (void)
     /* Start the chrono. */
     chrono_init ();
     /* Set the central round to path module. */
-    path_obstacle (0x01, PG_WIDTH / 2, PG_LENGTH / 2, 350,
+    path_obstacle (0x01, PG_WIDTH / 2, PG_LENGTH / 2, 350, 0,
 		   PATH_OBSTACLE_VALID_ALWAYS);
     return init_next (WAIT_SECOND_JACK_OUT, jack_removed_from_bot);
 }

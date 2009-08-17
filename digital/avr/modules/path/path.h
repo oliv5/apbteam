@@ -35,6 +35,9 @@ struct path_obstacle_t
     int16_t x, y;
     /** Radius. */
     uint16_t r;
+    /** Factor.  If not 0, obstacle is not blocking, but it add weight to path
+     * crossing it.  Warning: if too big, it can make weight overflow. */
+    uint8_t factor;
     /** Validity counter, when this is zero, the obstacle is ignored. */
     uint16_t valid;
 };
@@ -48,10 +51,16 @@ path_init (int16_t border_xmin, int16_t border_ymin,
 void
 path_endpoints (int16_t sx, int16_t sy, int16_t dx, int16_t dy);
 
-/** Set up an obstacle at given position with the given radius and validity
- * period. */
+/** Try to escape from inside an obstacle.  Bigger factor will shorten path
+ * followed inside the obstacle.  Valid until the next update. */
 void
-path_obstacle (uint8_t i, int16_t x, int16_t y, uint16_t r, uint16_t valid);
+path_escape (uint8_t factor);
+
+/** Set up an obstacle at given position with the given radius, factor and
+ * validity period. */
+void
+path_obstacle (uint8_t i, int16_t x, int16_t y, uint16_t r, uint8_t factor,
+	       uint16_t valid);
 
 /** Slowly make the obstacles disappear. */
 void

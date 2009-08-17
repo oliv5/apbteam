@@ -24,9 +24,13 @@ First initialise the module with the area border (shrunken by the mobile
 radius) using ``path_init``.
 
 You can place obstacles using the ``path_obstacle`` function.  Give it the
-obstacle index, its position and radius, and its life time.  Use a life time
-of PATH_OBSTACLE_VALID_ALWAYS for infinite duration.  Call ``path_decay``
-regularly to make obstacles disappear after the given delay.
+obstacle index, its position and radius, its factor and its life time.  Use a
+life time of PATH_OBSTACLE_VALID_ALWAYS for infinite duration.  Call
+``path_decay`` regularly to make obstacles disappear after the given delay.
+
+If factor is not 0 (2 or more), the obstacle can be entered, but it will cost
+more to do it.  This can be used to mark an area which should be avoided, but
+might be entered if other paths are too long or inexistent.
 
 You can also set the source and destination position using the
 ``path_endpoints`` function.
@@ -39,6 +43,13 @@ If no path was found, this function returns 0.
 This interface only gives you the first point of the path because it is
 assumed that the path will not be up to date any more once the mobile arrives
 at the first point.  This will change in the future.
+
+Sometime, the source position is located inside an obstacle, for example
+because we were too pessimistic about its size.  In this case, the algorithm
+will not find any path.  It can be directed to find a path anyway using the
+``path_escape`` function.  The factor determines the will to escape quickly
+from the obstacle.  If it is 1, the obstacle is completely ignored, bigger
+factors will make the algorithm find shorter path inside the obstacle.
 
 When the path is updated, a user callback can be called by the path module to
 report the found path.  It receives the list of points of the path and the

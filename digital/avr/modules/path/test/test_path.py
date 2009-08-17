@@ -29,9 +29,10 @@ from simu.inter.drawable import *
 from subprocess import Popen, PIPE
 
 class Obstacle:
-    def __init__ (self, pos, radius):
+    def __init__ (self, pos, radius, factor):
         self.pos = pos
         self.radius = radius
+        self.factor = factor
 
     def move (self, pos):
         self.pos = pos
@@ -45,6 +46,7 @@ class Area (Drawable):
         self.border = None
         self.src = None
         self.dst = None
+        self.escape = 0
         self.obstacles = [ ]
         self.path = [ ]
         self.points = { }
@@ -56,7 +58,8 @@ class Area (Drawable):
         self.draw_rectangle (self.border_min, self.border_max, fill = 'white')
         for o in self.obstacles:
             if o.pos is not None:
-                self.draw_circle (o.pos, o.radius, fill = 'gray25')
+                self.draw_circle (o.pos, o.radius,
+                        fill = o.factor and 'gray50' or 'gray25')
         if self.src is not None:
             self.draw_circle (self.src, 10, fill = 'green')
         if self.dst is not None:
@@ -72,14 +75,14 @@ class Area (Drawable):
     def test (self):
         self.src = (300, 750)
         self.dst = (1200, 750)
-        self.obstacles.append (Obstacle ((600, 680), 100))
-        self.obstacles.append (Obstacle ((900, 820), 100))
+        self.obstacles.append (Obstacle ((600, 680), 100, 0))
+        self.obstacles.append (Obstacle ((900, 820), 100, 5))
 
     def update (self):
         args = [ [ self.border_min[0], self.border_min[1], self.border_max[0],
-            self.border_max[1] ], self.src, self.dst ]
+            self.border_max[1] ], self.src, self.dst, (self.escape, ) ]
         for o in self.obstacles:
-            args.append ([o.pos[0], o.pos[1], o.radius])
+            args.append ([o.pos[0], o.pos[1], o.radius, o.factor])
         args = [ ','.join (str (ai) for ai in a) for a in args ]
         args[0:0] = [ './test_path.host' ]
         p = Popen (args, stdout = PIPE)
@@ -141,6 +144,10 @@ class TestPath (Frame):
                 variable = self.arcsVar, command = self.arcs_toggle,
                 text = 'Arcs', indicatoron = True)
         self.arcsButton.pack (side = 'top')
+        self.escapeScale = Scale (self.rightFrame, label = 'Escape',
+                orient = 'horizontal', from_ = 0, to = 16,
+                command = self.escape_changed)
+        self.escapeScale.pack (side = 'top')
         self.areaview = AreaView (border_min, border_max, self)
         self.areaview.pack (expand = True, fill = 'both')
         self.areaview.bind ('<1>', self.click)
@@ -183,8 +190,11 @@ class TestPath (Frame):
 
     def arcs_toggle (self):
         self.areaview.area.draw_arcs = self.arcsVar.get () != 0
-        print self.areaview.area.draw_arcs
         self.areaview.area.draw ()
+
+    def escape_changed (self, value):
+        self.areaview.area.escape = value
+        self.update ()
 
 if __name__ == '__main__':
     app = TestPath ((0, 0), (1500, 1500))

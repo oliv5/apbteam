@@ -211,7 +211,7 @@ move_obstacle_here (void)
     if (move_obstacle_in_table (move_data.obstacle))
       {
 	path_obstacle (0, move_data.obstacle.x, move_data.obstacle.y,
-		       MOVE_OBSTACLE_RADIUS, MOVE_OBSTACLE_VALIDITY);
+		       MOVE_OBSTACLE_RADIUS, 0, MOVE_OBSTACLE_VALIDITY);
 	DPRINTF ("Obstacle pos x : %d, pos y : %d\n", move_data.obstacle.x,
 		 move_data.obstacle.y);
 	TRACE (TRACE_MOVE__OBSTACLE, move_data.obstacle.x,

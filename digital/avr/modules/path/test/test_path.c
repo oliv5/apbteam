@@ -32,12 +32,14 @@ void
 syntax (void)
 {
     fprintf (stderr,
-	     "test_path borders source destination [obstacles (0-%d)]\n"
+	     "test_path borders source destination escape_factor"
+	     " [obstacles (0-%d)]\n"
 	     "  borders: xmin,ymin,xmax,ymax\n"
 	     "  source, destination: x,y\n"
-	     "  obstacles: x,y,r\n"
-	     "example: test_path 0,0,1500,1500 300,750 1200,750 600,680,100"
-	     " 900,820,100\n",
+	     "  obstacles: x,y,r,f\n"
+	     "example: test_path 0,0,1500,1500 300,750 1200,750 0"
+	     " 600,680,100,0"
+	     " 900,820,100,10\n",
 	     AC_PATH_OBSTACLES_NB);
     exit (1);
 }
@@ -67,7 +69,7 @@ read_tab (const char *s, int *tab, int n)
 int
 main (int argc, char **argv)
 {
-    if (argc < 4 || argc > 4 + AC_PATH_OBSTACLES_NB)
+    if (argc < 5 || argc > 5 + AC_PATH_OBSTACLES_NB)
 	syntax ();
     int tab[4];
     read_tab (argv[1], tab, 4);
@@ -75,11 +77,14 @@ main (int argc, char **argv)
     read_tab (argv[2], tab, 2);
     read_tab (argv[3], tab + 2, 2);
     path_endpoints (tab[0], tab[1], tab[2], tab[3]);
+    read_tab (argv[4], tab, 1);
+    if (tab[0])
+	path_escape (tab[0]);
     int i;
-    for (i = 0; i + 4 < argc; i++)
+    for (i = 0; i + 5 < argc; i++)
       {
-	read_tab (argv[4 + i], tab, 3);
-	path_obstacle (i, tab[0], tab[1], tab[2], 1);
+	read_tab (argv[5 + i], tab, 4);
+	path_obstacle (i, tab[0], tab[1], tab[2], tab[3], 1);
       }
     path_update ();
     path_print_graph ();

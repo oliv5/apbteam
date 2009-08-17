@@ -72,6 +72,8 @@ struct path_t
     uint32_t margin;
     /** List of obstacles. */
     struct path_obstacle_t obstacles[PATH_OBSTACLES_NB];
+    /** Escape factor, 0 if none. */
+    uint8_t escape_factor;
     /** List of points.  First two points are the destination and source
      * points.  Then comes the obstacles points. */
     struct path_point_t points[PATH_POINTS_NB];
@@ -178,7 +180,15 @@ path_compute_weight (uint8_t a, uint8_t b)
 				     - d * d);
 		if (!((m - f > 0 && m + f > 0 && m - f > ab && m + f > ab)
 		      || (m - f < 0 && m + f < 0 && m - f < ab && m + f < ab)))
-		    return 0xffff;
+		  {
+		    uint8_t factor = path.obstacles[i].factor;
+		    if (path.escape_factor
+			&& (a == 1 || b == 1)
+			&& (a != 0 && b != 0)
+			&& (factor == 0u || factor > path.escape_factor))
+			factor = path.escape_factor;
+		    return factor == 0 ? 0xffffu : factor * (uint16_t) ab;
+		  }
 	      }
 	  }
       }
@@ -260,15 +270,25 @@ path_endpoints (int16_t sx, int16_t sy, int16_t dx, int16_t dy)
     path.points[1].y = sy;
 }
 
-/** Set up an obstacle at given position with the given radius and validity
- * period. */
+/** Try to escape from inside an obstacle.  Bigger factor will shorten path
+ * followed inside the obstacle.  Valid until the next update. */
 void
-path_obstacle (uint8_t i, int16_t x, int16_t y, uint16_t r, uint16_t valid)
+path_escape (uint8_t factor)
+{
+    path.escape_factor = factor;
+}
+
+/** Set up an obstacle at given position with the given radius, factor and
+ * validity period. */
+void
+path_obstacle (uint8_t i, int16_t x, int16_t y, uint16_t r, uint8_t factor,
+	       uint16_t valid)
 {
     assert (i < AC_PATH_OBSTACLES_NB);
     path.obstacles[i].x = x;
     path.obstacles[i].y = y;
     path.obstacles[i].r = r;
+    path.obstacles[i].factor = factor;
     path.obstacles[i].valid = valid;
 }
 
@@ -291,6 +311,7 @@ path_update (void)
 {
     path_compute_points ();
     path_compute_arcs ();
+    path.escape_factor = 0;
     path_dijkstra ();
 #if AC_PATH_REPORT
     uint8_t len, i;
