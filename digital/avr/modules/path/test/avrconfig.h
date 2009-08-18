@@ -31,7 +31,7 @@
 /** Report function name. */
 #define AC_PATH_REPORT_CALLBACK path_report
 /** Number of possible obstacles. */
-#define AC_PATH_OBSTACLES_NB 2
+#define AC_PATH_OBSTACLES_NB 10
 /** Number of points per obstacle. */
 #define AC_PATH_OBSTACLES_POINTS_NB 8
 

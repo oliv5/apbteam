@@ -148,6 +148,20 @@ class TestPath (Frame):
                 orient = 'horizontal', from_ = 0, to = 16,
                 command = self.escape_changed)
         self.escapeScale.pack (side = 'top')
+        self.newObstacleFrame = LabelFrame (self.rightFrame)
+        self.newObstacleFrame.pack (side = 'top')
+        self.newObstacleRadius = Scale (self.newObstacleFrame,
+                label = 'Radius', orient = 'horizontal',
+                from_ = 50, to = 500, resolution = 50)
+        self.newObstacleRadius.pack (side = 'top')
+        self.newObstacleFactor = Scale (self.newObstacleFrame,
+                label = 'Factor', orient = 'horizontal',
+                from_ = 0, to = 16, resolution = 1)
+        self.newObstacleFactor.pack (side = 'top')
+        self.newObstacle = Button (self.newObstacleFrame,
+                text = 'New obstacle', command = self.new_obstacle)
+        self.newObstacleFrame.configure (labelanchor = 'n',
+                labelwidget = self.newObstacle)
         self.areaview = AreaView (border_min, border_max, self)
         self.areaview.pack (expand = True, fill = 'both')
         self.areaview.bind ('<1>', self.click)
@@ -194,6 +208,13 @@ class TestPath (Frame):
 
     def escape_changed (self, value):
         self.areaview.area.escape = value
+        self.update ()
+
+    def new_obstacle (self):
+        radius = self.newObstacleRadius.get ()
+        factor = self.newObstacleFactor.get ()
+        self.areaview.area.obstacles.append (Obstacle ((750, 750), radius,
+            factor))
         self.update ()
 
 if __name__ == '__main__':
