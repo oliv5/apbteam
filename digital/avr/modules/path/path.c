@@ -151,6 +151,7 @@ path_compute_weight (uint8_t a, uint8_t b)
     int32_t dx, dy;
     int16_t ab, d, m, f;
     uint8_t i;
+    uint8_t max_factor;
     /* Compute distance. */
     dx = path.points[b].x - path.points[a].x;
     dy = path.points[b].y - path.points[a].y;
@@ -158,9 +159,11 @@ path_compute_weight (uint8_t a, uint8_t b)
     if (ab == 0)
 	return 0;
     /* Is there an intersection with a circle. */
-    for (i = 0; i < PATH_OBSTACLES_NB; i++)
+    max_factor = 1;
+    for (i = 0; i < PATH_OBSTACLES_NB && max_factor != 0; i++)
       {
-	if (path.obstacles[i].valid)
+	uint8_t factor = path.obstacles[i].factor;
+	if (path.obstacles[i].valid && (factor == 0 || factor > max_factor))
 	  {
 	    /* Compute distance to center.
 	     * Use a scalar product between a segment perpendicular vector and
@@ -180,19 +183,18 @@ path_compute_weight (uint8_t a, uint8_t b)
 				     - d * d);
 		if (!((m - f > 0 && m + f > 0 && m - f > ab && m + f > ab)
 		      || (m - f < 0 && m + f < 0 && m - f < ab && m + f < ab)))
-		  {
-		    uint8_t factor = path.obstacles[i].factor;
-		    if (path.escape_factor
-			&& (a == 1 || b == 1)
-			&& (a != 0 && b != 0)
-			&& (factor == 0u || factor > path.escape_factor))
-			factor = path.escape_factor;
-		    return factor == 0 ? 0xffffu : factor * (uint16_t) ab;
-		  }
+		    max_factor = factor;
 	      }
 	  }
       }
-    return ab;
+    /* Limit factor if trying to escape. */
+    if (path.escape_factor
+	&& (a == 1 || b == 1)
+	&& (a != 0 && b != 0)
+	&& (max_factor == 0 || max_factor > path.escape_factor))
+	max_factor = path.escape_factor;
+    /* Return. */
+    return max_factor == 0 ? 0xffffu : max_factor * (uint16_t) ab;
 }
 
 /** Fill the arc matrix. */
