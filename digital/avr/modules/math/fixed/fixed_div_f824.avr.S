@@ -24,8 +24,8 @@
 ; }}}
 
 ; Perfs:
-;  1186 cycles in worse case
-;  843 per second, per MHz
+;  1199 cycles in worse case
+;  834 per second, per MHz
 
 #define dd3 r25
 #define dd2 r24
@@ -150,6 +150,21 @@ fixed_div_f824:
 	rol dd1
 	rol dd2
 	rol dd3
+; Rounding.
+	lsl rem0		; shift rem
+	rol rem1
+	rol rem2
+	rol rem3
+	cp rem0, dv0		; rem -= dv
+	cpc rem1, dv1
+	cpc rem2, dv2
+	cpc rem3, dv3
+	brcs 2f			; if positive or equal, round up
+	subi dd0, 0xff
+	sbci dd1, 0xff
+	sbci dd2, 0xff
+	sbci dd3, 0xff
+2:				; else, nothing, round down
 ; Restore sign.
 	sbrs __tmp_reg__, 7
 	rjmp 1f

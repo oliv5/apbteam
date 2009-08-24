@@ -28,6 +28,7 @@ clean.test:
 	rm -f $(TEST_FILES)
 
 SIMULAVR = simulavr -d $(AVR_MCU) -W 0x22,- -R 0x20,- -T uart0_exit
+CR2NL = tr '\r' '\n'
 
 .PRECIOUS: $(TEST_FILES)
 
@@ -35,4 +36,4 @@ test.%.host: test_fixed.host
 	echo '!$(call code,$@,host)' | ./$< > $@
 
 test.%.simu: test_fixed.avr.simu.elf
-	echo '!$(call code,$@,simu)\r' | $(SIMULAVR) -f $< > $@
+	echo -e '!$(call code,$@,simu)\r' | $(SIMULAVR) -f $< | $(CR2NL) > $@

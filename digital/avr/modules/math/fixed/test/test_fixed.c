@@ -53,7 +53,7 @@ check_div (int32_t a, int32_t b, int32_t r)
     feclearexcept (FE_ALL_EXCEPT);
     double af = (double) a / (1 << 24);
     double bf = (double) b / (1 << 24);
-    int32_t ri = af / bf * (1 << 24);
+    int32_t ri = rint (af / bf * (1 << 24));
     if (r != ri && !fetestexcept (FE_INVALID))
 	printf ("error: %08x / %08x != %08x (%08x)\n", a, b, r, ri);
 }

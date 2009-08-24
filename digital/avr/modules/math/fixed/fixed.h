@@ -54,13 +54,23 @@ fixed_div_f824 (int32_t a, int32_t b);
 #else /* HOST */
 
 /** Multiply f8.24 by f8.24, return f8.24. */
-#define fixed_mul_f824(a, b) \
-    (((int64_t) (int32_t) (a) * (int64_t) (int32_t) (b) \
-      + 0x800000LL) >> 24)
+extern inline
+int32_t
+fixed_mul_f824 (int32_t a, int32_t b)
+{
+    return ((int64_t) a * b + 0x800000) >> 24;
+}
 
 /** Divide f8.24 by f8.24, return f8.24. */
-#define fixed_div_f824(a, b) \
-    (((int64_t) (int32_t) (a) << 24) / (int64_t) (int32_t) (b))
+extern inline
+int32_t
+fixed_div_f824 (int32_t a, int32_t b)
+{
+    if ((a ^ b) >= 0)
+	return (((int64_t) a << 24) + b / 2) / b;
+    else
+	return (((int64_t) a << 24) - b / 2) / b;
+}
 
 #endif
 
