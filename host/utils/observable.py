@@ -34,6 +34,7 @@ class Observable:
         """Register an observer to this observable."""
         assert callable (observer)
         self.__observers.append (observer)
+        observer ()
 
     def notify (self):
         """Notify all observers.  This should be called after every state

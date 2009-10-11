@@ -88,7 +88,6 @@ class TestSimu (InterNode):
 	self.robot_link.io.adc[5].value = 0
         # Color switch.
         self.robot_model.color_switch.register (self.change_color)
-        self.change_color ()
 
     def close (self):
         self.forked_hub.kill ()

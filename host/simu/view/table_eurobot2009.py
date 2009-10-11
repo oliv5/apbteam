@@ -43,7 +43,6 @@ class Puck (Drawable):
         self.attr = attr
         self.model = model
         self.model.register (self.__notified)
-        self.__notified ()
 
     def __notified (self):
         self.pos = self.model.pos

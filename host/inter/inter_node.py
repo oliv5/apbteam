@@ -75,7 +75,6 @@ class InterNode (Inter):
             s.obstacles = self.obstacles
             s.hide = True
             s.register (self.update_sharps)
-        self.update_sharps ()
         self.path = Path (self.tableview.table)
         self.io_link.path.register (self.notify_path)
 

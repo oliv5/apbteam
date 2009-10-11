@@ -42,21 +42,16 @@ class Sorter (Observable):
         self.lost = [ ]
         self.arm_motor_link = arm_motor_link
         self.arm_motor_link.register (self.__arm_motor_notified)
-        self.__arm_motor_notified ()
         self.cylinder_puck_contact = cylinder_puck_contact
         self.servo_links = servo_links
         self.bridge_puck_contact = bridge_puck_contact
         self.servo_links[0].register (self.__bridge_door_servo_notified)
-        self.__bridge_door_servo_notified ()
         self.servo_links[1].register (self.__bridge_finger_servo_notified)
-        self.__bridge_finger_servo_notified ()
         self.elevator_motor_link = elevator_motor_link
         self.elevator_motor_link.register (self.__elevator_motor_notified)
-        self.__elevator_motor_notified ()
         self.elevator_door = elevator_door_model
         self.elevator_door_contact = elevator_door_contact
         self.elevator_door.register (self.__elevator_door_notified)
-        self.__elevator_door_notified ()
 
     def __transform (self, pos):
         m = TransMatrix ()

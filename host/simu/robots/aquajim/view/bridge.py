@@ -36,7 +36,6 @@ class Bridge (Drawable):
         Drawable.__init__ (self, onto)
         self.model = model
         self.model.register (self.update)
-        self.update ()
 
     def draw (self):
         self.reset ()

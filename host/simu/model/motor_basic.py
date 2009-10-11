@@ -38,10 +38,9 @@ class MotorBasic (Observable):
         self.max_stop = max_stop
         self.angle = 0
         self.link = link
-        self.link.register (self.__notified)
         self.value = None
         self.last_update = self.scheduler.date
-        self.__notified ()
+        self.link.register (self.__notified)
         self.__timed_update ()
 
     def __notified (self):

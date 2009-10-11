@@ -31,7 +31,6 @@ class Robot (simu.inter.drawable.Drawable):
         simu.inter.drawable.Drawable.__init__ (self, onto)
         self.position_model = position_model
         self.position_model.register (self.__position_notified)
-        self.__position_notified ()
 
     def __position_notified (self):
         """Called on position modifications."""

@@ -36,7 +36,6 @@ class Servo (Drawable):
         self.start = start
         self.extent = extent
         self.model.register (self.__notified)
-        self.__notified ()
 
     def __notified (self):
         self.value = self.model.value

@@ -35,10 +35,8 @@ class Elevator (Drawable):
         Drawable.__init__ (self, onto)
         self.model = model
         self.model.register (self.__notified)
-        self.__notified ()
         self.door_model = model.elevator_door
         self.door_model.register (self.__door_notified)
-        self.__door_notified ()
 
     def __notified (self):
         self.height = self.model.elevator_height

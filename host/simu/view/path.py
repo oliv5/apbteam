@@ -30,7 +30,6 @@ class Path (Drawable):
         Drawable.__init__ (self, onto)
         self.model = model
         self.model.register (self.__notified)
-        self.__notified ()
 
     def __notified (self):
         self.path = self.model.path

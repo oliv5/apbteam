@@ -36,7 +36,6 @@ class Arm (Drawable):
         Drawable.__init__ (self, onto)
         self.model = model
         self.model.register (self.__notified)
-        self.__notified ()
 
     def __notified (self):
         self.angle = self.model.arm_angle

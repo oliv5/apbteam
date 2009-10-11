@@ -31,7 +31,6 @@ class Switch (Observable):
         self.link = link
         self.state = None
         self.register (self.__update)
-        self.__update ()
 
     def __update (self):
         self.link.state = self.state

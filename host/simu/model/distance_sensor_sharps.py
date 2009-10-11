@@ -38,6 +38,7 @@ class DistanceSensorSharps (Observable, DistanceSensor):
                 level)
         self.link = link
         self.scheduler = scheduler
+        self.value = None
         self.register (self.__update)
         self.evaluate ()
 

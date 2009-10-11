@@ -30,7 +30,6 @@ class Position (Observable):
         Observable.__init__ (self)
         self.link = link
         self.link.register (self.__notified)
-        self.__notified ()
 
     def __notified (self):
         self.pos = self.link.pos

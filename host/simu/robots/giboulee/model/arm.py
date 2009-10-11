@@ -30,7 +30,6 @@ class Arm (Observable):
         Observable.__init__ (self)
         self.motor_link = motor_link
         self.motor_link.register (self.__motor_notified)
-        self.__motor_notified ()
 
     def __motor_notified (self):
         self.angle = self.motor_link.angle
