@@ -28,6 +28,8 @@ parser.add_option("-c", "--callback", dest="cb",
         help="The callback file containing the functions" + INTER_MODE)
 
 [options, args] = parser.parse_args()
+if options.type == "inter":
+    assert args
 
 if options.type == 'create':
     cre = TCreator (options.infile, options.outfile, options.enum_name)
