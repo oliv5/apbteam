@@ -1,7 +1,7 @@
 import serial
 import time
 import sys
-sys.path.append ('../../host/')
+sys.path.append (sys.path[0] + '/../../host/')
 from proto.proto import *
 from proto.popen_io import *
 from utils import *
