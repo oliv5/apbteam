@@ -1,6 +1,6 @@
 CFLAGS = -O2 -Wall
 
-all: ex1 ex2 ex1.png ex2.png ex2_tpl
+all: ex1 ex2 ex1.png ex2.png ex2_tpl import.dump.check
 
 ex1: ex1.o ex1_cb.o
 
@@ -38,9 +38,18 @@ ex2_tpl: ex2.fsm ex2_tpl.conf
 %.png: %.dot
 	dot -Tpng $< -o $@
 
+%.dump: %.fsm
+	python ../dfagen.py --dump -d $< > $@
+
+%.check: % %.ref
+	diff $^
+
+import.dump: import.fsm imported1.fsm imported2.fsm imported3.fsm
+
 clean:
 	rm -f ex1 ex1.o ex1_cb.o ex1.c ex1.h ex1_cb_skel.c ex1_cb.h ex1_cb.c
 	rm -f ex1.dot ex1.png
 	rm -f ex2 ex2.o ex2_cb.o ex2_robot.o ex2.c ex2.h ex2_cb_skel.c ex2_cb.h ex2_cb.c
 	rm -f ex2.dot ex2.png
 	rm -f ex2_tpl_defs.h ex2_tpl_table.h
+	rm -f import.dump

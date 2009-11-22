@@ -11,19 +11,32 @@ parser AutomatonParser:
     token QUALIFIER:	"\w([\w ]*\w)?"
     token ATITLE:	".*?\n"
     token ATTR:		"\w([\w =]*\w)?"
+    token IMPORT:	"[\w./]+"
 
     rule automaton:	ATITLE		{{ a = Automaton (ATITLE.strip ()) }}
 			( comments	{{ a.comments = comments }}
 				) ?
+			automatondef<<a>>
+			EOF		{{ return a }}
+
+    rule automatonsub<<a>>:
+			ATITLE
+			( comments ) ?
+			automatondef<<a>>
+			EOF
+
+    rule automatondef<<a>>:
+			( importdef<<a>> ) *
 			"States:\n"
 			( statedef	{{ a.add_state (statedef) }}
 				) *
+			( importdef<<a>> ) *
 			"Events:\n"
 			( eventdef	{{ a.add_event (eventdef) }}
 				) *
+			( importdef<<a>> ) *
 			( transdef<<a>>
 				) *
-			EOF		{{ return a }}
 
     rule statedef:			{{ initial = False }}
 			" " ( "\*"	{{ initial = True }}
@@ -69,4 +82,18 @@ parser AutomatonParser:
     rule comments:	COMMENTS	{{ c = COMMENTS.strip () }}
 			( COMMENTS	{{ c += '\n' + COMMENTS.strip () }}
 				) *	{{ return c }}
+
+    rule importdef<<a>>:
+			"import\s+"
+			IMPORT		{{ import_automaton (IMPORT, a) }}
+			"\n"
+
+%%
+
+def import_automaton (import_file, a):
+    f = open (import_file, 'r')
+    text = f.read ()
+    f.close ()
+    P = AutomatonParser (AutomatonParserScanner (text))
+    return runtime.wrap_error_reporter (P, 'automatonsub', a)
 

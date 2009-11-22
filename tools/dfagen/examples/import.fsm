@@ -1,0 +1,29 @@
+# Import root file.
+Import
+  Import definitions from other files.
+
+import imported1.fsm
+
+States:
+ RS1
+ RS2
+
+import imported2.fsm
+
+Events:
+ re1
+ re2
+
+import imported3.fsm
+
+RS1:
+ re2 -> RS2
+ i1e2 -> RS2
+ i2e2 -> RS2
+ i3e2 -> RS2
+
+RS2:
+ re1 -> RS1
+ i1e1 -> RS1
+ i2e1 -> RS1
+ i3e1 -> RS1

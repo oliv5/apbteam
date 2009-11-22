@@ -1,0 +1,16 @@
+# Imported second file.
+Imported2
+
+States:
+ I2S1
+ I2S2
+
+Events:
+ i2e1
+ i2e2
+
+I2S1:
+ i2e2 -> I2S2
+
+I2S2:
+ i2e1 -> I2S1

@@ -1,0 +1,20 @@
+# Imported third file.
+Imported3
+
+States:
+ I3S1
+ I3S2
+
+Events:
+ i3e1
+ i3e2
+
+I3S1:
+ i3e2 -> I3S2
+ i2e2 -> I3S2
+ re2 -> I3S2
+
+I3S2:
+ i3e1 -> I3S1
+ i2e1 -> I3S1
+ re1 -> I3S1

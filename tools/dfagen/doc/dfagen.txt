@@ -113,6 +113,10 @@ describe several states which behave the same way::
      command -> .
       ignored
 
+If you want to split your automaton definition in several files, you can
+include other files using the import statement.  This can be used between
+other sections.  The imported file use the same syntax as the main file.
+
 Invoking dfagen
 ===============
 

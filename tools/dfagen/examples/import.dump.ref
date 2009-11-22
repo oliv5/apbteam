@@ -1,0 +1,58 @@
+Import
+  Import definitions from other files.
+
+States:
+ I1S1
+ I1S2
+ RS1
+ RS2
+ I2S1
+ I2S2
+ I3S1
+ I3S2
+
+Events:
+ i1e1
+ i1e2
+ i2e1
+ i2e2
+ re1
+ re2
+ i3e1
+ i3e2
+
+I1S1:
+ i1e2 -> I1S2
+
+I1S2:
+ i1e1 -> I1S1
+
+RS1:
+ re2 -> RS2
+ i1e2 -> RS2
+ i2e2 -> RS2
+ i3e2 -> RS2
+
+RS2:
+ re1 -> RS1
+ i1e1 -> RS1
+ i2e1 -> RS1
+ i3e1 -> RS1
+
+I2S1:
+ i2e2 -> I2S2
+
+I2S2:
+ i2e1 -> I2S1
+
+I3S1:
+ i3e2 -> I3S2
+ i2e2 -> I3S2
+ re2 -> I3S2
+
+I3S2:
+ i3e1 -> I3S1
+ i2e1 -> I3S1
+ re1 -> I3S1
+
+
