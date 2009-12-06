@@ -327,30 +327,67 @@ simu_step (void)
 static void
 simu_send (void)
 {
+    static int first = 1;
     int i;
     mex_msg_t *m;
     /* Send position. */
-    m = mex_msg_new (0xa0);
-    mex_msg_push (m, "hhl", (int16_t) simu_pos_x, (int16_t) simu_pos_y,
-		  (int32_t) (1024.0 * simu_pos_a));
-    mex_node_send (m);
+    static int16_t simu_pos_x_sent, simu_pos_y_sent;
+    static int32_t simu_pos_a_sent;
+    int16_t simu_pos_x_to_send = simu_pos_x;
+    int16_t simu_pos_y_to_send = simu_pos_y;
+    int32_t simu_pos_a_to_send = 1024.0 * simu_pos_a;
+    if (first
+	|| simu_pos_x_to_send != simu_pos_x_sent
+	|| simu_pos_y_to_send != simu_pos_y_sent
+	|| simu_pos_a_to_send != simu_pos_a_sent)
+      {
+	m = mex_msg_new (0xa0);
+	mex_msg_push (m, "hhl", simu_pos_x_to_send, simu_pos_y_to_send,
+		      simu_pos_a_to_send);
+	mex_node_send (m);
+	simu_pos_x_sent = simu_pos_x_to_send;
+	simu_pos_y_sent = simu_pos_y_to_send;
+	simu_pos_a_sent = simu_pos_a_to_send;
+      }
     /* Send PWM. */
-    m = mex_msg_new (0xa1);
-    mex_msg_push (m, "hh", pwm_left.cur, pwm_right.cur);
-    for (i = 0; i < AC_ASSERV_AUX_NB; i++)
-	mex_msg_push (m, "h", pwm_aux[i].cur);
-    mex_node_send (m);
+    static int16_t pwm_left_sent, pwm_right_sent;
+    if (first
+	|| pwm_left_sent == pwm_left.cur
+	|| pwm_right_sent == pwm_right.cur)
+      {
+	m = mex_msg_new (0xa1);
+	mex_msg_push (m, "hh", pwm_left.cur, pwm_right.cur);
+	for (i = 0; i < AC_ASSERV_AUX_NB; i++)
+	    mex_msg_push (m, "h", pwm_aux[i].cur);
+	mex_node_send (m);
+	pwm_left_sent = pwm_left.cur;
+	pwm_right_sent = pwm_right.cur;
+      }
     /* Send Aux position. */
-    m = mex_msg_new (0xa8);
+    static int32_t simu_aux_model_sent[AC_ASSERV_AUX_NB];
+    int32_t simu_aux_model_to_send[AC_ASSERV_AUX_NB];
+    int simu_aux_model_changed = 0;
     for (i = 0; i < AC_ASSERV_AUX_NB; i++)
       {
-	if (simu_robot->aux_motor[i])
-	    mex_msg_push (m, "l", (int32_t) (1024.0 * simu_aux_model[i].th
-					     / simu_aux_model[i].m.i_G));
-	else
-	    mex_msg_push (m, "l", 0);
+	simu_aux_model_to_send[i] = 1024.0 * simu_aux_model[i].th
+	    / simu_aux_model[i].m.i_G;
+	if (!first && simu_aux_model_to_send[i] != simu_aux_model_sent[i])
+	    simu_aux_model_changed = 1;
       }
-    mex_node_send (m);
+    if (first || simu_aux_model_changed)
+      {
+	m = mex_msg_new (0xa8);
+	for (i = 0; i < AC_ASSERV_AUX_NB; i++)
+	  {
+	    if (simu_robot->aux_motor[i])
+		mex_msg_push (m, "l", simu_aux_model_to_send[i]);
+	    else
+		mex_msg_push (m, "l", 0);
+	  }
+	mex_node_send (m);
+      }
+    /* First send done. */
+    first = 0;
 }
 
 /** Initialise the timer. */
