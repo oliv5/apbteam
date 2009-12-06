@@ -87,6 +87,9 @@ double simu_counter_left_th, simu_counter_right_th;
 /** Use mex. */
 int simu_mex;
 
+/** Counter to limit the interval between information is sent. */
+int simu_send_cpt;
+
 /** Initialise simulation. */
 static void
 simu_init (void)
@@ -94,15 +97,17 @@ simu_init (void)
     int argc;
     char **argv;
     host_get_program_arguments (&argc, &argv);
-    if (argc == 2 && strcmp (argv[0], "-m") == 0)
+    if (argc == 2 && strncmp (argv[0], "-m", 2) == 0)
       {
-	simu_mex = 1;
+	simu_mex = atoi (argv[0] + 2);
+	if (!simu_mex) simu_mex = 1;
+	simu_send_cpt = simu_mex;
 	mex_node_connect ();
 	argc--; argv++;
       }
     if (argc != 1)
       {
-	fprintf (stderr, "Syntax: asserv.host [-m] model\n");
+	fprintf (stderr, "Syntax: asserv.host [-m[interval]] model\n");
 	exit (1);
       }
     simu_robot = models_get (argv[0]);
@@ -404,8 +409,11 @@ timer_wait (void)
     if (simu_mex)
 	mex_node_wait_date (mex_node_date () + 4);
     simu_step ();
-    if (simu_mex)
+    if (simu_mex && !--simu_send_cpt)
+      {
+	simu_send_cpt = simu_mex;
 	simu_send ();
+      }
 }
 
 /** Read timer value. Used for performance analysis. */

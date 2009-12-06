@@ -88,6 +88,6 @@ class TestSimuControl (TestSimu):
         pass
 
 if __name__ == '__main__':
-    app = TestSimuControl (('../../asserv/src/asserv/asserv.host', '-m',
+    app = TestSimuControl (('../../asserv/src/asserv/asserv.host', '-m9',
         'aquajim'), ('../src/io.host'))
     app.mainloop ()

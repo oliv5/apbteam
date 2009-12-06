@@ -121,6 +121,6 @@ class TestSimu (InterNode):
         self.obstacle.notify ()
 
 if __name__ == '__main__':
-    app = TestSimu (('../../asserv/src/asserv/asserv.host', '-m', 'aquajim'),
+    app = TestSimu (('../../asserv/src/asserv/asserv.host', '-m9', 'aquajim'),
             ('../src/io.host'))
     app.mainloop ()
