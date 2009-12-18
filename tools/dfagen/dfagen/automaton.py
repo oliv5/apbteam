@@ -136,7 +136,7 @@ class Automaton:
         s += '\nStates:\n'
         s += ''.join (str (state) for state in self.iter_states ())
         s += '\nEvents:\n'
-        s += ''.join (str (state) for state in self.iter_events ())
+        s += ''.join (str (event) for event in self.iter_events ())
         s += '\n'
         for state in self.iter_states ():
             s += state.name + ':\n'
