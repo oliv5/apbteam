@@ -13,35 +13,38 @@ parser AutomatonParser:
     token ATTR:		"\w([\w =]*\w)?"
     token IMPORT:	"[\w./]+"
 
-    rule automaton:	ATITLE		{{ a = Automaton (ATITLE.strip ()) }}
+    rule automaton:	ATITLE		{{ name = ATITLE.strip (); a = Automaton (name) }}
 			( comments	{{ a.comments = comments }}
 				) ?
-			automatondef<<a>>
+			automatondef<<a, name>>
 			EOF		{{ return a }}
 
     rule automatonsub<<a>>:
-			ATITLE
-			( comments ) ?
-			automatondef<<a>>
+			ATITLE		{{ name = ATITLE.strip () }}
+			( comments	{{ a.comments += "\n" + name + ":\n" + comments }}
+				) ?
+			automatondef<<a, name>>
 			EOF
 
-    rule automatondef<<a>>:
+    rule automatondef<<a, origin>>:
 			( importdef<<a>> ) *
 			"States:\n"
-			( statedef	{{ a.add_state (statedef) }}
+			( statedef<<origin>>
+					{{ a.add_state (statedef) }}
 				) *
 			( importdef<<a>> ) *
 			"Events:\n"
-			( eventdef	{{ a.add_event (eventdef) }}
+			( eventdef<<origin>>
+					{{ a.add_event (eventdef) }}
 				) *
 			( importdef<<a>> ) *
-			( transdef<<a>>
+			( transdef<<a, origin>>
 				) *
 
-    rule statedef:			{{ initial = False }}
+    rule statedef<<origin>>:		{{ initial = False }}
 			" " ( "\*"	{{ initial = True }}
 				) ?
-			STATE		{{ s = State (STATE, initial = initial) }}
+			STATE		{{ s = State (STATE, initial = initial, origin = origin) }}
 			( "\s*\[\s*"
 				ATTR	{{ s.attributes = ATTR }}
 				"\s*\]" ) ?
@@ -50,14 +53,17 @@ parser AutomatonParser:
 				) ?
 					{{ return s }}
 
-    rule eventdef:	" " EVENT	{{ e = Event (EVENT) }}
+    rule eventdef<<origin>>:
+			" " EVENT	{{ e = Event (EVENT, origin = origin) }}
 			"\n"
 			( comments	{{ e.comments = comments }}
 				) ?
 					{{ return e }}
 
-    rule transdef<<a>>:	transsl<<a>>
-			( trans<<a>>	{{ for s in transsl: s.add_branch (trans) }}
+    rule transdef<<a, origin>>:
+			transsl<<a>>
+			( trans<<a, origin>>
+					{{ for s in transsl: s.add_branch (trans) }}
 				) *
 
     rule transsl<<a>>:			{{ sl = [ ] }}
@@ -66,7 +72,8 @@ parser AutomatonParser:
 				) *
 			":\n"		{{ return sl }}
 
-    rule trans<<a>>:	" " EVENT	{{ t = TransitionBranch (a.events[EVENT]) }}
+    rule trans<<a, origin>>:
+			" " EVENT	{{ t = TransitionBranch (a.events[EVENT], origin = origin) }}
 			( ":\s*" QUALIFIER {{ t.name = QUALIFIER }}
 				) ?
 			"\s*->\s*"

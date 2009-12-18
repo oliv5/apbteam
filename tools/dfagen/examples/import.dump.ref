@@ -1,5 +1,11 @@
 Import
   Import definitions from other files.
+  Imported1:
+  First imported file comment.
+  Imported2:
+  Second imported file comment.
+  Imported3:
+  Third imported file comment.
 
 States:
  I1S1

@@ -1,9 +1,10 @@
 class Event:
     """Event definition."""
 
-    def __init__ (self, name, comments = ''):
+    def __init__ (self, name, comments = '', origin = None):
         self.name = name
         self.comments = comments
+        self.origin = origin
         pass
 
     def __str__ (self):
@@ -15,10 +16,11 @@ class Event:
 class State:
     """State definition."""
 
-    def __init__ (self, name, comments = '', initial = False):
+    def __init__ (self, name, comments = '', initial = False, origin = None):
         self.name = name
         self.comments = comments
         self.initial = initial
+        self.origin = origin
         self.transitions = { }
         self.transitions_list = [ ]
         self.attributes = None
@@ -73,11 +75,13 @@ class Transition:
 
 class TransitionBranch:
 
-    def __init__ (self, event, name = None, to = None, comments = ''):
+    def __init__ (self, event, name = None, to = None, comments = '',
+            origin = None):
         self.event = event
         self.name = name
         self.to = to
         self.comments = comments
+        self.origin = origin
         self.attributes = None
 
     def __str__ (self):
