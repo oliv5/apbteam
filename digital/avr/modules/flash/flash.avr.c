@@ -95,7 +95,7 @@ flash_erase (uint8_t cmd, uint32_t start_addr)
 }
 
 void
-flash_send_command (uint8_t cmd)
+flash_send_command (flash_cmd_t cmd)
 {
     AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
     spi_send (cmd);

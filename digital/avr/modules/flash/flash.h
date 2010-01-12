@@ -53,6 +53,7 @@
 #define FLASH_LOG_PAGE_SIZE 0x80000
 #define FLASH_LOG_BUFFER_SIZE 16
 
+enum flash_cmd_t
 enum
 {
     FLASH_CMD_INIT,
@@ -62,6 +63,7 @@ enum
     FLASH_CMD_WRITE_BYTE,
     FLASH_CMD_NB
 };
+typedef enum flash_cmd_t flash_cmd_t;
 
 /** Flash access.
   * The flash contains an address of 21 bits in a range from 0x0-0x1fffff.
