@@ -31,11 +31,9 @@
 
 #define TRACE_ARGS_MAX 6
 #define TRACE_MAX_ARGS (TRACE_ARGS_MAX * TRACE_ARGS_MAX)
-
-#define TRACE_BLOCK_SIZE_BYTES 65536
 #define TRACE_PAGE 0x80000
-#define TRACE_PAGE_BLOCKS (TRACE_PAGE / TRACE_BLOCK_SIZE_BYTES)
-#define TRACE_PAGE_PAGE_NB (FLASH_SIZE / TRACE_PAGE)
+
+#define FLASH_ADDRESS_HIGH (flash_size () - 1)
 
 struct trace_t
 {
@@ -45,6 +43,10 @@ struct trace_t
     uint32_t addr_start;
     /** Flash address. */
     uint32_t addr;
+    /** Number of pages. */
+    uint8_t nb_pages;
+    /** Number of block in one trace page. */
+    uint8_t page_block_size;
 };
 typedef struct trace_t trace_t;
 
@@ -77,10 +79,10 @@ trace_erase_page (uint32_t addr)
 {
     uint8_t i;
     while (flash_is_busy ());
-    for (i = 0; i < TRACE_PAGE_BLOCKS; i++)
+    for (i = 0; i < trace_global.page_block_size; i++)
       {
-	flash_erase (FLASH_ERASE_64K, addr);
-	addr += TRACE_BLOCK_SIZE_BYTES;
+	flash_erase (FLASH_ERASE_BLOCK, addr);
+	addr += flash_block_size ();
       }
 }
 
@@ -92,13 +94,14 @@ trace_init (void)
     uint32_t new_trace_addr = 0;
 
     trace_global.status = flash_init ();
-
+    trace_global.nb_pages = flash_size () / TRACE_PAGE;
+    trace_global.page_block_size = TRACE_PAGE / flash_block_size ();
     /* Get the first sector to write. */
     if (trace_global.status)
       {
 	uint8_t val = 0;
 	/* Find the possible traces. */
-	for (i = 0; i < TRACE_PAGE_PAGE_NB; i++)
+	for (i = 0; i < trace_global.nb_pages; i++)
 	  {
 	    val = flash_read (i * TRACE_PAGE);
 	    if (i == 0 || lesseq_mod8(new_trace_val, val))

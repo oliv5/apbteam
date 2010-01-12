@@ -94,7 +94,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
       case c ('e', 3):
         /* Erase 4k:
          *  - 3b: address. */
-        flash_erase (FLASH_ERASE_4K, addr);
+        flash_erase (FLASH_ERASE_SECTOR, addr);
         break;
       case c ('r', 3):
         /* Read one byte:
