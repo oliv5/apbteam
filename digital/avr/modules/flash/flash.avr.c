@@ -27,9 +27,6 @@
 #include "modules/spi/spi.h"
 #include "modules/utils/utils.h"
 
-/** Initialise the flash memory.
- * \return true if the flash is present, false otherwise.
- */
 uint8_t
 flash_init (void)
 {
@@ -68,11 +65,6 @@ flash_init (void)
     return 1;
 }
 
-/** Flash access.
- * The flash contains an address of 21 bits in a range from 0x0-0x1fffff.
- * This function shall access the memory directly by the SPI.
- * \param  addr  the address to provide to the flash memory.
- */
 void
 flash_address (uint32_t addr)
 {
@@ -82,10 +74,6 @@ flash_address (uint32_t addr)
     spi_send (addr);
 }
 
-/** Erase the memory.
- * \param  erase_type  the erase type..
- * \param  start_addr  the start address.
- */
 void
 flash_erase (uint8_t cmd, uint32_t start_addr)
 {
@@ -106,9 +94,6 @@ flash_erase (uint8_t cmd, uint32_t start_addr)
     while (flash_is_busy());
 }
 
-/* Send a flash command to the flash memory (only a command).
- * \param  cmd  the command to send.
- */
 void
 flash_send_command (uint8_t cmd)
 {
@@ -117,10 +102,6 @@ flash_send_command (uint8_t cmd)
     AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
 }
 
-
-/** Poll the busy bit in the Software Status Register of the flash memory.
- * \return  the status register.
- */
 uint8_t
 flash_read_status (void)
 {
@@ -134,9 +115,6 @@ flash_read_status (void)
     return res;
 }
 
-/** Write in the flash byte provided in parameter.
- * \param  data  the buffer to store the data.
- */
 void
 flash_write (uint32_t addr, uint8_t data)
 {
@@ -154,9 +132,6 @@ flash_write (uint32_t addr, uint8_t data)
     while (flash_is_busy());
 }
 
-/** Read the data at the address provided.
- * \return  the data read.
- */
 uint8_t
 flash_read (uint32_t addr)
 {
@@ -173,13 +148,6 @@ flash_read (uint32_t addr)
     return data;
 }
 
-/** Read a data from the flash memory from the address provided and for a
- * length of the number of bytes provided.
- * \param  address at which the data should be read.
- * \param  buffer  the buffer to fill with the read data.
- * \param  length  the length of the data to read.
- *
- */
 void
 flash_read_array (uint32_t addr, uint8_t *buffer, uint32_t length)
 {
@@ -197,11 +165,6 @@ flash_read_array (uint32_t addr, uint8_t *buffer, uint32_t length)
     while (flash_is_busy ());
 }
 
-/** Write in the flash byte provided in parameter.
- * \param  addr  the address to store the data.
- * \param  data  the array to store.
- * \param  length  the array length
- */
 void
 flash_write_array (uint32_t addr, uint8_t *data, uint32_t length)
 {
