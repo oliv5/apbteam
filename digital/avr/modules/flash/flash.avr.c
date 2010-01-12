@@ -27,6 +27,47 @@
 #include "modules/spi/spi.h"
 #include "modules/utils/utils.h"
 
+/** Initialise the flash memory.
+ * \return true if the flash is present, false otherwise.
+ */
+uint8_t
+flash_init (void)
+{
+    uint8_t rsp[3];
+
+    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
+    AC_FLASH_DDR |= _BV(AC_FLASH_BIT_SS);
+
+    /* send the read-ID instruction. */
+    spi_init (SPI_MASTER, SPI_CPOL_FALLING | SPI_CPHA_SETUP, SPI_MSB_FIRST,
+	      SPI_FOSC_DIV16);
+
+    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
+    spi_send (FLASH_READ_ID);
+    rsp[0] = spi_recv ();
+    rsp[1] = spi_recv ();
+    rsp[2] = spi_recv ();
+    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
+
+    if (rsp[0] != 0xBF)
+        return 0;
+
+    if (flash_status_aai())
+      {
+        flash_send_command (FLASH_WEDI);
+      }
+
+    /* Enables the flash to be writable. */
+    flash_send_command (FLASH_WREN);
+
+    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
+    spi_send (FLASH_WRSR);
+    spi_send (0);
+    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
+
+    return 1;
+}
+
 /** Flash access.
  * The flash contains an address of 21 bits in a range from 0x0-0x1fffff.
  * This function shall access the memory directly by the SPI.
@@ -91,47 +132,6 @@ flash_read_status (void)
     AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
 
     return res;
-}
-
-/** Initialise the flash memory.
- * \return true if the flash is present, false otherwise.
- */
-uint8_t
-flash_init (void)
-{
-    uint8_t rsp[3];
-
-    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
-    AC_FLASH_DDR |= _BV(AC_FLASH_BIT_SS);
-
-    /* send the read-ID instruction. */
-    spi_init (SPI_MASTER, SPI_CPOL_FALLING | SPI_CPHA_SETUP, SPI_MSB_FIRST,
-	      SPI_FOSC_DIV16);
-
-    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
-    spi_send (FLASH_READ_ID);
-    rsp[0] = spi_recv ();
-    rsp[1] = spi_recv ();
-    rsp[2] = spi_recv ();
-    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
-
-    if (rsp[0] != 0xBF)
-        return 0;
-
-    if (flash_status_aai())
-      {
-        flash_send_command (FLASH_WEDI);
-      }
-
-    /* Enables the flash to be writable. */
-    flash_send_command (FLASH_WREN);
-
-    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
-    spi_send (FLASH_WRSR);
-    spi_send (0);
-    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
-
-    return 1;
 }
 
 /** Write in the flash byte provided in parameter.
