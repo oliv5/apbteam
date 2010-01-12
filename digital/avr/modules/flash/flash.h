@@ -148,4 +148,9 @@ flash_block_size (void);
 void
 flash_init_sst (void);
 
+/** Initialise all the function pointer for ATMEL flash memory.
+  */
+void
+flash_init_at (void);
+
 #endif /* flash_h */

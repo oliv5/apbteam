@@ -247,3 +247,18 @@ flash_init_sst (void)
     flash.flash_size_func = flash_sst_size;
     flash.flash_block_size_func = flash_sst_block_size;
 }
+
+void
+flash_init_at (void)
+{
+    flash.erase_func = flash_at_erase;
+    flash.send_cmd_func = flash_at_send_command;
+    flash.read_status_func = flash_at_read_status;
+    flash.is_busy_func = flash_at_is_busy;
+    flash.write_func = flash_at_write;
+    flash.read_func = flash_at_read;
+    flash.read_array_func = flash_at_read_array;
+    flash.write_array_func = flash_at_write_array;
+    flash.flash_size_func = flash_at_size;
+    flash.flash_block_size_func = flash_at_block_size;
+}

@@ -1,7 +1,7 @@
-/* flash.c */
-/*  {{{
+/* flash_at.c */
+/* avr.flash - AVR Flash SPI use. {{{
  *
- * Copyright (C) 2008 Nélio Laranjeiro
+ * Copyright (C) 2010 Nelio Laranjeiro
  *
  * APBTeam:
  *        Web: http://apbteam.org/
@@ -22,45 +22,16 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
-#include "flash.h"
-#include "flash_sst.h"
 #include "flash_at.h"
-#include "modules/spi/spi.h"
 
-uint8_t
-flash_init (void)
+uint32_t
+flash_at_size (void)
 {
-    uint8_t rsp[3];
-    uint8_t res;
+    return FLASH_AT_SIZE;
+}
 
-    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
-    AC_FLASH_DDR |= _BV(AC_FLASH_BIT_SS);
-
-    /* send the read-ID instruction. */
-    spi_init (SPI_MASTER, SPI_CPOL_FALLING | SPI_CPHA_SETUP, SPI_MSB_FIRST,
-	      SPI_FOSC_DIV16);
-
-    FLASH_CS_ENABLE;
-    spi_send (FLASH_SST_CMD_READ_ID);
-    rsp[0] = spi_recv ();
-    rsp[1] = spi_recv ();
-    rsp[2] = spi_recv ();
-    FLASH_CS_DISABLE;
-
-    switch (rsp[0])
-      {
-      case FLASH_SST_MANUFACTURER_ID:
-	flash_sst_init ();
-	flash_init_sst ();
-	res = 1;
-	break;
-      case FLASH_AT_MANUFACTURER_ID:
-	flash_at_init ();
-	flash_init_at ();
-	res = 1;
-	break;
-      default:
-	res = 0;
-      }
-    return res;
+uint32_t
+flash_at_block_size (void)
+{
+    return FLASH_AT_PAGE_SIZE;
 }
