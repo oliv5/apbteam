@@ -53,6 +53,14 @@
 #define FLASH_LOG_PAGE_SIZE 0x80000
 #define FLASH_LOG_BUFFER_SIZE 16
 
+/** Enable CS. */
+#define FLASH_CS_ENABLE \
+    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS)
+
+/** Disable CS. */
+#define FLASH_CS_DISABLE \
+    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
+
 enum flash_cmd_t
 enum
 {

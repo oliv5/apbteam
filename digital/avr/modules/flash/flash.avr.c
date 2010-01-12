@@ -39,12 +39,12 @@ flash_init (void)
     spi_init (SPI_MASTER, SPI_CPOL_FALLING | SPI_CPHA_SETUP, SPI_MSB_FIRST,
 	      SPI_FOSC_DIV16);
 
-    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
+    FLASH_CS_ENABLE;
     spi_send (FLASH_READ_ID);
     rsp[0] = spi_recv ();
     rsp[1] = spi_recv ();
     rsp[2] = spi_recv ();
-    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
+    FLASH_CS_DISABLE;
 
     if (rsp[0] != 0xBF)
         return 0;
@@ -57,10 +57,10 @@ flash_init (void)
     /* Enables the flash to be writable. */
     flash_send_command (FLASH_WREN);
 
-    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
+    FLASH_CS_ENABLE;
     spi_send (FLASH_WRSR);
     spi_send (0);
-    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
+    FLASH_CS_DISABLE;
 
     return 1;
 }
@@ -79,7 +79,7 @@ flash_erase (uint8_t cmd, uint32_t start_addr)
 {
     flash_send_command (FLASH_WREN);
 
-    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
+    FLASH_CS_ENABLE;
     /* send the command. */
     spi_send (cmd);
 
@@ -89,7 +89,7 @@ flash_erase (uint8_t cmd, uint32_t start_addr)
         /* Send the start address */
         flash_address (start_addr);
       }
-    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
+    FLASH_CS_DISABLE;
 
     while (flash_is_busy());
 }
@@ -97,9 +97,9 @@ flash_erase (uint8_t cmd, uint32_t start_addr)
 void
 flash_send_command (flash_cmd_t cmd)
 {
-    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
+    FLASH_CS_ENABLE;
     spi_send (cmd);
-    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
+    FLASH_CS_DISABLE;
 }
 
 uint8_t
@@ -107,10 +107,10 @@ flash_read_status (void)
 {
     uint8_t res;
 
-    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
+    FLASH_CS_ENABLE;
     spi_send (FLASH_RDSR);
     res = spi_recv();
-    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
+    FLASH_CS_DISABLE;
 
     return res;
 }
@@ -121,12 +121,12 @@ flash_write (uint32_t addr, uint8_t data)
     while (flash_is_busy ());
     flash_send_command (FLASH_WREN);
 
-    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
+    FLASH_CS_ENABLE;
     /* Write instruction. */
     spi_send (FLASH_WRITE);
     flash_address (addr);
     spi_send (data);
-    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
+    FLASH_CS_DISABLE;
 
     /* Wait for the flash until it is busy */
     while (flash_is_busy());
@@ -138,12 +138,12 @@ flash_read (uint32_t addr)
     uint8_t data;
 
     while (flash_is_busy ());
-    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
+    FLASH_CS_ENABLE;
     /* Send the read instruction. */
     spi_send (FLASH_READ);
     flash_address (addr);
     data = spi_recv ();
-    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
+    FLASH_CS_DISABLE;
     while (flash_is_busy ());
     return data;
 }
@@ -154,14 +154,14 @@ flash_read_array (uint32_t addr, uint8_t *buffer, uint32_t length)
     uint8_t i;
 
     while (flash_is_busy ());
-    AC_FLASH_PORT &= ~_BV(AC_FLASH_BIT_SS);
+    FLASH_CS_ENABLE;
     spi_send (FLASH_READ);
     flash_address (addr);
     for (i = 0; i < length; i++)
       {
         buffer[i] = spi_recv ();
       }
-    AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
+    FLASH_CS_DISABLE;
     while (flash_is_busy ());
 }
 
