@@ -51,15 +51,11 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
       case c ('e', 3):
 	/* Erase 4k:
 	 *  - 3b: address. */
-	flash_erase (FLASH_ERASE_4K, addr);
+	flash_erase (FLASH_ERASE_PAGE, addr);
 	break;
       case c ('s', 0):
 	/* print flash status */
 	proto_send1b ('s', flash_read_status());
-	break;
-      case c ('w', 0):
-	/* Send the write enable flash command. */
-	flash_send_command (FLASH_WREN);
 	break;
       case c ('r', 3):
 	/* Read one byte:

@@ -1,1 +1,2 @@
-flash_SOURCES=flash.avr.c flash.host.c flash.c flash_io.host.c
+flash_SOURCES=flash.avr.c flash.host.c flash.c flash_io.host.c \
+	flash_sst.avr.c flash_sst.host.c flash_sst.c

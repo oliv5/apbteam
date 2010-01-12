@@ -1,7 +1,7 @@
-/* flash.host.c */
+/* flash_sst.c */
 /* avr.flash - AVR Flash SPI use. {{{
  *
- * Copyright (C) 2009 Nélio Laranjeiro
+ * Copyright (C) 2009 Nelio Laranjeiro
  *
  * APBTeam:
  *        Web: http://apbteam.org/
@@ -22,13 +22,16 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
-#include "flash.h"
 #include "flash_sst.h"
 
-uint8_t
-flash_init (void)
+uint32_t
+flash_sst_size (void)
 {
-    flash_sst_init ();
-    flash_init_sst ();
-    return 1;
+    return FLASH_SST_SIZE;
+}
+
+uint32_t
+flash_sst_block_size (void)
+{
+    return FLASH_SST_BLOCK_SIZE;
 }
