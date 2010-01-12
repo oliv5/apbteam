@@ -8,9 +8,10 @@ from tinter.tinter import *
 INTER_MODE=" (only available on interpretor  mode)."
 CREATE_MODE=" (only available on create mode)."
 
-print "Trace System v1.1 by APBTeam\n"
+print "Trace System by APBTeam\n"
 
-parser = OptionParser()
+usage = "usage: %prog [options] [host program]"
+parser = OptionParser(usage=usage)
 parser.add_option("-e", "--enum-name", dest="enum_name",
         help="provide the enumerator name" + CREATE_MODE,
         metavar="ENUM")
@@ -43,4 +44,4 @@ elif options.type == "inter":
     else:
         inter.trace_print()
 else:
-    print "see the help\n python trace --help"
+    parser.print_help ()
