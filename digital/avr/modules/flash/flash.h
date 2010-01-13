@@ -38,6 +38,19 @@
 #define FLASH_CS_DISABLE \
     AC_FLASH_PORT |= _BV(AC_FLASH_BIT_SS);
 
+/** Initialise the Flash driver callbacks functions. */
+#define FLASH_DRV_INIT(drv) \
+    ({flash.erase_func = flash_ ## drv ## _erase; \
+    flash.send_cmd_func = flash_ ## drv ## _send_command; \
+    flash.read_status_func = flash_ ## drv ## _read_status; \
+    flash.is_busy_func = flash_ ## drv ## _is_busy; \
+    flash.write_func = flash_ ## drv ## _write; \
+    flash.read_func = flash_ ## drv ## _read; \
+    flash.read_array_func = flash_ ## drv ## _read_array; \
+    flash.write_array_func = flash_ ## drv ## _write_array; \
+    flash.flash_size_func = flash_ ## drv ## _size; \
+    flash.flash_block_size_func = flash_ ## drv ## _block_size;})
+
 enum flash_cmd_t
 {
     FLASH_CMD_INIT,
