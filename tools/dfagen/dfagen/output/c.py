@@ -169,12 +169,18 @@ class WriterData:
             r += ' },\n'
         return r
 
-    def states_template (self, template):
+    def states_template (self, template, **kargs):
+        """Call a template for every states.  The first parameter is the
+        template file name.  An optionnal 'origin' keyword parameter limits to
+        states from the given origin(s) (use | to separate origins)."""
+        origin = None
+        if 'origin' in kargs:
+            origin = kargs['origin'].split ('|')
         t = open (os.path.join (self.templatedir, template), 'r')
         tt = t.read ()
         t.close ()
         exp = ''
-        for s in self.states ():
+        for s in self.states (origin):
             for tr in s.iter_transitions ():
                 d = WriterData (self.prefix, self.automaton, self.user)
                 branches_to = '\n'.join (
@@ -206,27 +212,39 @@ class WriterData:
         return exp
 
     def __getitem__ (self, key):
-        preproc = lambda v: v
-        args = []
+        # Get key and arguments.
         key = key.split (',')
-        key, args = key[0], key[1:]
+        key, targs = key[0], key[1:]
+        # Choose postprocessor.
+        postproc = lambda v: v
         if key.startswith ('*'):
             key = key[1:]
-            preproc = lambda v: ' * ' + v.replace ('\n', '\n * ') + '\n'
+            postproc = lambda v: ' * ' + v.replace ('\n', '\n * ') + '\n'
         if key.startswith ('_'):
             key = key[1:]
-            preproc = lambda v: v and v + '\n' or ''
+            postproc = lambda v: v and v + '\n' or ''
+        # Parse arguments.
+        args = []
+        kargs = {}
+        for a in targs:
+            if '=' in a:
+                k, v = a.split ('=')
+                kargs[k] = v
+            else:
+                args.append (a)
+        # Find value.
         val = None
         if key in self.dict:
-            try:
-                val = self.dict[key] (*args)
-            except TypeError:
+            if callable (self.dict[key]):
+                val = self.dict[key] (*args, **kargs)
+            else:
                 val = self.dict[key]
         elif key.startswith ('user.'):
             val = self.user[key[5:]]
-        val = preproc (val)
         if val is None:
             raise KeyError, key
+        # Postprocessing and return.
+        val = postproc (val)
         return val
 
 class Writer:
@@ -260,7 +278,8 @@ class Writer:
 
 def write (prefix, automaton, user, outputdir, origin):
     if origin is not None:
-        raise NotImplementedError ("--origin is not implemented for C output")
+        raise NotImplementedError ("--origin is not implemented for C "
+                "output, use templates")
     templatedir = os.path.splitext (__file__)[0]
     if 'template-dir' in user:
         templatedir = os.path.join (os.path.split (user.file)[0],

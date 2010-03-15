@@ -1,0 +1,6 @@
+
+Example for template origin limitation.
+
+Only states from Imported1 and Imported2 will be listed.
+
+%(states_template,template_cb.txt,origin=Imported1|Imported2)s
