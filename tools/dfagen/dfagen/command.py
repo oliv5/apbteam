@@ -17,6 +17,8 @@ def run ():
             help='read output configuration from FILE', metavar='FILE')
     opt.add_option ('-p', '--prefix', dest='prefix',
             help='use PREFIX for generated output', metavar='PREFIX')
+    opt.add_option ('--origin', dest='origin', action='append',
+            help='restrict output to given automaton name(s)', metavar='NAME')
     opt.add_option ('-O', '--output-dir', dest='output_dir', default='',
             help='generate output in DIR', metavar='DIR')
     opt.add_option ('--dump', action='store_true', default=False,
@@ -38,4 +40,4 @@ def run ():
     # Produce output.
     if options.output is not None:
         dfagen.output.get_output (options.output).write (options.prefix, a,
-                cfg, options.output_dir)
+                cfg, options.output_dir, options.origin)

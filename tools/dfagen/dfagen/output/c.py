@@ -258,7 +258,9 @@ class Writer:
         for (t, f) in templates.iteritems ():
             self.write_template (t, f.replace ('%', self.data.prefix))
 
-def write (prefix, automaton, user, outputdir):
+def write (prefix, automaton, user, outputdir, origin):
+    if origin is not None:
+        raise NotImplementedError ("--origin is not implemented for C output")
     templatedir = os.path.splitext (__file__)[0]
     if 'template-dir' in user:
         templatedir = os.path.join (os.path.split (user.file)[0],

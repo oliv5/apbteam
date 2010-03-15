@@ -1,3 +1,10 @@
+def filter_origin_iter (list, origin):
+    if origin is None:
+        return iter (list)
+    else:
+        import itertools
+        return itertools.ifilter (lambda x: x.origin in origin, iter (list))
+
 class Event:
     """Event definition."""
 
@@ -63,8 +70,8 @@ class Transition:
         self.branches[branch.name] = branch
         self.branches_list.append (branch)
 
-    def iter_branches (self):
-        return iter (self.branches_list)
+    def iter_branches (self, origin = None):
+        return filter_origin_iter (self.branches_list, origin)
 
     def get_attributes (self):
         return [ b.attributes for b in self.iter_branches ()
@@ -124,14 +131,14 @@ class Automaton:
         self.events[event.name] = event
         self.events_list.append (event)
 
-    def iter_states (self):
-        return iter (self.states_list)
+    def iter_states (self, origin = None):
+        return filter_origin_iter (self.states_list, origin)
 
-    def iter_initials (self):
-        return iter (self.initials)
+    def iter_initials (self, origin = None):
+        return filter_origin_iter (self.initials, origin)
 
-    def iter_events (self):
-        return iter (self.events_list)
+    def iter_events (self, origin = None):
+        return filter_origin_iter (self.events_list, origin)
 
     def __str__ (self):
         s = self.name + '\n'
