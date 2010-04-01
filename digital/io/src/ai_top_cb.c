@@ -51,12 +51,50 @@ ai__IDLE__start (void)
 
 /*
  * WAIT_INIT_TO_FINISH =init_match_is_started=>
- *  => WAIT_INIT_TO_FINISH
- *   the match start, place something interresting here
+ *  => GO_FAR
+ *   the match start
+ *   go to a far point
  */
 fsm_branch_t
 ai__WAIT_INIT_TO_FINISH__init_match_is_started (void)
 {
+    asserv_position_t pos;
+    pos.x = PG_X_VALUE_COMPUTING (2000);
+    pos.y = 1000;
+    pos.a = PG_A_VALUE_COMPUTING (0);
+    move_start (pos, 0);
     return ai_next (WAIT_INIT_TO_FINISH, init_match_is_started);
+}
+
+/*
+ * GO_FAR =move_fsm_succeed=>
+ *  => GO_NEAR
+ *   go to a near point
+ */
+fsm_branch_t
+ai__GO_FAR__move_fsm_succeed (void)
+{
+    asserv_position_t pos;
+    pos.x = PG_X_VALUE_COMPUTING (1000);
+    pos.y = 1000;
+    pos.a = PG_A_VALUE_COMPUTING (0);
+    move_start (pos, 0);
+    return ai_next (GO_FAR, move_fsm_succeed);
+}
+
+/*
+ * GO_NEAR =move_fsm_succeed=>
+ *  => GO_FAR
+ *   restart
+ */
+fsm_branch_t
+ai__GO_NEAR__move_fsm_succeed (void)
+{
+    asserv_position_t pos;
+    pos.x = PG_X_VALUE_COMPUTING (2000);
+    pos.y = 1000;
+    pos.a = PG_A_VALUE_COMPUTING (0);
+    move_start (pos, 0);
+    return ai_next (GO_NEAR, move_fsm_succeed);
 }
 

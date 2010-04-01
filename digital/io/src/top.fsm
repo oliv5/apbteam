@@ -7,6 +7,10 @@ States:
   waiting for the beginning of the top FSM.
  WAIT_INIT_TO_FINISH
   waiting for the end of init.
+ GO_FAR
+  testing move fsm, going to a far point.
+ GO_NEAR
+  testing move fsm, going to a near point.
 
 Events:
  start
@@ -34,6 +38,14 @@ IDLE:
   nothing to do.
 
 WAIT_INIT_TO_FINISH:
- init_match_is_started -> .
-  the match start, place something interresting here
+ init_match_is_started -> GO_FAR
+  the match start
+  go to a far point
 
+GO_FAR:
+ move_fsm_succeed -> GO_NEAR
+  go to a near point
+
+GO_NEAR:
+ move_fsm_succeed -> GO_FAR
+  restart
