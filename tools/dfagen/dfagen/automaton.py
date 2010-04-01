@@ -117,10 +117,9 @@ class Automaton:
     def add_state (self, state):
         if state.name in self.states:
             raise KeyError (state.name)
-        if state.initial:
-            self.initials.append (state)
         if not self.states:
             state.initial = True
+        if state.initial:
             self.initials.append (state)
         self.states[state.name] = state
         self.states_list.append (state)
