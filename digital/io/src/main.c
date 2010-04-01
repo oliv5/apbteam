@@ -81,17 +81,6 @@ uint8_t main_post_event_for_top_fsm = 0xFF;
 uint16_t main_sharp_ignore_event;
 
 /**
- * Post an event for the main loop to wake up the move FSM in a certain count
- * of cycles.
- */
-uint16_t main_move_wait_cycle;
-
-/**
- * The same for init FSM
- */
-uint16_t main_init_wait_cycle;
-
-/**
  * Sharps stats counters.
  */
 uint8_t main_stats_sharps, main_stats_sharps_cpt;
@@ -108,23 +97,6 @@ static uint8_t main_stats_asserv_, main_stats_asserv_cpt_;
 static uint8_t main_stats_timer_;
 
 /**
- * Get short FSM name.
- */
-char
-main_short_fsm_name (fsm_t *fsm)
-{
-    /* Dirty hack. */
-    char id = '?';
-    if (fsm == &top_fsm)
-        id = 'T';
-    else if (fsm == &init_fsm)
-        id = 'I';
-    else if (fsm == &move_fsm)
-        id = 'M';
-    return id;
-}
-
-/**
  * Main events management.
  * This function is responsible to get all events and send them to the
  * different FSM that want its.
@@ -132,29 +104,18 @@ main_short_fsm_name (fsm_t *fsm)
 void
 main_event_to_fsm (void)
 {
-#define FSM_HANDLE_EVENT(fsm,event) \
-      do { if (fsm_handle_event (fsm,event)) \
-	  { \
-            TRACE (TRACE_FSM__HANDLE_EVENT, main_short_fsm_name (fsm), (u8) event); \
-	    return; \
-	  } \
-      } while (0)
+    /* If an event is handled, stop generating any other event, because a
+     * transition may have invalidated the current robot state. */
+#define FSM_HANDLE_EVENT(fsm, event) \
+    do { if (fsm_handle_event ((fsm), (event))) return; } while (0)
 #define FSM_HANDLE_TIMEOUT(fsm) \
-      do { if (fsm_handle_timeout (fsm)) \
-	  { \
-            TRACE (TRACE_FSM__HANDLE_TIMEOUT, main_short_fsm_name (fsm)); \
-	    return; \
-	  } \
-      } while (0)
+    do { if (fsm_handle_timeout (fsm)) return; } while (0)
     /* Update FSM timeouts. */
-    FSM_HANDLE_TIMEOUT (&move_fsm);
-    FSM_HANDLE_TIMEOUT (&top_fsm);
-    FSM_HANDLE_TIMEOUT (&init_fsm);
+    FSM_HANDLE_TIMEOUT (&ai_fsm);
 
     /* If we have entering this function, last command of the asserv board has
      * been aquited. */
-    FSM_HANDLE_EVENT (&init_fsm, INIT_EVENT_asserv_last_cmd_ack);
-    FSM_HANDLE_EVENT (&top_fsm, TOP_EVENT_asserv_last_cmd_ack);
+    FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_asserv_last_cmd_ack);
 
     asserv_status_e
 	move_status = none,
@@ -168,39 +129,19 @@ main_event_to_fsm (void)
 
     /* Check commands move status. */
     if (move_status == success)
-      {
-	/* Pass it to all the FSM that need it. */
-	FSM_HANDLE_EVENT (&move_fsm,
-			  MOVE_EVENT_bot_move_succeed);
-	FSM_HANDLE_EVENT (&init_fsm,
-			  INIT_EVENT_bot_move_succeed);
-	FSM_HANDLE_EVENT (&top_fsm,
-			  TOP_EVENT_bot_move_succeed);
-      }
+	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_bot_move_succeed);
     else if (move_status == failure)
-      {
-	/* Move failed. */
-	FSM_HANDLE_EVENT (&move_fsm,
-			  MOVE_EVENT_bot_move_failed);
-	FSM_HANDLE_EVENT (&top_fsm,
-			  TOP_EVENT_bot_move_failed);
-      }
+	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_bot_move_failed);
 
     /* Jack */
-    if(switch_get_jack())
-      {
-	FSM_HANDLE_EVENT (&init_fsm,
-			  INIT_EVENT_jack_removed_from_bot);
-      }
+    if (switch_get_jack ())
+	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_jack_removed_from_bot);
     else
-      {
-	FSM_HANDLE_EVENT (&init_fsm,
-			  INIT_EVENT_jack_inserted_into_bot);
-      }
+	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_jack_inserted_into_bot);
 
     if (init_match_is_started)
       {
-	FSM_HANDLE_EVENT (&top_fsm, TOP_EVENT_init_match_is_started);
+	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_init_match_is_started);
 
 	/* This must be done in the last part of this block. */
 	init_match_is_started = 0;
@@ -217,7 +158,7 @@ main_event_to_fsm (void)
 	/* Reset */
 	main_post_event_for_top_fsm = 0xFF;
 	/* Post the event */
-	FSM_HANDLE_EVENT (&top_fsm, save_event);
+	FSM_HANDLE_EVENT (&ai_fsm, save_event);
       }
     /* Sharps event for move FSM */
     /* Get the current direction of the bot */
@@ -228,8 +169,7 @@ main_event_to_fsm (void)
 	if (sharp_path_obstrued (moving_direction))
 	  {
 	    /* Generate an event for move FSM */
-	    FSM_HANDLE_EVENT (&move_fsm,
-			      MOVE_EVENT_obstacle_in_front);
+	    FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_obstacle_in_front);
 	  }
       }
     /* TODO: Check other sensors */
@@ -258,15 +198,12 @@ main_init (void)
     /* Path module */
     path_init (PG_BORDER_DISTANCE, PG_BORDER_DISTANCE,
 	       PG_WIDTH - PG_BORDER_DISTANCE, PG_LENGTH - PG_BORDER_DISTANCE);
-    /* Top initialization. */
+    /* Top. */
     top_init ();
-    /* Init all FSM (except move FSM) */
-    fsm_init(&top_fsm);
-    fsm_init(&init_fsm);
-    /* Start all FSM (except move and top FSM) */
-    /* FIXME: who sould start top? init?. */
-    fsm_handle_event (&init_fsm, INIT_EVENT_start);
-    fsm_handle_event (&top_fsm, TOP_EVENT_start);
+    /* Init FSM. */
+    fsm_init (&ai_fsm);
+    /* Start FSM. */
+    fsm_handle_event (&ai_fsm, AI_EVENT_start);
     /* Sharp module */
     sharp_init ();
     /* PWM module */
@@ -341,9 +278,6 @@ main_loop (void)
 	    /* Update the ignore sharp event flag */
 	    if (main_sharp_ignore_event)
 		main_sharp_ignore_event--;
-	    /* Update wait flag for move FSM */
-	    if (main_move_wait_cycle)
-		main_move_wait_cycle--;
             /* Update sharps */
             sharp_update ();
 

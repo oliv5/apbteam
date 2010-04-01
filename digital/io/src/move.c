@@ -45,20 +45,7 @@ move_start (asserv_position_t position, uint8_t backward)
     move_data.final_move = 0;
     /* Reset move FSM flags */
     main_sharp_ignore_event = 0;
-    main_move_wait_cycle = 0;
     /* Start the FSM. */
-    fsm_init (&move_fsm);
-    fsm_handle_event (&move_fsm, MOVE_EVENT_start);
+    fsm_handle_event (&ai_fsm, AI_EVENT_move_start);
 }
 
-void
-move_stop (void)
-{
-    /* This is a dirty hack. */
-    /* Re-init move FSM. */
-    fsm_init (&move_fsm);
-    /* Ask the asserv to stop the motor. */
-    asserv_stop_motor ();
-    /* Generate the event, move FSM stopped. */
-    main_post_event_for_top_fsm = TOP_EVENT_move_fsm_stopped;
-}

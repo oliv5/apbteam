@@ -21,10 +21,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * }}} */
+ * }}}
+ * move:
+ * move with avoid obstacle.
+ */
 #include "common.h"
 #include "fsm.h"
-#include "move_cb.h"
+#include "ai_cb.h"
 
 #include "asserv.h"
 #include "playground.h"
@@ -228,142 +231,142 @@ move_obstacle_here (void)
 }
 
 /*
- * IDLE =start=>
- *  => MOVING
+ * MOVE_IDLE =move_start=>
+ *  => MOVE_MOVING
  *   ask the asserv to go to the computed position.
  */
 fsm_branch_t
-move__IDLE__start (void)
+ai__MOVE_IDLE__move_start (void)
 {
     /* ask the asserv to go to the computed position. */
     move_get_next_position (&move_data.intermediate);
-    return move_next (IDLE, start);
+    return ai_next (MOVE_IDLE, move_start);
 }
 
 /*
- * MOVING =bot_move_succeed=>
- * we_are_at_final_position => IDLE
+ * MOVE_MOVING =bot_move_succeed=>
+ * we_are_at_final_position => MOVE_IDLE
  *   post an event for the top FSM to tell it we have finished.
- * position_intermediary => MOVING
+ * position_intermediary => MOVE_MOVING
  *   get next position computed by the path module.
  *   if next position is the final, use a goto_xya.
  *   otherwise go to the next intermediate position with goto.
- * no_intermediate_path_found => IDLE
+ * no_intermediate_path_found => MOVE_IDLE
  *   post an event for the top FSM to generate a failure.
  */
 fsm_branch_t
-move__MOVING__bot_move_succeed (void)
+ai__MOVE_MOVING__bot_move_succeed (void)
 {
     uint8_t ret = move_get_next_position (&move_data.intermediate);
     if (ret == 2)
       {
 	/* Post an event for the top FSM to tell it we have finished. */
-	main_post_event_for_top_fsm = TOP_EVENT_move_fsm_succeed;
-	return move_next_branch (MOVING, bot_move_succeed, we_are_at_final_position);
+	main_post_event_for_top_fsm = AI_EVENT_move_fsm_succeed;
+	return ai_next_branch (MOVE_MOVING, bot_move_succeed, we_are_at_final_position);
       }
     else if (ret == 1)
       {
 	/* Nothing to do. */
-	return move_next_branch (MOVING, bot_move_succeed, position_intermediary);
+	return ai_next_branch (MOVE_MOVING, bot_move_succeed, position_intermediary);
       }
     else
       {
 	/* Post an event for the top FSM to generate a failure. */
-	main_post_event_for_top_fsm = TOP_EVENT_move_fsm_failed;
-	return move_next_branch (MOVING, bot_move_succeed, no_intermediate_path_found);
+	main_post_event_for_top_fsm = AI_EVENT_move_fsm_failed;
+	return ai_next_branch (MOVE_MOVING, bot_move_succeed, no_intermediate_path_found);
       }
 }
 
 /*
- * MOVING =bot_move_failed=>
- *  => MOVING_BACKWARD_TO_TURN_FREELY
+ * MOVE_MOVING =bot_move_failed=>
+ *  => MOVE_MOVING_BACKWARD_TO_TURN_FREELY
  *   compute the obstacle position.
  *   move backward to turn freely.
  */
 fsm_branch_t
-move__MOVING__bot_move_failed (void)
+ai__MOVE_MOVING__bot_move_failed (void)
 {
     /* Compute the obstacle position. */
     move_obstacle_here ();
     /* Move backward to turn freely. */
     asserv_move_linearly (asserv_get_last_moving_direction () == 1 ?
 			  - 300 : 300);
-    return move_next (MOVING, bot_move_failed);
+    return ai_next (MOVE_MOVING, bot_move_failed);
 }
 
 /*
- * MOVING =obstacle_in_front=>
- *  => WAIT_FOR_CLEAR_PATH
+ * MOVE_MOVING =obstacle_in_front=>
+ *  => MOVE_WAIT_FOR_CLEAR_PATH
  *   stop the bot.
  */
 fsm_branch_t
-move__MOVING__obstacle_in_front (void)
+ai__MOVE_MOVING__obstacle_in_front (void)
 {
     /* Stop the bot. */
     asserv_stop_motor ();
-    return move_next (MOVING, obstacle_in_front);
+    return ai_next (MOVE_MOVING, obstacle_in_front);
 }
 
 /*
- * MOVING_BACKWARD_TO_TURN_FREELY =bot_move_succeed=>
- * intermediate_path_found => MOVING
+ * MOVE_MOVING_BACKWARD_TO_TURN_FREELY =bot_move_succeed=>
+ * intermediate_path_found => MOVE_MOVING
  *   get next intermediate position from path module.
- * no_intermediate_path_found => IDLE
+ * no_intermediate_path_found => MOVE_IDLE
  *   post an event for the top FSM to generate a failure.
  */
 fsm_branch_t
-move__MOVING_BACKWARD_TO_TURN_FREELY__bot_move_succeed (void)
+ai__MOVE_MOVING_BACKWARD_TO_TURN_FREELY__bot_move_succeed (void)
 {
     uint8_t ret = move_get_next_position (&move_data.intermediate);
     if (ret == 1)
       {
 	/* Nothing to do. */
-	return move_next_branch (MOVING_BACKWARD_TO_TURN_FREELY, bot_move_succeed, intermediate_path_found);
+	return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_succeed, intermediate_path_found);
       }
     else
       {
 	/* Post an event for the top FSM to generate a failure. */
-	main_post_event_for_top_fsm = TOP_EVENT_move_fsm_failed;
-	return move_next_branch (MOVING_BACKWARD_TO_TURN_FREELY, bot_move_succeed, no_intermediate_path_found);
+	main_post_event_for_top_fsm = AI_EVENT_move_fsm_failed;
+	return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_succeed, no_intermediate_path_found);
       }
 }
 
 /*
- * MOVING_BACKWARD_TO_TURN_FREELY =bot_move_failed=>
- * intermediate_path_found => MOVING
+ * MOVE_MOVING_BACKWARD_TO_TURN_FREELY =bot_move_failed=>
+ * intermediate_path_found => MOVE_MOVING
  *   get next intermediate position from path module
- * no_intermediate_path_found => WAIT_FOR_CLEAR_PATH
+ * no_intermediate_path_found => MOVE_WAIT_FOR_CLEAR_PATH
  *   nothing to do.
  */
 fsm_branch_t
-move__MOVING_BACKWARD_TO_TURN_FREELY__bot_move_failed (void)
+ai__MOVE_MOVING_BACKWARD_TO_TURN_FREELY__bot_move_failed (void)
 {
     uint8_t ret = move_get_next_position (&move_data.intermediate);
     if (ret == 1)
       {
 	/* Nothing to do. */
-	return move_next_branch (MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed, intermediate_path_found);
+	return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed, intermediate_path_found);
       }
     else
       {
 	/* Nothing to do. */
-	return move_next_branch (MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed, no_intermediate_path_found);
+	return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed, no_intermediate_path_found);
       }
 }
 
 /*
- * WAIT_FOR_CLEAR_PATH =state_timeout=>
- * no_more_obstacle_or_next_position => MOVING
+ * MOVE_WAIT_FOR_CLEAR_PATH =state_timeout=>
+ * no_more_obstacle_or_next_position => MOVE_MOVING
  *   get next position computed by the path module.
  *   if next position is the final, use a goto_xya.
  *   otherwise go to the next intermediate position with goto.
- * obstacle_and_no_intermediate_path_found_and_try_again => WAIT_FOR_CLEAR_PATH
+ * obstacle_and_no_intermediate_path_found_and_try_again => MOVE_WAIT_FOR_CLEAR_PATH
  *   decrement counter.
- * obstacle_and_no_intermediate_path_found_and_no_try_again => IDLE
+ * obstacle_and_no_intermediate_path_found_and_no_try_again => MOVE_IDLE
  *   post an event for the top FSM to generate a failure.
  */
 fsm_branch_t
-move__WAIT_FOR_CLEAR_PATH__state_timeout (void)
+ai__MOVE_WAIT_FOR_CLEAR_PATH__state_timeout (void)
 {
     if (sharp_path_obstrued (asserv_get_last_moving_direction ()))
 	move_obstacle_here ();
@@ -371,8 +374,8 @@ move__WAIT_FOR_CLEAR_PATH__state_timeout (void)
     if (ret == 1)
       {
 	/* Go to position. */
-	return move_next_branch (WAIT_FOR_CLEAR_PATH, state_timeout,
-				 no_more_obstacle_or_next_position);
+	return ai_next_branch (MOVE_WAIT_FOR_CLEAR_PATH, state_timeout,
+			       no_more_obstacle_or_next_position);
       }
     else
       {
@@ -380,13 +383,13 @@ move__WAIT_FOR_CLEAR_PATH__state_timeout (void)
 	if (--move_data.try_again_counter == 0)
 	  {
 	    /* Post an event for the top FSM to generate a failure. */
-	    main_post_event_for_top_fsm = TOP_EVENT_move_fsm_failed;
-	    return move_next_branch (WAIT_FOR_CLEAR_PATH, state_timeout,
-				     obstacle_and_no_intermediate_path_found_and_no_try_again);
+	    main_post_event_for_top_fsm = AI_EVENT_move_fsm_failed;
+	    return ai_next_branch (MOVE_WAIT_FOR_CLEAR_PATH, state_timeout,
+				   obstacle_and_no_intermediate_path_found_and_no_try_again);
 	  }
 	else
-	    return move_next_branch (WAIT_FOR_CLEAR_PATH, state_timeout,
-				     obstacle_and_no_intermediate_path_found_and_try_again);
+	    return ai_next_branch (MOVE_WAIT_FOR_CLEAR_PATH, state_timeout,
+				   obstacle_and_no_intermediate_path_found_and_try_again);
       }
 }
 

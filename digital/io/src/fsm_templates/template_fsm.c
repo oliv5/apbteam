@@ -38,10 +38,13 @@ static const char *
 fsm_t %(prefix)s_fsm = {
     &%(prefix)s_transition_table[0][0],
     %(PREFIX)s_EVENT_NB,
-    %(PREFIX)s_STATE_%(initial)s,
-    %(PREFIX)s_STATE_%(initial)s,
+    {
+    %(initials)s},
+    {
+    %(initials)s},
+    %(initials_nb)s,
     &%(prefix)s_state_timeout_table[0],
-    0,
+    { 0 },
     %(PREFIX)s_EVENT_state_timeout,
 #ifdef HOST
     "%(name)s",

@@ -3,7 +3,7 @@ top
   Main FSM calling other FSM.
 
 States:
- IDLE
+ *IDLE
   waiting for the beginning of the top FSM.
  WAIT_INIT_TO_FINISH
   waiting for the end of init.
@@ -15,8 +15,6 @@ Events:
   when the move FSM returns with success.
  move_fsm_failed
   when the move FSM returns with an error.
- move_fsm_stopped
-  when the move FSM has stop the bot (as asked).
  bot_move_succeed
   when the bot has succeed its asserv movement.
  bot_move_failed
@@ -27,6 +25,9 @@ Events:
   timeout in cycle count.
  asserv_last_cmd_ack
   last command sent to the asserv board has been acquitted.
+
+import init.fsm
+import move.fsm
 
 IDLE:
  start -> WAIT_INIT_TO_FINISH

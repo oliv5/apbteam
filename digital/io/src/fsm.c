@@ -25,65 +25,97 @@
 #include "common.h"
 #include "fsm.h"
 
+#include "modules/trace/trace.h"
+#include "trace_event.h"
+
 #ifdef HOST
 # include <stdio.h>
 #endif
 
-/** Reset a FSM. */
 void
 fsm_init (fsm_t *fsm)
 {
+    uint8_t i;
     assert (fsm);
-    fsm->state_current = fsm->state_init;
+    for (i = 0; i < FSM_ACTIVE_STATES_MAX; i++)
+	fsm->states_active[i] = fsm->states_init[i];
+    for (i = 0; i < fsm->active_states_nb; i++)
+	fsm->states_timeout[i] =
+	    fsm->state_timeout_table[fsm->states_init[i]];
 }
 
-/** Handle state timeout, return 1 if a event was handled. */
-uint8_t
-fsm_handle_timeout (fsm_t *fsm)
+/** Handle an event on the given FSM on a single active state, return 1 if the
+ * event was handled. */
+static uint8_t
+fsm_handle_event_single (fsm_t *fsm, uint8_t active, uint8_t event)
 {
     assert (fsm);
-    /* If there is a timeout for this state. */
-    if (fsm->state_timeout != 0xffff)
-      {
-	if (fsm->state_timeout)
-	    fsm->state_timeout--;
-	else
-	  {
-	    /* Timeout expired, generate corresponding event. */
-	    return fsm_handle_event (fsm, fsm->state_timeout_event);
-	  }
-      }
-    return 0;
-}
-
-/** Handle an event on the given FSM. */
-uint8_t
-fsm_handle_event (fsm_t *fsm, u8 event)
-{
-    assert (fsm);
+    assert (active < fsm->active_states_nb);
     assert (event < fsm->events_nb);
     /* Lookup transition. */
+    uint8_t old_state = fsm->states_active[active];
     fsm_transition_t tr = fsm->transition_table[
-	fsm->state_current * fsm->events_nb + event];
+	old_state * fsm->events_nb + event];
     /* Ignore unhandled events. */
     if (tr)
       {
 	/* Execute transition. */
+	uint8_t new_state;
 	fsm_branch_t br = tr ();
 	/* Change state. */
 #ifdef HOST
-	assert (((br >> 16) & 0xff) == fsm->state_current);
+	assert (((br >> 16) & 0xff) == fsm->states_active[active]);
 	assert (((br >> 8) & 0xff) == event);
 	fprintf (stderr, "%s %s =%s=> %s\n", fsm->name,
-		fsm->states_names[fsm->state_current],
+		fsm->states_names[fsm->states_active[active]],
 		fsm->events_names[event], fsm->states_names[br & 0xff]);
-	fsm->state_current = br & 0xff;
+	new_state = br & 0xff;
 #else
-	fsm->state_current = br;
+	new_state = br;
 #endif
-	fsm->state_timeout = fsm->state_timeout_table[fsm->state_current];
+	TRACE (TRACE_FSM__HANDLE_EVENT, (u8) old_state, (u8) event,
+	       (u8) new_state);
+	fsm->states_active[active] = new_state;
+	fsm->states_timeout[active] = fsm->state_timeout_table[new_state];
 	return 1;
       }
     return 0;
+}
+
+uint8_t
+fsm_handle_event (fsm_t *fsm, uint8_t event)
+{
+    uint8_t i, handled = 0;
+    assert (fsm);
+    assert (event < fsm->events_nb);
+    for (i = 0; i < fsm->active_states_nb; i++)
+      {
+	/* Handle the event for this active state. */
+	handled += fsm_handle_event_single (fsm, i, event);
+      }
+    return handled;
+}
+
+uint8_t
+fsm_handle_timeout (fsm_t *fsm)
+{
+    uint8_t i, handled = 0;
+    assert (fsm);
+    for (i = 0; i < fsm->active_states_nb; i++)
+      {
+	/* If there is a timeout for this state. */
+	if (fsm->states_timeout[i] != 0xffff)
+	  {
+	    if (fsm->states_timeout[i])
+		fsm->states_timeout[i]--;
+	    else
+	      {
+		/* Timeout expired, generate corresponding event. */
+		handled += fsm_handle_event_single (fsm, i,
+						    fsm->state_timeout_event);
+	      }
+	  }
+      }
+    return handled;
 }
 

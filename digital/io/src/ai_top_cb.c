@@ -1,4 +1,4 @@
-/* top_cb.c */
+/* ai_top_cb.c */
 /* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
  *
  * Copyright (C) 2010 Nicolas Schodet
@@ -26,7 +26,7 @@
  */
 #include "common.h"
 #include "fsm.h"
-#include "top_cb.h"
+#include "ai_cb.h"
 #include "top.h"
 #include "move.h"
 #include "chrono.h"
@@ -44,9 +44,9 @@
  *   nothing to do.
  */
 fsm_branch_t
-top__IDLE__start (void)
+ai__IDLE__start (void)
 {
-    return top_next (IDLE, start);
+    return ai_next (IDLE, start);
 }
 
 /*
@@ -55,8 +55,8 @@ top__IDLE__start (void)
  *   the match start, place something interresting here
  */
 fsm_branch_t
-top__WAIT_INIT_TO_FINISH__init_match_is_started (void)
+ai__WAIT_INIT_TO_FINISH__init_match_is_started (void)
 {
-    return top_next (WAIT_INIT_TO_FINISH, init_match_is_started);
+    return ai_next (WAIT_INIT_TO_FINISH, init_match_is_started);
 }
 

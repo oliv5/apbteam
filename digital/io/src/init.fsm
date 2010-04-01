@@ -11,116 +11,108 @@ init
   place the bot in the start position for a match.
 
 States:
- IDLE
+ *INIT_IDLE
   waiting for the beginning of the top FSM.
- WAIT_FIRST_JACK_IN
+ INIT_WAIT_FIRST_JACK_IN
   wait for the jack to be inserted into the bot for the first time.
- WAIT_FIRST_JACK_OUT
+ INIT_WAIT_FIRST_JACK_OUT
   wait the jack to be removed from the bot for the first time.
- WAIT_SECOND_JACK_IN
+ INIT_WAIT_SECOND_JACK_IN
   wait for the jack to be inserted into the bot for the second time.
- WAIT_FOR_HANDS_OUT[timeout=450]
+ INIT_WAIT_FOR_HANDS_OUT[timeout=450]
   just wait for operator hands to be removed from the jack.
- GO_TO_THE_WALL
+ INIT_GO_TO_THE_WALL
   go to the wall for the first time.
- SET_Y_POSITION
+ INIT_SET_Y_POSITION
   reset the Y position of the bot.
- SET_ANGULAR_POSITION
+ INIT_SET_ANGULAR_POSITION
   reset the angular position of the bot.
- GO_AWAY_FROM_THE_WALL
+ INIT_GO_AWAY_FROM_THE_WALL
   go backward from the wall for a specific distance.
- FACE_OTHER_WALL
+ INIT_FACE_OTHER_WALL
   make the bot face the other wall.
- WAIT_AFTER_ROTATION [timeout=100]
+ INIT_WAIT_AFTER_ROTATION [timeout=100]
   make sure rotation is really finished before continuing.
- GO_TO_THE_WALL_AGAIN
+ INIT_GO_TO_THE_WALL_AGAIN
   go to the wall for the second time.
- SET_X_POSITION
+ INIT_SET_X_POSITION
   reset the X position of the bot.
- GO_AWAY_FROM_THE_WALL_AGAIN
+ INIT_GO_AWAY_FROM_THE_WALL_AGAIN
   go backward from the wall for a specific distance.
- GO_TO_START_POSITION
+ INIT_GO_TO_START_POSITION
   go to the start position.
- WAIT_SECOND_JACK_OUT
+ INIT_WAIT_SECOND_JACK_OUT
   wait the jack to be removed from the bot for the second time.
 
 Events:
- start
-  initialize the FSM.
  jack_inserted_into_bot
   the jack is inserted into the bot.
  jack_removed_from_bot
   the jack is removed from the bot.
- bot_move_succeed
-  the move is finished.
- state_timeout
-  timeout.
- asserv_last_cmd_ack
-  last command sent to the asserv board has been acquitted.
 
-IDLE:
- start -> WAIT_FIRST_JACK_IN
+INIT_IDLE:
+ start -> INIT_WAIT_FIRST_JACK_IN
   do nothing.
 
-WAIT_FIRST_JACK_IN:
- jack_inserted_into_bot -> WAIT_FIRST_JACK_OUT
+INIT_WAIT_FIRST_JACK_IN:
+ jack_inserted_into_bot -> INIT_WAIT_FIRST_JACK_OUT
   do nothing.
 
-WAIT_FIRST_JACK_OUT:
- jack_removed_from_bot -> WAIT_SECOND_JACK_IN
+INIT_WAIT_FIRST_JACK_OUT:
+ jack_removed_from_bot -> INIT_WAIT_SECOND_JACK_IN
   start trace module.
   get and store the color of the bot.
 
-WAIT_SECOND_JACK_IN:
- jack_inserted_into_bot -> WAIT_FOR_HANDS_OUT
+INIT_WAIT_SECOND_JACK_IN:
+ jack_inserted_into_bot -> INIT_WAIT_FOR_HANDS_OUT
   do nothing.
 
-WAIT_FOR_HANDS_OUT:
- state_timeout -> GO_TO_THE_WALL
+INIT_WAIT_FOR_HANDS_OUT:
+ state_timeout -> INIT_GO_TO_THE_WALL
   fuck the wall in front.
 
-GO_TO_THE_WALL:
- bot_move_succeed -> SET_Y_POSITION
+INIT_GO_TO_THE_WALL:
+ bot_move_succeed -> INIT_SET_Y_POSITION
   reset the Y position of the bot.
 
-SET_Y_POSITION:
- asserv_last_cmd_ack -> SET_ANGULAR_POSITION
+INIT_SET_Y_POSITION:
+ asserv_last_cmd_ack -> INIT_SET_ANGULAR_POSITION
   reset the angular position of the bot.
 
-SET_ANGULAR_POSITION:
- asserv_last_cmd_ack -> GO_AWAY_FROM_THE_WALL
+INIT_SET_ANGULAR_POSITION:
+ asserv_last_cmd_ack -> INIT_GO_AWAY_FROM_THE_WALL
   move away from the wall (linear move).
 
-GO_AWAY_FROM_THE_WALL:
- bot_move_succeed -> FACE_OTHER_WALL
+INIT_GO_AWAY_FROM_THE_WALL:
+ bot_move_succeed -> INIT_FACE_OTHER_WALL
   turn to face the other wall.
 
-FACE_OTHER_WALL:
- bot_move_succeed -> WAIT_AFTER_ROTATION
+INIT_FACE_OTHER_WALL:
+ bot_move_succeed -> INIT_WAIT_AFTER_ROTATION
   nothing to do.
 
-WAIT_AFTER_ROTATION:
- state_timeout -> GO_TO_THE_WALL_AGAIN
+INIT_WAIT_AFTER_ROTATION:
+ state_timeout -> INIT_GO_TO_THE_WALL_AGAIN
   fuck the wall in front.
 
-GO_TO_THE_WALL_AGAIN:
- bot_move_succeed -> SET_X_POSITION
+INIT_GO_TO_THE_WALL_AGAIN:
+ bot_move_succeed -> INIT_SET_X_POSITION
   reset the X position of the bot.
 
-SET_X_POSITION:
- asserv_last_cmd_ack -> GO_AWAY_FROM_THE_WALL_AGAIN
+INIT_SET_X_POSITION:
+ asserv_last_cmd_ack -> INIT_GO_AWAY_FROM_THE_WALL_AGAIN
   move away from the wall (linear move).
 
-GO_AWAY_FROM_THE_WALL_AGAIN:
- bot_move_succeed -> GO_TO_START_POSITION
+INIT_GO_AWAY_FROM_THE_WALL_AGAIN:
+ bot_move_succeed -> INIT_GO_TO_START_POSITION
   go to the start position with a go to movement.
 
-GO_TO_START_POSITION:
- bot_move_succeed -> WAIT_SECOND_JACK_OUT
+INIT_GO_TO_START_POSITION:
+ bot_move_succeed -> INIT_WAIT_SECOND_JACK_OUT
   nothing to do, the bot is at the start position.
 
-WAIT_SECOND_JACK_OUT:
- jack_removed_from_bot -> IDLE
+INIT_WAIT_SECOND_JACK_OUT:
+ jack_removed_from_bot -> INIT_IDLE
   tell other FSM the match begins.
   start the chrono.
 

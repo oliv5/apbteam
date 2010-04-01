@@ -16,8 +16,9 @@ AVR_MCU = atmega128
 OPTIMIZE = -O2
 HOST_LIBS = -lm
 
-# FSMs.
-FSM_SOURCES := top move init
+# FSM.
+FSM = ai
+FSM_SOURCES := top init move
 # Include FSM makefile.
 include $(BASE)/make/Makefile.fsm
 

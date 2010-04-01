@@ -1,9 +1,10 @@
 # Makefile.fsm - Makefile to build FSM.
 
 # You need to define:
-#   - FSM_SOURCES with the name of each of your FSM. For example, if you have
-#   a example.fsm and check.fsm, you need to set FSM_SOURCES to "example
-#   check".
+#   - FSM with the FSM prefix name
+#   - FSM_SOURCES with the name of each of your FSM files.  For example, if
+#     you have a example.fsm and check.fsm, you need to set FSM_SOURCES to
+#     "example check".  The first one is the one including the others.
 
 # FSM build:
 #
@@ -23,26 +24,25 @@
 # available.
 
 # If templates are modified, files should be rebuilt.
-FSM_TEMPLATES := template_cb.h template_cb_decl.h template_cb_impl.c \
-		 template_cb_skel.c template_fsm.c template_fsm.h
+FSM_TEMPLATES := template_fsm.h template_fsm.c template_cb.h \
+	template_cb_decl.h template_cb_impl.c \
+	$(FSM_SOURCES:%=template_%_cb_skel.c)
 FSM_TEMPLATES := $(FSM_TEMPLATES:%=fsm_templates/%)
 
 # Theses files are auto-generated, remove them on clean.
-EXTRA_CLEAN_FILES += $(FSM_SOURCES:%=%_fsm.h)
-EXTRA_CLEAN_FILES += $(FSM_SOURCES:%=%_fsm.c)
-EXTRA_CLEAN_FILES += $(FSM_SOURCES:%=%_cb.h)
-EXTRA_CLEAN_FILES += $(FSM_SOURCES:%=%_cb_skel.c)
-EXTRA_CLEAN_FILES += $(FSM_SOURCES:%=%.png)
+FSM_FILES = $(FSM)_fsm.h $(FSM)_fsm.c $(FSM)_cb.h \
+	    $(FSM_SOURCES:%=$(FSM)_%_cb_skel.c)
+EXTRA_CLEAN_FILES += $(FSM_FILES) $(FSM).png
 
 DFAGEN_DIR := $(BASE)/../../tools/dfagen
 DFAGEN_DEPS := $(DFAGEN_DIR)/dfagen.py
 DFAGEN := python $(DFAGEN_DIR)/dfagen.py
 
 # Add source to build.
-$(PROGS)_SOURCES += $(FSM_SOURCES:%=%.c)
-$(PROGS)_SOURCES += $(FSM_SOURCES:%=%_fsm.c)
-$(PROGS)_SOURCES += $(FSM_SOURCES:%=%_cb.c)
-$(PROGS)_SOURCES += fsm.c
+$(PROGS)_SOURCES += $(FSM)_fsm.c \
+		    $(FSM_SOURCES:%=$(FSM)_%_cb.c) \
+		    $(FSM_SOURCES:%=%.c) \
+		    fsm.c
 
 # Include general Makefile for first rule to be default.
 include $(BASE)/make/Makefile.gen
@@ -50,17 +50,17 @@ include $(BASE)/make/Makefile.gen
 # Bootstrap, fsm should be generated before fsm.h is used.
 fsm.c: fsm.h
 main.c: fsm.h
-fsm.h: $(FSM_SOURCES:%=%_fsm.h)
+fsm.h: $(FSM)_fsm.h
 
 $(DFAGEN_DIR)/dfagen.py: $(DFAGEN_DIR)/dfagen/parser.py
 $(DFAGEN_DIR)/dfagen/parser.py: $(DFAGEN_DIR)/dfagen/parser.g
 	yapps $<
 
-%_fsm.h %_fsm.c %_cb.h %_cb_skel.c: %.fsm fsm.conf $(FSM_TEMPLATES) \
+$(FSM_FILES): $(FSM_SOURCES:%=%.fsm) $(FSM).conf $(FSM_TEMPLATES) \
 	$(DFAGEN_DEPS)
-	$(DFAGEN) -o c -d $< -c fsm.conf -p $(<:%.fsm=%)
+	$(DFAGEN) -o c -d $< -c $(FSM).conf -p $(FSM)
 
-.PRECIOUS: $(FSM_SOURCES:%=%_cb.c)
+.PRECIOUS: $(FSM_SOURCES:%=$(FSM)_%_cb.c)
 
 ifndef CB
 %_cb.c: %_cb_skel.c
@@ -91,10 +91,10 @@ else
 endif
 
 
-png: $(FSM_SOURCES:%=%.png)
+png: $(FSM).png
 
 %.png: %.dot
 	dot -Tpng -o $@ $<
 
-%.dot: %.fsm $(DFAGEN_DEPS)
-	$(DFAGEN) -o dot -d $< -p $(<:%.fsm=%)
+%.dot: $(FSM_SOURCES:%=%.fsm) $(DFAGEN_DEPS)
+	$(DFAGEN) -o dot -d $< -p $(FSM)

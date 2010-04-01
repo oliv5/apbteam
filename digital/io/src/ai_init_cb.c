@@ -21,10 +21,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * }}} */
+ * }}}
+ * init:
+ * place the bot in the start position for a match.
+ */
 #include "common.h"
 #include "fsm.h"
-#include "init_cb.h"
+#include "ai_cb.h"
 #include "asserv.h"
 #include "init.h"
 #include "playground.h"
@@ -37,175 +40,175 @@
 #include "modules/path/path.h"
 
 /*
- * IDLE =start=>
- *  => WAIT_FIRST_JACK_IN
+ * INIT_IDLE =start=>
+ *  => INIT_WAIT_FIRST_JACK_IN
  *   do nothing.
  */
 fsm_branch_t
-init__IDLE__start (void)
+ai__INIT_IDLE__start (void)
 {
-    return init_next (IDLE, start);
+    return ai_next (INIT_IDLE, start);
 }
 
 /*
- * WAIT_FIRST_JACK_IN =jack_inserted_into_bot=>
- *  => WAIT_FIRST_JACK_OUT
+ * INIT_WAIT_FIRST_JACK_IN =jack_inserted_into_bot=>
+ *  => INIT_WAIT_FIRST_JACK_OUT
  *   do nothing.
  */
 fsm_branch_t
-init__WAIT_FIRST_JACK_IN__jack_inserted_into_bot (void)
+ai__INIT_WAIT_FIRST_JACK_IN__jack_inserted_into_bot (void)
 {
-    return init_next (WAIT_FIRST_JACK_IN, jack_inserted_into_bot);
+    return ai_next (INIT_WAIT_FIRST_JACK_IN, jack_inserted_into_bot);
 }
 
 /*
- * WAIT_FIRST_JACK_OUT =jack_removed_from_bot=>
- *  => WAIT_SECOND_JACK_IN
+ * INIT_WAIT_FIRST_JACK_OUT =jack_removed_from_bot=>
+ *  => INIT_WAIT_SECOND_JACK_IN
  *   start trace module.
  *   get and store the color of the bot.
  */
 fsm_branch_t
-init__WAIT_FIRST_JACK_OUT__jack_removed_from_bot (void)
+ai__INIT_WAIT_FIRST_JACK_OUT__jack_removed_from_bot (void)
 {
     /* Initialize trace module (erase the flash). */
     trace_init ();
     /* Get the color. */
     bot_color = switch_get_color ();
-    return init_next (WAIT_FIRST_JACK_OUT, jack_removed_from_bot);
+    return ai_next (INIT_WAIT_FIRST_JACK_OUT, jack_removed_from_bot);
 }
 
 /*
- * WAIT_SECOND_JACK_IN =jack_inserted_into_bot=>
- *  => WAIT_FOR_HANDS_OUT
+ * INIT_WAIT_SECOND_JACK_IN =jack_inserted_into_bot=>
+ *  => INIT_WAIT_FOR_HANDS_OUT
  *   do nothing.
  */
 fsm_branch_t
-init__WAIT_SECOND_JACK_IN__jack_inserted_into_bot (void)
+ai__INIT_WAIT_SECOND_JACK_IN__jack_inserted_into_bot (void)
 {
-    return init_next (WAIT_SECOND_JACK_IN, jack_inserted_into_bot);
+    return ai_next (INIT_WAIT_SECOND_JACK_IN, jack_inserted_into_bot);
 }
 
 /*
- * WAIT_FOR_HANDS_OUT =state_timeout=>
- *  => GO_TO_THE_WALL
+ * INIT_WAIT_FOR_HANDS_OUT =state_timeout=>
+ *  => INIT_GO_TO_THE_WALL
  *   fuck the wall in front.
  */
 fsm_branch_t
-init__WAIT_FOR_HANDS_OUT__state_timeout (void)
+ai__INIT_WAIT_FOR_HANDS_OUT__state_timeout (void)
 {
     /* Go to the wall, no backward. */
     asserv_go_to_the_wall (0);
-    return init_next (WAIT_FOR_HANDS_OUT, state_timeout);
+    return ai_next (INIT_WAIT_FOR_HANDS_OUT, state_timeout);
 }
 
 /*
- * GO_TO_THE_WALL =bot_move_succeed=>
- *  => SET_Y_POSITION
+ * INIT_GO_TO_THE_WALL =bot_move_succeed=>
+ *  => INIT_SET_Y_POSITION
  *   reset the Y position of the bot.
  */
 fsm_branch_t
-init__GO_TO_THE_WALL__bot_move_succeed (void)
+ai__INIT_GO_TO_THE_WALL__bot_move_succeed (void)
 {
     /* We are against the border of absys Y set to PG_LENGTH. */
     asserv_set_y_position (PG_LENGTH - (BOT_LENGTH / 2));
-    return init_next (GO_TO_THE_WALL, bot_move_succeed);
+    return ai_next (INIT_GO_TO_THE_WALL, bot_move_succeed);
 }
 
 /*
- * SET_Y_POSITION =asserv_last_cmd_ack=>
- *  => SET_ANGULAR_POSITION
+ * INIT_SET_Y_POSITION =asserv_last_cmd_ack=>
+ *  => INIT_SET_ANGULAR_POSITION
  *   reset the angular position of the bot.
  */
 fsm_branch_t
-init__SET_Y_POSITION__asserv_last_cmd_ack (void)
+ai__INIT_SET_Y_POSITION__asserv_last_cmd_ack (void)
 {
     /* We are facing top border. */
     asserv_set_angle_position (90 * BOT_ANGLE_DEGREE);
-    return init_next (SET_Y_POSITION, asserv_last_cmd_ack);
+    return ai_next (INIT_SET_Y_POSITION, asserv_last_cmd_ack);
 }
 
 /*
- * SET_ANGULAR_POSITION =asserv_last_cmd_ack=>
- *  => GO_AWAY_FROM_THE_WALL
+ * INIT_SET_ANGULAR_POSITION =asserv_last_cmd_ack=>
+ *  => INIT_GO_AWAY_FROM_THE_WALL
  *   move away from the wall (linear move).
  */
 fsm_branch_t
-init__SET_ANGULAR_POSITION__asserv_last_cmd_ack (void)
+ai__INIT_SET_ANGULAR_POSITION__asserv_last_cmd_ack (void)
 {
     /* Move away from the border. */
     asserv_move_linearly (- INIT_DIST);
-    return init_next (SET_ANGULAR_POSITION, asserv_last_cmd_ack);
+    return ai_next (INIT_SET_ANGULAR_POSITION, asserv_last_cmd_ack);
 }
 
 /*
- * GO_AWAY_FROM_THE_WALL =bot_move_succeed=>
- *  => FACE_OTHER_WALL
+ * INIT_GO_AWAY_FROM_THE_WALL =bot_move_succeed=>
+ *  => INIT_FACE_OTHER_WALL
  *   turn to face the other wall.
  */
 fsm_branch_t
-init__GO_AWAY_FROM_THE_WALL__bot_move_succeed (void)
+ai__INIT_GO_AWAY_FROM_THE_WALL__bot_move_succeed (void)
 {
     /* Face the other wall. */
     asserv_goto_angle (PG_A_VALUE_COMPUTING (180 * BOT_ANGLE_DEGREE));
-    return init_next (GO_AWAY_FROM_THE_WALL, bot_move_succeed);
+    return ai_next (INIT_GO_AWAY_FROM_THE_WALL, bot_move_succeed);
 }
 
 /*
- * FACE_OTHER_WALL =bot_move_succeed=>
- *  => WAIT_AFTER_ROTATION
+ * INIT_FACE_OTHER_WALL =bot_move_succeed=>
+ *  => INIT_WAIT_AFTER_ROTATION
  *   nothing to do.
  */
 fsm_branch_t
-init__FACE_OTHER_WALL__bot_move_succeed (void)
+ai__INIT_FACE_OTHER_WALL__bot_move_succeed (void)
 {
-    return init_next (FACE_OTHER_WALL, bot_move_succeed);
+    return ai_next (INIT_FACE_OTHER_WALL, bot_move_succeed);
 }
 
 /*
- * WAIT_AFTER_ROTATION =state_timeout=>
- *  => GO_TO_THE_WALL_AGAIN
+ * INIT_WAIT_AFTER_ROTATION =state_timeout=>
+ *  => INIT_GO_TO_THE_WALL_AGAIN
  *   fuck the wall in front.
  */
 fsm_branch_t
-init__WAIT_AFTER_ROTATION__state_timeout (void)
+ai__INIT_WAIT_AFTER_ROTATION__state_timeout (void)
 {
     /* Go to the wall, no backward. */
     asserv_go_to_the_wall (0);
-    return init_next (WAIT_AFTER_ROTATION, state_timeout);
+    return ai_next (INIT_WAIT_AFTER_ROTATION, state_timeout);
 }
 
 /*
- * GO_TO_THE_WALL_AGAIN =bot_move_succeed=>
- *  => SET_X_POSITION
+ * INIT_GO_TO_THE_WALL_AGAIN =bot_move_succeed=>
+ *  => INIT_SET_X_POSITION
  *   reset the X position of the bot.
  */
 fsm_branch_t
-init__GO_TO_THE_WALL_AGAIN__bot_move_succeed (void)
+ai__INIT_GO_TO_THE_WALL_AGAIN__bot_move_succeed (void)
 {
     asserv_set_x_position (PG_X_VALUE_COMPUTING (BOT_LENGTH / 2));
-    return init_next (GO_TO_THE_WALL_AGAIN, bot_move_succeed);
+    return ai_next (INIT_GO_TO_THE_WALL_AGAIN, bot_move_succeed);
 }
 
 /*
- * SET_X_POSITION =asserv_last_cmd_ack=>
- *  => GO_AWAY_FROM_THE_WALL_AGAIN
+ * INIT_SET_X_POSITION =asserv_last_cmd_ack=>
+ *  => INIT_GO_AWAY_FROM_THE_WALL_AGAIN
  *   move away from the wall (linear move).
  */
 fsm_branch_t
-init__SET_X_POSITION__asserv_last_cmd_ack (void)
+ai__INIT_SET_X_POSITION__asserv_last_cmd_ack (void)
 {
     /* Move away from the border. */
     asserv_move_linearly (- INIT_DIST);
-    return init_next (SET_X_POSITION, asserv_last_cmd_ack);
+    return ai_next (INIT_SET_X_POSITION, asserv_last_cmd_ack);
 }
 
 /*
- * GO_AWAY_FROM_THE_WALL_AGAIN =bot_move_succeed=>
- *  => GO_TO_START_POSITION
+ * INIT_GO_AWAY_FROM_THE_WALL_AGAIN =bot_move_succeed=>
+ *  => INIT_GO_TO_START_POSITION
  *   go to the start position with a go to movement.
  */
 fsm_branch_t
-init__GO_AWAY_FROM_THE_WALL_AGAIN__bot_move_succeed (void)
+ai__INIT_GO_AWAY_FROM_THE_WALL_AGAIN__bot_move_succeed (void)
 {
     /* Move away from the border. */
     asserv_goto_xya (PG_X_VALUE_COMPUTING (PG_START_ZONE_WIDTH
@@ -213,33 +216,34 @@ init__GO_AWAY_FROM_THE_WALL_AGAIN__bot_move_succeed (void)
                                            - 50),
                      PG_LENGTH - PG_START_ZONE_LENGTH + BOT_LENGTH / 2 + 50,
 		     PG_A_VALUE_COMPUTING (0 * BOT_ANGLE_DEGREE), 0);
-    return init_next (GO_AWAY_FROM_THE_WALL_AGAIN, bot_move_succeed);
+    return ai_next (INIT_GO_AWAY_FROM_THE_WALL_AGAIN, bot_move_succeed);
 }
 
 /*
- * GO_TO_START_POSITION =bot_move_succeed=>
- *  => WAIT_SECOND_JACK_OUT
+ * INIT_GO_TO_START_POSITION =bot_move_succeed=>
+ *  => INIT_WAIT_SECOND_JACK_OUT
  *   nothing to do, the bot is at the start position.
  */
 fsm_branch_t
-init__GO_TO_START_POSITION__bot_move_succeed (void)
+ai__INIT_GO_TO_START_POSITION__bot_move_succeed (void)
 {
-    return init_next (GO_TO_START_POSITION, bot_move_succeed);
+    return ai_next (INIT_GO_TO_START_POSITION, bot_move_succeed);
 }
 
 /*
- * WAIT_SECOND_JACK_OUT =jack_removed_from_bot=>
- *  => IDLE
+ * INIT_WAIT_SECOND_JACK_OUT =jack_removed_from_bot=>
+ *  => INIT_IDLE
  *   tell other FSM the match begins.
+ *   start the chrono.
  */
 fsm_branch_t
-init__WAIT_SECOND_JACK_OUT__jack_removed_from_bot (void)
+ai__INIT_WAIT_SECOND_JACK_OUT__jack_removed_from_bot (void)
 {
     /* Set the flag to transmit to other FSM. */
     init_match_is_started = 1;
     /* Start the chrono. */
     chrono_init ();
-    return init_next (WAIT_SECOND_JACK_OUT, jack_removed_from_bot);
+    return ai_next (INIT_WAIT_SECOND_JACK_OUT, jack_removed_from_bot);
 }
 
 

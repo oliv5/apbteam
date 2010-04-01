@@ -26,27 +26,19 @@
  * }}} */
 
 /**
- * The io board includes several concurrent FSM.  The code to handle events is
- * generic, but as events are not compatibles (they do not share the same
- * identifier), events should be generated for each FSM separately.
+ * The io board includes an FSM with several concurrent active states.
  *
  * The main loop tests for each possible event and generate the corresponding
  * FSM events.  For example:
  *
  *   if (asserv_move_cmd_status () == success)
- *     {
- *       fsm_handle_event (&top_fsm, TOP_EVENT_position_reached);
- *       fsm_handle_event (&getsamples_fsm, GETSAMPLES_EVENT_position_reached);
- *     }
+ *       fsm_handle_event (&ai_fsm, AI_EVENT_position_reached);
  *
  * Any unhandled event will be ignored.
  *
  * To start a sub machine from the top FSM, call the sub machine start
- * function (for example getsamples_start), which will set parameters, reset
- * its fsm, then trigger its start event.
- *
- * To abandon a FSM, reset it using fsm_init or it will continue to run
- * concurrently.
+ * function (for example move_start), which will set parameters, then trigger
+ * its start event.
  *
  * The sub machine is expected to generate an event for the top machine to
  * make it continue.
@@ -63,21 +55,26 @@ typedef u8 fsm_branch_t;
 /** Transition function. */
 typedef fsm_branch_t (*fsm_transition_t) (void);
 
-/** Context of a FSM or sub-FSM. */
+/** Maximum number of active states. */
+#define FSM_ACTIVE_STATES_MAX 3
+
+/** Context of an FSM. */
 struct fsm_t
 {
     /** Transition table. */
     const fsm_transition_t *transition_table;
     /** Number of events, used to index the right transition. */
     u8 events_nb;
-    /** Initial state. */
-    u8 state_init;
-    /** Current active state. */
-    u8 state_current;
+    /** Initial states. */
+    u8 states_init[FSM_ACTIVE_STATES_MAX];
+    /** Current active states. */
+    u8 states_active[FSM_ACTIVE_STATES_MAX];
+    /** Nomber of active states. */
+    u8 active_states_nb;
     /** State timeout table. */
     const u16 *state_timeout_table;
-    /** Current state timeout if not 0xffff. */
-    u16 state_timeout;
+    /** Current active states timeout if not 0xffff. */
+    u16 states_timeout[FSM_ACTIVE_STATES_MAX];
     /** Event to generate on state timeout. */
     u8 state_timeout_event;
 #ifdef HOST
@@ -95,20 +92,15 @@ typedef struct fsm_t fsm_t;
 void
 fsm_init (fsm_t *fsm);
 
-/** Handle state timeout, return 1 if a event was handled. */
+/** Handle state timeout, return non-zero if at least an event was handled. */
 uint8_t
 fsm_handle_timeout (fsm_t *fsm);
 
-/** Handle an event on the given FSM.
- * @return
- *   - 0 if this FSM does not handle this event ;
- *   - 1 if this FSM handles this event in its current state.
- */
+/** Handle an event on the given FSM, return non-zero if at least an event was
+ * handled. */
 uint8_t
-fsm_handle_event (fsm_t *fsm, u8 event);
+fsm_handle_event (fsm_t *fsm, uint8_t event);
 
-#include "move_fsm.h"
-#include "top_fsm.h"
-#include "init_fsm.h"
+#include "ai_fsm.h"
 
 #endif /* fsm_h */
