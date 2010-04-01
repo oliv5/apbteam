@@ -91,8 +91,6 @@ class TestSimu (InterNode):
         self.forked_hub.kill ()
         import time
         time.sleep (1)
-        self.asserv.close ()
-        self.io.close ()
 
     def asserv_read (self, file, mask):
         self.asserv.proto.read ()
@@ -122,3 +120,4 @@ if __name__ == '__main__':
     app = TestSimu (('../../asserv/src/asserv/asserv.host', '-m9', 'marcel'),
             ('../src/io.host'))
     app.mainloop ()
+    app.close ()

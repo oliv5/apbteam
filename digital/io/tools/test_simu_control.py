@@ -57,3 +57,4 @@ if __name__ == '__main__':
     app = TestSimuControl (('../../asserv/src/asserv/asserv.host', '-m9',
         'marcel'), ('../src/io.host'))
     app.mainloop ()
+    app.close ()
