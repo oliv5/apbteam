@@ -94,7 +94,7 @@ class InterNode (Inter):
                     self.step_after = self.after (int (delay * 1000),
                             self.step)
                 else:
-                    self.step ()
+                    self.step_after = self.after_idle (self.step)
 
 if __name__ == '__main__':
     import mex.hub
