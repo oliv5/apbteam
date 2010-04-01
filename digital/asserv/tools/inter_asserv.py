@@ -45,12 +45,13 @@ class InterAsserv (Inter):
             i = asserv.init.target
         self.a = asserv.Proto (io, **i)
         self.a.async = True
-        self.a.register_pos ()
-        self.a.position.register (self.pos)
         # Inter.
         Inter.__init__ (self)
         self.tk.createfilehandler (self.a, READABLE, self.read)
         self.timeout ()
+        # Query position.
+        self.a.register_pos ()
+        self.a.position.register (self.pos)
 
     def createWidgets (self):
         Inter.createWidgets (self)

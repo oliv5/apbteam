@@ -32,19 +32,20 @@ class Robot (Drawable):
 
     def draw (self):
         self.reset ()
-        self.trans_rotate (self.angle)
-        self.trans_translate (self.pos)
-        self.draw_polygon ((115, 30), (170, 85), (150, 127), (130, 145),
-                (-25, 200), (-70, 200), (-70, -200), (-25, -200),
-                (130, -145), (150, -127), (170, -85), (115, -30))
-        axes_fill = '#404040'
-        self.draw_line ((-70, 0), (170, 0), fill = axes_fill, arrow = LAST)
-        f = 142 + 2 * 31.5 - 13.5
-        wr = 63 / 2
-        self.draw_line ((0, +f / 2), (0, -f / 2), fill = axes_fill)
-        self.draw_line ((-wr, f / 2), (+wr, f / 2), fill = axes_fill)
-        self.draw_line ((-wr, -f / 2), (+wr, -f / 2), fill = axes_fill)
-        Drawable.draw (self)
+        if self.angle is not None:
+            self.trans_rotate (self.angle)
+            self.trans_translate (self.pos)
+            self.draw_polygon ((115, 30), (170, 85), (150, 127), (130, 145),
+                    (-25, 200), (-70, 200), (-70, -200), (-25, -200),
+                    (130, -145), (150, -127), (170, -85), (115, -30))
+            axes_fill = '#404040'
+            self.draw_line ((-70, 0), (170, 0), fill = axes_fill, arrow = LAST)
+            f = 142 + 2 * 31.5 - 13.5
+            wr = 63 / 2
+            self.draw_line ((0, +f / 2), (0, -f / 2), fill = axes_fill)
+            self.draw_line ((-wr, f / 2), (+wr, f / 2), fill = axes_fill)
+            self.draw_line ((-wr, -f / 2), (+wr, -f / 2), fill = axes_fill)
+            Drawable.draw (self)
 
 class Obstacle (Drawable):
     """An obstacle."""
