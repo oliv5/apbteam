@@ -1,9 +1,9 @@
-#ifndef filterbridge_h
-#define filterbridge_h
-/* filterbridge.h */
+#ifndef bot_h
+#define bot_h
+/* bot.h */
 /* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
  *
- * Copyright (C) 2009 Nicolas Haller
+ * Copyright (C) 2010 Nicolas Schodet
  *
  * APBTeam:
  *        Web: http://apbteam.org/
@@ -25,8 +25,54 @@
  *
  * }}} */
 
-#include "common.h"
+/**
+ * Specific defines about the robot dimensions and competion rules.
+ */
 
-extern uint8_t fb_nb_puck;
+/**
+ * Duration of a match in milliseconds.
+ */
+#define MATCH_DURATION_MS 90000
 
-#endif // filterbridge_h
+/**
+ * How to compute a angle for the robot?
+ * One degree is 65536 / 360
+ */
+#define BOT_ANGLE_DEGREE (65536 / 360)
+
+/**
+ * The scaling factor, millimeter per step.
+ */
+#ifdef HOST
+# define BOT_SCALE 0.0395840674352314
+#else
+# define BOT_SCALE 0.0413530725332892
+#endif
+
+/**
+ * The size of the bot.
+ */
+#define BOT_LENGTH 300
+#define BOT_WIDTH 310
+
+/**
+ * Distance required to be away from a border to be able to turn freely.
+ * In millimeter.
+ */
+#define BOT_MIN_DISTANCE_TURN_FREE 300
+
+/**
+ * Definition of the colors.
+ */
+enum team_color_e
+{
+    RED_TEAM = 0,
+    BLUE_TEAM = 1
+};
+
+/**
+ * Our color.
+ */
+extern enum team_color_e bot_color;
+
+#endif /* bot_h */

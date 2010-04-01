@@ -32,15 +32,15 @@ import io
 import io.init
 from proto.popen_io import PopenIO
 
-import simu.model.table_eurobot2009 as table_model
-import simu.view.table_eurobot2009 as table
+import simu.model.table_eurobot2010 as table_model
+import simu.view.table_eurobot2010 as table
 
 import simu.model.round_obstacle as obstacle_model
 import simu.view.round_obstacle as obstacle_view
 
-import simu.robots.aquajim.link.bag as robot_link
-import simu.robots.aquajim.model.bag as robot_model
-import simu.robots.aquajim.view.bag as robot_view
+import simu.robots.marcel.link.bag as robot_link
+import simu.robots.marcel.model.bag as robot_model
+import simu.robots.marcel.view.bag as robot_view
 
 from simu.inter.inter_node import InterNode
 from Tkinter import *
@@ -84,8 +84,6 @@ class TestSimu (InterNode):
                 self.robot_link)
         self.robot_view = robot_view.Bag (self.table, self.actuator_view,
                 self.sensor_frame, self.robot_model)
-	# Unused ADC.
-	self.robot_link.io.adc[5].value = 0
         # Color switch.
         self.robot_model.color_switch.register (self.change_color)
 
@@ -121,6 +119,6 @@ class TestSimu (InterNode):
         self.obstacle.notify ()
 
 if __name__ == '__main__':
-    app = TestSimu (('../../asserv/src/asserv/asserv.host', '-m9', 'aquajim'),
+    app = TestSimu (('../../asserv/src/asserv/asserv.host', '-m9', 'marcel'),
             ('../src/io.host'))
     app.mainloop ()

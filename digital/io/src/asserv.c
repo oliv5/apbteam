@@ -31,7 +31,7 @@
 #include "modules/math/fixed/fixed.h"
 #include "modules/utils/crc.h"
 #include "modules/trace/trace.h"
-#include "giboulee.h"		/* BOT_* */
+#include "bot.h"
 #include "io.h"
 #include "trace_event.h"
 
@@ -62,14 +62,14 @@ enum asserv_status_flag_e
     asserv_status_flag_move_forward = 2,
     /** Bot is moving backward (linear speed smaller than 0). */
     asserv_status_flag_move_backward = 3,
-    /** Arm movement finished with success. */
-    asserv_status_flag_arm_succeed = 4,
-    /** Arm movement finished with failure (can not happen). */
-    asserv_status_flag_arm_failed = 5,
-    /** Elevator movement finished with success. */
-    asserv_status_flag_elevator_succeed = 6,
-    /** Elevator movement finished with failure (can not happen). */
-    asserv_status_flag_elevator_failed = 7,
+    /** Motor0 movement finished with success. */
+    asserv_status_flag_motor0_succeed = 4,
+    /** Motor0 movement finished with failure (can not happen). */
+    asserv_status_flag_motor0_failed = 5,
+    /** Motor1 movement finished with success. */
+    asserv_status_flag_motor1_succeed = 6,
+    /** Motor1 movement finished with failure (can not happen). */
+    asserv_status_flag_motor1_failed = 7,
 };
 typedef enum asserv_status_flag_e asserv_status_flag_e;
 
@@ -106,10 +106,10 @@ typedef struct asserv_struct_s
     uint8_t seq;
     /** Bot position. */
     asserv_position_t position;
-    /** Arm position. */
-    uint16_t arm_position;
-    /** Elevator position. */
-    uint16_t elevator_position;
+    /** Motor0 position. */
+    uint16_t motor0_position;
+    /** Motor1 position. */
+    uint16_t motor1_position;
 } asserv_struct_s;
 
 /**
@@ -131,11 +131,6 @@ static uint8_t asserv_retransmit_counter;
  * Length of the last transmitted command.
  */
 static uint8_t asserv_retransmit_length;
-
-/**
- * The arm position of notification for the get sample FSM.
- */
-static uint16_t asserv_arm_notify_position;
 
 /**
  * Update TWI module until request (send or receive) is finished.
@@ -173,20 +168,19 @@ static inline uint8_t
 asserv_twi_send (uint8_t length);
 
 /**
- * Move the arm.
- * A complete rotation correspond to 5333 steps.
+ * Move the motor0.
  * @param position desired goal position (in step).
  * @param speed speed of the movement.
  */
 void
-asserv_move_arm_absolute (uint16_t position, uint8_t speed);
+asserv_move_motor0_absolute (uint16_t position, uint8_t speed);
 
 /**
- * Current position of the arm.
+ * Current position of the motor0.
  * We need to maintain it by ourself as it is more accurate than the one sent
  * by the asserv board.
  */
-static uint16_t asserv_arm_current_position;
+static uint16_t asserv_motor0_current_position;
 
 /* Update TWI module until request (send or receive) is finished. */
 static inline void
@@ -279,8 +273,8 @@ asserv_update_status (void)
     asserv_status.position.y = ((int32_t) v8_to_v32 (status_buffer[6], status_buffer[7],
 				     status_buffer[8], 0)) >> 8;
     asserv_status.position.a = v8_to_v16 (status_buffer[9], status_buffer[10]);
-    asserv_status.arm_position = v8_to_v16 (status_buffer[11], status_buffer[12]);
-    asserv_status.elevator_position = v8_to_v16 (status_buffer[13], status_buffer[14]);
+    asserv_status.motor0_position = v8_to_v16 (status_buffer[11], status_buffer[12]);
+    asserv_status.motor1_position = v8_to_v16 (status_buffer[13], status_buffer[14]);
     /* Update moving direction. */
     if (asserv_get_moving_direction () != 0)
 	asserv_last_moving_direction = asserv_get_moving_direction ();
@@ -335,41 +329,29 @@ asserv_move_cmd_status (void)
     return none;
 }
 
-/* Is last arm class command has successfully ended? */
+/* Is last motor0 class command has successfully ended? */
 asserv_status_e
-asserv_arm_cmd_status (void)
+asserv_motor0_cmd_status (void)
 {
-    /* Check Arm Finished flag */
-    if (asserv_status.status & _BV (asserv_status_flag_arm_succeed))
+    /* Check Motor0 Finished flag */
+    if (asserv_status.status & _BV (asserv_status_flag_motor0_succeed))
 	return success;
-    /* Check Arm Blocked flag */
-    else if (asserv_status.status & _BV (asserv_status_flag_arm_failed))
+    /* Check Motor0 Blocked flag */
+    else if (asserv_status.status & _BV (asserv_status_flag_motor0_failed))
 	return failure;
     /* Otherwise, not finished nor failure */
     return none;
 }
 
-/* Is the optical fence see a puck? */
-uint8_t
-asserv_arm_of_status(void)
-{
-#ifdef HOST
-    return 1;
-#endif
-    if(asserv_status.input_port & _BV (5))
-	return 1;
-    return 0;
-}
-
-/* Is last elevator class command has successfully ended? */
+/* Is last motor1 class command has successfully ended? */
 asserv_status_e
-asserv_elevator_cmd_status (void)
+asserv_motor1_cmd_status (void)
 {
-    /* Check Elevator Finished flag */
-    if (asserv_status.status & _BV (asserv_status_flag_elevator_succeed))
+    /* Check Motor1 Finished flag */
+    if (asserv_status.status & _BV (asserv_status_flag_motor1_succeed))
 	return success;
-    /* Check Elevator Blocked flag */
-    else if (asserv_status.status & _BV (asserv_status_flag_elevator_failed))
+    /* Check Motor1 Blocked flag */
+    else if (asserv_status.status & _BV (asserv_status_flag_motor1_failed))
 	return failure;
     /* Otherwise, not finished nor failure */
     return none;
@@ -390,20 +372,20 @@ asserv_get_position (asserv_position_t *current_position)
       }
 }
 
-/* Get the arm position. */
+/* Get the motor0 position. */
 uint16_t
-asserv_get_arm_position (void)
+asserv_get_motor0_position (void)
 {
-    /* Return the position of the arm of the current status buffer */
-    return asserv_status.arm_position;
+    /* Return the position of the motor0 of the current status buffer */
+    return asserv_status.motor0_position;
 }
 
-/* Get the elevator position. */
+/* Get the motor1 position. */
 uint16_t
-asserv_get_elevator_position (void)
+asserv_get_motor1_position (void)
 {
-    /* Return the position of the elevator of the current status buffer */
-    return asserv_status.elevator_position;
+    /* Return the position of the motor1 of the current status buffer */
+    return asserv_status.motor1_position;
 }
 
 /* Are we moving forward/backward? */
@@ -457,7 +439,7 @@ asserv_move_linearly (int32_t distance)
     asserv_twi_send_command ('l', 3);
 }
 
- /* Move angularly (turn). */
+/* Move angularly (turn). */
 void
 asserv_move_angularly (int16_t angle)
 {
@@ -513,48 +495,37 @@ asserv_go_to_the_wall (uint8_t backward)
     asserv_twi_send_command ('f', 1);
 }
 
-/* Move forward to approach a ditributor. */
+/* Move the motor0. */
 void
-asserv_go_to_distributor (void)
-{
-    /* Put direction and delay as parameters */
-    asserv_twi_buffer_param[0] = 0;
-    asserv_twi_buffer_param[1] = 25;
-    /* Send the go the wall command to the asserv board */
-    asserv_twi_send_command ('g', 2);
-}
-
-/* Move the arm. */
-void
-asserv_move_arm_absolute (uint16_t position, uint8_t speed)
+asserv_move_motor0_absolute (uint16_t position, uint8_t speed)
 {
     /* Put position and speed as parameters */
     asserv_twi_buffer_param[0] = v16_to_v8 (position, 1);
     asserv_twi_buffer_param[1] = v16_to_v8 (position, 0);
     asserv_twi_buffer_param[2] = speed;
-    /* Send the move the arm command to the asserv board */
+    /* Send the move the motor0 command to the asserv board */
     asserv_twi_send_command ('b', 3);
 }
 
-/* Move the arm to a certain number of steps. */
+/* Move the motor0 to a certain number of steps. */
 void
-asserv_move_arm (int16_t offset, uint8_t speed)
+asserv_move_motor0 (int16_t offset, uint8_t speed)
 {
     /* Compute the new desired position with the desired offset */
-    asserv_arm_current_position += offset;
-    /* Move the arm to the desired position */
-    asserv_move_arm_absolute (asserv_arm_current_position, speed);
+    asserv_motor0_current_position += offset;
+    /* Move the motor0 to the desired position */
+    asserv_move_motor0_absolute (asserv_motor0_current_position, speed);
 }
 
-/* Move the elevator. */
+/* Move the motor1. */
 void
-asserv_move_elevator_absolute (uint16_t position, uint8_t speed)
+asserv_move_motor1_absolute (uint16_t position, uint8_t speed)
 {
     /* Put position and speed as parameters */
     asserv_twi_buffer_param[0] = v16_to_v8 (position, 1);
     asserv_twi_buffer_param[1] = v16_to_v8 (position, 0);
     asserv_twi_buffer_param[2] = speed;
-    /* Send the move the elevator command to the asserv board */
+    /* Send the move the motor1 command to the asserv board */
     asserv_twi_send_command ('c', 3);
 }
 
@@ -689,28 +660,6 @@ asserv_goto_back (uint32_t x, uint32_t y)
     asserv_twi_send_command ('x', 7);
 }
 
-/* Notify get samples FSM when the arm reach desired position. */
-void
-asserv_arm_set_position_reached (uint16_t position)
-{
-    /* Store the position */
-    asserv_arm_notify_position = position;
-}
-
-/* Check if notification of the get sample FSM is required in term of position
- * of the arm.
- */
-uint8_t
-asserv_arm_position_reached (void)
-{
-    /* If the position has been reached */
-    if (asserv_arm_notify_position &&
-	((int16_t) (asserv_get_arm_position ()
-		    - asserv_arm_notify_position) >= 0))
-	return 1;
-    return 0;
-}
-
 /* Set scale. */
 void
 asserv_set_scale (uint32_t scale)
@@ -720,14 +669,14 @@ asserv_set_scale (uint32_t scale)
 }
 
 void
-asserv_arm_zero_position (void)
+asserv_motor0_zero_position (void)
 {
     asserv_twi_buffer_param[0] = 0x05;
     asserv_twi_send_command ('B', 1);
 }
 
 void
-asserv_elevator_zero_position (void)
+asserv_motor1_zero_position (void)
 {
     asserv_twi_buffer_param[0] = -0x10;
     asserv_twi_send_command ('C', 1);

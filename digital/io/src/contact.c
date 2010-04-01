@@ -29,7 +29,6 @@
 void
 contact_init (void)
 {
-    IO_SET (CONTACT_FILTER_BRIDGE_PUCK);
-    IO_SET (CONTACT_ELEVATOR_DOOR);
-    IO_SET (CONTACT_PUCK_CYLINDER);
+    /* Pull-up. */
+    //IO_SET (CONTACT_EXAMPLE);
 }

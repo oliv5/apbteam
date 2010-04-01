@@ -95,22 +95,20 @@ This table describe the list of supported commands by the *asserv* card:
 |         |       | - y (3b)        | absolute angle, backward movement        |
 |         |       | - a (2b)        | allowed                                  |
 +---------+-------+-----------------+------------------------------------------+
-|   'b'   |  Arm  | - position (2b) | Move the arm to a desired position       |
+|   'b'   | Mot0  | - position (2b) | Move the motor0 to a desired position    |
 |         |       | - speed (1b)    | at a specific speed                      |
-|         |       |                 |   - position: 250 * 4 * 80 / 15 steps by |
-|         |       |                 |     round                                |
+|         |       |                 |   - position: x steps by x               |
 |         |       |                 |   - speed: in step by cycle (4.44ms)     |
 +---------+-------+-----------------+------------------------------------------+
-|   'B'   |  Arm  | - speed (1b)    | Find the zero position of the arm        |
+|   'B'   | Mot0  | - speed (1b)    | Find the zero position of the motor0     |
 |         |       |                 |   - speed: in step by cycle (4.44ms)     |
-|         |       |                 | Offset for mechanical zero is 0x43e      |
 +---------+-------+-----------------+------------------------------------------+
-|   'c'   | Elvt  | - position (2b) | Move the elevator to a desired position  |
+|   'c'   | Mot1  | - position (2b) | Move the motor1 to a desired position    |
 |         |       | - speed (1b)    | at a specific speed                      |
-|         |       |                 |   - position: 72.34 steps by mm          |
+|         |       |                 |   - position: x steps by x               |
 |         |       |                 |   - speed: in step by cycle (4.44ms)     |
 +---------+-------+-----------------+------------------------------------------+
-|   'C'   | Elvt  | - speed (1b)    | Find the zero position of the elevator   |
+|   'C'   | Mot1  | - speed (1b)    | Find the zero position of the motor1     |
 |         |       |                 |   - speed: in step by cycle (4.44ms)     |
 +---------+-------+-----------------+------------------------------------------+
 |   'p'   | Other | See next table  | Change setting values                    |
@@ -148,21 +146,21 @@ card.
 
 It is used to know if the last command sent by the *io* card is currently
 executed, is finished or has failed (i.e. we are blocked) and also to retreive
-the current position (X, Y, alpha) of the bot, its arm and elevator.
+the current position (X, Y, alpha) of the bot and its motors.
 
 The buffer is a static 12 bytes length one::
 
-      0       1      2   3 .. 5  6 .. 8   9  10   11  12    13  14 <-- byte position
-  +--------+------+-----+- - - -+- - - -+-------+---------+----------+
-  | status | PINC | seq | X pos | Y pos | angle | arm pos | elevator |
-  +--------+------+-----+- - - -+- - - -+-------+---------+----------+
+      0       1      2   3 .. 5  6 .. 8   9  10   11  12     13  14 <-- byte position
+  +--------+------+-----+- - - -+- - - -+-------+----------+----------+
+  | status | PINC | seq | X pos | Y pos | angle | mot0 pos | mot1 pos |
+  +--------+------+-----+- - - -+- - - -+-------+----------+----------+
 
 
 Status value
 ------------
 
-Status contains flag bit to know the status of movement and arm commands: if
-they have finished with success or with an error (i.e. blocked).
+Status contains flag bit to know the status of movement and motors commands:
+if they have finished with success or with an error (i.e. blocked).
 
 Here is a list of the bits used and their definitions:
 
@@ -176,13 +174,13 @@ Here is a list of the bits used and their definitions:
  3. Movement is going backward: the current linear speed is smaller than 0
     (BCK);
 
- 4. Arm movement finished with success (AF);
+ 4. Motor0 movement finished with success (A0F);
 
- 5. Arm movement finished with failure: it should not happen (AB);
+ 5. Motor0 movement finished with failure: it should not happen (A0B);
 
- 6. Elevator movement finished with success (EF);
+ 6. Motor1 movement finished with success (A1F);
 
- 7. Elevator movement finished with failure: it should not happen (EB).
+ 7. Motor1 movement finished with failure: it should not happen (A1B).
 
 The others bits are unused.
 

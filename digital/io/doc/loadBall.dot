@@ -1,8 +1,0 @@
-/* IO.avr module. Charge balls Final State Machine */
-digraph loadBallFsm 
-{
-	node [color=lightblue2, style=filled];
-	"Rotate arm" -> "Go backward" [label = "desired balls loaded"];
-	"Go backward" -> "Stop arm" [label = "Poisition reached"];
-	"Stop arm" -> End [label = "arm stopped\narm at init position"];
-}

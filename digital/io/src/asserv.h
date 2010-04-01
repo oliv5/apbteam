@@ -38,10 +38,10 @@
  *  ignored.
  */
 
-#define ASSERV_ARM_SPEED_DEFAULT 0x0C
-#define ASSERV_ELVT_SPEED_DEFAULT 0x46
+#define ASSERV_MOTOR0_SPEED_DEFAULT 0x0C
+#define ASSERV_MOTOR1_SPEED_DEFAULT 0x46
 
-#define ASSERV_ARM_STEP_BY_DEGREE 14.814814
+#define ASSERV_MOTOR0_STEP_BY_DEGREE 14.814814
 
 /** Use backward movements. */
 #define ASSERV_BACKWARD 1
@@ -92,7 +92,7 @@ uint8_t
 asserv_retransmit (void);
 
 /**
- * Status of a move or arm class command.
+ * Status of a move or motor0 class command.
  * It is return by status functions.
  */
 typedef enum asserv_status_e
@@ -101,7 +101,7 @@ typedef enum asserv_status_e
     none,
     /** The command has succeed. */
     success,
-    /** The command has failed. The bot or the arm is blocked */
+    /** The command has failed. The bot or the motor0 is blocked */
     failure
 } asserv_status_e;
 
@@ -115,31 +115,22 @@ asserv_status_e
 asserv_move_cmd_status (void);
 
 /**
- * Is last arm class command has successfully ended?
- * This function is used to know the status of the last arm command. It looks
- * at the status register.
- * @return the status of the last move class command.
- */
-asserv_status_e
-asserv_arm_cmd_status (void);
-
-/**
- *
- * Is the optical fence see a puck?
- * This function get the arm optical fence status
- * @return the status of the arm optical fence
- */
-uint8_t
-asserv_arm_of_status(void);
-
-/**
- * Is last elevator class command has successfully ended?
- * This function is used to know the status of the last elevator command. It
+ * Is last motor0 class command has successfully ended?
+ * This function is used to know the status of the last motor0 command. It
  * looks at the status register.
  * @return the status of the last move class command.
  */
 asserv_status_e
-asserv_elevator_cmd_status (void);
+asserv_motor0_cmd_status (void);
+
+/**
+ * Is last motor1 class command has successfully ended?
+ * This function is used to know the status of the last motor1 command. It
+ * looks at the status register.
+ * @return the status of the last move class command.
+ */
+asserv_status_e
+asserv_motor1_cmd_status (void);
 
 /**
  * Structure for storing a position for the bot.
@@ -162,18 +153,18 @@ void
 asserv_get_position (asserv_position_t *current_position);
 
 /**
- * Get the arm position.
- * @return the position of the arm (in steps).
+ * Get the motor0 position.
+ * @return the position of the motor0 (in steps).
  */
 uint16_t
-asserv_get_arm_position (void);
+asserv_get_motor0_position (void);
 
 /**
- * Get the elevator position.
- * @return the position of the elevator (in steps).
+ * Get the motor1 position.
+ * @return the position of the motor1 (in steps).
  */
 uint16_t
-asserv_get_elevator_position (void);
+asserv_get_motor1_position (void);
 
 /**
  * Are we moving forward/backward?
@@ -249,15 +240,8 @@ void
 asserv_go_to_the_wall (uint8_t backward);
 
 /**
- * Move forward to approach a distributor.
- * Move class command.
- */
-void
-asserv_go_to_distributor (void);
-
-/**
- * Move the arm to a certain number of steps.
- * Arm class command.
+ * Move the motor0 to a certain number of steps.
+ * Motor0 class command.
  * This function take the number of steps you want to move to. This is not an
  * absolute position, this is only the number of steps you want to add to the
  * current position.
@@ -265,18 +249,18 @@ asserv_go_to_distributor (void);
  * @param speed speed of the movement.
  */
 void
-asserv_move_arm (int16_t offset, uint8_t speed);
+asserv_move_motor0 (int16_t offset, uint8_t speed);
 
 /**
- * Move the elevator.
- * Elevator class command.
+ * Move the motor1.
+ * Motor1 class command.
  * This function take the number of steps you want to move to. This is an
  * absolute position.
  * @param position desired goal position (in step).
  * @param speed speed of the movement.
  */
 void
-asserv_move_elevator_absolute (uint16_t position, uint8_t speed);
+asserv_move_motor1_absolute (uint16_t position, uint8_t speed);
 
 /**
  * Set current X position.
@@ -344,26 +328,6 @@ asserv_goto (uint32_t x, uint32_t y, uint8_t backward);
 void
 asserv_goto_back (uint32_t x, uint32_t y);
 
-/**
- * Set the notifier of get samples FSM when the arm reach desired position.
- * You should called this function from the get sample FSM to tell the asserv
- * module you want to be notified when the arm reached the desired position.
- * @param position the desired position of the arm (absolute). Note, 0 is a
- * reset value do disable the notifier. If you want to use it, please add 1.
- */
-void
-asserv_arm_set_position_reached (uint16_t position);
-
-/**
- * Check if notification of the get sample FSM is required in term of
- * position of the arm.
- * @return
- *   - 0 if the notification is not needed ;
- *   - 1 if the notification of the get sample FSM is required.
- */
-uint8_t
-asserv_arm_position_reached (void);
-
 /** Set scale.
  * @param scale vous avez qu'à deviner (f8.24).
  */
@@ -371,16 +335,16 @@ void
 asserv_set_scale (uint32_t scale);
 
 /**
- * Reset the ARM to the zero position.
+ * Reset the motor0 to the zero position.
  */
 void
-asserv_arm_zero_position (void);
+asserv_motor0_zero_position (void);
 
 /**
- * Reset the elevator to the zero position.
+ * Reset the motor1 to the zero position.
  */
 void
-asserv_elevator_zero_position (void);
+asserv_motor1_zero_position (void);
 
 /**
  * Get the last moving direction of the bot.

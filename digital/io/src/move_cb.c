@@ -30,7 +30,7 @@
 #include "playground.h"
 #include "move.h"
 #include "sharp.h"
-#include "aquajim.h"
+#include "bot.h"
 #include "trace_event.h"
 
 #include "main.h"      /* main_post_event_for_top_fsm */
@@ -70,7 +70,7 @@
 #define MOVE_OBSTACLE_RADIUS (MOVE_REAL_OBSTACLE_RADIUS + 250)
 
 /**
- * The generic validity time (in term of number of cyles).
+ * The generic validity time (in term of number of cycles).
  */
 #define MOVE_OBSTACLE_VALIDITY (6 * 225)
 
@@ -273,7 +273,6 @@ move__MOVING__bot_move_succeed (void)
 	return move_next_branch (MOVING, bot_move_succeed, no_intermediate_path_found);
       }
 }
-
 
 /*
  * MOVING =bot_move_failed=>

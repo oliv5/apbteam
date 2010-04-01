@@ -49,23 +49,9 @@ extern uint16_t main_sharp_ignore_event;
 extern uint16_t main_move_wait_cycle;
 
 /**
- * Post an event for the main loop to wake up the getsamples FSM in a certain
- * count of cycles.
- * This is used by the getsamples FSM to timeout if the arm is completely
- * blocked.
- */
-extern uint16_t main_getsamples_wait_cycle;
-
-/**
  * Post an event for the init loop to wait a certain amount of time before
  * make any move
  */
 extern uint16_t main_init_wait_cycle;
-
-/**
- * Flag for homologation, to disable the path finding and always stop in front
- * of an obstacle and wait.
- */
-extern uint8_t main_always_stop_for_obstacle;
 
 #endif /* main_h */

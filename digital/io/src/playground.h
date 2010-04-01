@@ -34,7 +34,7 @@
  *   see it with the two start zone at the top of the scheme).
  */
 
-#include "giboulee.h"
+#include "bot.h"
 
 /**
  * The width of the table, in millimeters.
@@ -73,48 +73,6 @@
 #define PG_A_START (-90 * BOT_ANGLE_DEGREE)
 
 /**
- * The distance to remove from the real position of the distributor before
- * doing the "go to the distributor".
- */
-#define PG_DISTANCE_DISTRIBUTOR 300
-
-/**
- * The position of our ice distributor minus the distance to remove (only for the
- * X axis).
- */
-#define PG_DISTRIBUTOR_ICE_OUR_X \
-    (PG_X_VALUE_COMPUTING (0 + PG_DISTANCE_DISTRIBUTOR))
-#define PG_DISTRIBUTOR_ICE_OUR_Y 1350
-#define PG_DISTRIBUTOR_ICE_OUR_A \
-    (PG_A_VALUE_COMPUTING (180 * BOT_ANGLE_DEGREE))
-
-/**
- * The position of adverse ice distributor minus the distance to remove (only
- * for the X axis).
- */
-#define PG_DISTRIBUTOR_ICE_ADVERSE_X \
-    (PG_X_VALUE_COMPUTING (PG_WIDTH - PG_DISTANCE_DISTRIBUTOR))
-#define PG_DISTRIBUTOR_ICE_ADVERSE_Y 1350
-#define PG_DISTRIBUTOR_ICE_ADVERSE_A \
-    (PG_A_VALUE_COMPUTING (0))
-
-/**
- * The position of our distributor minus the distance to remove (only for the
- * Y axis).
- */
-#define PG_DISTRIBUTOR_SAMPLE_OUR_X \
-    (PG_X_VALUE_COMPUTING (700))
-#define PG_DISTRIBUTOR_SAMPLE_OUR_Y (PG_HEIGHT - PG_DISTANCE_DISTRIBUTOR)
-#define PG_DISTRIBUTOR_SAMPLE_OUR_A (90 * BOT_ANGLE_DEGREE)
-
-/**
- * The position of the gutter.
- */
-#define PG_GUTTER_X (PG_X_VALUE_COMPUTING (2500))
-#define PG_GUTTER_Y (300)
-#define PG_GUTTER_A (90 * BOT_ANGLE_DEGREE)
-
-/**
  * The backward move for the MOVE_FSM.
  */
 #define PG_MOVE_DISTANCE 300
@@ -124,10 +82,5 @@
  */
 #define PG_START_ZONE_LENGTH 500
 #define PG_START_ZONE_WIDTH 500
-
-/**
- * The bottom of the table is not usable.
- */
-#define PG_BOTTOM_UNUSABLE_ZONE 150
 
 #endif // playground_h

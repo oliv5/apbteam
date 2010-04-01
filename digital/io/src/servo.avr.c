@@ -56,7 +56,7 @@
  * We want a time of 20ms (20/1000).
  * See @a servo_init to know the prescaler value of the timer/counter.
  */
-static const uint16_t servo_tic_cyle_ = AC_FREQ / 256 * 20 / 1000;
+static const uint16_t servo_tic_cycle_ = AC_FREQ / 256 * 20 / 1000;
 
 /** @} */
 
@@ -141,7 +141,7 @@ SIGNAL (SIG_OVERFLOW2)
        overflow */
     static int8_t servo_overflow_count = -1;
     /* Time spent by each servo motor at high state during a whole cycle */
-    static uint16_t servo_high_time_cycle = servo_tic_cyle_;
+    static uint16_t servo_high_time_cycle = servo_tic_cycle_;
 
     /* State machine actions */
     if (servo_updating_id_ >= 0)
@@ -193,7 +193,7 @@ SIGNAL (SIG_OVERFLOW2)
 		servo_updating_id_ = 0;
 		/* Re-initialize the counter of time spent by each servo motor
 		 * at high state */
-		servo_high_time_cycle = servo_tic_cyle_;
+		servo_high_time_cycle = servo_tic_cycle_;
 	      }
 	  }
       }

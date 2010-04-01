@@ -43,17 +43,13 @@
 #include "asserv.h"	/* Functions to control the asserv board */
 #include "eeprom.h"	/* Parameters loaded/stored in the EEPROM */
 #include "fsm.h"	/* fsm_* */
-#include "giboulee.h"	/* team_color */
-/* #include "top.h" */	/* top_* */
+#include "bot.h"
 #include "servo_pos.h"
 #include "chrono.h"	/* chrono_end_match */
 #include "sharp.h"	/* sharp module */
 #include "pwm.h"
 #include "playground.h"
 #include "contact.h"
-#include "elevator.h"
-#include "filterbridge.h"
-#include "cylinder.h"
 #include "init.h"
 #include "top.h"
 
@@ -125,12 +121,6 @@ main_short_fsm_name (fsm_t *fsm)
         id = 'I';
     else if (fsm == &move_fsm)
         id = 'M';
-    else if (fsm == &elevator_fsm)
-        id = 'E';
-    else if (fsm == &cylinder_fsm)
-        id = 'C';
-    else if (fsm == &filterbridge_fsm)
-        id = 'F';
     return id;
 }
 
@@ -160,9 +150,6 @@ main_event_to_fsm (void)
     FSM_HANDLE_TIMEOUT (&move_fsm);
     FSM_HANDLE_TIMEOUT (&top_fsm);
     FSM_HANDLE_TIMEOUT (&init_fsm);
-    FSM_HANDLE_TIMEOUT (&filterbridge_fsm);
-    FSM_HANDLE_TIMEOUT (&elevator_fsm);
-    FSM_HANDLE_TIMEOUT (&cylinder_fsm);
 
     /* If we have entering this function, last command of the asserv board has
      * been aquited. */
@@ -171,13 +158,13 @@ main_event_to_fsm (void)
 
     asserv_status_e
 	move_status = none,
-	arm_status = none,
-	elevator_status = none;
+	motor0_status = none,
+	motor1_status = none;
 
-    /* Get status of move, arm and elevator. */
+    /* Get status of move, motor0 and motor1. */
     move_status = asserv_move_cmd_status ();
-    arm_status = asserv_arm_cmd_status ();
-    elevator_status = asserv_elevator_cmd_status ();
+    motor0_status = asserv_motor0_cmd_status ();
+    motor1_status = asserv_motor1_cmd_status ();
 
     /* Check commands move status. */
     if (move_status == success)
@@ -199,92 +186,6 @@ main_event_to_fsm (void)
 			  TOP_EVENT_bot_move_failed);
       }
 
-    /* Check elevator status. */
-    if (elevator_status == success)
-      {
-	FSM_HANDLE_EVENT (&elevator_fsm,
-			  ELEVATOR_EVENT_in_position);
-      }
-    else if (elevator_status == failure)
-      {
-	/* TODO: */
-      }
-
-    /* Check cylinder status */
-    if (arm_status != none)
-      {
-	FSM_HANDLE_EVENT (&cylinder_fsm,
-			  CYLINDER_EVENT_move_done);
-      }
-
-    /* check of status */
-    if (asserv_arm_of_status())
-	FSM_HANDLE_EVENT (&cylinder_fsm,
-			  CYLINDER_EVENT_of_puck);
-    else
-	FSM_HANDLE_EVENT (&cylinder_fsm,
-			  CYLINDER_EVENT_of_no_puck);
-
-
-    /* send event if elevator received an order */
-    if (elvt_order_in_progress)
-	FSM_HANDLE_EVENT (&elevator_fsm,
-			  ELEVATOR_EVENT_order_received);
-    else
-	FSM_HANDLE_EVENT (&top_fsm,
-			  TOP_EVENT_elevator_order_done);
-
-    /* relou case to avoid a loop */
-    if(elvt_order_in_progress && !elvt_new_puck)
-	FSM_HANDLE_EVENT (&elevator_fsm,
-			  ELEVATOR_EVENT_order_bypass);
-
-
-    /* elevator new puck (set by filterbridge) */
-    if(elvt_new_puck)
-	FSM_HANDLE_EVENT (&elevator_fsm,
-			  ELEVATOR_EVENT_new_puck);
-    /* elvt door switch */
-    if(!IO_GET (CONTACT_ELEVATOR_DOOR))
-	FSM_HANDLE_EVENT (&elevator_fsm,
-			  ELEVATOR_EVENT_doors_opened);
-    /* bridge ready */
-    if(fb_nb_puck < 2)
-	FSM_HANDLE_EVENT (&cylinder_fsm,
-			  CYLINDER_EVENT_bridge_ready);
-    if(cylinder_distributor_fucked)
-	FSM_HANDLE_EVENT (&cylinder_fsm,
-			  CYLINDER_EVENT_distrib_fucked);
-    /* elevator is ready */
-    if(elvt_is_ready)
-	FSM_HANDLE_EVENT (&filterbridge_fsm,
-			  FILTERBRIDGE_EVENT_lift_ready);
-
-    /* bot empty */
-    if(top_puck_inside_bot < 4)
-	FSM_HANDLE_EVENT (&cylinder_fsm,
-			  CYLINDER_EVENT_bot_not_full);
-
-    /* cylinder_close_order */
-    if(cylinder_close_order)
-      {
-	FSM_HANDLE_EVENT (&cylinder_fsm,
-			  CYLINDER_EVENT_close_order);
-      }
-    else
-	FSM_HANDLE_EVENT (&cylinder_fsm,
-			  CYLINDER_EVENT_no_close_order);
-
-    /* cylinder_flush_order */
-    if(cylinder_flush_order)
-	FSM_HANDLE_EVENT (&cylinder_fsm,
-			  CYLINDER_EVENT_flush_order);
-
-    /* Generate the cylinder empty distributor. */
-    if (cylinder_distributor_empty)
-	FSM_HANDLE_EVENT (&top_fsm,
-			  TOP_EVENT_empty_distributor);
-
     /* Jack */
     if(switch_get_jack())
       {
@@ -295,12 +196,6 @@ main_event_to_fsm (void)
       {
 	FSM_HANDLE_EVENT (&init_fsm,
 			  INIT_EVENT_jack_inserted_into_bot);
-	FSM_HANDLE_EVENT (&elevator_fsm,
-			  ELEVATOR_EVENT_jack_inserted_into_bot);
-	FSM_HANDLE_EVENT (&cylinder_fsm,
-			  CYLINDER_EVENT_jack_inserted_into_bot);
-	FSM_HANDLE_EVENT (&filterbridge_fsm,
-			  CYLINDER_EVENT_jack_inserted_into_bot);
       }
 
     if (init_match_is_started)
@@ -338,29 +233,6 @@ main_event_to_fsm (void)
 	  }
       }
     /* TODO: Check other sensors */
-    /* TODO: implement filterbridge events */
-    if(!IO_GET (CONTACT_FILTER_BRIDGE_PUCK))
-      {
-	FSM_HANDLE_EVENT (&filterbridge_fsm,
-			  FILTERBRIDGE_EVENT_puck_on_pos2);
-      }
-    else
-      {
-	FSM_HANDLE_EVENT (&filterbridge_fsm,
-			  FILTERBRIDGE_EVENT_no_puck_on_pos2);
-      }
-    /* TODO check if we need !IO_GET or IO_GET */
-    if(!IO_GET(CONTACT_PUCK_CYLINDER))
-      {
-	FSM_HANDLE_EVENT (&cylinder_fsm,
-			  CYLINDER_EVENT_new_puck);
-      }
-
-    if (top_puck_inside_bot >= 4)
-      {
-	FSM_HANDLE_EVENT (&top_fsm,
-			  TOP_EVENT_bot_is_full_of_pucks);
-      }
 }
 
 /**
@@ -385,21 +257,16 @@ main_init (void)
     switch_init ();
     /* Path module */
     path_init (PG_BORDER_DISTANCE, PG_BORDER_DISTANCE,
-	       PG_WIDTH - PG_BORDER_DISTANCE, PG_LENGTH - PG_BORDER_DISTANCE -
-	       PG_BOTTOM_UNUSABLE_ZONE);
+	       PG_WIDTH - PG_BORDER_DISTANCE, PG_LENGTH - PG_BORDER_DISTANCE);
+    /* Top initialization. */
+    top_init ();
     /* Init all FSM (except move FSM) */
     fsm_init(&top_fsm);
     fsm_init(&init_fsm);
-    fsm_init(&cylinder_fsm);
-    fsm_init(&elevator_fsm);
-    fsm_init(&filterbridge_fsm);
     /* Start all FSM (except move and top FSM) */
     /* FIXME: who sould start top? init?. */
     fsm_handle_event (&init_fsm, INIT_EVENT_start);
     fsm_handle_event (&top_fsm, TOP_EVENT_start);
-    fsm_handle_event (&filterbridge_fsm, FILTERBRIDGE_EVENT_start);
-    fsm_handle_event (&elevator_fsm, ELEVATOR_EVENT_start);
-    fsm_handle_event (&cylinder_fsm, CYLINDER_EVENT_start);
     /* Sharp module */
     sharp_init ();
     /* PWM module */
@@ -541,41 +408,6 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 #define c(cmd, size) (cmd << 8 | size)
     switch (c (cmd, size))
       {
-	/* cylinder orders */
-      case c ('c', 1):
-	  {
-	    switch(args[0])
-	      {
-	      case 'f':
-		cylinder_flush_order = 1;
-		break;
-	      case 'C':
-		cylinder_close_order = 1;
-		break;
-	      case 'c':
-		cylinder_close_order = 0;
-		break;
-	      }
-	  }
-	break;
-
-	/* elevator (l like lift) */
-      case c('l', 2):
-	  {
-	    switch(args[0])
-	      {
-	      case 'o':
-		elvt_order_in_progress = 1;
-		elvt_position_required = args[1];
-		break;
-	      }
-	  }
-	break;
-
-      case c ('j', 0):
-	fsm_handle_event (&filterbridge_fsm,
-			  FILTERBRIDGE_EVENT_jack_inserted_into_bot);
-	break;
       case c ('z', 0):
 	/* Reset */
 	utils_reset ();
@@ -720,10 +552,6 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		/* Stop motor */
 		asserv_stop_motor ();
 		break;
-	      case 'F':
-		/* Go to the distributor */
-		asserv_go_to_distributor ();
-		break;
 	      }
 	  }
 	break;
@@ -739,10 +567,10 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		switch (args[1])
 		  {
 		  case 'e':
-		    asserv_elevator_zero_position ();
+		    asserv_motor1_zero_position ();
 		    break;
 		  case 'a':
-		    asserv_arm_zero_position ();
+		    asserv_motor0_zero_position ();
 		    break;
 		  }
 		break;
@@ -767,19 +595,19 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	    switch (args[0])
 	      {
 	      case 'b':
-		/* Move the arm
+		/* Move the motor0
 		 *  - 2b: offset angle ;
 		 *  - 1b: speed.
 		 */
-		asserv_move_arm (v8_to_v16 (args[1], args[2]), args[3]);
+		asserv_move_motor0 (v8_to_v16 (args[1], args[2]), args[3]);
 		break;
 	      case 'c':
-		/* Move the elevator
+		/* Move the motor1
 		 *  - 2b: position ;
 		 *  - 1b: speed.
 		 */
-		asserv_move_elevator_absolute (v8_to_v16 (args[1], args[2]),
-					       args[3]);
+		asserv_move_motor1_absolute (v8_to_v16 (args[1], args[2]),
+					     args[3]);
 		break;
 	      }
 	  }

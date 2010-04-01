@@ -29,10 +29,9 @@
 #include "init.h"
 #include "playground.h"
 #include "main.h"
-#include "aquajim.h"
+#include "bot.h"
 #include "switch.h"
 #include "chrono.h"
-#include "top.h"
 #include "playground.h"
 #include "modules/trace/trace.h"
 #include "modules/path/path.h"
@@ -72,8 +71,6 @@ init__WAIT_FIRST_JACK_OUT__jack_removed_from_bot (void)
     trace_init ();
     /* Get the color. */
     bot_color = switch_get_color ();
-    /* Top initialization. */
-    top_init ();
     return init_next (WAIT_FIRST_JACK_OUT, jack_removed_from_bot);
 }
 
@@ -143,7 +140,6 @@ init__SET_ANGULAR_POSITION__asserv_last_cmd_ack (void)
 /*
  * GO_AWAY_FROM_THE_WALL =bot_move_succeed=>
  *  => FACE_OTHER_WALL
- *   get and store the color of the bot.
  *   turn to face the other wall.
  */
 fsm_branch_t
@@ -243,9 +239,6 @@ init__WAIT_SECOND_JACK_OUT__jack_removed_from_bot (void)
     init_match_is_started = 1;
     /* Start the chrono. */
     chrono_init ();
-    /* Set the central round to path module. */
-    path_obstacle (0x01, PG_WIDTH / 2, PG_LENGTH / 2, 350, 0,
-		   PATH_OBSTACLE_VALID_ALWAYS);
     return init_next (WAIT_SECOND_JACK_OUT, jack_removed_from_bot);
 }
 

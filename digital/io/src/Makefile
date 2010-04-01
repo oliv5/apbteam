@@ -17,7 +17,7 @@ OPTIMIZE = -O2
 HOST_LIBS = -lm
 
 # FSMs.
-FSM_SOURCES := top move filterbridge elevator cylinder init
+FSM_SOURCES := top move init
 # Include FSM makefile.
 include $(BASE)/make/Makefile.fsm
 

@@ -29,7 +29,7 @@
  * @file Module to manage 'switchs'. For example, colors selector and jack.
  */
 
-#include "giboulee.h"			/* team_color_e */
+#include "bot.h"
 #include "common.h"
 
 /**

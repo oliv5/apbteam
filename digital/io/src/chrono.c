@@ -25,7 +25,7 @@
 
 #include "common.h"
 
-#include "aquajim.h"
+#include "bot.h"
 #include "main_timer.h"
 #include "asserv.h"
 

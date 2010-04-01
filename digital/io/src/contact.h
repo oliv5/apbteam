@@ -26,9 +26,7 @@
  * }}} */
 #include "simu.host.h"
 
-#define CONTACT_FILTER_BRIDGE_PUCK C, 0
-#define CONTACT_ELEVATOR_DOOR C, 1
-#define CONTACT_PUCK_CYLINDER C, 2
+#define CONTACT_EXAMPLE C, 0
 
 /**
  * Initialize the contact module.
@@ -38,7 +36,7 @@ contact_init (void);
 
 /**
  * To get a state of a contact, just do:
- * IO_GET (CONTACT_FILTER_BRIDGE_PUCK);
+ * IO_GET (CONTACT_EXAMPLE);
  */
 
 #endif /* contact_h */
