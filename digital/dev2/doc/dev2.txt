@@ -1,0 +1,32 @@
+===============================================================
+ dev2 - Multi-purpose development board using USB and Ethernet
+===============================================================
+
+USB connection
+==============
+
+As there is no driver for the dev2 board in the kernel and there is not enough
+USB end points in the AT90USB162 to implement a ACM class device with two
+serial ports, you should load the generic serial driver:
+
+ modprobe usbserial vendor=0x03eb product=0x204e
+
+Then look at kernel messages to locate the new serial devices (/dev/ttyUSBx).
+
+Controlling the output
+======================
+
+The board can be controlled using the dev2ctl.py program which uses libusb.
+
+Use it to select an output.
+
+You can also use it to deselect an output so that no current flows into it.
+
+It can also be used to control GPIO when available in the loaded firmware.
+
+About the vendor and product ID
+===============================
+
+They come from LUFA, the USB library we use for dev2.  This is not supposed to
+be done in a commercial USB product, but this is OK for hobbyists.  That's why
+dev2ctl parses the product name to make sure it talks to the right device.
