@@ -256,6 +256,35 @@ static const struct robot_t aquajim_robot =
     simu_sensor_update_aquajim,
 };
 
+/* Marcel, APBTeam 2010. */
+static const struct robot_t marcel_robot =
+{
+    /* Main motors. */
+    &amax32ghp_model,
+    /* Number of steps on the main motors encoders. */
+    2500,
+    /* Wheel radius (m). */
+    0.065 / 2,
+    /* Distance between the wheels (m). */
+    0.16,
+    /* Weight of the robot (kg). */
+    10.0,
+    /* Distance of the gravity center from the center of motors axis (m). */
+    0.0,
+    /* Whether the encoder is mounted on the main motor (false) or not (true). */
+    1,
+    /** Encoder wheel radius (m). */
+    0.063 / 2,
+    /** Distance between the encoders wheels (m). */
+    0.28,
+    /** Auxiliary motors, NULL if not present. */
+    { NULL, NULL },
+    /** Number of steps for each auxiliary motor encoder. */
+    { 0, 0 },
+    /** Sensor update function. */
+    simu_sensor_update_marcel,
+};
+
 /* Table of models. */
 static const struct
 {
@@ -267,6 +296,7 @@ static const struct
       { "tazg", &tazg_robot },
       { "giboulee", &giboulee_robot },
       { "aquajim", &aquajim_robot },
+      { "marcel", &marcel_robot },
       { 0, 0 }
 };
 

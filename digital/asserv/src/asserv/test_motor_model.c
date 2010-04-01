@@ -79,3 +79,8 @@ simu_sensor_update_aquajim (void)
 {
 }
 
+void
+simu_sensor_update_marcel (void)
+{
+}
+

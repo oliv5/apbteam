@@ -234,6 +234,40 @@ simu_sensor_update_aquajim (void)
 	PINC |= IO_BV (CONTACT_AUX1_ZERO_IO);
 }
 
+/** Update sensors for Marcel. */
+void
+simu_sensor_update_marcel (void)
+{
+    /** Micro-switch sensors. */
+    static const double sensors[][2] =
+      {
+	  { -160.0, 90.0 },
+	  { -160.0, -90.0 },
+	  { 120.0, 155.0 },
+	  { 120.0, -155.0 },
+      };
+    static const uint8_t sensors_bit[] =
+      { IO_BV (CONTACT_BACK_LEFT_IO), IO_BV (CONTACT_BACK_RIGHT_IO),
+	IO_BV (CONTACT_FRONT_LEFT_IO), IO_BV (CONTACT_FRONT_RIGHT_IO), };
+    static const double table_width = 3000.0, table_height = 2100.0;
+    static const double stand_x_min = 1500.0 - 759.5,
+		 stand_x_max = 1500.0 + 759.5, stand_y = 2100.0 - 522.0;
+    PINC = 0;
+    unsigned int i;
+    double x, y;
+    for (i = 0; i < UTILS_COUNT (sensors); i++)
+      {
+	/* Compute absolute position. */
+	x = simu_pos_x + cos (simu_pos_a) * sensors[i][0]
+	    - sin (simu_pos_a) * sensors[i][1];
+	y = simu_pos_y + sin (simu_pos_a) * sensors[i][0]
+	    + cos (simu_pos_a) * sensors[i][1];
+	if (x >= 0.0 && x < table_width && y >= 0.0 && y < table_height
+	    && (x < stand_x_min || x >= stand_x_max || y < stand_y))
+	    PINC |= sensors_bit[i];
+      }
+}
+
 /** Do a simulation step. */
 static void
 simu_step (void)
