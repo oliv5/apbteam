@@ -26,7 +26,6 @@
 #include "simu.host.h"
 
 #include "servo.h"
-#include "sharp.h"
 #include "pwm.h"
 
 #include "modules/utils/utils.h"
@@ -41,7 +40,7 @@ enum
     MSG_SIMU_IO_JACK = 0xb0,
     MSG_SIMU_IO_COLOR = 0xb1,
     MSG_SIMU_IO_SERVO = 0xb2,
-    MSG_SIMU_IO_SHARPS = 0xb3,
+    MSG_SIMU_IO_ADC = 0xb3,
     MSG_SIMU_IO_PATH = 0xb4,
     MSG_SIMU_IO_PWM = 0xb5,
     MSG_SIMU_IO_CONTACT = 0xb6,
@@ -60,7 +59,7 @@ uint8_t servo_high_time_current_[SERVO_NUMBER];
 /** Do not update too often, interface is too slow. */
 uint8_t simu_servo_update = 10, simu_servo_update_cpt;
 uint8_t simu_switch_update = 100, simu_switch_update_cpt;
-uint8_t simu_sharps_update = 9, simu_sharps_update_cpt;
+uint8_t simu_adc_update = 9, simu_adc_update_cpt;
 uint8_t simu_pwm_update = 10, simu_pwm_update_cpt;
 
 /** Sampled switches. */
@@ -88,7 +87,7 @@ simu_init (void)
     PINC = 0x3f;
     simu_servo_update_cpt = 1;
     simu_switch_update_cpt = 1;
-    simu_sharps_update_cpt = 1;
+    simu_adc_update_cpt = 1;
     simu_pwm_update_cpt = 1;
 }
 
@@ -139,14 +138,16 @@ simu_step (void)
 	if (!r)
 	    simu_switches |= 2;
       }
-    /* Update sharps. */
-    if (simu_sharps_update && !--simu_sharps_update_cpt)
+    /* Update ADC. */
+    if (simu_adc_update && !--simu_adc_update_cpt)
       {
-	simu_sharps_update_cpt = simu_sharps_update;
-	m = mex_msg_new (MSG_SIMU_IO_SHARPS);
+	simu_adc_update_cpt = simu_adc_update;
+	m = mex_msg_new (MSG_SIMU_IO_ADC);
 	m = mex_node_request (m);
-	uint8_t i;
-	for (i = 0; i < SHARP_NUMBER; i++)
+	uint8_t i, n;
+	n = mex_msg_len (m) / 2;
+	assert (n < UTILS_COUNT (adc_values));
+	for (i = 0; i < n; i++)
 	    mex_msg_pop (m, "H", &adc_values[i]);
 	mex_msg_delete (m);
       }

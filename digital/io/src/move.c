@@ -43,8 +43,6 @@ move_start (asserv_position_t position, uint8_t backward)
     move_data.final.a = position.a;
     move_data.backward_movement_allowed = backward;
     move_data.final_move = 0;
-    /* Reset move FSM flags */
-    main_sharp_ignore_event = 0;
     /* Start the FSM. */
     fsm_handle_event (&ai_fsm, AI_EVENT_move_start);
 }

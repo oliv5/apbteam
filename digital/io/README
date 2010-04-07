@@ -1,8 +1,8 @@
 io - Input & Output with Artificial Intelligence (ai) support on AVR.
 
-The io card is used to control and get information from the sensors (like
-sharps), to control the asserv card (to move the bot) and to make the
-choices of what to do (ai).
+The io card is used to control and get information from the sensors, to
+control the asserv card (to move the bot) and to make the choices of what to
+do (ai).
 
 
 Copyright (C) 2008 Dufour Jérémy

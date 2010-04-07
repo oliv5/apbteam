@@ -28,7 +28,6 @@
 
 #include "servo.h"		/* SERVO_NUMBER */
 #include "servo_pos.h"
-#include "sharp.h"		/* sharp_threshold */
 
 #include <avr/eeprom.h>		/* eeprom_{read,write}_byte */
 
@@ -48,7 +47,7 @@
  * @warning: you must update this value every time you change the structure of
  * data stored into the EEPROM.
  */
-#define EEPROM_PARAM_KEY 0x06
+#define EEPROM_PARAM_KEY 0x07
 
 /** @} */
 
@@ -58,7 +57,6 @@ eeprom_load_param ()
 {
     uint8_t compt;
     uint8_t pos;
-    uint16_t *ptr16;
 
     /* The parameters start at the given address */
     uint8_t *ptr8 = (uint8_t *) EEPROM_PARAM_START;
@@ -73,15 +71,6 @@ eeprom_load_param ()
 	for (pos = 0; pos < SERVO_POS_NUMBER; pos++)
 	    servo_pos_high_time[compt][pos] = eeprom_read_byte(ptr8++);
       }
-
-    /* Load sharp module data */
-    ptr16 = (uint16_t *) ptr8;
-    /* Threshold values, high and low */
-    for (compt = 0; compt < SHARP_NUMBER; compt++)
-      {
-	sharp_threshold[compt][0] = eeprom_read_word (ptr16++);
-	sharp_threshold[compt][1] = eeprom_read_word (ptr16++);
-      }
 }
 
 /* Store parameters in the EEPROM. */
@@ -89,7 +78,6 @@ void
 eeprom_save_param ()
 {
     uint8_t compt, pos;
-    uint16_t *ptr16;
 
     /* The parameters start at the given address */
     uint8_t *ptr8 = (uint8_t *) EEPROM_PARAM_START;
@@ -101,15 +89,6 @@ eeprom_save_param ()
       {
 	for (pos = 0; pos < SERVO_POS_NUMBER; pos++)
 	    eeprom_write_byte (ptr8++, servo_pos_high_time[compt][pos]);
-      }
-
-    /* Store sharp module data */
-    ptr16 = (uint16_t *) ptr8;
-    /* Threshold values, high and low */
-    for (compt = 0; compt < SHARP_NUMBER; compt++)
-      {
-	eeprom_write_word (ptr16++, sharp_threshold[compt][0]);
-	eeprom_write_word (ptr16++, sharp_threshold[compt][1]);
       }
 }
 

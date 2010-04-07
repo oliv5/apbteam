@@ -19,7 +19,7 @@ Events:
  move_start
   initialize the FSM and start the movement directly.
  obstacle_in_front
-  the bot has seen something (with the sharps) (front is the same when going backward).
+  the bot has seen something (front is the same when going backward).
 
 MOVE_IDLE:
  move_start -> MOVE_MOVING

@@ -35,8 +35,6 @@ class Proto:
         p = self.param
         for i, t in enumerate (p['servo_pos']):
             self.proto.send ('p', 'BBB', i, *t)
-        for i, t in enumerate (p['sharp_threshold']):
-            self.proto.send ('h', 'BHH', i, t[0], t[1])
 
     def write_eeprom (self):
         self.proto.send ('p', 'cc', 'E', 's')

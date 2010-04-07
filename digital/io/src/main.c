@@ -46,7 +46,6 @@
 #include "bot.h"
 #include "servo_pos.h"
 #include "chrono.h"	/* chrono_end_match */
-#include "sharp.h"	/* sharp module */
 #include "pwm.h"
 #include "playground.h"
 #include "contact.h"
@@ -74,17 +73,6 @@ enum team_color_e bot_color;
  * Post a event to the top FSM in the next iteration of main loop.
  */
 uint8_t main_post_event_for_top_fsm = 0xFF;
-
-/**
- * Do not generate sharps event for FSM during a certain count of cycles.
- */
-uint16_t main_sharp_ignore_event;
-
-/**
- * Sharps stats counters.
- */
-uint8_t main_stats_sharps, main_stats_sharps_cpt;
-uint8_t main_stats_sharps_interpreted_, main_stats_sharps_interpreted_cpt_;
 
 /**
  * Asserv stats counters.
@@ -160,18 +148,6 @@ main_event_to_fsm (void)
 	/* Post the event */
 	FSM_HANDLE_EVENT (&ai_fsm, save_event);
       }
-    /* Sharps event for move FSM */
-    /* Get the current direction of the bot */
-    uint8_t moving_direction = asserv_get_last_moving_direction ();
-    /* If we are moving */
-    if (moving_direction)
-      {
-	if (sharp_path_obstrued (moving_direction))
-	  {
-	    /* Generate an event for move FSM */
-	    FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_obstacle_in_front);
-	  }
-      }
     /* TODO: Check other sensors */
 }
 
@@ -204,8 +180,6 @@ main_init (void)
     fsm_init (&ai_fsm);
     /* Start FSM. */
     fsm_handle_event (&ai_fsm, AI_EVENT_start);
-    /* Sharp module */
-    sharp_init ();
     /* PWM module */
     pwm_init ();
     /* Servo pos init. */
@@ -274,46 +248,8 @@ main_loop (void)
 	    switch_update ();
 	    /* Update path module */
 	    path_decay ();
-	    /* Sharps module */
-	    /* Update the ignore sharp event flag */
-	    if (main_sharp_ignore_event)
-		main_sharp_ignore_event--;
-            /* Update sharps */
-            sharp_update ();
-
 	    /* Manage events. */
 	    main_event_to_fsm ();
-	  }
-
-	/* Send Sharps raw stats. */
-	if (main_stats_sharps && !--main_stats_sharps_cpt)
-	  {
-	    uint8_t count;
-	    uint8_t cache[SHARP_NUMBER * 2];
-	    /* Reset counter */
-	    main_stats_sharps_cpt = main_stats_sharps;
-	    for (count = 0; count < SHARP_NUMBER; count++)
-	      {
-		uint16_t tmp = sharp_get_raw (count);
-		cache[count * 2] = v16_to_v8 (tmp, 1);
-		cache[count * 2 + 1] = v16_to_v8 (tmp, 0);
-	      }
-	    proto_send ('H', 2 * SHARP_NUMBER, cache);
-	  }
-	/* Send Sharps interpreted stats. */
-	if (main_stats_sharps_interpreted_ &&
-	    !--main_stats_sharps_interpreted_cpt_)
-	  {
-	    uint8_t count;
-	    uint8_t cache[SHARP_NUMBER];
-	    /* Reset counter */
-	    main_stats_sharps_interpreted_cpt_ =
-		main_stats_sharps_interpreted_;
-	    for (count = 0; count < SHARP_NUMBER; count++)
-	      {
-		cache[count] = sharp_get_interpreted (count);
-	      }
-	    proto_send ('I', SHARP_NUMBER, cache);
 	  }
 
 	/* Send asserv stats if needed */
@@ -379,36 +315,11 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	proto_send1b ('S', switch_get_color () << 1 | switch_get_jack ());
 	break;
 
-      case c ('H', 1):
-	/* Print raw stats for sharps.
-	 *   - 1b: frequency of sharp stats.
-	 */
-	main_stats_sharps_cpt = main_stats_sharps = args[0];
-	break;
-
       case c ('M', 1):
 	/* Main stats timer.
 	 *   - 1b: 1 to enable, 0 to disable.
 	 */
 	main_stats_timer_ = args[0];
-	break;
-
-      case c ('I', 1):
-	/* Print interpreted stats for sharps.
-	 *   - 1b: frequency of sharp stats.
-	 */
-	main_stats_sharps_interpreted_cpt_ = main_stats_sharps_interpreted_ =
-	       args[0];
-	break;
-
-      case c ('h', 5):
-	/* Configure sharps threshold.
-	 *   - 1b: sharp id number;
-	 *   - 2b: sharp low threshold;
-	 *   - 2b: sharp high threshold.
-	 */
-	sharp_set_threshold (args[0], v8_to_v16 (args[1], args[2]),
-			     v8_to_v16 (args[3], args[4]));
 	break;
 
       case c ('w', 4):
@@ -447,16 +358,6 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		      {
 			proto_send ('p', SERVO_POS_NUMBER,
 				    servo_pos_high_time[compt]);
-		      }
-		    /* Sharp */
-		    for (compt = 0; compt < SHARP_NUMBER; compt++)
-		      {
-			proto_send5b
-			    ('h', compt,
-			     v16_to_v8 (sharp_threshold[compt][0], 1),
-			     v16_to_v8 (sharp_threshold[compt][0], 0),
-			     v16_to_v8 (sharp_threshold[compt][1], 1),
-			     v16_to_v8 (sharp_threshold[compt][1], 0));
 		      }
 		  }
 		break;

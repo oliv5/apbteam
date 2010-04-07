@@ -32,7 +32,6 @@
 #include "asserv.h"
 #include "playground.h"
 #include "move.h"
-#include "sharp.h"
 #include "bot.h"
 #include "trace_event.h"
 
@@ -50,22 +49,6 @@
 #define MOVE_REAL_OBSTACLE_RADIUS 150
 
 /**
- * The sharp distance between the bot and the obstacle.
- */
-#define MOVE_SHARP_DISTANCE 300
-
-/**
- * The distance between the axis of the bot and the front sharp.
- */
-#define MOVE_AXIS_FRONT_SHARP 150
-
-/**
- * The standard distance of the obstacle.
- */
-#define MOVE_OBSTACLE_DISTANCE \
-    (MOVE_REAL_OBSTACLE_RADIUS + MOVE_SHARP_DISTANCE + MOVE_AXIS_FRONT_SHARP)
-
-/**
  * The radius of the obstacle for the path module.
  * It corresponds to the real radius of the obstacle plus the distance you
  * want to add to avoid it.
@@ -78,22 +61,6 @@
 #define MOVE_OBSTACLE_VALIDITY (6 * 225)
 
 /**
- * Cycles count to ignore sharp event in the main loop.
- */
-#define MOVE_MAIN_IGNORE_SHARP_EVENT (3 * 225)
-
-/**
- * Number of cycles to wait before trying to read the sharps values again when
- * we are stopped.
- */
-#define MOVE_WAIT_TIME_FOR_POOLING_SHARP (MOVE_MAIN_IGNORE_SHARP_EVENT)
-
-/**
- * A detection offset for the sharps.
- */
-#define MOVE_DETECTION_OFFSET 250
-
-/**
  * Verify after the computation of the obstacle, this shall only be called
  * after the function move_compute_obstacle_position.
  * \return  true if the position computed is in the table, false otherwise.
@@ -101,10 +68,10 @@
 uint8_t
 move_obstacle_in_table (move_position_t pos)
 {
-    if ((pos.x <= PG_WIDTH - MOVE_DETECTION_OFFSET) 
-	&& (pos.x > MOVE_DETECTION_OFFSET)
-	&& (pos.y <= PG_LENGTH - MOVE_DETECTION_OFFSET)
-	&& (pos.y > MOVE_DETECTION_OFFSET))
+    if ((pos.x <= PG_WIDTH)
+	&& (pos.x > 0)
+	&& (pos.y <= PG_LENGTH)
+	&& (pos.y > 0))
 	return 0x1;
     else
 	return 0x0;
@@ -219,8 +186,6 @@ move_obstacle_here (void)
 		 move_data.obstacle.y);
 	TRACE (TRACE_MOVE__OBSTACLE, move_data.obstacle.x,
 	       move_data.obstacle.y);
-	TRACE (TRACE_MOVE__SHARP, sharp_get_raw (0), sharp_get_raw (1),
-	       sharp_get_raw (2), sharp_get_raw (3), sharp_get_raw (4));
       }
     else
       {
@@ -368,8 +333,6 @@ ai__MOVE_MOVING_BACKWARD_TO_TURN_FREELY__bot_move_failed (void)
 fsm_branch_t
 ai__MOVE_WAIT_FOR_CLEAR_PATH__state_timeout (void)
 {
-    if (sharp_path_obstrued (asserv_get_last_moving_direction ()))
-	move_obstacle_here ();
     uint8_t ret = move_get_next_position (&move_data.intermediate);
     if (ret == 1)
       {
