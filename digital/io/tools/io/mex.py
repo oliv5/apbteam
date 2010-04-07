@@ -33,6 +33,7 @@ ID_ADC = 0xb3
 ID_PATH = 0xb4
 ID_PWM = 0xb5
 ID_CONTACT = 0xb6
+ID_POS_REPORT = 0xb7
 
 SERVO_NB = 6
 SERVO_VALUE_MAX = 255
@@ -198,6 +199,27 @@ class Mex:
                 m.push ('B', self.contacts)
                 self.node.send (m)
 
+    class PosReport (Observable):
+        """General purpose position report.
+
+        - pos: dict of sequence of (x, y) coordinates (millimeters).  The dict
+          is indexed by position identifier.
+
+        """
+
+        def __init__ (self, node):
+            Observable.__init__ (self)
+            self.pos = { }
+            node.register (ID_POS_REPORT, self.__handle)
+
+        def __handle (self, msg):
+            p = [ ]
+            id, = msg.pop ('b')
+            while len (msg) >= 4:
+                p.append (msg.pop ('hh'))
+            self.pos[id] = p
+            self.notify ()
+
     def __init__ (self, node):
         self.jack = self.Switch (node, ID_JACK)
         self.color_switch = self.Switch (node, ID_COLOR)
@@ -211,4 +233,5 @@ class Mex:
         self.__contact_pack = self.Contact.Pack (node)
         self.contact = tuple (self.Contact (self.__contact_pack, i)
                 for i in range (CONTACT_NB))
+        self.pos_report = self.PosReport (node)
 

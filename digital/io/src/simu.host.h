@@ -26,6 +26,7 @@
  * }}} */
 
 #include "common.h"
+#include "modules/math/geometry/vect.h"
 
 #ifdef HOST
 
@@ -47,6 +48,17 @@ switch_get_color (void);
 uint8_t
 switch_get_jack (void);
 
-#endif /* defined (HOST) */
+/** Send general purpose positions to indicate computation results.
+ * - pos: array of positions to report.
+ * - pos_nb: number of elements in the array.
+ * - id: identifier so that several unrelated positions could be reported. */
+void
+simu_send_pos_report (vect_t *pos, uint8_t pos_nb, uint8_t id);
+
+#else /* !defined (HOST) */
+
+#define simu_send_pos_report(pos, pos_nb, id) ((void) 0)
+
+#endif /* !defined (HOST) */
 
 #endif /* simu_host_h */

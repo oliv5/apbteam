@@ -44,6 +44,7 @@ enum
     MSG_SIMU_IO_PATH = 0xb4,
     MSG_SIMU_IO_PWM = 0xb5,
     MSG_SIMU_IO_CONTACT = 0xb6,
+    MSG_SIMU_IO_POS_REPORT = 0xb7,
 };
 
 /** Requested servo position. */
@@ -240,6 +241,17 @@ simu_send_path (uint16_t *points, uint8_t len,
     m = mex_msg_new (MSG_SIMU_IO_PATH);
     for (i = 0; i < len; i++)
 	mex_msg_push (m, "h", points[i]);
+    mex_node_send (m);
+}
+
+void
+simu_send_pos_report (vect_t *pos, uint8_t pos_nb, uint8_t id)
+{
+    mex_msg_t *m;
+    m = mex_msg_new (MSG_SIMU_IO_POS_REPORT);
+    mex_msg_push (m, "b", id);
+    for (; pos_nb; pos++, pos_nb--)
+	mex_msg_push (m, "hh", pos->x, pos->y);
     mex_node_send (m);
 }
 

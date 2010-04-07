@@ -21,22 +21,27 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 # }}}
-"""Marcel bag of views."""
-from simu.view.switch import Switch
-from simu.view.distance_sensor_us import DistanceSensorUS
-from simu.view.path import Path
-from simu.view.pos_report import PosReport
-from simu.robots.marcel.view.robot import Robot
+"""Display general purpose position reports."""
+from simu.inter.drawable import Drawable
 
-class Bag:
+class PosReport (Drawable):
 
-    def __init__ (self, table, actuator_view, sensor_frame, model_bag):
-        self.jack = Switch (sensor_frame, model_bag.jack, 'Jack')
-        self.color_switch = Switch (sensor_frame, model_bag.color_switch,
-                'Color')
-        self.robot = Robot (table, model_bag.position)
-        self.distance_sensor = [DistanceSensorUS (self.robot, ds)
-                for ds in model_bag.distance_sensor]
-        self.path = Path (table, model_bag.path)
-        self.pos_report = PosReport (table, model_bag.pos_report)
+    def __init__ (self, onto, model):
+        Drawable.__init__ (self, onto)
+        self.model = model
+        self.model.register (self.__notified)
+        self.__colors = ('red', 'blue', 'green', 'yellow')
+
+    def __notified (self):
+        self.update ()
+
+    def draw (self):
+        self.reset ()
+        for id in self.model.pos.iterkeys ():
+            for p in self.model.pos[id]:
+                s = 20
+                self.draw_line (
+                        (p[0] - s, p[1] - s), (p[0] + s, p[1] + s),
+                        (p[0] - s, p[1] + s), (p[0] + s, p[1] - s),
+                        (p[0] - s, p[1] - s), fill = self.__colors[id])
 

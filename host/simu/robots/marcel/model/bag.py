@@ -47,4 +47,5 @@ class Bag:
         link_bag.io.adc[4].value = 0
         link_bag.io.adc[5].value = 0
         self.path = link_bag.io.path
+        self.pos_report = link_bag.io.pos_report
 
