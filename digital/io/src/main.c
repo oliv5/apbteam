@@ -46,6 +46,7 @@
 #include "bot.h"
 #include "servo_pos.h"
 #include "usdist.h"
+#include "radar.h"
 #include "chrono.h"	/* chrono_end_match */
 #include "pwm.h"
 #include "playground.h"
@@ -242,6 +243,22 @@ main_loop (void)
 
 	/* Update US distance sensors. */
 	usdist_update ();
+#ifdef HOST
+	/* TODO: remove this: Quick radar test. */
+	static uint32_t r = 0;
+	if (r++ % 50 == 0)
+	  {
+	    uint8_t obs_nb;
+	    vect_t obs_pos[2];
+	    asserv_position_t cur_pos;
+	    vect_t robot_pos;
+	    robot_pos.x = cur_pos.x;
+	    robot_pos.y = cur_pos.y;
+	    asserv_get_position (&cur_pos);
+	    obs_nb = radar_update (robot_pos, cur_pos.a, obs_pos);
+	    simu_send_pos_report (obs_pos, obs_nb, 0);
+	  }
+#endif
 
 	/* Update TWI module to get new data from the asserv board */
 	asserv_update_status ();
