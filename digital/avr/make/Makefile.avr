@@ -24,7 +24,7 @@ avr: elf lst hex
 
 simu: simuelf
 
-.PHONY: avr simu clean.avr elf simuelf lst \
+.PHONY: avr simu clean.avr clean.simu elf simuelf lst \
 	text hex srec bin eeprom ehex esrec ebin
 
 # General rules.
@@ -47,12 +47,17 @@ define AVR_PROG_template
 $(1).avr.elf: $$(patsubst %.S,$(OBJDIR)/%.avr.o,\
 	$$(patsubst %.c,$(OBJDIR)/%.avr.o,\
 	$$(filter-out %.host.c,$$($(1)_SOURCES))))
+endef
+
+$(foreach prog,$(AVR_PROGS),$(eval $(call AVR_PROG_template,$(prog))))
+
+define SIMU_PROG_template
 $(1).avr.simu.elf: $$(patsubst %.S,$(OBJDIR)/%.avr.simu.o,\
 	$$(patsubst %.c,$(OBJDIR)/%.avr.simu.o,\
 	$$(filter-out %.host.c,$$($(1)_SOURCES))))
 endef
 
-$(foreach prog,$(AVR_PROGS),$(eval $(call AVR_PROG_template,$(prog))))
+$(foreach prog,$(SIMU_PROGS),$(eval $(call SIMU_PROG_template,$(prog))))
 
 $(AVR_ELFS) $(AVR_SIMU_ELFS):
 	$(AVR_LINK.o) $^ $(AVR_LDLIBS) -o $@
@@ -122,5 +127,5 @@ clean.avr:
 		*.avr.lst *.avr.map $(TEXTS) $(EEPROMS)
 
 clean.simu:
-	rm -f $(OBJDIR)/*.avr.simu.o *.avr.simu.d $(AVR_SIMU_ELFS)
+	rm -f $(OBJDIR)/*.avr.simu.o $(OBJDIR)/*.avr.simu.d $(AVR_SIMU_ELFS)
 
