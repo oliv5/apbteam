@@ -83,4 +83,8 @@
 #define PG_START_ZONE_LENGTH 500
 #define PG_START_ZONE_WIDTH 500
 
+/** Size of the unclimbable slope zone (Eurobot 2010). */
+#define PG_SLOPE_WIDTH (500 + 519 + 500)
+#define PG_SLOPE_LENGTH (500 + 22)
+
 #endif // playground_h
