@@ -4,8 +4,8 @@ BASE = ../../avr
 PROGS = io
 # Sources to compile.
 io_SOURCES = main.c asserv.c servo.avr.c eeprom.avr.c pwm.c \
-             switch.avr.c chrono.c main_timer.avr.c servo_pos.c \
-	     simu.host.c contact.c
+	     switch.avr.c chrono.c main_timer.avr.c servo_pos.c \
+	     simu.host.c contact.c usdist.c
 # Modules needed for IO.
 MODULES = proto uart twi utils adc math/fixed path trace flash spi
 # Configuration file.

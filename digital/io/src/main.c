@@ -45,6 +45,7 @@
 #include "fsm.h"	/* fsm_* */
 #include "bot.h"
 #include "servo_pos.h"
+#include "usdist.h"
 #include "chrono.h"	/* chrono_end_match */
 #include "pwm.h"
 #include "playground.h"
@@ -73,6 +74,11 @@ enum team_color_e bot_color;
  * Post a event to the top FSM in the next iteration of main loop.
  */
 uint8_t main_post_event_for_top_fsm = 0xFF;
+
+/**
+ * US sensors stats counters.
+ */
+static uint8_t main_stats_usdist_, main_stats_usdist_cpt_;
 
 /**
  * Asserv stats counters.
@@ -174,6 +180,8 @@ main_init (void)
     /* Path module */
     path_init (PG_BORDER_DISTANCE, PG_BORDER_DISTANCE,
 	       PG_WIDTH - PG_BORDER_DISTANCE, PG_LENGTH - PG_BORDER_DISTANCE);
+    /* Distance sensors. */
+    usdist_init ();
     /* Top. */
     top_init ();
     /* Init FSM. */
@@ -232,6 +240,9 @@ main_loop (void)
 	/* Update PWM */
 	pwm_update ();
 
+	/* Update US distance sensors. */
+	usdist_update ();
+
 	/* Update TWI module to get new data from the asserv board */
 	asserv_update_status ();
 
@@ -252,6 +263,13 @@ main_loop (void)
 	    main_event_to_fsm ();
 	  }
 
+	/* Send stats if requested. */
+	if (main_stats_usdist_ && !--main_stats_usdist_cpt_)
+	  {
+	    proto_send4w ('U', usdist_mm[0], usdist_mm[1], usdist_mm[2],
+			  usdist_mm[3]);
+	    main_stats_usdist_cpt_ = main_stats_usdist_;
+	  }
 	/* Send asserv stats if needed */
 	if (main_stats_asserv_ && !--main_stats_asserv_cpt_)
 	  {
@@ -364,14 +382,16 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	      }
 	    break;
 	  }
-	/* FSM commands */
+
+	/* Stats commands.
+	 * - b: interval between stats. */
+      case c ('U', 1):
+	/* US sensors stats. */
+	main_stats_usdist_ = main_stats_usdist_cpt_ = args[0];
+	break;
       case c ('A', 1):
-	  {
-	    /* Get position stats
-	     *   - 1b: frequency.
-	     */
-	    main_stats_asserv_ = main_stats_asserv_cpt_ = args[0];
-	  }
+	/* Position stats. */
+	main_stats_asserv_ = main_stats_asserv_cpt_ = args[0];
 	break;
 
 	/* Asserv */
