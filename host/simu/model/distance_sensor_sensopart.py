@@ -67,7 +67,7 @@ class DistanceSensorSensopart (Observable):
         d = None
         for r in self.rays:
             r.evaluate ()
-            if d is None or r.distance < d:
+            if r.distance is not None and (d is None or r.distance < d):
                 d = r.distance
         # Convert to voltage.
         if d is None or d > self.MAX:
@@ -75,8 +75,9 @@ class DistanceSensorSensopart (Observable):
         elif d < self.MIN:
             self.value = self.OMIN
         else:
-            self.value = (d - self.MIN) / (self.MAX - self.MIN) * (self.OMAX -
-                    self.OMIN)
+            self.value = (self.OMIN
+                    + (d - self.MIN) / (self.MAX - self.MIN)
+                    * (self.OMAX - self.OMIN))
         # Update observers.
         self.notify ()
         # Prepare next update.
