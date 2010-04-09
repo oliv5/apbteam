@@ -55,9 +55,9 @@ struct radar_sensor_t radar_sensors[] = {
 #define RADAR_SENSOR_FRONT 0
       { &usdist_mm[0], { 30 - 20, 0 }, G_ANGLE_UF016_DEG (0) },
 #define RADAR_SENSOR_LEFT 1
-      { &usdist_mm[1], { 20 - 20, 20 }, G_ANGLE_UF016_DEG (40) },
+      { &usdist_mm[1], { 20 - 20, 20 }, G_ANGLE_UF016_DEG (30) },
 #define RADAR_SENSOR_RIGHT 2
-      { &usdist_mm[2], { 20 - 20, -20 }, G_ANGLE_UF016_DEG (-40) },
+      { &usdist_mm[2], { 20 - 20, -20 }, G_ANGLE_UF016_DEG (-30) },
 #define RADAR_SENSOR_BACK 3
       { &usdist_mm[3], { -30 - 20, 0 }, G_ANGLE_UF016_DEG (180) },
 };
