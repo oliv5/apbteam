@@ -32,6 +32,8 @@
 
 extern uint8_t PORTC, PINC;
 
+extern uint8_t PORTD, PORTG, DDRC, DDRD, DDRG;
+
 /** Hooked, do nothing. */
 void
 switch_init (void);

@@ -73,6 +73,9 @@ uint8_t PORTB;
 /** Contact registers. */
 uint8_t PORTC, PINC;
 
+/** Unused AVR registers. */
+uint8_t PORTD, PORTG, DDRC, DDRD, DDRG;
+
 void
 handle_contact (void *user, mex_msg_t *msg)
 {

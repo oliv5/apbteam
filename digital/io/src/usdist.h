@@ -41,6 +41,9 @@
 /** Distance considered as too far to be true. */
 #define USDIST_MM_TOO_FAR 650
 
+/** Measuring period in cycles. */
+#define USDIST_PERIOD_CYCLE (uint8_t) (8.0 / MT_TC0_PERIOD)
+
 /** Array containing the last measures in millimeters. */
 extern uint16_t usdist_mm[USDIST_NB];
 
@@ -48,8 +51,9 @@ extern uint16_t usdist_mm[USDIST_NB];
 void
 usdist_init (void);
 
-/** To be called every cycle to update sensor measures. */
-void
+/** To be called every cycle to update sensor measures.
+ * - returns: non zero if sensor value has been updated. */
+uint8_t
 usdist_update (void);
 
 #endif /* usdist_h */
