@@ -35,6 +35,10 @@
  *  - determining if an obstacle should make the robot stop.
  */
 
+/** Estimated obstacle radius.  As the sensors detect obstacle edge, this is
+ * added to position obstacle center. */
+#define RADAR_OBSTACLE_RADIUS_MM 150
+
 /** Update radar view.  Return the number of obstacles found.  Obstacles
  * positions are returned in obs_pos. */
 uint8_t

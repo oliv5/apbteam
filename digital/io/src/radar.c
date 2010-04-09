@@ -98,6 +98,9 @@ radar_update (vect_t robot_pos, uint16_t robot_a, vect_t *obs_pos)
 				   robot_a + radar_sensors[i].a);
 	    vect_translate (&hit[i], &ray);
 	    valid[i] = radar_valid (hit[i]);
+	    vect_from_polar_uf016 (&ray, RADAR_OBSTACLE_RADIUS_MM,
+				   robot_a + radar_sensors[i].a);
+	    vect_translate (&hit[i], &ray);
 	  }
 	else
 	    valid[i] = 0;
