@@ -32,7 +32,7 @@ FSM_TEMPLATES := $(FSM_TEMPLATES:%=fsm_templates/%)
 # Theses files are auto-generated, remove them on clean.
 FSM_FILES = $(FSM)_fsm.h $(FSM)_fsm.c $(FSM)_cb.h \
 	    $(FSM_SOURCES:%=$(FSM)_%_cb_skel.c)
-EXTRA_CLEAN_FILES += $(FSM_FILES) $(FSM).png
+EXTRA_CLEAN_FILES += $(FSM_FILES) $(FSM).png $(FSM_SOURCES:%=$(FSM)_%.png)
 
 DFAGEN_DIR := $(BASE)/../../tools/dfagen
 DFAGEN_DEPS := $(DFAGEN_DIR)/dfagen.py
@@ -91,10 +91,13 @@ else
 endif
 
 
-png: $(FSM).png
+png: $(FSM).png $(FSM_SOURCES:%=$(FSM)_%.png)
 
 %.png: %.dot
 	dot -Tpng -o $@ $<
 
-%.dot: $(FSM_SOURCES:%=%.fsm) $(DFAGEN_DEPS)
+$(FSM).dot: $(FSM_SOURCES:%=%.fsm) $(DFAGEN_DEPS)
 	$(DFAGEN) -o dot -d $< -p $(FSM)
+
+$(FSM)_%.dot: $(FSM_SOURCES:%=%.fsm) $(DFAGEN_DEPS)
+	$(DFAGEN) -o dot -d $< -p $(FSM)_$* --origin $*
