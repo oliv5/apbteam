@@ -61,19 +61,19 @@ flood (void)
     /* A little more than 3 memory sectors, a sector is 4 kbytes. */
     for (count = 0; count < 2000; count ++)
       {
-	/* Right motor. */
-	speed = 1;
-	position = 2;
-	acc = 3;
-	arg1 = 1;
-	arg2 = 2;
-	arg3 = 3;
-	id = TRACE_ASSERV__RIGHT_MOTOR;
-	TRACE (id, speed, position, acc);
-	id = TRACE_ASSERV__LEFT_MOTOR;
-	TRACE (id, speed, position, acc);
-	id = TRACE_IA__IA_CMD;
-	TRACE (id, arg1, arg2, arg3);
+          /* Right motor. */
+          speed = 1;
+          position = 2;
+          acc = 3;
+          arg1 = 1;
+          arg2 = 2;
+          arg3 = 3;
+          id = TRACE_ASSERV__RIGHT_MOTOR;
+          TRACE (id, speed, position, acc);
+          id = TRACE_ASSERV__LEFT_MOTOR;
+          TRACE (id, speed, position, acc);
+          id = TRACE_IA__IA_CMD;
+          TRACE (id, arg1, arg2, arg3);
       }
 
     /* Print the end of the address. */
@@ -92,67 +92,67 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
     switch (c (cmd, size))
       {
       case c ('z', 0):
-	/* Reset */
-	utils_reset ();
-	break;
+          /* Reset */
+          utils_reset ();
+          break;
       case c ('e', 0):
-	/* Erase full */
-	flash_erase (FLASH_ERASE_FULL, 0);
-	break;
+          /* Erase full */
+          flash_erase (FLASH_ERASE_FULL, 0);
+          break;
       case c ('e', 4):
-	/* Erase the flash from the address addr and with the hexa code to
-	 * erase.*/
-	flash_erase (args[3], addr);
-	break;
+          /* Erase the flash from the address addr and with the hexa code to
+           * erase.*/
+          flash_erase (args[3], addr);
+          break;
       case c ('i', 0):
-	/* Initialise the trace module. */
-	trace_init ();
-	proto_send1b ('i', trace_status ());
-	addr = trace_addr_current ();
-	proto_send3b ('a', addr >> 16, addr >> 8, addr);
-	break;
+          /* Initialise the trace module. */
+          trace_init ();
+          proto_send1b ('i', trace_status ());
+          addr = trace_addr_current ();
+          proto_send3b ('a', addr >> 16, addr >> 8, addr);
+          break;
       case c ('t', 2):
-	/* Trace data:
-	 *  - 1b: id.
-	 *  - 1b: first data. */
-	TRACE (args[0], args[1]);
-	break;
+          /* Trace data:
+           *  - 1b: id.
+           *  - 1b: first data. */
+          TRACE (args[0], args[1]);
+          break;
       case c ('r', 3):
-	/* Read one byte:
-	 *  - 3b: address. */
-	proto_send1b ('r', flash_read (addr));
-	break;
+          /* Read one byte:
+           *  - 3b: address. */
+          proto_send1b ('r', flash_read (addr));
+          break;
       case c ('r', 4):
-	/* Read several bytes:
-	 *  - 3b: address.
-	 *  - 1b: number of bytes. */
-	if (args[3] > sizeof (buf))
-	{
-	  proto_send0 ('?');
-	  return;
-	}
-	else
-	  {
-	    flash_read_array (addr, buf, args[3]);
-	    proto_send ('r', args[3], buf);
-	  }
-	break;
+          /* Read several bytes:
+           *  - 3b: address.
+           *  - 1b: number of bytes. */
+          if (args[3] > sizeof (buf))
+          {
+              proto_send0 ('?');
+              return;
+          }
+          else
+          {
+              flash_read_array (addr, buf, args[3]);
+              proto_send ('r', args[3], buf);
+          }
+          break;
       case c ('f', 0):
-	/* Flood the memory with 3 sectors.
-	*/
-	flood ();
-	break;
+          /* Flood the memory with 3 sectors.
+          */
+          flood ();
+          break;
       default:
-	if (cmd == 'l')
-	  {
-	    error = flash_log (size, args);
-	  }
-	else if (error || (cmd != 'l'))
-	  {
-	    /* Error */
-	    proto_send0 ('?');
-	    return;
-	  }
+          if (cmd == 'l')
+          {
+              error = flash_log (size, args);
+          }
+          else if (error || (cmd != 'l'))
+          {
+              /* Error */
+              proto_send0 ('?');
+              return;
+          }
       }
     /* Acknowledge what has been done */
     proto_send (cmd, size, args);
