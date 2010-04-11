@@ -10,10 +10,9 @@ except:
 
 class TInter:
 
-    def __init__(self, infile, outfile, prgm, cb = None):
+    def __init__(self, infile, prgm, cb = None):
         self.__infile = infile
         self.__events = None
-        self.__outfile = outfile
         self.__file = None
         self.__host = THost(prgm)
 

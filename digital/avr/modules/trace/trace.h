@@ -28,6 +28,7 @@
   * You can find the example on the website :
   * http://gcc.gnu.org/ml/gcc-patches/2000-11/msg00016.html
   */
+#include "modules/trace/events.h"
 #define PASTE_EXPAND(a, b) PASTE(a, b)
 
 #define PASTE(a, b) a ## b
@@ -40,8 +41,19 @@
 
 #define _TRACE_ARGS_COUNT2(_ ,_0,_1,_2,_3,_4,_5,_6,_7,_8,_9, n,...) n
 
+#ifndef HOST
 #define TRACE(args...) \
     PASTE_EXPAND(TRACE_PRINT, TRACE_ARGS_COUNT(args...)) (args)
+#else /* HOST */
+#include <stdio.h>
+extern char *trace_table[];
+#define TRACE(id, args...) \
+    do {\
+        fprintf (stderr, trace_table[id], ## args);\
+        PASTE_EXPAND(TRACE_PRINT, TRACE_ARGS_COUNT(id, ## args...))\
+            (id, ## args);\
+    } while (0)
+#endif /* HOST */
 
 #define TRACE_PRINT1(args)\
     ({TRACE_PRINT_ARG_TYPE(args);})

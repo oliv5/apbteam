@@ -1,6 +1,6 @@
-#ifndef %%template%%
-#define %%template%%
-/* %%template%% */
+#ifndef events_h
+#define events_h
+/* trace_events_h */
 /*  {{{
  *
  * Copyright (C) %%year%% APBTeam
@@ -25,9 +25,13 @@
  *
  * }}} */
 
-enum %%enum_name%%
+enum trace_id_t
 {
-%%data%%
+%%ids%%
 };
 
-#endif /* %%template%% */
+#ifndef HOST
+extern char *trace_table[%%NB%%];
+#endif /* !HOST */
+
+#endif /* events_h */

@@ -1,4 +1,5 @@
 BASE = ../../..
+TOOLS= $(BASE)/../../tools
 AVR_PROGS = test_trace flood
 HOST_PROGS = test_trace flood
 
@@ -12,5 +13,10 @@ AVR_MCU = atmega128
 # -O2 : speed
 # -Os : size
 OPTIMIZE = -O2
+
+events:
+	python $(TOOLS)/trace/trace.py -i $(TOOLS)/trace/example/trace.trc -t create -o
+	mv events.h ..
+	mv events.host.c ..
 
 include $(BASE)/make/Makefile.gen

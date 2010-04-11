@@ -7,20 +7,18 @@ except:
     print "--> You should run yapps on lib/parser.g"
 
 class TCreator:
-    def __init__(self, infile, outfile, enum_name = "trace_id_t"):
+    def __init__(self, infile):
         self.__infile = infile
-        self.__outfile = outfile
-        self.__enum_name = enum_name
 
-    def create (self):
+    def create (self, outfile):
         infile = open (self.__infile, 'r')
         data = parse ('parser', infile.read())
         infile.close()
-
-        w = Writer (self.__outfile, self.__enum_name)
-        outstring = w.parse_list (data)
-
-        if self.__outfile != None:
-            w.write_file (outstring)
+        w = Writer ()
+        id_table = w.parse_event_identifiers (data)
+        string_table = w.parse_event_string (data)
+        string_table_nb = str (len (data))
+        if outfile:
+            w.write_file (id_table, string_table, string_table_nb)
         else:
-            w.print_file (outstring)
+            w.print_file (id_table, string_table, string_table_nb)

@@ -12,11 +12,8 @@ print "Trace System by APBTeam\n"
 
 usage = "usage: %prog [options] [host program]"
 parser = OptionParser(usage=usage)
-parser.add_option("-e", "--enum-name", dest="enum_name",
-        help="provide the enumerator name" + CREATE_MODE,
-        metavar="ENUM")
-parser.add_option("-o", "--output", dest="outfile",
-        help="Store the enumerator on the output file" + CREATE_MODE)
+parser.add_option("-o", "--output", dest="outfile", action="store_true",
+        help="generate events.h and events.c files" + CREATE_MODE)
 parser.add_option("-i", "--infile", dest="infile",
         help="Read the data from the file")
 parser.add_option("-t", "--type", dest="type",
@@ -33,10 +30,10 @@ if options.type == "inter":
     assert args
 
 if options.type == 'create':
-    cre = TCreator (options.infile, options.outfile, options.enum_name)
-    cre.create ()
+    cre = TCreator (options.infile)
+    cre.create (options.outfile)
 elif options.type == "inter":
-    inter = TInter (options.infile, options.outfile, args[0], options.cb)
+    inter = TInter (options.infile, args[0], options.cb)
     if options.list_trace:
         inter.available_traces ()
     elif options.trace != None:

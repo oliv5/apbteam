@@ -1,1 +1,1 @@
-trace_SOURCES=trace.c
+trace_SOURCES=trace.c events.host.c

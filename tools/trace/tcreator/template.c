@@ -1,9 +1,7 @@
-#ifndef events_h
-#define events_h
-/* events_h */
-/*  {{{
+/* events.c */
+/* avr.trace - AVR TRACE use. {{{
  *
- * Copyright (C) 2008 APBTeam
+ * Copyright (C) 2010 APBTeam
  *
  * APBTeam:
  *        Web: http://apbteam.org/
@@ -24,13 +22,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "modules/trace/events.h"
 
-enum events_t
-{
-    TRACE_ASSERV__RIGHT_MOTOR,
-    TRACE_ASSERV__LEFT_MOTOR,
-    TRACE_IA__IA_CMD,
-    TRACE_NB
+char *trace_table[%%NB%%] = {
+%%DATA%%
 };
-
-#endif /* events_h */
