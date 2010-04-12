@@ -34,6 +34,7 @@
  *   see it with the two start zone at the top of the scheme).
  */
 
+#include "defs.h"
 #include "bot.h"
 
 /**
@@ -55,15 +56,25 @@
  * Considering there is a symmetry axis on X, this macro will compute the
  * value for on the X axis depending on the color.
  */
-#define PG_X_VALUE_COMPUTING(x) \
-    (bot_color ? (x) : PG_WIDTH - (x))
+#define PG_X(x) (bot_color ? (x) : PG_WIDTH - (x))
+
+/** Same as PG_Y, but for Y coordinate.  Actually nothing is done, there is no
+ * symmetry. */
+#define PG_Y(y) (y)
 
 /**
  * Considering there is a symmetry axis on X, this macro will compute the
  * value of the angle depending on the color.
+ *
+ * Takes degrees as input.
  */
-#define PG_A_VALUE_COMPUTING(a) \
-    (bot_color ? (a) : (BOT_ANGLE_DEGREE * 180) - (a))
+#define PG_A_DEG(a) \
+    (bot_color ? POSITION_A_DEG (a) : POSITION_A_DEG (180 - (a)))
+
+/** Initialiser for position_t applying symmetry according to color.  Takes
+ * degrees for angle. */
+#define PG_POSITION_DEG(x, y, a) \
+    { { PG_X (x), PG_Y (y) }, PG_A_DEG (a) }
 
 /**
  * Start zone.

@@ -58,10 +58,7 @@ ai__IDLE__start (void)
 fsm_branch_t
 ai__WAIT_INIT_TO_FINISH__init_match_is_started (void)
 {
-    position_t pos;
-    pos.v.x = PG_X_VALUE_COMPUTING (2000);
-    pos.v.y = 1000;
-    pos.a = PG_A_VALUE_COMPUTING (0);
+    position_t pos = PG_POSITION_DEG (2000, 1000, 0);
     move_start (pos, 0);
     return ai_next (WAIT_INIT_TO_FINISH, init_match_is_started);
 }
@@ -74,10 +71,7 @@ ai__WAIT_INIT_TO_FINISH__init_match_is_started (void)
 fsm_branch_t
 ai__GO_FAR__move_fsm_succeed (void)
 {
-    position_t pos;
-    pos.v.x = PG_X_VALUE_COMPUTING (1000);
-    pos.v.y = 1000;
-    pos.a = PG_A_VALUE_COMPUTING (0);
+    position_t pos = PG_POSITION_DEG (1000, 1000, 0);
     move_start (pos, 0);
     return ai_next (GO_FAR, move_fsm_succeed);
 }
@@ -90,10 +84,7 @@ ai__GO_FAR__move_fsm_succeed (void)
 fsm_branch_t
 ai__GO_NEAR__move_fsm_succeed (void)
 {
-    position_t pos;
-    pos.v.x = PG_X_VALUE_COMPUTING (2000);
-    pos.v.y = 1000;
-    pos.a = PG_A_VALUE_COMPUTING (0);
+    position_t pos = PG_POSITION_DEG (2000, 1000, 0);
     move_start (pos, 0);
     return ai_next (GO_NEAR, move_fsm_succeed);
 }

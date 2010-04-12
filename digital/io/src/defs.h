@@ -40,4 +40,7 @@ struct position_t
 };
 typedef struct position_t position_t;
 
+/** Convert degrees to an angle usable in position_t. */
+#define POSITION_A_DEG(a) G_ANGLE_UF016_DEG (a)
+
 #endif /* defs_h */

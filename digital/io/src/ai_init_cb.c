@@ -123,7 +123,7 @@ fsm_branch_t
 ai__INIT_SET_Y_POSITION__asserv_last_cmd_ack (void)
 {
     /* We are facing top border. */
-    asserv_set_angle_position (90 * BOT_ANGLE_DEGREE);
+    asserv_set_angle_position (POSITION_A_DEG (90));
     return ai_next (INIT_SET_Y_POSITION, asserv_last_cmd_ack);
 }
 
@@ -149,7 +149,7 @@ fsm_branch_t
 ai__INIT_GO_AWAY_FROM_THE_WALL__bot_move_succeed (void)
 {
     /* Face the other wall. */
-    asserv_goto_angle (PG_A_VALUE_COMPUTING (180 * BOT_ANGLE_DEGREE));
+    asserv_goto_angle (PG_A_DEG (180));
     return ai_next (INIT_GO_AWAY_FROM_THE_WALL, bot_move_succeed);
 }
 
@@ -185,7 +185,7 @@ ai__INIT_WAIT_AFTER_ROTATION__state_timeout (void)
 fsm_branch_t
 ai__INIT_GO_TO_THE_WALL_AGAIN__bot_move_succeed (void)
 {
-    asserv_set_x_position (PG_X_VALUE_COMPUTING (BOT_LENGTH / 2));
+    asserv_set_x_position (PG_X (BOT_LENGTH / 2));
     return ai_next (INIT_GO_TO_THE_WALL_AGAIN, bot_move_succeed);
 }
 
@@ -211,11 +211,9 @@ fsm_branch_t
 ai__INIT_GO_AWAY_FROM_THE_WALL_AGAIN__bot_move_succeed (void)
 {
     /* Move away from the border. */
-    asserv_goto_xya (PG_X_VALUE_COMPUTING (PG_START_ZONE_WIDTH
-                                           - BOT_WIDTH / 2
-                                           - 50),
-                     PG_LENGTH - PG_START_ZONE_LENGTH + BOT_LENGTH / 2 + 50,
-		     PG_A_VALUE_COMPUTING (0 * BOT_ANGLE_DEGREE), 0);
+    asserv_goto_xya (PG_X (PG_START_ZONE_WIDTH - BOT_WIDTH / 2 - 50),
+		     PG_Y (PG_LENGTH - PG_START_ZONE_LENGTH + BOT_LENGTH / 2 + 50),
+		     PG_A_DEG (0), 0);
     return ai_next (INIT_GO_AWAY_FROM_THE_WALL_AGAIN, bot_move_succeed);
 }
 

@@ -35,12 +35,6 @@
 #define MATCH_DURATION_MS 90000
 
 /**
- * How to compute a angle for the robot?
- * One degree is 65536 / 360
- */
-#define BOT_ANGLE_DEGREE (65536 / 360)
-
-/**
  * The scaling factor, millimeter per step.
  */
 #ifdef HOST
