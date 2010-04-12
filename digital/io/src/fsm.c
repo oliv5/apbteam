@@ -119,3 +119,18 @@ fsm_handle_timeout (fsm_t *fsm)
     return handled;
 }
 
+uint8_t
+fsm_can_handle_event (fsm_t *fsm, uint8_t event)
+{
+    uint8_t i;
+    assert (fsm);
+    assert (event < fsm->events_nb);
+    for (i = 0; i < fsm->active_states_nb; i++)
+      {
+	uint8_t state = fsm->states_active[i];
+	if (fsm->transition_table[state * fsm->events_nb + event])
+	    return 1;
+      }
+    return 0;
+}
+

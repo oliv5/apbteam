@@ -101,6 +101,11 @@ fsm_handle_timeout (fsm_t *fsm);
 uint8_t
 fsm_handle_event (fsm_t *fsm, uint8_t event);
 
+/** Return non zero if event can be handled.  This can be used if event
+ * generation requires expensive computations. */
+uint8_t
+fsm_can_handle_event (fsm_t *fsm, uint8_t event);
+
 #include "ai_fsm.h"
 
 #endif /* fsm_h */
