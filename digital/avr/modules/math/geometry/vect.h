@@ -83,6 +83,17 @@ vect_norm (const vect_t *v);
 void
 vect_from_polar_uf016 (vect_t *v, int16_t l, uint16_t a_uf016);
 
+/** Compute a vector normal (rotate the vector counter-clockwise of pi/2).
+ * - v: input/result vector. */
+void
+vect_normal (vect_t *v);
+
+/** Compute the dot product (scalar product) of two vectors.
+ * - a, b: vectors to make product of.
+ * - returns: dot product. */
+int32_t
+vect_dot_product (const vect_t *a, const vect_t *b);
+
 /** Scale (multiply) vectors by a fixed point value.
  * - va: input/result vectors array.
  * - vn: number of vectors.

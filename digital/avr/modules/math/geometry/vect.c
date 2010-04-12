@@ -84,6 +84,21 @@ vect_from_polar_uf016 (vect_t *v, int16_t l, uint16_t a_uf016)
 }
 
 void
+vect_normal (vect_t *v)
+{
+    assert (v);
+    int16_t tx = v->x, ty = v->y;
+    v->x = -ty;
+    v->y = tx;
+}
+
+int32_t
+vect_dot_product (const vect_t *a, const vect_t *b)
+{
+    return (int32_t) a->x * b->x + (int32_t) b->y * a->y;
+}
+
+void
 vect_array_scale_f824 (vect_t *va, uint8_t vn, int32_t s_f824)
 {
     for (; vn; va++, vn--)

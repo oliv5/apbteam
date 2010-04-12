@@ -80,6 +80,7 @@ test_vect (void)
 {
     int i;
     int16_t n;
+    int32_t p;
     vect_t a, b;
     /* vect_*. */
     a.x = 50; a.y = 0;
@@ -120,6 +121,37 @@ test_vect (void)
     test (a.x == 0 && a.y == 141);
     vect_from_polar_uf016 (&a, 141, G_ANGLE_UF016_DEG (180));
     test (a.x == -141 && a.y == 0);
+    /* vect_normal. */
+    a.x = 10; a.y = 20;
+    vect_normal (&a);
+    test (a.x == -20 && a.y == 10);
+    vect_normal (&a);
+    test (a.x == -10 && a.y == -20);
+    vect_normal (&a);
+    test (a.x == 20 && a.y == -10);
+    vect_normal (&a);
+    test (a.x == 10 && a.y == 20);
+    /* vect_dot_product. */
+    a.x = 100; a.y = 0;
+    b.x = 100; b.y = 0;
+    p = vect_dot_product (&a, &b);
+    test (p == 10000);
+    a.x = 100; a.y = 0;
+    b.x = 0; b.y = 100;
+    p = vect_dot_product (&a, &b);
+    test (p == 0);
+    a.x = -100; a.y = 0;
+    b.x = 100; b.y = 0;
+    p = vect_dot_product (&a, &b);
+    test (p == -10000);
+    vect_from_polar_uf016 (&a, 100, G_ANGLE_UF016_DEG (0));
+    vect_from_polar_uf016 (&b, 100, G_ANGLE_UF016_DEG (60));
+    p = vect_dot_product (&a, &b);
+    test (p == 5000);
+    a.x = 30000; a.y = 0;
+    b.x = 30000; b.y = 0;
+    p = vect_dot_product (&a, &b);
+    test (p == 900000000l);
     /* vect_array_*. */
     vect_t c[4] =
       {
