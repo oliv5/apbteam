@@ -66,18 +66,6 @@
     (bot_color ? (a) : (BOT_ANGLE_DEGREE * 180) - (a))
 
 /**
- * The position where to reset the bot when it starts, depending on the color.
- */
-#define PG_X_START (PG_X_VALUE_COMPUTING (200))
-#define PG_Y_START (PG_HEIGHT - 70)
-#define PG_A_START (-90 * BOT_ANGLE_DEGREE)
-
-/**
- * The backward move for the MOVE_FSM.
- */
-#define PG_MOVE_DISTANCE 300
-
-/**
  * Start zone.
  */
 #define PG_START_ZONE_LENGTH 500
