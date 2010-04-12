@@ -71,9 +71,21 @@ ai__WAIT_INIT_TO_FINISH__init_match_is_started (void)
 fsm_branch_t
 ai__GO_FAR__move_fsm_succeed (void)
 {
-    position_t pos = PG_POSITION_DEG (1000, 1000, 0);
+    position_t pos = PG_POSITION_DEG (1000, 1000, 180);
     move_start (pos, 0);
     return ai_next (GO_FAR, move_fsm_succeed);
+}
+
+/*
+ * GO_FAR =move_fsm_failed=>
+ *  => GO_NEAR
+ *   go to a near point
+ */
+fsm_branch_t
+ai__GO_FAR__move_fsm_failed (void)
+{
+    ai__GO_FAR__move_fsm_succeed ();
+    return ai_next (GO_FAR, move_fsm_failed);
 }
 
 /*
@@ -87,5 +99,17 @@ ai__GO_NEAR__move_fsm_succeed (void)
     position_t pos = PG_POSITION_DEG (2000, 1000, 0);
     move_start (pos, 0);
     return ai_next (GO_NEAR, move_fsm_succeed);
+}
+
+/*
+ * GO_NEAR =move_fsm_failed=>
+ *  => GO_FAR
+ *   restart
+ */
+fsm_branch_t
+ai__GO_NEAR__move_fsm_failed (void)
+{
+    ai__GO_NEAR__move_fsm_succeed ();
+    return ai_next (GO_NEAR, move_fsm_failed);
 }
 

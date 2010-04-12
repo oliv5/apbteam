@@ -45,7 +45,11 @@ WAIT_INIT_TO_FINISH:
 GO_FAR:
  move_fsm_succeed -> GO_NEAR
   go to a near point
+ move_fsm_failed -> GO_NEAR
+  go to a near point
 
 GO_NEAR:
  move_fsm_succeed -> GO_FAR
+  restart
+ move_fsm_failed -> GO_FAR
   restart
