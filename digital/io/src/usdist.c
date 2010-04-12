@@ -65,7 +65,7 @@ usdist_init (void)
     for (i = 0; i < USDIST_NB; i++)
       {
 	usdist_mm[i] = 0xffff;
-	*usdist_sensors[i].sync_port |= usdist_sensors[i].sync_bv;
+	*usdist_sensors[i].sync_port &= ~usdist_sensors[i].sync_bv;
 	*usdist_sensors[i].sync_ddr |= usdist_sensors[i].sync_bv;
       }
 }
@@ -85,8 +85,8 @@ usdist_update (void)
 	if (init)
 	  {
 	    /* Stop sensor. */
-	    *usdist_sensors[current].sync_port |=
-		usdist_sensors[current].sync_bv;
+	    *usdist_sensors[current].sync_port &=
+		~usdist_sensors[current].sync_bv;
 	    /* Read ADC value. */
 	    adc_start (usdist_sensors[current].adc);
 	    while (!adc_checkf ())
@@ -108,8 +108,8 @@ usdist_update (void)
 	  }
 	init = 1;
 	/* Prepare next measure. */
-	*usdist_sensors[current].sync_port &=
-	    ~usdist_sensors[current].sync_bv;
+	*usdist_sensors[current].sync_port |=
+	    usdist_sensors[current].sync_bv;
 	wait = USDIST_PERIOD_CYCLE;
 	/* New mesure done. */
 	return 1;
