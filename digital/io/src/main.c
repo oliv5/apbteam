@@ -76,6 +76,12 @@ enum team_color_e bot_color;
  */
 uint8_t main_post_event_for_top_fsm = 0xFF;
 
+/** Obstacles positions, updated using radar module. */
+vect_t main_obstacles_pos[2];
+
+/** Number of obstacles in main_obstacles_pos. */
+uint8_t main_obstacles_nb;
+
 /**
  * US sensors stats counters.
  */
@@ -242,20 +248,14 @@ main_loop (void)
 	pwm_update ();
 
 	/* Update US distance sensors. */
-	usdist_update ();
-#ifdef HOST
-	/* TODO: remove this: Quick radar test. */
-	static uint32_t r = 0;
-	if (r++ % 50 == 0)
+	if (usdist_update ())
 	  {
-	    uint8_t obs_nb;
-	    vect_t obs_pos[2];
 	    position_t robot_pos;
 	    asserv_get_position (&robot_pos);
-	    obs_nb = radar_update (robot_pos.v, robot_pos.a, obs_pos);
-	    simu_send_pos_report (obs_pos, obs_nb, 0);
+	    main_obstacles_nb = radar_update (robot_pos.v, robot_pos.a,
+					      main_obstacles_pos);
+	    simu_send_pos_report (main_obstacles_pos, main_obstacles_nb, 0);
 	  }
-#endif
 
 	/* Update TWI module to get new data from the asserv board */
 	asserv_update_status ();
