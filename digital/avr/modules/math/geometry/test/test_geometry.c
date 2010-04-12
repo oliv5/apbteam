@@ -25,6 +25,7 @@
 #include "common.h"
 #include "modules/math/geometry/geometry.h"
 #include "modules/math/geometry/vect.h"
+#include "modules/math/geometry/distance.h"
 
 #include "modules/utils/utils.h"
 #include "modules/uart/uart.h"
@@ -170,12 +171,44 @@ test_vect (void)
     test (c[3].x == 0 + 60 && c[3].y == -70 + 20);
 }
 
+void
+test_distance (void)
+{
+    vect_t a, b, p;
+    int16_t d;
+    /* distance_segment_point. */
+    a.x = 300; a.y = 200;
+    b.x = 900; b.y = 500;
+    p.x = 400; p.y = 600;
+    d = distance_segment_point (&a, &b, &p);
+    test (d == 313);
+    p.x = 800; p.y = 100;
+    d = distance_segment_point (&a, &b, &p);
+    test (d == 313);
+    p.x = 700; p.y = 750;
+    d = distance_segment_point (&a, &b, &p);
+    test (d == 313);
+    p.x = 100; p.y = 450;
+    d = distance_segment_point (&a, &b, &p);
+    test (d == 320);
+    p.x = -200; p.y = 300;
+    d = distance_segment_point (&a, &b, &p);
+    test (d == 509);
+    p.x = 1000; p.y = 900;
+    d = distance_segment_point (&a, &b, &p);
+    test (d == 412);
+    p.x = 1500; p.y = 800;
+    d = distance_segment_point (&a, &b, &p);
+    test (d == 670);
+}
+
 int
 main (void)
 {
     uart0_init ();
     test_geometry ();
     test_vect ();
+    test_distance ();
     uart0_putc ('o');
     uart0_putc ('k');
     uart0_putc ('\n');
