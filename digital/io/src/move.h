@@ -25,21 +25,7 @@
  *
  * }}} */
 
-#include "modules/math/geometry/vect.h"
-#include "asserv.h"
-
-/**
- * A position.
- */
-typedef struct move_position_t
-{
-    /** X position. */
-    int16_t x;
-    /** Y position. */
-    int16_t y;
-    /** A angle. */
-    uint16_t a;
-} move_position_t;
+#include "defs.h"
 
 /**
  * Move FSM associated data.
@@ -47,7 +33,7 @@ typedef struct move_position_t
 struct move_data_t
 {
     /** Final position. */
-    move_position_t final;
+    position_t final;
     /** Backward direction allowed flag. */
     uint8_t backward_movement_allowed;
     /** Try again counter. */
@@ -68,6 +54,6 @@ extern struct move_data_t move_data;
  * backward is compulsary.
  */
 void
-move_start (asserv_position_t position, uint8_t backward);
+move_start (position_t position, uint8_t backward);
 
 #endif /* move_h */

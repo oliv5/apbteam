@@ -94,6 +94,19 @@ static uint8_t asserv_twi_buffer[15];
 static uint8_t *asserv_twi_buffer_param = &asserv_twi_buffer[3];
 
 /**
+ * Structure for storing a position for the bot using asserv units.
+ */
+typedef struct asserv_position_t
+{
+    /** X position. */
+    uint32_t x;
+    /** Y position. */
+    uint32_t y;
+    /** Angle. */
+    uint16_t a;
+} asserv_position_t;
+
+/**
  * Status structure maintains by the update command.
  */
 typedef struct asserv_struct_s
@@ -359,15 +372,15 @@ asserv_motor1_cmd_status (void)
 
 /* Get the current position of the bot. */
 void
-asserv_get_position (asserv_position_t *current_position)
+asserv_get_position (position_t *current_position)
 {
     if (current_position)
       {
 	/* Copy last received status buffer information to current position */
-	current_position->x = fixed_mul_f824 (asserv_status.position.x,
-					      asserv_scale);
-	current_position->y = fixed_mul_f824 (asserv_status.position.y,
-					      asserv_scale);
+	current_position->v.x = fixed_mul_f824 (asserv_status.position.x,
+						asserv_scale);
+	current_position->v.y = fixed_mul_f824 (asserv_status.position.y,
+						asserv_scale);
 	current_position->a = asserv_status.position.a;
       }
 }

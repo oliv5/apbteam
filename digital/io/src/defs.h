@@ -1,7 +1,9 @@
-/* move.c */
+#ifndef defs_h
+#define defs_h
+/* defs.h */
 /* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
  *
- * Copyright (C) 2008 Nélio Laranjeiro
+ * Copyright (C) 2010 Nicolas Schodet
  *
  * APBTeam:
  *        Web: http://apbteam.org/
@@ -22,23 +24,20 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
-#include "common.h"
-#include "move.h"
-#include "fsm.h"
+#include "modules/math/geometry/geometry.h"
+#include "modules/math/geometry/vect.h"
 
-/**
- * Internal data used by the move FSM.
- */
-struct move_data_t move_data;
+/** General purpose defines. */
 
-void
-move_start (position_t position, uint8_t backward)
+/** Structure defining a position with an angle. */
+struct position_t
 {
-    /* Set parameters. */
-    move_data.final= position;
-    move_data.backward_movement_allowed = backward;
-    move_data.final_move = 0;
-    /* Start the FSM. */
-    fsm_handle_event (&ai_fsm, AI_EVENT_move_start);
-}
+    /** Cartesian position in millimeters, (0, 0) is at bottom left. */
+    vect_t v;
+    /** Angle, counter-clockwise, [0, 1), f0.16.
+     * For example, 0x8000 means 0.5, which means 180 degrees. */
+    uint16_t a;
+};
+typedef struct position_t position_t;
 
+#endif /* defs_h */

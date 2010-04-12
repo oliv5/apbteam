@@ -24,6 +24,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "defs.h"
 
 /**
  * @file Control the asserv board from io using the TWI protocol.
@@ -133,24 +134,11 @@ asserv_status_e
 asserv_motor1_cmd_status (void);
 
 /**
- * Structure for storing a position for the bot.
- */
-typedef struct asserv_position_t
-{
-    /** X position. */
-    uint32_t x;
-    /** Y position. */
-    uint32_t y;
-    /** Angle. */
-    uint16_t a;
-} asserv_position_t;
-
-/**
  * Get the current position of the bot.
  * @param current_position the current position to update.
  */
 void
-asserv_get_position (asserv_position_t *current_position);
+asserv_get_position (position_t *current_position);
 
 /**
  * Get the motor0 position.

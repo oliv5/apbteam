@@ -92,11 +92,11 @@ move_get_next_position (void)
     if (move_data.final_move)
 	return 2;
     /* Get the current position */
-    asserv_position_t current_pos;
+    position_t current_pos;
     asserv_get_position (&current_pos);
     /* Give the current position of the bot to the path module */
-    path_endpoints (current_pos.x, current_pos.y,
-		    move_data.final.x, move_data.final.y);
+    path_endpoints (current_pos.v.x, current_pos.v.y,
+		    move_data.final.v.x, move_data.final.v.y);
     /* Update the path module */
     path_update ();
 
@@ -104,7 +104,7 @@ move_get_next_position (void)
     if (path_get_next (&dst.x, &dst.y) != 0)
       {
 	/* If it is not the last position. */
-	if (dst.x != move_data.final.x || dst.y != move_data.final.y)
+	if (dst.x != move_data.final.v.x || dst.y != move_data.final.v.y)
 	  {
 	    /* Not final position. */
 	    move_data.final_move = 0;
@@ -119,8 +119,9 @@ move_get_next_position (void)
 	    asserv_goto_xya (dst.x, dst.y, move_data.final.a,
 			     move_data.backward_movement_allowed);
 	  }
-	TRACE (TRACE_MOVE__GO_TO, (u16) current_pos.x, (u16) current_pos.y,
-	       current_pos.a, dst.x, dst.y, move_data.final.a);
+	TRACE (TRACE_MOVE__GO_TO, (u16) current_pos.v.x,
+	       (u16) current_pos.v.y, current_pos.a, dst.x, dst.y,
+	       move_data.final.a);
 	/* Reset try counter. */
 	move_data.try_again_counter = 3;
 	return 1;
@@ -139,8 +140,7 @@ move_get_next_position (void)
  * @param obstacle the obstacle position computed
  */
 void
-move_compute_obstacle_position (asserv_position_t cur,
-				vect_t *obstacle)
+move_compute_obstacle_position (position_t cur, vect_t *obstacle)
 {
     int16_t dist;
 
@@ -157,11 +157,9 @@ move_compute_obstacle_position (asserv_position_t cur,
       }
 
     /* X */
-    obstacle->x = cur.x + fixed_mul_f824 (fixed_cos_f824 (angle),
-					  dist);
+    obstacle->x = cur.v.x + fixed_mul_f824 (fixed_cos_f824 (angle), dist);
     /* Y */
-    obstacle->y = cur.y + fixed_mul_f824 (fixed_sin_f824 (angle),
-					  dist);
+    obstacle->y = cur.v.y + fixed_mul_f824 (fixed_sin_f824 (angle), dist);
 }
 
 /**
@@ -172,7 +170,7 @@ move_obstacle_here (void)
 {
     vect_t obstacle;
     /* Get the current position of the bot */
-    asserv_position_t current;
+    position_t current;
     asserv_get_position (&current);
     /* Compute the obstacle position */
     move_compute_obstacle_position (current, &obstacle);

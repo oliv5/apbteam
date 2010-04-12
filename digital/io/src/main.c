@@ -250,12 +250,9 @@ main_loop (void)
 	  {
 	    uint8_t obs_nb;
 	    vect_t obs_pos[2];
-	    asserv_position_t cur_pos;
-	    vect_t robot_pos;
-	    robot_pos.x = cur_pos.x;
-	    robot_pos.y = cur_pos.y;
-	    asserv_get_position (&cur_pos);
-	    obs_nb = radar_update (robot_pos, cur_pos.a, obs_pos);
+	    position_t robot_pos;
+	    asserv_get_position (&robot_pos);
+	    obs_nb = radar_update (robot_pos.v, robot_pos.a, obs_pos);
 	    simu_send_pos_report (obs_pos, obs_nb, 0);
 	  }
 #endif
@@ -291,10 +288,10 @@ main_loop (void)
 	if (main_stats_asserv_ && !--main_stats_asserv_cpt_)
 	  {
 	    /* Get current position */
-	    asserv_position_t cur_pos;
+	    position_t cur_pos;
 	    asserv_get_position (&cur_pos);
 	    /* Send stats */
-	    proto_send3w ('A', cur_pos.x, cur_pos.y, cur_pos.a);
+	    proto_send3w ('A', cur_pos.v.x, cur_pos.v.y, cur_pos.a);
 	    /* Reset stats counter */
 	    main_stats_asserv_cpt_ = main_stats_asserv_;
 	  }
