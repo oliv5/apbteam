@@ -30,6 +30,7 @@ class Proto:
         self.async = False
         self.param = param
         self.send_param ()
+        self.proto.register ('U', 'HHHH', self.__handle_usdist)
 
     def send_param (self):
         p = self.param
@@ -42,8 +43,6 @@ class Proto:
         self.proto.wait (lambda: True)
 
     def reset (self):
-        self.proto.send ('w')
-        self.proto.send ('w', 'H', 0)
         self.proto.send ('z')
         self.proto.send ('z')
 
@@ -56,9 +55,24 @@ class Proto:
     def pwm_set (self, value, timer):
         self.proto.send ('w', 'Hh', value, timer)
 
+    def stats_usdist (self, cb):
+        self.proto.send ('U', 'B', 2 * 4 * 2)
+        self.usdist_cb = cb
+        while True:
+            self.proto.wait ()
+
+    def __handle_usdist (self, *val):
+        l = [ ]
+        for v in val:
+            if v == 0xffff:
+                l.append (None)
+            else:
+                l.append (v)
+        self.usdist_cb (*l)
+
     def close (self):
         self.reset ()
-        self.wait (lambda: True)
+        self.proto.wait (lambda: True)
         self.proto.file.close ()
 
     def fileno (self):
