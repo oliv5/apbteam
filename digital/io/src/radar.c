@@ -75,7 +75,7 @@ radar_valid (vect_t p)
 }
 
 uint8_t
-radar_update (vect_t robot_pos, uint16_t robot_a, vect_t *obs_pos)
+radar_update (const position_t *robot_pos, vect_t *obs_pos)
 {
     uint8_t i, j;
     vect_t ray;
@@ -92,14 +92,14 @@ radar_update (vect_t robot_pos, uint16_t robot_a, vect_t *obs_pos)
 	if (dist_mm[i] != 0xffff)
 	  {
 	    hit[i] = radar_sensors[i].pos;
-	    vect_rotate_uf016 (&hit[i], robot_a);
-	    vect_translate (&hit[i], &robot_pos);
+	    vect_rotate_uf016 (&hit[i], robot_pos->a);
+	    vect_translate (&hit[i], &robot_pos->v);
 	    vect_from_polar_uf016 (&ray, dist_mm[i],
-				   robot_a + radar_sensors[i].a);
+				   robot_pos->a + radar_sensors[i].a);
 	    vect_translate (&hit[i], &ray);
 	    valid[i] = radar_valid (hit[i]);
 	    vect_from_polar_uf016 (&ray, RADAR_OBSTACLE_RADIUS_MM,
-				   robot_a + radar_sensors[i].a);
+				   robot_pos->a + radar_sensors[i].a);
 	    vect_translate (&hit[i], &ray);
 	  }
 	else

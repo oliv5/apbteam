@@ -24,7 +24,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
-#include "modules/math/geometry/vect.h"
+#include "defs.h"
 
 /**
  * Handle any distance sensors information to extract useful data.  This
@@ -42,6 +42,6 @@
 /** Update radar view.  Return the number of obstacles found.  Obstacles
  * positions are returned in obs_pos. */
 uint8_t
-radar_update (vect_t robot_pos, uint16_t robot_a, vect_t *obs_pos);
+radar_update (const position_t *robot_pos, vect_t *obs_pos);
 
 #endif /* radar_h */
