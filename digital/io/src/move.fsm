@@ -22,40 +22,39 @@ Events:
   the bot has seen something (front is the same when going backward).
 
 MOVE_IDLE:
- move_start -> MOVE_MOVING
-  ask the asserv to go to the computed position.
+ move_start: path_found -> MOVE_MOVING
+  move to next position.
+ move_start: no_path_found -> MOVE_IDLE
+  post failure event.
 
 MOVE_MOVING:
- bot_move_succeed: we_are_at_final_position -> MOVE_IDLE
-  post an event for the top FSM to tell it we have finished.
- bot_move_succeed: position_intermediary -> .
-  get next position computed by the path module.
-  if next position is the final, use a goto_xya.
-  otherwise go to the next intermediate position with goto.
- bot_move_succeed: no_intermediate_path_found -> MOVE_IDLE
-  post an event for the top FSM to generate a failure.
+ bot_move_succeed: done -> MOVE_IDLE
+  post success event.
+ bot_move_succeed: path_found -> .
+  move to next position.
+ bot_move_succeed: no_path_found -> MOVE_IDLE
+  post failure event.
  bot_move_failed -> MOVE_MOVING_BACKWARD_TO_TURN_FREELY
-  compute the obstacle position.
+  reset final_move.
   move backward to turn freely.
  obstacle_in_front -> MOVE_WAIT_FOR_CLEAR_PATH
+  reset final_move.
   stop the bot.
 
 MOVE_MOVING_BACKWARD_TO_TURN_FREELY:
- bot_move_succeed: intermediate_path_found -> MOVE_MOVING
-  get next intermediate position from path module.
- bot_move_succeed: no_intermediate_path_found -> MOVE_IDLE
-  post an event for the top FSM to generate a failure.
- bot_move_failed: intermediate_path_found -> MOVE_MOVING
-  get next intermediate position from path module
- bot_move_failed: no_intermediate_path_found -> MOVE_WAIT_FOR_CLEAR_PATH
+ bot_move_succeed: path_found -> MOVE_MOVING
+  move to next position.
+ bot_move_succeed: no_path_found -> MOVE_IDLE
+  post failure event.
+ bot_move_failed: path_found -> MOVE_MOVING
+  move to next position.
+ bot_move_failed: no_path_found -> MOVE_WAIT_FOR_CLEAR_PATH
   nothing to do.
 
 MOVE_WAIT_FOR_CLEAR_PATH:
- state_timeout: no_more_obstacle_or_next_position -> MOVE_MOVING
-  get next position computed by the path module.
-  if next position is the final, use a goto_xya.
-  otherwise go to the next intermediate position with goto.
- state_timeout: obstacle_and_no_intermediate_path_found_and_try_again -> .
+ state_timeout: path_found -> MOVE_MOVING
+  move to next position.
+ state_timeout: no_path_found_and_try_again -> .
   decrement counter.
- state_timeout: obstacle_and_no_intermediate_path_found_and_no_try_again -> MOVE_IDLE
-  post an event for the top FSM to generate a failure.
+ state_timeout: no_path_found_and_no_try_again -> MOVE_IDLE
+  post failure.
