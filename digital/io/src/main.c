@@ -87,6 +87,9 @@ uint8_t main_obstacles_nb;
  */
 static uint8_t main_stats_usdist_, main_stats_usdist_cpt_;
 
+/** Radar stats counters. */
+static uint8_t main_stats_radar_, main_stats_radar_cpt_;
+
 /**
  * Asserv stats counters.
  */
@@ -283,6 +286,29 @@ main_loop (void)
 			  usdist_mm[3]);
 	    main_stats_usdist_cpt_ = main_stats_usdist_;
 	  }
+	if (main_stats_radar_ && !--main_stats_radar_cpt_)
+	  {
+	    uint8_t blocking, i;
+	    uint8_t buf[10];
+	    position_t robot_pos;
+	    asserv_get_position (&robot_pos);
+	    vect_t step;
+	    vect_from_polar_uf016 (&step, 1000, robot_pos.a);
+	    vect_translate (&step, &robot_pos.v);
+	    blocking = radar_blocking (&robot_pos.v, &step,
+				       main_obstacles_pos, main_obstacles_nb);
+	    buf[0] = blocking;
+	    buf[1] = main_obstacles_nb;
+	    for (i = 0; i < main_obstacles_nb; i++)
+	      {
+		buf[2 + 0 + i * 4] = v16_to_v8 (main_obstacles_pos[i].x, 1);
+		buf[2 + 1 + i * 4] = v16_to_v8 (main_obstacles_pos[i].x, 0);
+		buf[2 + 2 + i * 4] = v16_to_v8 (main_obstacles_pos[i].y, 1);
+		buf[2 + 3 + i * 4] = v16_to_v8 (main_obstacles_pos[i].y, 0);
+	      }
+	    proto_send ('R', 2 + main_obstacles_nb * 4, buf);
+	    main_stats_radar_cpt_ = main_stats_radar_;
+	  }
 	/* Send asserv stats if needed */
 	if (main_stats_asserv_ && !--main_stats_asserv_cpt_)
 	  {
@@ -401,6 +427,10 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
       case c ('U', 1):
 	/* US sensors stats. */
 	main_stats_usdist_ = main_stats_usdist_cpt_ = args[0];
+	break;
+      case c ('R', 1):
+	/* Radar stats. */
+	main_stats_radar_ = main_stats_radar_cpt_ = args[0];
 	break;
       case c ('A', 1):
 	/* Position stats. */
