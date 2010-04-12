@@ -33,6 +33,7 @@
 #include "playground.h"
 #include "move.h"
 #include "bot.h"
+#include "radar.h"
 #include "trace_event.h"
 
 #include "main.h"      /* main_post_event_for_top_fsm */
@@ -53,29 +54,14 @@
  * It corresponds to the real radius of the obstacle plus the distance you
  * want to add to avoid it.
  */
-#define MOVE_OBSTACLE_RADIUS (MOVE_REAL_OBSTACLE_RADIUS + 250)
+#define MOVE_OBSTACLE_RADIUS (MOVE_REAL_OBSTACLE_RADIUS \
+			      + RADAR_CLEARANCE_MM \
+			      + BOT_SIZE_SIDE * 2)
 
 /**
  * The generic validity time (in term of number of cycles).
  */
 #define MOVE_OBSTACLE_VALIDITY (6 * 225)
-
-/**
- * Verify after the computation of the obstacle, this shall only be called
- * after the function move_compute_obstacle_position.
- * \return  true if the position computed is in the table, false otherwise.
- */
-uint8_t
-move_obstacle_in_table (vect_t pos)
-{
-    if ((pos.x <= PG_WIDTH)
-	&& (pos.x > 0)
-	&& (pos.y <= PG_LENGTH)
-	&& (pos.y > 0))
-	return 0x1;
-    else
-	return 0x0;
-}
 
 /**
  * Easier function to get the next intermediate position from the path module.
@@ -128,62 +114,6 @@ move_get_next_position (void)
 	/* Error, not final move. */
 	move_data.final_move = 0;
 	return 0;
-      }
-}
-
-/**
- * Compute the obstacle position assuming it is right in front of us.
- * @param cur current position
- * @param obstacle the obstacle position computed
- */
-void
-move_compute_obstacle_position (position_t cur, vect_t *obstacle)
-{
-    int16_t dist;
-
-    /* Convert the angle */
-    uint32_t angle = cur.a;
-    angle = angle << 8;
-
-    /* Dirty fix: distance of the obstacle. */
-    dist = (BOT_SIZE_FRONT + BOT_SIZE_BACK) / 2 + 350;
-    /* Invert if last movement was backward. */
-    if (asserv_get_last_moving_direction () == 2)
-      {
-	dist = -dist;
-      }
-
-    /* X */
-    obstacle->x = cur.v.x + fixed_mul_f824 (fixed_cos_f824 (angle), dist);
-    /* Y */
-    obstacle->y = cur.v.y + fixed_mul_f824 (fixed_sin_f824 (angle), dist);
-}
-
-/**
- * Unique function to compute the obstacle position from here.
- */
-void
-move_obstacle_here (void)
-{
-    vect_t obstacle;
-    /* Get the current position of the bot */
-    position_t current;
-    asserv_get_position (&current);
-    /* Compute the obstacle position */
-    move_compute_obstacle_position (current, &obstacle);
-    /* Give it to the path module */
-    /* only id the obstacle is in the table */
-    if (move_obstacle_in_table (obstacle))
-      {
-	path_obstacle (0, obstacle.x, obstacle.y,
-		       MOVE_OBSTACLE_RADIUS, 0, MOVE_OBSTACLE_VALIDITY);
-	DPRINTF ("Obstacle pos x: %d, pos y: %d\n", obstacle.x, obstacle.y);
-	TRACE (TRACE_MOVE__OBSTACLE, obstacle.x, obstacle.y);
-      }
-    else
-      {
-	DPRINTF ("Obstacle Ignored pos x: %d, pos y: %d\n", obstacle.x,
-		 obstacle.y);
       }
 }
 
@@ -244,8 +174,17 @@ fsm_branch_t
 ai__MOVE_MOVING__bot_move_failed (void)
 {
     move_data.final_move = 0;
-    /* Compute the obstacle position. */
-    move_obstacle_here ();
+    /* Assume there is an obstacle in front of the robot. */
+    position_t robot_pos;
+    asserv_get_position (&robot_pos);
+    vect_t obstacle_pos;
+    int16_t dist = asserv_get_last_moving_direction () == 1
+	? BOT_SIZE_FRONT + MOVE_REAL_OBSTACLE_RADIUS
+	: -(BOT_SIZE_BACK + MOVE_REAL_OBSTACLE_RADIUS);
+    vect_from_polar_uf016 (&obstacle_pos, dist, robot_pos.a);
+    vect_translate (&obstacle_pos, &robot_pos.v);
+    path_obstacle (0, obstacle_pos.x, obstacle_pos.y, MOVE_OBSTACLE_RADIUS, 0,
+		   MOVE_OBSTACLE_VALIDITY);
     /* Move backward to turn freely. */
     asserv_move_linearly (asserv_get_last_moving_direction () == 1 ?
 			  - 300 : 300);
@@ -315,6 +254,14 @@ ai__MOVE_MOVING_BACKWARD_TO_TURN_FREELY__bot_move_failed (void)
 fsm_branch_t
 ai__MOVE_WAIT_FOR_CLEAR_PATH__state_timeout (void)
 {
+    uint8_t i;
+    /* Position sensed obstacle. */
+    for (i = 0; i < main_obstacles_nb; i++)
+      {
+	path_obstacle (i, main_obstacles_pos[i].x, main_obstacles_pos[i].y,
+		       MOVE_OBSTACLE_RADIUS, 0, MOVE_OBSTACLE_VALIDITY);
+      }
+    /* Try to move. */
     if (move_get_next_position ())
       {
 	return ai_next_branch (MOVE_WAIT_FOR_CLEAR_PATH, state_timeout,
