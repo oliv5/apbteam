@@ -25,10 +25,8 @@
  *
  * }}} */
 
-/**
- * We want to be at 50mm.
- */
-#define INIT_DIST (PG_START_ZONE_LENGTH - BOT_LENGTH - 50)
+/** Backward distance from the wall. */
+#define INIT_DIST (PG_START_ZONE_LENGTH / 2 - BOT_SIZE_FRONT)
 
 /**
  * The match begin!

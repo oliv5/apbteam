@@ -149,7 +149,7 @@ move_compute_obstacle_position (position_t cur, vect_t *obstacle)
     angle = angle << 8;
 
     /* Dirty fix: distance of the obstacle. */
-    dist = BOT_LENGTH / 2 + 350;
+    dist = (BOT_SIZE_FRONT + BOT_SIZE_BACK) / 2 + 350;
     /* Invert if last movement was backward. */
     if (asserv_get_last_moving_direction () == 2)
       {

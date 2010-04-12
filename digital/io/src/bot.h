@@ -43,11 +43,15 @@
 # define BOT_SCALE 0.0413530725332892
 #endif
 
-/**
- * The size of the bot.
- */
-#define BOT_LENGTH 300
-#define BOT_WIDTH 310
+/** Distance from the robot axis to the front. */
+#define BOT_SIZE_FRONT 120
+/** Distance from the robot axis to the back. */
+#define BOT_SIZE_BACK (280 - 120)
+/** Distance from the robot axis to the side. */
+#define BOT_SIZE_SIDE (310 / 2)
+/** Distance from the robot axis to farthest corner, this is the radius of the
+ * circle needed when rotating. */
+#define BOT_SIZE_RADIUS 196
 
 /**
  * Distance required to be away from a border to be able to turn freely.
