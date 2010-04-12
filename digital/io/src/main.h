@@ -33,4 +33,8 @@
  */
 extern uint8_t main_post_event_for_top_fsm;
 
+extern vect_t main_obstacles_pos[2];
+
+extern uint8_t main_obstacles_nb;
+
 #endif /* main_h */

@@ -34,6 +34,8 @@ struct move_data_t
 {
     /** Final position. */
     position_t final;
+    /** Next step. */
+    vect_t step;
     /** Backward direction allowed flag. */
     uint8_t backward_movement_allowed;
     /** Try again counter. */
@@ -55,5 +57,9 @@ extern struct move_data_t move_data;
  */
 void
 move_start (position_t position, uint8_t backward);
+
+/** Check for blocking obstacles. */
+void
+move_check_obstacles (void);
 
 #endif /* move_h */

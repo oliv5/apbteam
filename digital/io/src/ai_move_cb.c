@@ -119,6 +119,7 @@ move_get_next_position (void)
 	    asserv_goto_xya (dst.x, dst.y, move_data.final.a,
 			     move_data.backward_movement_allowed);
 	  }
+	move_data.step = dst;
 	TRACE (TRACE_MOVE__GO_TO, (u16) current_pos.v.x,
 	       (u16) current_pos.v.y, current_pos.a, dst.x, dst.y,
 	       move_data.final.a);

@@ -39,9 +39,31 @@
  * added to position obstacle center. */
 #define RADAR_OBSTACLE_RADIUS_MM 150
 
+/** Stop distance. Distance under which an obstacle is considered harmful when
+ * moving. */
+#define RADAR_STOP_MM 350
+
+/** Clearance distance.  Distance over which an obstacle should be to the side
+ * when moving.
+ *
+ * OK, more explanations: when moving, a rectangle is placed in front of the
+ * robot, of length RADAR_STOP_MM and width 2 * (RADAR_CLEARANCE_MM +
+ * BOT_SIZE_SIDE).  If an obstacle is inside this rectangle, it is considered
+ * in the way. */
+#define RADAR_CLEARANCE_MM 100
+
+/** Destination distance near enough so that obstacles could be ignored. */
+#define RADAR_EPSILON_MM 70
+
 /** Update radar view.  Return the number of obstacles found.  Obstacles
  * positions are returned in obs_pos. */
 uint8_t
 radar_update (const position_t *robot_pos, vect_t *obs_pos);
+
+/** Return non zero if there is a blocking obstacle near the robot while going
+ * to a destination point. */
+uint8_t
+radar_blocking (const vect_t *robot_pos, const vect_t *dest_pos,
+		const vect_t *obs_pos, uint8_t obs_nb);
 
 #endif /* radar_h */

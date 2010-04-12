@@ -141,3 +141,40 @@ radar_update (const position_t *robot_pos, vect_t *obs_pos)
     return obs_nb;
 }
 
+uint8_t
+radar_blocking (const vect_t *robot_pos, const vect_t *dest_pos,
+		const vect_t *obs_pos, uint8_t obs_nb)
+{
+    uint8_t i;
+    /* Stop here if no obstacle. */
+    if (!obs_nb)
+	return 0;
+    vect_t vd = *dest_pos; vect_sub (&vd, robot_pos);
+    uint16_t d = vect_norm (&vd);
+    /* If destination is realy near, stop here. */
+    if (d < RADAR_EPSILON_MM)
+	return 0;
+    /* To save divisions, multiply limits by vd (and vdn) length. */
+    vect_t vdn = vd; vect_normal (&vdn);
+    int32_t limit = (uint32_t) d * (BOT_SIZE_FRONT + RADAR_STOP_MM
+				    + RADAR_OBSTACLE_RADIUS_MM);
+    int32_t limitn = (uint32_t) d * (BOT_SIZE_SIDE + RADAR_CLEARANCE_MM
+				     + RADAR_OBSTACLE_RADIUS_MM);
+    /* Now, look at obstacles. */
+    for (i = 0; i < obs_nb; i++)
+      {
+	/* Vector from robot to obstacle. */
+	vect_t vo = obs_pos[i]; vect_sub (&vo, robot_pos);
+	/* Test if within rectangle (see RADAR_CLEARANCE_MM comment). */
+	int32_t dp = vect_dot_product (&vd, &vo);
+	if (dp < 0 || dp > limit)
+	    continue;
+	int32_t dpn = vect_dot_product (&vdn, &vo);
+	if (dpn < -limitn || dpn > limitn)
+	    continue;
+	/* Else, obstacle is blocking. */
+	return 1;
+      }
+    return 0;
+}
+

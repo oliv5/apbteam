@@ -25,6 +25,9 @@
 #include "common.h"
 #include "move.h"
 #include "fsm.h"
+#include "radar.h"
+#include "asserv.h"
+#include "main.h"
 
 /**
  * Internal data used by the move FSM.
@@ -40,5 +43,18 @@ move_start (position_t position, uint8_t backward)
     move_data.final_move = 0;
     /* Start the FSM. */
     fsm_handle_event (&ai_fsm, AI_EVENT_move_start);
+}
+
+void
+move_check_obstacles (void)
+{
+    if (fsm_can_handle_event (&ai_fsm, AI_EVENT_obstacle_in_front))
+      {
+	position_t robot_pos;
+	asserv_get_position (&robot_pos);
+	if (radar_blocking (&robot_pos.v, &move_data.step, main_obstacles_pos,
+			    main_obstacles_nb))
+	    fsm_handle_event (&ai_fsm, AI_EVENT_obstacle_in_front);
+      }
 }
 

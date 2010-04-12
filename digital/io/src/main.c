@@ -52,6 +52,7 @@
 #include "playground.h"
 #include "contact.h"
 #include "init.h"
+#include "move.h"
 #include "top.h"
 
 #include "io.h"
@@ -164,6 +165,9 @@ main_event_to_fsm (void)
 	/* Post the event */
 	FSM_HANDLE_EVENT (&ai_fsm, save_event);
       }
+
+    /* Check obstacles. */
+    move_check_obstacles ();
     /* TODO: Check other sensors */
 }
 
