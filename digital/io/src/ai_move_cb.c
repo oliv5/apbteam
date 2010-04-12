@@ -66,7 +66,7 @@
  * \return  true if the position computed is in the table, false otherwise.
  */
 uint8_t
-move_obstacle_in_table (move_position_t pos)
+move_obstacle_in_table (vect_t pos)
 {
     if ((pos.x <= PG_WIDTH)
 	&& (pos.x > 0)
@@ -79,15 +79,15 @@ move_obstacle_in_table (move_position_t pos)
 
 /**
  * Easier function to get the next intermediate position from the path module.
- * @param dst new destination position computed by the path module
  * @return
  *   - 0 if no path could be found ;
  *   - 1 if a path has been found.
  *   - 2 already at final place.
  */
 uint8_t
-move_get_next_position (move_position_t *dst)
+move_get_next_position (void)
 {
+    vect_t dst;
     /* Are we at the final position. */
     if (move_data.final_move)
 	return 2;
@@ -101,27 +101,26 @@ move_get_next_position (move_position_t *dst)
     path_update ();
 
     /* If the path is found. */
-    if (path_get_next (&dst->x, &dst->y) != 0)
+    if (path_get_next (&dst.x, &dst.y) != 0)
       {
 	/* If it is not the last position. */
-	if (dst->x != move_data.final.x || dst->y != move_data.final.y)
+	if (dst.x != move_data.final.x || dst.y != move_data.final.y)
 	  {
 	    /* Not final position. */
 	    move_data.final_move = 0;
 	    /* Goto without angle. */
-	    asserv_goto (dst->x, dst->y,
-			 move_data.backward_movement_allowed);
+	    asserv_goto (dst.x, dst.y, move_data.backward_movement_allowed);
 	  }
 	else
 	  {
 	    /* Final position. */
 	    move_data.final_move = 1;
 	    /* Goto with angle. */
-	    asserv_goto_xya (dst->x, dst->y, move_data.final.a,
+	    asserv_goto_xya (dst.x, dst.y, move_data.final.a,
 			     move_data.backward_movement_allowed);
 	  }
 	TRACE (TRACE_MOVE__GO_TO, (u16) current_pos.x, (u16) current_pos.y,
-	       current_pos.a, dst->x, dst->y, move_data.final.a);
+	       current_pos.a, dst.x, dst.y, move_data.final.a);
 	/* Reset try counter. */
 	move_data.try_again_counter = 3;
 	return 1;
@@ -141,7 +140,7 @@ move_get_next_position (move_position_t *dst)
  */
 void
 move_compute_obstacle_position (asserv_position_t cur,
-				move_position_t *obstacle)
+				vect_t *obstacle)
 {
     int16_t dist;
 
@@ -171,27 +170,25 @@ move_compute_obstacle_position (asserv_position_t cur,
 void
 move_obstacle_here (void)
 {
+    vect_t obstacle;
     /* Get the current position of the bot */
     asserv_position_t current;
     asserv_get_position (&current);
     /* Compute the obstacle position */
-    move_compute_obstacle_position (current, &move_data.obstacle);
+    move_compute_obstacle_position (current, &obstacle);
     /* Give it to the path module */
     /* only id the obstacle is in the table */
-    if (move_obstacle_in_table (move_data.obstacle))
+    if (move_obstacle_in_table (obstacle))
       {
-	path_obstacle (0, move_data.obstacle.x, move_data.obstacle.y,
+	path_obstacle (0, obstacle.x, obstacle.y,
 		       MOVE_OBSTACLE_RADIUS, 0, MOVE_OBSTACLE_VALIDITY);
-	DPRINTF ("Obstacle pos x : %d, pos y : %d\n", move_data.obstacle.x,
-		 move_data.obstacle.y);
-	TRACE (TRACE_MOVE__OBSTACLE, move_data.obstacle.x,
-	       move_data.obstacle.y);
+	DPRINTF ("Obstacle pos x: %d, pos y: %d\n", obstacle.x, obstacle.y);
+	TRACE (TRACE_MOVE__OBSTACLE, obstacle.x, obstacle.y);
       }
     else
       {
-	DPRINTF ("Obstacle Ignored pos x : %d, pos y : %d\n",
-		 move_data.obstacle.x,
-		 move_data.obstacle.y);
+	DPRINTF ("Obstacle Ignored pos x: %d, pos y: %d\n", obstacle.x,
+		 obstacle.y);
       }
 }
 
@@ -204,7 +201,7 @@ fsm_branch_t
 ai__MOVE_IDLE__move_start (void)
 {
     /* ask the asserv to go to the computed position. */
-    move_get_next_position (&move_data.intermediate);
+    move_get_next_position ();
     return ai_next (MOVE_IDLE, move_start);
 }
 
@@ -222,7 +219,7 @@ ai__MOVE_IDLE__move_start (void)
 fsm_branch_t
 ai__MOVE_MOVING__bot_move_succeed (void)
 {
-    uint8_t ret = move_get_next_position (&move_data.intermediate);
+    uint8_t ret = move_get_next_position ();
     if (ret == 2)
       {
 	/* Post an event for the top FSM to tell it we have finished. */
@@ -282,7 +279,7 @@ ai__MOVE_MOVING__obstacle_in_front (void)
 fsm_branch_t
 ai__MOVE_MOVING_BACKWARD_TO_TURN_FREELY__bot_move_succeed (void)
 {
-    uint8_t ret = move_get_next_position (&move_data.intermediate);
+    uint8_t ret = move_get_next_position ();
     if (ret == 1)
       {
 	/* Nothing to do. */
@@ -306,7 +303,7 @@ ai__MOVE_MOVING_BACKWARD_TO_TURN_FREELY__bot_move_succeed (void)
 fsm_branch_t
 ai__MOVE_MOVING_BACKWARD_TO_TURN_FREELY__bot_move_failed (void)
 {
-    uint8_t ret = move_get_next_position (&move_data.intermediate);
+    uint8_t ret = move_get_next_position ();
     if (ret == 1)
       {
 	/* Nothing to do. */
@@ -333,7 +330,7 @@ ai__MOVE_MOVING_BACKWARD_TO_TURN_FREELY__bot_move_failed (void)
 fsm_branch_t
 ai__MOVE_WAIT_FOR_CLEAR_PATH__state_timeout (void)
 {
-    uint8_t ret = move_get_next_position (&move_data.intermediate);
+    uint8_t ret = move_get_next_position ();
     if (ret == 1)
       {
 	/* Go to position. */

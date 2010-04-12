@@ -25,6 +25,7 @@
  *
  * }}} */
 
+#include "modules/math/geometry/vect.h"
 #include "asserv.h"
 
 /**
@@ -33,9 +34,9 @@
 typedef struct move_position_t
 {
     /** X position. */
-    uint16_t x;
+    int16_t x;
     /** Y position. */
-    uint16_t y;
+    int16_t y;
     /** A angle. */
     uint16_t a;
 } move_position_t;
@@ -47,10 +48,6 @@ struct move_data_t
 {
     /** Final position. */
     move_position_t final;
-    /** Intermediate position. */
-    move_position_t intermediate;
-    /** Obstacle position. */
-    move_position_t obstacle;
     /** Backward direction allowed flag. */
     uint8_t backward_movement_allowed;
     /** Try again counter. */
