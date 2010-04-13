@@ -154,10 +154,17 @@ radar_blocking (const vect_t *robot_pos, const vect_t *dest_pos,
     /* If destination is realy near, stop here. */
     if (d < RADAR_EPSILON_MM)
 	return 0;
+    /* If destination is near, use clearance to destination point instead of
+     * stop length. */
+    uint16_t length;
+    if (d < RADAR_STOP_MM - RADAR_CLEARANCE_MM)
+	length = d + BOT_SIZE_FRONT + RADAR_CLEARANCE_MM
+	    + RADAR_OBSTACLE_RADIUS_MM;
+    else
+	length = BOT_SIZE_FRONT + RADAR_STOP_MM + RADAR_OBSTACLE_RADIUS_MM;
     /* To save divisions, multiply limits by vd (and vdn) length. */
     vect_t vdn = vd; vect_normal (&vdn);
-    int32_t limit = (uint32_t) d * (BOT_SIZE_FRONT + RADAR_STOP_MM
-				    + RADAR_OBSTACLE_RADIUS_MM);
+    int32_t limit = (uint32_t) d * length;
     int32_t limitn = (uint32_t) d * (BOT_SIZE_SIDE + RADAR_CLEARANCE_MM
 				     + RADAR_OBSTACLE_RADIUS_MM);
     /* Now, look at obstacles. */

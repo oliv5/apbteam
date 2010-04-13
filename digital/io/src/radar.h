@@ -49,7 +49,12 @@
  * OK, more explanations: when moving, a rectangle is placed in front of the
  * robot, of length RADAR_STOP_MM and width 2 * (RADAR_CLEARANCE_MM +
  * BOT_SIZE_SIDE).  If an obstacle is inside this rectangle, it is considered
- * in the way. */
+ * in the way.
+ *
+ * If the destination point is near (< RADAR_STOP_MM - RADAR_CLEARANCE_MM),
+ * this reduce the rectangle length.
+ *
+ * If the destination is really near (< RADAR_EPSILON_MM), ignore all this. */
 #define RADAR_CLEARANCE_MM 100
 
 /** Destination distance near enough so that obstacles could be ignored. */
