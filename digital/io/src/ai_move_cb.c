@@ -56,7 +56,7 @@
  */
 #define MOVE_OBSTACLE_RADIUS (MOVE_REAL_OBSTACLE_RADIUS \
 			      + RADAR_CLEARANCE_MM \
-			      + BOT_SIZE_SIDE * 2)
+			      + BOT_SIZE_SIDE)
 
 /**
  * The generic validity time (in term of number of cycles).
