@@ -76,7 +76,10 @@ main (int argc, char **argv)
     path_init (tab[0], tab[1], tab[2], tab[3]);
     read_tab (argv[2], tab, 2);
     read_tab (argv[3], tab + 2, 2);
-    path_endpoints (tab[0], tab[1], tab[2], tab[3]);
+    vect_t s, d;
+    s.x = tab[0]; s.y = tab[1];
+    d.x = tab[2]; d.y = tab[3];
+    path_endpoints (s, d);
     read_tab (argv[4], tab, 1);
     if (tab[0])
 	path_escape (tab[0]);
@@ -84,20 +87,22 @@ main (int argc, char **argv)
     for (i = 0; i + 5 < argc; i++)
       {
 	read_tab (argv[5 + i], tab, 4);
-	path_obstacle (i, tab[0], tab[1], tab[2], tab[3], 1);
+	vect_t o;
+	o.x = tab[0]; o.y = tab[1];
+	path_obstacle (i, o, tab[2], tab[3], 1);
       }
     path_update ();
     path_print_graph ();
-    uint16_t x, y;
-    if (path_get_next (&x, &y))
-	printf ("// Next point: %d, %d\n", x, y);
+    vect_t p;
+    if (path_get_next (&p))
+	printf ("// Next point: %d, %d\n", p.x, p.y);
     else
 	printf ("// Failure\n");
     return 0;
 }
 
 void
-path_report (uint16_t *points, uint8_t len,
+path_report (vect_t *points, uint8_t len,
 	     struct path_obstacle_t *obstacles, uint8_t obstacles_nb)
 {
 }

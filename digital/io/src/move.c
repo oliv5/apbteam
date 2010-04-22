@@ -54,8 +54,8 @@ move_obstacles_update (void)
 {
     uint8_t i;
     for (i = 0; i < main_obstacles_nb; i++)
-	path_obstacle (i, main_obstacles_pos[i].x, main_obstacles_pos[i].y,
-		       MOVE_OBSTACLE_RADIUS, 0, MOVE_OBSTACLE_VALIDITY);
+	path_obstacle (i, main_obstacles_pos[i], MOVE_OBSTACLE_RADIUS, 0,
+		       MOVE_OBSTACLE_VALIDITY);
 }
 
 void

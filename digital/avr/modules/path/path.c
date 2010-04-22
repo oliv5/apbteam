@@ -49,7 +49,7 @@
 struct path_point_t
 {
     /** Coordinates. */
-    int16_t x, y;
+    vect_t c;
     /** Weight. */
     uint16_t w;
     /** Next point (preceding in the usual Dijkstra meaning). */
@@ -128,13 +128,13 @@ path_compute_points (void)
 			+ fixed_mul_f824 (x, path.rot_b);
 		    x = nx;
 		  }
-		path.points[p].x = path.obstacles[i].x + (uint16_t) x;
-		path.points[p].y = path.obstacles[i].y + (uint16_t) y;
+		path.points[p].c.x = path.obstacles[i].c.x + (uint16_t) x;
+		path.points[p].c.y = path.obstacles[i].c.y + (uint16_t) y;
 		/* Check it is in playground. */
-		if (path.points[p].x >= path.border_xmin
-		    && path.points[p].y >= path.border_ymin
-		    && path.points[p].x < path.border_xmax
-		    && path.points[p].y < path.border_ymax)
+		if (path.points[p].c.x >= path.border_xmin
+		    && path.points[p].c.y >= path.border_ymin
+		    && path.points[p].c.x < path.border_xmax
+		    && path.points[p].c.y < path.border_ymax)
 		    /* Accept point. */
 		    p++;
 	      }
@@ -153,8 +153,8 @@ path_compute_weight (uint8_t a, uint8_t b)
     uint8_t i;
     uint8_t max_factor;
     /* Compute distance. */
-    dx = path.points[b].x - path.points[a].x;
-    dy = path.points[b].y - path.points[a].y;
+    dx = path.points[b].c.x - path.points[a].c.x;
+    dy = path.points[b].c.y - path.points[a].c.y;
     ab = fixed_sqrt_ui32 (dx * dx + dy * dy);
     if (ab == 0)
 	return 0;
@@ -169,8 +169,8 @@ path_compute_weight (uint8_t a, uint8_t b)
 	     * Use a scalar product between a segment perpendicular vector and
 	     * the vector from one segment end to obstacle center. */
 	    int32_t acx, acy;
-	    acx = path.obstacles[i].x - path.points[a].x;
-	    acy = path.obstacles[i].y - path.points[a].y;
+	    acx = path.obstacles[i].c.x - path.points[a].c.x;
+	    acy = path.obstacles[i].c.y - path.points[a].c.y;
 	    d = (acx * dy - acy * dx) / ab;
 	    d = UTILS_ABS (d);
 	    /* If out of the circle, no problem, else, more tests. */
@@ -264,12 +264,10 @@ path_dijkstra (void)
 
 /** Setup end points (source and destination coordinates). */
 void
-path_endpoints (int16_t sx, int16_t sy, int16_t dx, int16_t dy)
+path_endpoints (vect_t s, vect_t d)
 {
-    path.points[0].x = dx;
-    path.points[0].y = dy;
-    path.points[1].x = sx;
-    path.points[1].y = sy;
+    path.points[0].c = d;
+    path.points[1].c = s;
 }
 
 /** Try to escape from inside an obstacle.  Bigger factor will shorten path
@@ -283,12 +281,11 @@ path_escape (uint8_t factor)
 /** Set up an obstacle at given position with the given radius, factor and
  * validity period. */
 void
-path_obstacle (uint8_t i, int16_t x, int16_t y, uint16_t r, uint8_t factor,
+path_obstacle (uint8_t i, vect_t c, uint16_t r, uint8_t factor,
 	       uint16_t valid)
 {
     assert (i < AC_PATH_OBSTACLES_NB);
-    path.obstacles[i].x = x;
-    path.obstacles[i].y = y;
+    path.obstacles[i].c = c;
     path.obstacles[i].r = r;
     path.obstacles[i].factor = factor;
     path.obstacles[i].valid = valid;
@@ -317,12 +314,11 @@ path_update (void)
     path_dijkstra ();
 #if AC_PATH_REPORT
     uint8_t len, i;
-    uint16_t points[PATH_POINTS_NB * 2];
+    vect_t points[PATH_POINTS_NB];
     len = 0;
     for (i = 1; i != 0xff; i = path.points[i].next)
       {
-	points[len++] = path.points[i].x;
-	points[len++] = path.points[i].y;
+	points[len++] = path.points[i].c;
       }
     AC_PATH_REPORT_CALLBACK (points, len, path.obstacles, PATH_OBSTACLES_NB);
 #endif /* AC_PATH_REPORT */
@@ -330,7 +326,7 @@ path_update (void)
 
 /** Retrieve first path point coordinates.  Return 0 on failure. */
 uint8_t
-path_get_next (uint16_t *x, uint16_t *y)
+path_get_next (vect_t *p)
 {
     uint8_t next;
     next = path.points[1].next;
@@ -338,8 +334,7 @@ path_get_next (uint16_t *x, uint16_t *y)
 	return 0;
     else
       {
-	*x = path.points[next].x;
-	*y = path.points[next].y;
+	*p = path.points[next].c;
 	return 1;
       }
 }
@@ -357,8 +352,8 @@ path_print_graph (void)
     for (i = 0; i < path.points_nb; i++)
       {
 	printf (" %d [ shape = Mrecord, label = \"{%d|{%d|%d}}\", "
-		"pos = \"%d,%d\" ]\n", i, i, path.points[i].x,
-		path.points[i].y, path.points[i].x, path.points[i].y);
+		"pos = \"%d,%d\" ]\n", i, i, path.points[i].c.x,
+		path.points[i].c.y, path.points[i].c.x, path.points[i].c.y);
 	for (j = 0; j < i; j++)
 	  {
 	    if (path.arcs[i][j] != 0xffff)
@@ -370,7 +365,7 @@ path_print_graph (void)
       }
     printf ("}\n// Path:\n");
     for (i = 1; i != 0xff; i = path.points[i].next)
-	printf ("// %d, %d\n", path.points[i].x, path.points[i].y);
+	printf ("// %d, %d\n", path.points[i].c.x, path.points[i].c.y);
 }
 
 #endif

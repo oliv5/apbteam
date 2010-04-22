@@ -24,6 +24,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "modules/math/geometry/vect.h"
 
 /** Infinite validity for an obstacle. */
 #define PATH_OBSTACLE_VALID_ALWAYS 0xffff
@@ -32,7 +33,7 @@
 struct path_obstacle_t
 {
     /** Center. */
-    int16_t x, y;
+    vect_t c;
     /** Radius. */
     uint16_t r;
     /** Factor.  If not 0, obstacle is not blocking, but it add weight to path
@@ -49,7 +50,7 @@ path_init (int16_t border_xmin, int16_t border_ymin,
 
 /** Setup end points (source and destination coordinates). */
 void
-path_endpoints (int16_t sx, int16_t sy, int16_t dx, int16_t dy);
+path_endpoints (vect_t s, vect_t d);
 
 /** Try to escape from inside an obstacle.  Bigger factor will shorten path
  * followed inside the obstacle.  Valid until the next update. */
@@ -59,7 +60,7 @@ path_escape (uint8_t factor);
 /** Set up an obstacle at given position with the given radius, factor and
  * validity period. */
 void
-path_obstacle (uint8_t i, int16_t x, int16_t y, uint16_t r, uint8_t factor,
+path_obstacle (uint8_t i, vect_t c, uint16_t r, uint8_t factor,
 	       uint16_t valid);
 
 /** Slowly make the obstacles disappear. */
@@ -72,13 +73,13 @@ path_update (void);
 
 /** Retrieve first path point coordinates.  Return 0 on failure. */
 uint8_t
-path_get_next (uint16_t *x, uint16_t *y);
+path_get_next (vect_t *p);
 
 #if AC_PATH_REPORT
 
 /** Report computed path. */
 void
-AC_PATH_REPORT_CALLBACK (uint16_t *points, uint8_t len,
+AC_PATH_REPORT_CALLBACK (vect_t *points, uint8_t len,
 			 struct path_obstacle_t *obstacles,
 			 uint8_t obstacles_nb);
 

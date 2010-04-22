@@ -236,14 +236,14 @@ eeprom_clear_param (void)
 
 /** Send computed path. */
 void
-simu_send_path (uint16_t *points, uint8_t len,
+simu_send_path (vect_t *points, uint8_t len,
 		struct path_obstacle_t *obstacles, uint8_t obstacles_nb)
 {
     int i;
     mex_msg_t *m;
     m = mex_msg_new (MSG_SIMU_IO_PATH);
     for (i = 0; i < len; i++)
-	mex_msg_push (m, "h", points[i]);
+	mex_msg_push (m, "hh", points[i].x, points[i].y);
     mex_node_send (m);
 }
 

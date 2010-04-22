@@ -60,18 +60,17 @@ move_get_next_position (void)
     position_t current_pos;
     asserv_get_position (&current_pos);
     /* Give the current position of the bot to the path module */
-    path_endpoints (current_pos.v.x, current_pos.v.y,
-		    move_data.final.v.x, move_data.final.v.y);
+    path_endpoints (current_pos.v, move_data.final.v);
     /* Update the path module */
     path_update ();
-    found = path_get_next (&dst.x, &dst.y);
+    found = path_get_next (&dst);
     /* If not found, try to escape. */
     if (!found)
       {
 	slow = 1;
 	path_escape (8);
 	path_update ();
-	found = path_get_next (&dst.x, &dst.y);
+	found = path_get_next (&dst);
       }
     /* If the path is found, move. */
     if (found)
@@ -175,7 +174,7 @@ ai__MOVE_MOVING__bot_move_failed (void)
 	: -(BOT_SIZE_BACK + MOVE_REAL_OBSTACLE_RADIUS);
     vect_from_polar_uf016 (&obstacle_pos, dist, robot_pos.a);
     vect_translate (&obstacle_pos, &robot_pos.v);
-    path_obstacle (0, obstacle_pos.x, obstacle_pos.y, MOVE_OBSTACLE_RADIUS, 0,
+    path_obstacle (0, obstacle_pos, MOVE_OBSTACLE_RADIUS, 0,
 		   MOVE_OBSTACLE_VALIDITY);
     /* Move backward to turn freely. */
     asserv_move_linearly (asserv_get_last_moving_direction () == 1 ?
