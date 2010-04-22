@@ -45,25 +45,6 @@
 #include "debug.host.h"
 
 /**
- * The real radius of the obstacle.
- */
-#define MOVE_REAL_OBSTACLE_RADIUS 150
-
-/**
- * The radius of the obstacle for the path module.
- * It corresponds to the real radius of the obstacle plus the distance you
- * want to add to avoid it.
- */
-#define MOVE_OBSTACLE_RADIUS (MOVE_REAL_OBSTACLE_RADIUS \
-			      + RADAR_CLEARANCE_MM \
-			      + BOT_SIZE_SIDE)
-
-/**
- * The generic validity time (in term of number of cycles).
- */
-#define MOVE_OBSTACLE_VALIDITY (6 * 225)
-
-/**
  * Easier function to get the next intermediate position from the path module.
  * @return
  *   - 0 if no path could be found ;
