@@ -193,7 +193,8 @@ main_init (void)
     switch_init ();
     /* Path module */
     path_init (PG_BORDER_DISTANCE, PG_BORDER_DISTANCE,
-	       PG_WIDTH - PG_BORDER_DISTANCE, PG_LENGTH - PG_BORDER_DISTANCE);
+	       PG_WIDTH - PG_BORDER_DISTANCE,
+	       PG_LENGTH - PG_SLOPE_LENGTH - PG_BORDER_DISTANCE);
     /* Distance sensors. */
     usdist_init ();
     /* Top. */
