@@ -71,6 +71,10 @@ extern struct move_data_t move_data;
 void
 move_start (position_t position, uint8_t backward);
 
+/** To be called when obstacles positions are computed. */
+void
+move_obstacles_update (void);
+
 /** Check for blocking obstacles. */
 void
 move_check_obstacles (void);

@@ -260,6 +260,7 @@ main_loop (void)
 	    position_t robot_pos;
 	    asserv_get_position (&robot_pos);
 	    main_obstacles_nb = radar_update (&robot_pos, main_obstacles_pos);
+	    move_obstacles_update ();
 	    simu_send_pos_report (main_obstacles_pos, main_obstacles_nb, 0);
 	  }
 

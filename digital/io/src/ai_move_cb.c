@@ -246,13 +246,6 @@ ai__MOVE_MOVING_BACKWARD_TO_TURN_FREELY__bot_move_failed (void)
 fsm_branch_t
 ai__MOVE_WAIT_FOR_CLEAR_PATH__state_timeout (void)
 {
-    uint8_t i;
-    /* Position sensed obstacle. */
-    for (i = 0; i < main_obstacles_nb; i++)
-      {
-	path_obstacle (i, main_obstacles_pos[i].x, main_obstacles_pos[i].y,
-		       MOVE_OBSTACLE_RADIUS, 0, MOVE_OBSTACLE_VALIDITY);
-      }
     /* Try to move. */
     if (move_get_next_position ())
       {

@@ -25,9 +25,13 @@
 #include "common.h"
 #include "move.h"
 #include "fsm.h"
+#include "bot.h"
 #include "radar.h"
 #include "asserv.h"
 #include "main.h"
+
+#include "modules/path/path.h"
+#include "modules/utils/utils.h"
 
 /**
  * Internal data used by the move FSM.
@@ -43,6 +47,15 @@ move_start (position_t position, uint8_t backward)
     move_data.final_move = 0;
     /* Start the FSM. */
     fsm_handle_event (&ai_fsm, AI_EVENT_move_start);
+}
+
+void
+move_obstacles_update (void)
+{
+    uint8_t i;
+    for (i = 0; i < main_obstacles_nb; i++)
+	path_obstacle (i, main_obstacles_pos[i].x, main_obstacles_pos[i].y,
+		       MOVE_OBSTACLE_RADIUS, 0, MOVE_OBSTACLE_VALIDITY);
 }
 
 void
