@@ -35,8 +35,12 @@
  *  - determining if an obstacle should make the robot stop.
  */
 
-/** Estimated obstacle radius.  As the sensors detect obstacle edge, this is
+/** Estimated obstacle edge radius.  As the sensors detect obstacle edge, this is
  * added to position obstacle center. */
+#define RADAR_OBSTACLE_EDGE_RADIUS_MM 40
+
+/** Estimated obstacle radius.  The obstacle may be larger than at the
+ * detected edge. */
 #define RADAR_OBSTACLE_RADIUS_MM 150
 
 /** Stop distance. Distance under which an obstacle is considered harmful when

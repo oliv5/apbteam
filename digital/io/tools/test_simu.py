@@ -45,6 +45,22 @@ import simu.robots.marcel.view.bag as robot_view
 from simu.inter.inter_node import InterNode
 from Tkinter import *
 
+class ObstacleWithBeacon (obstacle_view.RoundObstacle):
+
+    def __init__ (self, onto, model, beacon_model):
+        obstacle_view.RoundObstacle.__init__ (self, onto, model)
+        self.beacon_model = beacon_model
+
+    def __notified (self):
+        self.pos = self.model.pos
+        self.update ()
+
+    def draw (self):
+        obstacle_view.RoundObstacle.draw (self)
+        if self.pos:
+            self.draw_circle ((0, 0), self.beacon_model.radius,
+                    fill = '#505050')
+
 class TestSimu (InterNode):
     """Interface, with simulated programs."""
 
@@ -75,8 +91,10 @@ class TestSimu (InterNode):
         self.table = table.Table (self.table_view, self.table_model)
         self.obstacle = obstacle_model.RoundObstacle (150)
         self.table_model.obstacles.append (self.obstacle)
-        self.obstacle_view = obstacle_view.RoundObstacle (self.table,
-                self.obstacle)
+        self.obstacle_beacon = obstacle_model.RoundObstacle (40, 2)
+        self.table_model.obstacles.append (self.obstacle_beacon)
+        self.obstacle_view = ObstacleWithBeacon (self.table, self.obstacle,
+                self.obstacle_beacon)
         self.table_view.bind ('<2>', self.place_obstacle)
         # Add robot.
         self.robot_link = robot_link.Bag (self.node)
@@ -114,7 +132,9 @@ class TestSimu (InterNode):
     def place_obstacle (self, ev):
         pos = self.table_view.screen_coord ((ev.x, ev.y))
         self.obstacle.pos = pos
+        self.obstacle_beacon.pos = pos
         self.obstacle.notify ()
+        self.obstacle_beacon.notify ()
 
 if __name__ == '__main__':
     app = TestSimu (('../../asserv/src/asserv/asserv.host', '-m9', 'marcel'),
