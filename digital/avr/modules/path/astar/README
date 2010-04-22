@@ -1,0 +1,34 @@
+avr.path.astar - A* path finding module.
+
+Path finding in a user provided graph.  One of the main idea behind this
+module is to be able to operate with a minimum memory footprint even with a
+large number of nodes.
+
+This can be useful with a grid based graph, where there is many nodes, but not
+so many arcs, and arc weight (which are not stored by this module) can be
+computed quickly.
+
+This module use an indexed nodes storage, therefore, memory consumption is
+O(n), with n the number of nodes.  For very large grids, another
+implementation could be done where unused nodes are not stored in memory.
+
+
+Copyright (C) 2010 Nicolas Schodet
+
+APBTeam:
+       Web: http://apbteam.org/
+     Email: team AT apbteam DOT org
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
