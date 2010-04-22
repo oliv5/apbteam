@@ -72,6 +72,8 @@
 uint8_t
 move_get_next_position (void)
 {
+    uint8_t found;
+    uint8_t slow = 0;
     vect_t dst;
     /* Get the current position */
     position_t current_pos;
@@ -81,9 +83,17 @@ move_get_next_position (void)
 		    move_data.final.v.x, move_data.final.v.y);
     /* Update the path module */
     path_update ();
-
-    /* If the path is found. */
-    if (path_get_next (&dst.x, &dst.y) != 0)
+    found = path_get_next (&dst.x, &dst.y);
+    /* If not found, try to escape. */
+    if (!found)
+      {
+	slow = 1;
+	path_escape (8);
+	path_update ();
+	found = path_get_next (&dst.x, &dst.y);
+      }
+    /* If the path is found, move. */
+    if (found)
       {
 	/* If it is not the last position. */
 	if (dst.x != move_data.final.v.x || dst.y != move_data.final.v.y)
@@ -91,7 +101,8 @@ move_get_next_position (void)
 	    /* Not final position. */
 	    move_data.final_move = 0;
 	    /* Goto without angle. */
-	    asserv_goto (dst.x, dst.y, move_data.backward_movement_allowed);
+	    asserv_goto (dst.x, dst.y, move_data.backward_movement_allowed
+			 | (slow ? ASSERV_REVERT_OK : 0));
 	  }
 	else
 	  {
