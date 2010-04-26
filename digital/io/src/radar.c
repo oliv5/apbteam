@@ -162,8 +162,7 @@ radar_blocking (const vect_t *robot_pos, const vect_t *dest_pos,
 	    + RADAR_OBSTACLE_RADIUS_MM;
     else
 	length = BOT_SIZE_FRONT + RADAR_STOP_MM + RADAR_OBSTACLE_RADIUS_MM;
-    /* To save divisions, multiply limits by vd (and vdn) length. */
-    vect_t vdn = vd; vect_normal (&vdn);
+    /* To save divisions, multiply limits by vd length. */
     int32_t limit = (uint32_t) d * length;
     int32_t limitn = (uint32_t) d * (BOT_SIZE_SIDE + RADAR_CLEARANCE_MM
 				     + RADAR_OBSTACLE_RADIUS_MM);
@@ -176,7 +175,7 @@ radar_blocking (const vect_t *robot_pos, const vect_t *dest_pos,
 	int32_t dp = vect_dot_product (&vd, &vo);
 	if (dp < 0 || dp > limit)
 	    continue;
-	int32_t dpn = vect_dot_product (&vdn, &vo);
+	int32_t dpn = vect_normal_dot_product (&vd, &vo);
 	if (dpn < -limitn || dpn > limitn)
 	    continue;
 	/* Else, obstacle is blocking. */

@@ -64,8 +64,7 @@ distance_segment_point (vect_t *a, vect_t *b, vect_t *p)
     if (vect_dot_product (&vab, &vbp) > 0)
 	return vect_norm (&vbp);
     /* Else, region 2. */
-    vect_normal (&vab);
-    proj = vect_dot_product (&vab, &vbp) / vect_norm (&vab);
+    proj = vect_normal_dot_product (&vab, &vbp) / vect_norm (&vab);
     return UTILS_ABS (proj);
 }
 
