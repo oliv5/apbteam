@@ -37,7 +37,7 @@
 #define MEX_MSG_NEW_HEADER_SIZE 3
 
 /** Message payload allocated size. */
-#define MEX_MSG_NEW_PAYLOAD_SIZE 32
+#define MEX_MSG_NEW_PAYLOAD_SIZE 128
 
 /** Message buffer allocated size. */
 #define MEX_MSG_NEW_BUFFER_SIZE \
