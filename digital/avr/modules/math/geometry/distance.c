@@ -26,6 +26,15 @@
 #include "distance.h"
 
 #include "modules/utils/utils.h"
+#include "modules/math/fixed/fixed.h"
+
+int16_t
+distance_point_point (vect_t *a, vect_t *b)
+{
+    int16_t dx = b->x - a->x;
+    int16_t dy = b->y - a->y;
+    return fixed_sqrt_ui32 (dx * dx + dy * dy);
+}
 
 int16_t
 distance_segment_point (vect_t *a, vect_t *b, vect_t *p)

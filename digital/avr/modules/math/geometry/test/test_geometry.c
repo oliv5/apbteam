@@ -197,6 +197,19 @@ test_distance (void)
 {
     vect_t a, b, p;
     int16_t d;
+    /* distance_point_point. */
+    a.x = 100; a.y = 100;
+    b.x = 200; b.y = 200;
+    d = distance_point_point (&a, &b);
+    test (d == 141);
+    a.x = -100; a.y = -100;
+    b.x = -200; b.y = -200;
+    d = distance_point_point (&a, &b);
+    test (d == 141);
+    a.x = 0; a.y = -100;
+    b.x = 0; b.y = 200;
+    d = distance_point_point (&a, &b);
+    test (d == 300);
     /* distance_segment_point. */
     a.x = 300; a.y = 200;
     b.x = 900; b.y = 500;

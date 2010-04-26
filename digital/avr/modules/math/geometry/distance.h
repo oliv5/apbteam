@@ -26,6 +26,11 @@
  * }}} */
 #include "modules/math/geometry/vect.h"
 
+/** Compute distance between two points.
+ * - a, b: points. */
+int16_t
+distance_point_point (vect_t *a, vect_t *b);
+
 /** Compute distance between a segment and a point.
  * - a: segment first vertice.
  * - b: segment second vertice.
