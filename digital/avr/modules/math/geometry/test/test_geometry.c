@@ -153,6 +153,27 @@ test_vect (void)
     b.x = 30000; b.y = 0;
     p = vect_dot_product (&a, &b);
     test (p == 900000000l);
+    /* vect_normal_dot_product. */
+    a.x = 0; a.y = -100;
+    b.x = 100; b.y = 0;
+    p = vect_normal_dot_product (&a, &b);
+    test (p == 10000);
+    a.x = 0; a.y = -100;
+    b.x = 0; b.y = 100;
+    p = vect_normal_dot_product (&a, &b);
+    test (p == 0);
+    a.x = 0; a.y = 100;
+    b.x = 100; b.y = 0;
+    p = vect_normal_dot_product (&a, &b);
+    test (p == -10000);
+    vect_from_polar_uf016 (&a, 100, G_ANGLE_UF016_DEG (-90));
+    vect_from_polar_uf016 (&b, 100, G_ANGLE_UF016_DEG (60));
+    p = vect_normal_dot_product (&a, &b);
+    test (p == 5000);
+    a.x = 0; a.y = -30000;
+    b.x = 30000; b.y = 0;
+    p = vect_normal_dot_product (&a, &b);
+    test (p == 900000000l);
     /* vect_array_*. */
     vect_t c[4] =
       {

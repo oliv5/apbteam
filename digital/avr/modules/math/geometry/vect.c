@@ -98,6 +98,12 @@ vect_dot_product (const vect_t *a, const vect_t *b)
     return (int32_t) a->x * b->x + (int32_t) b->y * a->y;
 }
 
+int32_t
+vect_normal_dot_product (const vect_t *a, const vect_t *b)
+{
+    return (int32_t) a->x * b->y - (int32_t) b->x * a->y;
+}
+
 void
 vect_array_scale_f824 (vect_t *va, uint8_t vn, int32_t s_f824)
 {

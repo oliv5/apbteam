@@ -94,6 +94,16 @@ vect_normal (vect_t *v);
 int32_t
 vect_dot_product (const vect_t *a, const vect_t *b);
 
+/** Compute the dot product (scalar product) of a normal of the first vector
+ * with the second vector.
+ * - a: vector to take normal of.
+ * - b: vector to make product with.
+ * - returns: dot product.
+ * The first vector is rotated of pi/2.  The result is the same as the z part
+ * of the vector product. */
+int32_t
+vect_normal_dot_product (const vect_t *a, const vect_t *b);
+
 /** Scale (multiply) vectors by a fixed point value.
  * - va: input/result vectors array.
  * - vn: number of vectors.
