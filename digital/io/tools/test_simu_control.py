@@ -28,14 +28,24 @@ import math
 class TestSimuControl (TestSimu):
     """Interface with extra control."""
 
-    def __init__ (self, asserv_cmd, io_cmd):
-        TestSimu.__init__ (self, asserv_cmd, io_cmd)
+    def __init__ (self, asserv_cmd, mimot_cmd, io_cmd):
+        TestSimu.__init__ (self, asserv_cmd, mimot_cmd, io_cmd)
 
     def create_widgets (self):
         TestSimu.create_widgets (self)
         self.control_frame = Frame (self)
         self.control_frame.pack (side = 'left', before = self.table_view,
                 fill = 'y')
+        self.clamp_var = IntVar ()
+        self.clamp_button = Checkbutton (self.control_frame, text = 'Clamp',
+                indicatoron = False,
+                variable = self.clamp_var, command = self.clamp_command)
+        self.clamp_button.pack ()
+        self.elevator_var = IntVar ()
+        self.elevator_button = Checkbutton (self.control_frame,
+                text = 'Elevator', indicatoron = False,
+                variable = self.elevator_var, command = self.elevator_command)
+        self.elevator_button.pack ()
         self.table_view.bind ('<1>', self.move)
         self.table_view.bind ('<3>', self.orient)
 
@@ -50,11 +60,28 @@ class TestSimuControl (TestSimu):
             a = math.atan2 (y - robot_pos[1], x - robot_pos[0])
             self.asserv.goto_angle (a)
 
+    def clamp_command (self):
+        if self.clamp_var.get ():
+            pos = 6000
+        else:
+            pos = 0
+        self.mimot.goto_pos ('a0', pos)
+        self.mimot.goto_pos ('a1', pos)
+
+    def elevator_command (self):
+        if self.elevator_var.get ():
+            pos = 11800
+        else:
+            pos = 0
+        self.asserv.goto_pos ('a0', pos)
+
     def change_color (self, *dummy):
         pass
 
 if __name__ == '__main__':
     app = TestSimuControl (('../../asserv/src/asserv/asserv.host', '-m9',
-        'marcel'), ('../src/io.host'))
+        'marcel'),
+        ('../../mimot/src/dirty/dirty.host', '-m9', 'marcel'),
+        ('../src/io.host'))
     app.mainloop ()
     app.close ()

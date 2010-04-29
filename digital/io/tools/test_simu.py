@@ -28,6 +28,8 @@ import utils.forked
 
 import asserv
 import asserv.init
+import mimot
+import mimot.init
 import io
 import io.init
 from proto.popen_io import PopenIO
@@ -69,7 +71,7 @@ class TestSimu (InterNode):
             True: (3000 - 300, 2100 - 305, math.radians (-270))
             }
 
-    def __init__ (self, asserv_cmd, io_cmd):
+    def __init__ (self, asserv_cmd, mimot_cmd, io_cmd):
         # Hub.
         self.hub = mex.hub.Hub (min_clients = 2)
         self.forked_hub = utils.forked.Forked (self.hub.wait)
@@ -82,6 +84,11 @@ class TestSimu (InterNode):
                 **asserv.init.host)
         self.asserv.async = True
         self.tk.createfilehandler (self.asserv, READABLE, self.asserv_read)
+        # Mimot.
+        self.mimot = mimot.Proto (PopenIO (mimot_cmd), time,
+                **mimot.init.host)
+        self.mimot.async = True
+        self.tk.createfilehandler (self.mimot, READABLE, self.mimot_read)
         # Io.
         self.io = io.Proto (PopenIO (io_cmd), time, **io.init.host)
         self.io.async = True
@@ -114,6 +121,10 @@ class TestSimu (InterNode):
         self.asserv.proto.read ()
         self.asserv.proto.sync ()
 
+    def mimot_read (self, file, mask):
+        self.mimot.proto.read ()
+        self.mimot.proto.sync ()
+
     def io_read (self, file, mask):
         self.io.proto.read ()
         self.io.proto.sync ()
@@ -123,6 +134,7 @@ class TestSimu (InterNode):
         simulated time."""
         InterNode.step (self)
         self.asserv.proto.sync ()
+        self.mimot.proto.sync ()
         self.io.proto.sync ()
 
     def change_color (self, *dummy):
@@ -138,6 +150,7 @@ class TestSimu (InterNode):
 
 if __name__ == '__main__':
     app = TestSimu (('../../asserv/src/asserv/asserv.host', '-m9', 'marcel'),
+            ('../../mimot/src/dirty/dirty.host', '-m9', 'marcel'),
             ('../src/io.host'))
     app.mainloop ()
     app.close ()
