@@ -256,6 +256,24 @@ static const struct robot_t aquajim_robot =
     simu_sensor_update_aquajim,
 };
 
+/* Marcel elevator model, with a Faulhaber 2657 and a 1:9.7 ratio gearbox. */
+static const struct motor_def_t marcel_elevator_model =
+{
+    /* Motor characteristics. */
+    274 * (2*M_PI) / 60,/* Speed constant ((rad/s)/V). */
+    34.8 / 1000,	/* Torque constant (N.m/A). */
+    0,			/* Bearing friction (N.m/(rad/s)). */
+    2.84,		/* Terminal resistance (Ohm). */
+    0.380 / 1000,	/* Terminal inductance (H). */
+    24.0,		/* Maximum voltage (V). */
+    /* Gearbox characteristics. */
+    9.7,		/* Gearbox ratio. */
+    0.80,		/* Gearbox efficiency. */
+    /* Load characteristics. */
+    1.0 * 0.01 * 0.01,	/* Load (kg.m^2). */
+    /* This is a pifometric estimation. */
+};
+
 /* Marcel, APBTeam 2010. */
 static const struct robot_t marcel_robot =
 {
@@ -278,9 +296,9 @@ static const struct robot_t marcel_robot =
     /** Distance between the encoders wheels (m). */
     0.28,
     /** Auxiliary motors, NULL if not present. */
-    { NULL, NULL },
+    { &marcel_elevator_model, NULL },
     /** Number of steps for each auxiliary motor encoder. */
-    { 0, 0 },
+    { 512, 0 },
     /** Sensor update function. */
     simu_sensor_update_marcel,
 };
