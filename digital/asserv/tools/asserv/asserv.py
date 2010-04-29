@@ -256,6 +256,13 @@ class Proto:
                 self._angle_f16 (a), b, self.mseq)
         self.wait (self.finished, auto = True)
 
+    def goto_pos (self, w, pos):
+        """Go to auxiliary motor absolute position."""
+	i = self._index[w]
+	self.aseq[i] += 1
+	self.proto.send ('y', 'BhB', i, pos, self.aseq[i])
+        self.wait (self.finished, auto = True)
+
     def ftw (self, backward = True):
         """Go to the wall."""
         self.mseq += 1
