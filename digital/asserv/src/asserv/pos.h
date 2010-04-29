@@ -52,8 +52,6 @@ extern struct pos_t pos_theta, pos_alpha;
 extern struct pos_t pos_aux[AC_ASSERV_AUX_NB];
 
 extern int32_t pos_e_sat, pos_i_sat, pos_d_sat;
-extern int32_t pos_blocked_error_limit, pos_blocked_speed_limit,
-       pos_blocked_counter_limit;
 
 void
 pos_update (void);
