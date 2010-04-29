@@ -422,6 +422,7 @@ simu_send (void)
 		mex_msg_push (m, "l", simu_aux_model_to_send[i]);
 	    else
 		mex_msg_push (m, "l", 0);
+	    simu_aux_model_sent[i] = simu_aux_model_to_send[i];
 	  }
 	mex_node_send (m);
       }
