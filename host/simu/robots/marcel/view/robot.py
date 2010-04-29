@@ -23,19 +23,29 @@
 # }}}
 """Marcel robot view."""
 import simu.inter.drawable
+from math import cos
+
+from simu.view.table_eurobot2010 import RED, corn_attr
 
 class Robot (simu.inter.drawable.Drawable):
 
-    def __init__ (self, onto, position_model):
+    def __init__ (self, onto, position_model, loader_model):
         """Construct and make connections."""
         simu.inter.drawable.Drawable.__init__ (self, onto)
         self.position_model = position_model
         self.position_model.register (self.__position_notified)
+        self.loader_model = loader_model
+        self.loader_model.register (self.__loader_notified)
 
     def __position_notified (self):
         """Called on position modifications."""
         self.pos = self.position_model.pos
         self.angle = self.position_model.angle
+        self.update ()
+
+    def __loader_notified (self):
+        """Called on loader modifications."""
+        self.clamp_pos = self.loader_model.clamp_pos
         self.update ()
 
     def draw (self):
@@ -57,6 +67,30 @@ class Robot (simu.inter.drawable.Drawable):
             self.draw_line ((0, +f / 2), (0, -f / 2), fill = axes_fill)
             self.draw_line ((-wr, f / 2), (+wr, f / 2), fill = axes_fill)
             self.draw_line ((-wr, -f / 2), (+wr, -f / 2), fill = axes_fill)
+            # Draw robot clamp.
+            if (self.clamp_pos[0] is not None
+                    and self.clamp_pos[1] is not None):
+                l = self.loader_model.CLAMP_LENGTH * cos (
+                        self.loader_model.elevator_angle)
+                y = self.loader_model.CLAMP_WIDTH / 2 - self.clamp_pos[0]
+                self.draw_line ((120, y - 10), (120 + 0.15 * l, y),
+                        (120 + 0.85 * l, y), (120 + l, y - 10))
+                y = -self.loader_model.CLAMP_WIDTH / 2 + self.clamp_pos[1]
+                self.draw_line ((120, y + 10), (120 + 0.15 * l, y),
+                        (120 + 0.85 * l, y), (120 + l, y + 10))
+                # Draw clamp load.
+                if self.loader_model.clamp_load:
+                    elements = self.loader_model.clamp_load
+                    tickness = sum (e.radius * 2 for e in elements)
+                    y = tickness / 2
+                    for e in elements:
+                        if hasattr (e, 'black'):
+                            attr = corn_attr[e.black]
+                        else:
+                            attr = dict (fill = RED)
+                        self.draw_circle ((120 + l / 2, y - e.radius),
+                                e.radius, **attr)
+                        y -= e.radius * 2
             # Extends.
             simu.inter.drawable.Drawable.draw (self)
 

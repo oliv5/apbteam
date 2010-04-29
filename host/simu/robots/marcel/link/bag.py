@@ -24,10 +24,12 @@
 """Marcel bag of links."""
 import io.mex
 import asserv.mex
+import mimot.mex
 
 class Bag:
 
     def __init__ (self, node):
         self.asserv = asserv.mex.Mex (node)
         self.io = io.mex.Mex (node)
+        self.mimot = mimot.mex.Mex (node)
 

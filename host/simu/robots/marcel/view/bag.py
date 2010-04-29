@@ -27,6 +27,7 @@ from simu.view.distance_sensor_us import DistanceSensorUS
 from simu.view.path import Path
 from simu.view.pos_report import PosReport
 from simu.robots.marcel.view.robot import Robot
+from simu.robots.marcel.view.loader import Loader
 
 class Bag:
 
@@ -34,7 +35,9 @@ class Bag:
         self.jack = Switch (sensor_frame, model_bag.jack, 'Jack')
         self.color_switch = Switch (sensor_frame, model_bag.color_switch,
                 'Color')
-        self.robot = Robot (table, model_bag.position)
+        self.robot = Robot (table, model_bag.position, model_bag.loader)
+        self.loader = Loader (actuator_view.add_view (Loader.width,
+            Loader.height), model_bag.loader)
         self.distance_sensor = [DistanceSensorUS (self.robot, ds)
                 for ds in model_bag.distance_sensor]
         self.path = Path (table, model_bag.path)

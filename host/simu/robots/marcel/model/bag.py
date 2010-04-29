@@ -24,6 +24,7 @@
 """Marcel bag of models."""
 from simu.model.switch import Switch
 from simu.model.position import Position
+from simu.robots.marcel.model.loader import Loader
 from simu.model.distance_sensor_sensopart import DistanceSensorSensopart
 from math import pi
 
@@ -34,6 +35,8 @@ class Bag:
         self.color_switch = Switch (link_bag.io.color_switch)
         self.contact = [ Switch (contact) for contact in link_bag.io.contact ]
         self.position = Position (link_bag.asserv.position)
+        self.loader = Loader (table, self.position, link_bag.mimot.aux[0],
+                link_bag.mimot.aux[1], link_bag.asserv.aux[0])
         self.distance_sensor = [
                 DistanceSensorSensopart (link_bag.io.adc[0], scheduler, table,
                     (30 - 20, 0), 0, (self.position, ), 2),
