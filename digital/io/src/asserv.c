@@ -22,26 +22,15 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
-
 #include "common.h"
 #include "asserv.h"
 
-#include "modules/twi/twi.h"	/* twi_* */
+#include "twi_master.h"
+
 #include "modules/utils/byte.h"	/* v*_to_v* */
 #include "modules/math/fixed/fixed.h"
-#include "modules/utils/crc.h"
-#include "modules/trace/trace.h"
 #include "bot.h"
 #include "io.h"
-#include "trace_event.h"
-
-/** Scaling factor. */
-uint32_t asserv_scale;
-
-/**
- * Last moving direction.
- */
-uint8_t asserv_last_moving_direction = 0;
 
 /**
  * @defgroup AsservPrivate Asserv module private variables and functions
@@ -73,25 +62,14 @@ enum asserv_status_flag_e
 };
 typedef enum asserv_status_flag_e asserv_status_flag_e;
 
+/** Scaling factor. */
+static uint32_t asserv_scale;
+
 /** Scaling factor inverse. */
 static uint32_t asserv_scale_inv;
 
-/**
- * Sequence number.
- * It is used for the acknowledge of the command sent to the asserv.
- */
-static uint8_t asserv_twi_seq;
-static uint8_t trace_asserv_twi_seq;
-
-/**
- * Shared buffer used to send commands to the asserv.
- */
-static uint8_t asserv_twi_buffer[15];
-
-/**
- * Pointer to access the buffer to put the parameters list.
- */
-static uint8_t *asserv_twi_buffer_param = &asserv_twi_buffer[3];
+/** Last moving direction. */
+static uint8_t asserv_last_moving_direction;
 
 /**
  * Structure for storing a position for the bot using asserv units.
@@ -115,8 +93,6 @@ typedef struct asserv_struct_s
     uint8_t status;
     /** Asserv board input port. */
     uint8_t input_port;
-    /** Sequence number. */
-    uint8_t seq;
     /** Bot position. */
     asserv_position_t position;
     /** Motor0 position. */
@@ -131,61 +107,11 @@ typedef struct asserv_struct_s
 asserv_struct_s asserv_status;
 
 /**
- * Retransmit counter initial value.
- */
-#define ASSERV_RETRANSMIT_COUNT 10
-
-/**
- * Retransmit counter.
- */
-static uint8_t asserv_retransmit_counter;
-
-/**
- * Length of the last transmitted command.
- */
-static uint8_t asserv_retransmit_length;
-
-/**
- * Update TWI module until request (send or receive) is finished.
- * This functions is blocking.
- */
-static inline void
-asserv_twi_update (void);
-
-/**
- * Send a command to the asserv board using the TWI module.
- * If the command you want to send have some parameters, you need to fill
- * asserv_twi_buffer_param buffer.
- * @param command the command to send.
- * @param length the length of the parameters list (in byte).
- * @return
- *  - 0 when there is no error
- *  - 1 if there is already a command running on the asserv (not acknowledged
- *  or not finished yet).
- */
-static inline uint8_t
-asserv_twi_send_command (uint8_t command, uint8_t length);
-
-/**
- * Send a prepared command to the asserv board using TWI module.
- * It will reset the counter retransmission value and store the length for
- * future retransmission.
- * In comparison with \a asserv_twi_send_command this function is internal and
- * used by \a asserv_twi_send_command.
- * @param length th length of the complete command with parameters.
- * @return
- *   - 0 if no error occurred.
- *   - 1 if TWI transmission failed.
- */
-static inline uint8_t
-asserv_twi_send (uint8_t length);
-
-/**
  * Move the motor0.
  * @param position desired goal position (in step).
  * @param speed speed of the movement.
  */
-void
+static void
 asserv_move_motor0_absolute (uint16_t position, uint8_t speed);
 
 /**
@@ -195,140 +121,28 @@ asserv_move_motor0_absolute (uint16_t position, uint8_t speed);
  */
 static uint16_t asserv_motor0_current_position;
 
-/* Update TWI module until request (send or receive) is finished. */
-static inline void
-asserv_twi_update (void)
-{
-    while (!twi_ms_is_finished ())
-	;
-}
-
-/* Send a command to the asserv board using the TWI module. */
-static inline uint8_t
-asserv_twi_send_command (uint8_t command, uint8_t length)
-{
-    /* Check we are not doing a command ? */
-    assert (asserv_last_cmd_ack ());
-
-    /* Put the sequence number */
-    asserv_twi_buffer[1] = ++asserv_twi_seq;
-    /* Put the command into the buffer */
-    asserv_twi_buffer[2] = command;
-
-    /* Compute CRC. */
-    asserv_twi_buffer[0] = crc_compute (&asserv_twi_buffer[1], length + 2);
-
-    /* Send the prepared command */
-    return asserv_twi_send (length + 3);
-}
-
-/* Send a prepared command to the asserv board using TWI module. */
-static inline uint8_t
-asserv_twi_send (uint8_t length)
-{
-    /* Send command to the asserv */
-    if (twi_ms_send (AC_ASSERV_TWI_ADDRESS, asserv_twi_buffer, length) != 0)
-	return 1;
-
-    /* Sending a command. */
-    TRACE (TRACE_ASSERV__SEND, asserv_twi_buffer[1], asserv_twi_buffer[2]);
-
-    /* Update until the command is sent */
-    asserv_twi_update ();
-
-    /* Reset retransmit counter */
-    asserv_retransmit_counter = ASSERV_RETRANSMIT_COUNT;
-    /* Store length for retransmission */
-    asserv_retransmit_length = length;
-
-    return 0;
-}
-/** @} */
-
-/* Initialize the asserv control module. */
 void
 asserv_init (void)
 {
-    /* Initialize TWI with my (io) address */
-    twi_init (AC_IO_TWI_ADDRESS);
-    /* Get first status of the asserv board */
-    asserv_update_status ();
-    /* Reset sequence number */
-    asserv_twi_seq = asserv_status.seq;
-    trace_asserv_twi_seq = asserv_twi_seq + 1;
-    /* Scaling factor. */
     asserv_set_scale (BOT_SCALE * (1L << 24));
 }
 
-/* Update the status of the asserv board seen from the io program. */
 void
-asserv_update_status (void)
+asserv_status_cb (uint8_t *status)
 {
-    /* Status buffer used to receive data from the asserv */
-    static uint8_t buffer[AC_ASSERV_STATUS_LENGTH + 1];
-    uint8_t *status_buffer = &buffer[1];
-
-    /* Read data from the asserv card */
-    twi_ms_read (AC_ASSERV_TWI_ADDRESS, buffer, AC_ASSERV_STATUS_LENGTH + 1);
-    /* Update until done */
-    asserv_twi_update ();
-    /* Check CRC. */
-    uint8_t crc = crc_compute (status_buffer, AC_ASSERV_STATUS_LENGTH);
-    if (crc != buffer[0])
-	return;
-
-    /* Parse received data and store them */
-    asserv_status.status = status_buffer[0];
-    asserv_status.input_port = status_buffer[1];
-    asserv_status.seq = status_buffer[2];
-    asserv_status.position.x = ((int32_t) v8_to_v32 (status_buffer[3], status_buffer[4],
-				     status_buffer[5], 0)) >> 8;
-    asserv_status.position.y = ((int32_t) v8_to_v32 (status_buffer[6], status_buffer[7],
-				     status_buffer[8], 0)) >> 8;
-    asserv_status.position.a = v8_to_v16 (status_buffer[9], status_buffer[10]);
-    asserv_status.motor0_position = v8_to_v16 (status_buffer[11], status_buffer[12]);
-    asserv_status.motor1_position = v8_to_v16 (status_buffer[13], status_buffer[14]);
+    /* Parse received data and store them. */
+    asserv_status.status = status[0];
+    asserv_status.input_port = status[1];
+    asserv_status.position.x = v8_to_v32 (0, status[3], status[4], status[5]);
+    asserv_status.position.y = v8_to_v32 (0, status[6], status[7], status[8]);
+    asserv_status.position.a = v8_to_v16 (status[9], status[10]);
+    asserv_status.motor0_position = v8_to_v16 (status[11], status[12]);
+    asserv_status.motor1_position = v8_to_v16 (status[13], status[14]);
     /* Update moving direction. */
     if (asserv_get_moving_direction () != 0)
 	asserv_last_moving_direction = asserv_get_moving_direction ();
-
-    if (trace_asserv_twi_seq == asserv_status.seq)
-      {
-	/* Next ack. */
-	trace_asserv_twi_seq++;
-	TRACE (TRACE_ASSERV__LAST_STATUS_ACK, asserv_status.seq,
-	       asserv_status.status);
-      }
 }
 
-/* Is last command sent to the asserv board is being executed? */
-uint8_t
-asserv_last_cmd_ack (void)
-{
-    /* Compare last command sequence number and the one acknowledge by the
-     * asserv */
-    return (asserv_status.seq == asserv_twi_seq);
-}
-
-/**
- * Re-send command if not acknowledged.
- */
-uint8_t
-asserv_retransmit (void)
-{
-    /* Check if we have reached the maximum number of check before
-     * retransmission */
-    if (--asserv_retransmit_counter == 0)
-      {
-	TRACE (TRACE_ASSERV__RETRANSMIT, asserv_twi_buffer[1]);
-	/* Retransmit! */
-	asserv_twi_send (asserv_retransmit_length);
-	return 1;
-      }
-    return 0;
-}
-
-/* Is last move class command has successfully ended? */
 asserv_status_e
 asserv_move_cmd_status (void)
 {
@@ -342,7 +156,6 @@ asserv_move_cmd_status (void)
     return none;
 }
 
-/* Is last motor0 class command has successfully ended? */
 asserv_status_e
 asserv_motor0_cmd_status (void)
 {
@@ -356,7 +169,6 @@ asserv_motor0_cmd_status (void)
     return none;
 }
 
-/* Is last motor1 class command has successfully ended? */
 asserv_status_e
 asserv_motor1_cmd_status (void)
 {
@@ -370,22 +182,18 @@ asserv_motor1_cmd_status (void)
     return none;
 }
 
-/* Get the current position of the bot. */
 void
 asserv_get_position (position_t *current_position)
 {
-    if (current_position)
-      {
-	/* Copy last received status buffer information to current position */
-	current_position->v.x = fixed_mul_f824 (asserv_status.position.x,
-						asserv_scale);
-	current_position->v.y = fixed_mul_f824 (asserv_status.position.y,
-						asserv_scale);
-	current_position->a = asserv_status.position.a;
-      }
+    assert (current_position);
+    /* Copy last received status buffer information to current position */
+    current_position->v.x = fixed_mul_f824 (asserv_status.position.x,
+					    asserv_scale);
+    current_position->v.y = fixed_mul_f824 (asserv_status.position.y,
+					    asserv_scale);
+    current_position->a = asserv_status.position.a;
 }
 
-/* Get the motor0 position. */
 uint16_t
 asserv_get_motor0_position (void)
 {
@@ -393,7 +201,6 @@ asserv_get_motor0_position (void)
     return asserv_status.motor0_position;
 }
 
-/* Get the motor1 position. */
 uint16_t
 asserv_get_motor1_position (void)
 {
@@ -401,7 +208,6 @@ asserv_get_motor1_position (void)
     return asserv_status.motor1_position;
 }
 
-/* Are we moving forward/backward? */
 uint8_t
 asserv_get_moving_direction (void)
 {
@@ -415,112 +221,108 @@ asserv_get_moving_direction (void)
     return 0;
 }
 
-/* Reset the asserv board. */
+uint8_t
+asserv_get_last_moving_direction (void)
+{
+    return asserv_last_moving_direction;
+}
+
 void
 asserv_reset (void)
 {
-    /* Send the reset command to the asserv board */
-    asserv_twi_send_command ('z', 0);
+    uint8_t *buffer = twi_master_get_buffer (ASSERV_SLAVE);
+    buffer[0] = 'z';
+    twi_master_send (1);
 }
 
-/* Free the motors (stop controlling them). */
 void
 asserv_free_motor (void)
 {
-    /* Send the free motor command to the asserv board */
-    asserv_twi_send_command ('w', 0);
+    uint8_t *buffer = twi_master_get_buffer (ASSERV_SLAVE);
+    buffer[0] = 'w';
+    twi_master_send (1);
 }
 
-/* Stop the motor (and the bot). */
 void
 asserv_stop_motor (void)
 {
-    /* Send the stop motor command to the asserv board */
-    asserv_twi_send_command ('s', 0);
+    uint8_t *buffer = twi_master_get_buffer (ASSERV_SLAVE);
+    buffer[0] = 's';
+    twi_master_send (1);
 }
 
-/* Move linearly. */
 void
 asserv_move_linearly (int32_t distance)
 {
     distance = fixed_mul_f824 (distance, asserv_scale_inv);
-    /* Put distance as parameter */
-    asserv_twi_buffer_param[0] = v32_to_v8 (distance, 2);
-    asserv_twi_buffer_param[1] = v32_to_v8 (distance, 1);
-    asserv_twi_buffer_param[2] = v32_to_v8 (distance, 0);
-    /* Send the linear move command to the asserv board */
-    asserv_twi_send_command ('l', 3);
+    uint8_t *buffer = twi_master_get_buffer (ASSERV_SLAVE);
+    buffer[0] = 'l';
+    buffer[1] = v32_to_v8 (distance, 2);
+    buffer[2] = v32_to_v8 (distance, 1);
+    buffer[3] = v32_to_v8 (distance, 0);
+    twi_master_send (4);
 }
 
-/* Move angularly (turn). */
 void
 asserv_move_angularly (int16_t angle)
 {
-    /* Put angle as parameter */
-    asserv_twi_buffer_param[0] = v16_to_v8 (angle, 1);
-    asserv_twi_buffer_param[1] = v16_to_v8 (angle, 0);
-    /* Send the angular move command to the asserv board */
-    asserv_twi_send_command ('a', 2);
+    uint8_t *buffer = twi_master_get_buffer (ASSERV_SLAVE);
+    buffer[0] = 'a';
+    buffer[1] = v16_to_v8 (angle, 1);
+    buffer[2] = v16_to_v8 (angle, 0);
+    twi_master_send (3);
 }
 
-/* Make the bot turn of an absolute angle. */
 void
 asserv_goto_angle (int16_t angle)
 {
-    /* Put angle as parameter */
-    asserv_twi_buffer_param[0] = v16_to_v8 (angle, 1);
-    asserv_twi_buffer_param[1] = v16_to_v8 (angle, 0);
-    /* Sent the got to an absolute angle command to the asserv board */
-    asserv_twi_send_command ('y', 2);
+    uint8_t *buffer = twi_master_get_buffer (ASSERV_SLAVE);
+    buffer[0] = 'y';
+    buffer[1] = v16_to_v8 (angle, 1);
+    buffer[2] = v16_to_v8 (angle, 0);
+    twi_master_send (3);
 }
 
-/* Go to an absolute position and then an absolute angle. */
 void
 asserv_goto_xya (uint32_t x, uint32_t y, int16_t a, uint8_t backward)
 {
     x = fixed_mul_f824 (x, asserv_scale_inv);
     y = fixed_mul_f824 (y, asserv_scale_inv);
-    /* Put X as parameter */
-    asserv_twi_buffer_param[0] = v32_to_v8 (x, 2);
-    asserv_twi_buffer_param[1] = v32_to_v8 (x, 1);
-    asserv_twi_buffer_param[2] = v32_to_v8 (x, 0);
-    /* Put distance as parameter */
-    asserv_twi_buffer_param[3] = v32_to_v8 (y, 2);
-    asserv_twi_buffer_param[4] = v32_to_v8 (y, 1);
-    asserv_twi_buffer_param[5] = v32_to_v8 (y, 0);
-    /* Put angle as parameter */
-    asserv_twi_buffer_param[6] = v16_to_v8 (a, 1);
-    asserv_twi_buffer_param[7] = v16_to_v8 (a, 0);
-    /* No backward. */
-    asserv_twi_buffer_param[8] = backward;
-    /* Send the got to an absolute position and them absolute angle command to
-     * the asserv board */
-    asserv_twi_send_command ('X', 9);
+    uint8_t *buffer = twi_master_get_buffer (ASSERV_SLAVE);
+    buffer[0] = 'X';
+    buffer[1] = v32_to_v8 (x, 2);
+    buffer[2] = v32_to_v8 (x, 1);
+    buffer[3] = v32_to_v8 (x, 0);
+    buffer[4] = v32_to_v8 (y, 2);
+    buffer[5] = v32_to_v8 (y, 1);
+    buffer[6] = v32_to_v8 (y, 0);
+    buffer[7] = v16_to_v8 (a, 1);
+    buffer[8] = v16_to_v8 (a, 0);
+    buffer[9] = backward;
+    twi_master_send (10);
 }
 
-/* Go to the wall. */
 void
 asserv_go_to_the_wall (uint8_t backward)
 {
-    /* Put direction as parameters */
-    asserv_twi_buffer_param[0] = backward;
-    /* Send the go the wall command to the asserv board */
-    asserv_twi_send_command ('f', 1);
+    uint8_t *buffer = twi_master_get_buffer (ASSERV_SLAVE);
+    buffer[0] = 'f';
+    buffer[1] = backward;
+    twi_master_send (2);
 }
 
 /* Move the motor0. */
-void
+static void
 asserv_move_motor0_absolute (uint16_t position, uint8_t speed)
 {
-    /* Put position and speed as parameters */
-    asserv_twi_buffer_param[0] = v16_to_v8 (position, 1);
-    asserv_twi_buffer_param[1] = v16_to_v8 (position, 0);
-    asserv_twi_buffer_param[2] = speed;
-    /* Send the move the motor0 command to the asserv board */
-    asserv_twi_send_command ('b', 3);
+    uint8_t *buffer = twi_master_get_buffer (ASSERV_SLAVE);
+    buffer[0] = 'b';
+    buffer[1] = v16_to_v8 (position, 1);
+    buffer[2] = v16_to_v8 (position, 0);
+    buffer[3] = speed;
+    twi_master_send (4);
 }
 
-/* Move the motor0 to a certain number of steps. */
 void
 asserv_move_motor0 (int16_t offset, uint8_t speed)
 {
@@ -530,150 +332,106 @@ asserv_move_motor0 (int16_t offset, uint8_t speed)
     asserv_move_motor0_absolute (asserv_motor0_current_position, speed);
 }
 
-/* Move the motor1. */
 void
 asserv_move_motor1_absolute (uint16_t position, uint8_t speed)
 {
-    /* Put position and speed as parameters */
-    asserv_twi_buffer_param[0] = v16_to_v8 (position, 1);
-    asserv_twi_buffer_param[1] = v16_to_v8 (position, 0);
-    asserv_twi_buffer_param[2] = speed;
-    /* Send the move the motor1 command to the asserv board */
-    asserv_twi_send_command ('c', 3);
+    uint8_t *buffer = twi_master_get_buffer (ASSERV_SLAVE);
+    buffer[0] = 'c';
+    buffer[1] = v16_to_v8 (position, 1);
+    buffer[2] = v16_to_v8 (position, 0);
+    buffer[3] = speed;
+    twi_master_send (4);
 }
 
-/* Set current X position. */
 void
 asserv_set_x_position (int32_t x)
 {
     x = fixed_mul_f824 (x, asserv_scale_inv);
-    /* 'X' subcommand */
-    asserv_twi_buffer_param[0] = 'X';
-    /* Put x position as parameter */
-    asserv_twi_buffer_param[1] = v32_to_v8 (x, 2);
-    asserv_twi_buffer_param[2] = v32_to_v8 (x, 1);
-    asserv_twi_buffer_param[3] = v32_to_v8 (x, 0);
-    asserv_twi_buffer_param[4] = 0;
-    /* Send the set X position command to the asserv board */
-    asserv_twi_send_command ('p', 5);
+    uint8_t *buffer = twi_master_get_buffer (ASSERV_SLAVE);
+    buffer[0] = 'p';
+    buffer[1] = 'X';
+    buffer[2] = v32_to_v8 (x, 2);
+    buffer[3] = v32_to_v8 (x, 1);
+    buffer[4] = v32_to_v8 (x, 0);
+    twi_master_send (5);
 }
 
-/* Set current Y position. */
 void
 asserv_set_y_position (int32_t y)
 {
     y = fixed_mul_f824 (y, asserv_scale_inv);
-    /* 'Y' subcommand */
-    asserv_twi_buffer_param[0] = 'Y';
-    /* Put y position as parameter */
-    asserv_twi_buffer_param[1] = v32_to_v8 (y, 2);
-    asserv_twi_buffer_param[2] = v32_to_v8 (y, 1);
-    asserv_twi_buffer_param[3] = v32_to_v8 (y, 0);
-    asserv_twi_buffer_param[4] = 0;
-    /* Send the set Y position command to the asserv board */
-    asserv_twi_send_command ('p', 5);
+    uint8_t *buffer = twi_master_get_buffer (ASSERV_SLAVE);
+    buffer[0] = 'p';
+    buffer[1] = 'Y';
+    buffer[2] = v32_to_v8 (y, 2);
+    buffer[3] = v32_to_v8 (y, 1);
+    buffer[4] = v32_to_v8 (y, 0);
+    twi_master_send (5);
 }
 
-/* Set current angular position. */
 void
 asserv_set_angle_position (int16_t angle)
 {
-    /* 'A' subcommand */
-    asserv_twi_buffer_param[0] = 'A';
-    /* Put angle position as parameter */
-    asserv_twi_buffer_param[1] = v32_to_v8 (angle, 1);
-    asserv_twi_buffer_param[2] = v32_to_v8 (angle, 0);
-    asserv_twi_buffer_param[3] = 0;
-    /* Send the set angular position command to the asserv board */
-    asserv_twi_send_command ('p', 4);
+    uint8_t *buffer = twi_master_get_buffer (ASSERV_SLAVE);
+    buffer[0] = 'p';
+    buffer[1] = 'A';
+    buffer[2] = v32_to_v8 (angle, 1);
+    buffer[3] = v32_to_v8 (angle, 0);
+    twi_master_send (4);
 }
 
-/* Set speeds of movements. */
 void
 asserv_set_speed (uint8_t linear_high, uint8_t angular_high,
 		  uint8_t linear_low, uint8_t angular_low)
 {
-    /* 's' subcommand */
-    asserv_twi_buffer_param[0] = 's';
-    /* Put speeds as parameters */
-    asserv_twi_buffer_param[1] = linear_high;
-    asserv_twi_buffer_param[2] = angular_high;
-    asserv_twi_buffer_param[3] = linear_low;
-    asserv_twi_buffer_param[4] = angular_low;
-    asserv_twi_buffer_param[5] = 0;
-    /* Send the set speed of movements command to the asserv board */
-    asserv_twi_send_command ('p', 6);
+    uint8_t *buffer = twi_master_get_buffer (ASSERV_SLAVE);
+    buffer[0] = 'p';
+    buffer[1] = 's';
+    buffer[2] = linear_high;
+    buffer[3] = angular_high;
+    buffer[4] = linear_low;
+    buffer[5] = angular_low;
+    twi_master_send (6);
 }
 
-/* Set the complete position of the bot. */
 void
 asserv_set_position (int32_t x, int32_t y, int16_t angle)
 {
     x = fixed_mul_f824 (x, asserv_scale_inv);
     y = fixed_mul_f824 (y, asserv_scale_inv);
-    /* 'X' subcommand */
-    asserv_twi_buffer_param[0] = 'X';
-    /* Put x position as parameter */
-    asserv_twi_buffer_param[1] = v32_to_v8 (x, 2);
-    asserv_twi_buffer_param[2] = v32_to_v8 (x, 1);
-    asserv_twi_buffer_param[3] = v32_to_v8 (x, 0);
-    /* 'Y' subcommand */
-    asserv_twi_buffer_param[4] = 'Y';
-    /* Put y position as parameter */
-    asserv_twi_buffer_param[5] = v32_to_v8 (y, 2);
-    asserv_twi_buffer_param[6] = v32_to_v8 (y, 1);
-    asserv_twi_buffer_param[7] = v32_to_v8 (y, 0);
-    /* 'A' subcommand */
-    asserv_twi_buffer_param[8] = 'A';
-    /* Put angle position as parameter */
-    asserv_twi_buffer_param[9] = v32_to_v8 (angle, 1);
-    asserv_twi_buffer_param[10] = v32_to_v8 (angle, 0);
-    asserv_twi_buffer_param[11] = 0;
-    /* Send the whole things in a one time shot */
-    asserv_twi_send_command ('p', 12);
+    uint8_t *buffer = twi_master_get_buffer (ASSERV_SLAVE);
+    buffer[0] = 'p';
+    buffer[1] = 'X';
+    buffer[2] = v32_to_v8 (x, 2);
+    buffer[3] = v32_to_v8 (x, 1);
+    buffer[4] = v32_to_v8 (x, 0);
+    buffer[5] = 'Y';
+    buffer[6] = v32_to_v8 (y, 2);
+    buffer[7] = v32_to_v8 (y, 1);
+    buffer[8] = v32_to_v8 (y, 0);
+    buffer[9] = 'A';
+    buffer[10] = v32_to_v8 (angle, 1);
+    buffer[11] = v32_to_v8 (angle, 0);
+    twi_master_send (12);
 }
 
-/* Go to an absolute position in (X, Y). */
 void
 asserv_goto (uint32_t x, uint32_t y, uint8_t backward)
 {
     x = fixed_mul_f824 (x, asserv_scale_inv);
     y = fixed_mul_f824 (y, asserv_scale_inv);
-    /* Put X as parameter */
-    asserv_twi_buffer_param[0] = v32_to_v8 (x, 2);
-    asserv_twi_buffer_param[1] = v32_to_v8 (x, 1);
-    asserv_twi_buffer_param[2] = v32_to_v8 (x, 0);
-    /* Put Y as parameter */
-    asserv_twi_buffer_param[3] = v32_to_v8 (y, 2);
-    asserv_twi_buffer_param[4] = v32_to_v8 (y, 1);
-    asserv_twi_buffer_param[5] = v32_to_v8 (y, 0);
-    /* No backward. */
-    asserv_twi_buffer_param[6] = backward;
-    /* Send the got to an absolute position command to the asserv board */
-    asserv_twi_send_command ('x', 7);
+    uint8_t *buffer = twi_master_get_buffer (ASSERV_SLAVE);
+    buffer[0] = 'x';
+    buffer[1] = v32_to_v8 (x, 2);
+    buffer[2] = v32_to_v8 (x, 1);
+    buffer[3] = v32_to_v8 (x, 0);
+    buffer[4] = v32_to_v8 (y, 2);
+    buffer[5] = v32_to_v8 (y, 1);
+    buffer[6] = v32_to_v8 (y, 0);
+    buffer[7] = backward;
+    twi_master_send (8);
 }
 
-/* Go to an absolute position at (X, Y) with backward enabled. */
-void
-asserv_goto_back (uint32_t x, uint32_t y)
-{
-    x = fixed_mul_f824 (x, asserv_scale_inv);
-    y = fixed_mul_f824 (y, asserv_scale_inv);
-    /* Put X as parameter */
-    asserv_twi_buffer_param[0] = v32_to_v8 (x, 2);
-    asserv_twi_buffer_param[1] = v32_to_v8 (x, 1);
-    asserv_twi_buffer_param[2] = v32_to_v8 (x, 0);
-    /* Put Y as parameter */
-    asserv_twi_buffer_param[3] = v32_to_v8 (y, 2);
-    asserv_twi_buffer_param[4] = v32_to_v8 (y, 1);
-    asserv_twi_buffer_param[5] = v32_to_v8 (y, 0);
-    /* Authorise backward movements. */
-    asserv_twi_buffer_param[6] = ASSERV_REVERT_OK;
-    /* Send the goto to an absolute position command to the asserv board */
-    asserv_twi_send_command ('x', 7);
-}
-
-/* Set scale. */
 void
 asserv_set_scale (uint32_t scale)
 {
@@ -684,19 +442,18 @@ asserv_set_scale (uint32_t scale)
 void
 asserv_motor0_zero_position (void)
 {
-    asserv_twi_buffer_param[0] = 0x05;
-    asserv_twi_send_command ('B', 1);
+    uint8_t *buffer = twi_master_get_buffer (ASSERV_SLAVE);
+    buffer[0] = 'B';
+    buffer[1] = 0x05;
+    twi_master_send (2);
 }
 
 void
 asserv_motor1_zero_position (void)
 {
-    asserv_twi_buffer_param[0] = -0x10;
-    asserv_twi_send_command ('C', 1);
+    uint8_t *buffer = twi_master_get_buffer (ASSERV_SLAVE);
+    buffer[0] = 'C';
+    buffer[1] = -0x10;
+    twi_master_send (2);
 }
 
-uint8_t
-asserv_get_last_moving_direction (void)
-{
-    return asserv_last_moving_direction;
-}

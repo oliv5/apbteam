@@ -31,18 +31,16 @@
  * This files contains the 'public' functions to send commands to the asserv
  * board using a protocol over TWI communication.
  * @see trunk/digital/io/doc/proto_asserv.txt
- * @todo
- *  - the function to send a new command to the asserv board is protected from
- *  sending one when the previous is not finished yet. But the information is
- *  not raised to the upper layer (io). It can be a bad idea to give this
- *  information to the upper layer because it can be mis-interpreted or
- *  ignored.
  */
 
-#define ASSERV_MOTOR0_SPEED_DEFAULT 0x0C
-#define ASSERV_MOTOR1_SPEED_DEFAULT 0x46
+/** Slave number in twi_master list. */
+#define ASSERV_SLAVE 0
 
-#define ASSERV_MOTOR0_STEP_BY_DEGREE 14.814814
+/** Asserv TWI address. */
+#define ASSERV_TWI_ADDRESS 4
+
+/** Length of the status buffer (not including CRC). */
+#define ASSERV_STATUS_LENGTH 15
 
 /** Use backward movements. */
 #define ASSERV_BACKWARD 1
@@ -50,50 +48,17 @@
  * previous define. */
 #define ASSERV_REVERT_OK 2
 
-/**
- * Initialize the asserv control module.
- * This functions does not initialize the asserv board, but the underling
- * communication protocol used to communicate with the asserv (TWI).
- */
+/** Initialize the asserv control module. */
 void
 asserv_init (void);
 
-/**
- * Update the status of the asserv board seen from the io program.
- * This command asks the status buffer of the asserv, receive it and do some
- * internal updates.
- * You need to call this command regularly in order to be able to send new
- * commands (this module will not let you send new command if the previous one
- * has not been yet received).
- */
+/** Called when a new status buffer is received, update the asserv
+ * information. */
 void
-asserv_update_status (void);
+asserv_status_cb (uint8_t *status);
 
 /**
- * Is last command sent to the asserv board is being executed?
- * This function is used to know if the last command sent to the asserv board
- * has been received and is currently executing.
- * @return
- *  - 0 if the command has not started to be executed.
- *  - 1 if the command is currently been executed.
- */
-uint8_t
-asserv_last_cmd_ack (void);
-
-/**
- * Re-send command if not acknowledged.
- * This function should be called when the command has not been acknowledged
- * by the asserv board. It will re send the last command when a certain number
- * of cycle has been reached without any acknowledge from the asserv.
- * @return
- *   - 0 if the command was not received.
- *   - 1 if the command was re-sent.
- */
-uint8_t
-asserv_retransmit (void);
-
-/**
- * Status of a move or motor0 class command.
+ * Status of a move or motor class command.
  * It is return by status functions.
  */
 typedef enum asserv_status_e
@@ -163,6 +128,13 @@ asserv_get_motor1_position (void);
  */
 uint8_t
 asserv_get_moving_direction (void);
+
+/**
+ * Get the last moving direction of the bot.
+ * @return 1 is forward, 2 is backward.
+ */
+uint8_t
+asserv_get_last_moving_direction (void);
 
 /**
  * Reset the asserv board.
@@ -308,16 +280,8 @@ asserv_set_position (int32_t x, int32_t y, int16_t angle);
 void
 asserv_goto (uint32_t x, uint32_t y, uint8_t backward);
 
-/**
- * Go to an absolute position at (X, Y) with backward enabled.
- * @param x the x position on the table.
- * @param y the y position on the table.
- */
-void
-asserv_goto_back (uint32_t x, uint32_t y);
-
 /** Set scale.
- * @param scale vous avez qu'à deviner (f8.24).
+ * @param scale number of millimeter per step (f8.24).
  */
 void
 asserv_set_scale (uint32_t scale);
@@ -333,12 +297,5 @@ asserv_motor0_zero_position (void);
  */
 void
 asserv_motor1_zero_position (void);
-
-/**
- * Get the last moving direction of the bot.
- * @return 1 is forward, 2 is backward.
- */
-uint8_t
-asserv_get_last_moving_direction (void);
 
 #endif /* asserv_h */

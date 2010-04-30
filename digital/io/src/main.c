@@ -40,7 +40,8 @@
 #include "main_timer.h"
 #include "simu.host.h"
 
-#include "asserv.h"	/* Functions to control the asserv board */
+#include "asserv.h"
+#include "twi_master.h"
 #include "eeprom.h"	/* Parameters loaded/stored in the EEPROM */
 #include "fsm.h"	/* fsm_* */
 #include "bot.h"
@@ -189,6 +190,8 @@ main_init (void)
     utils_delay_ms (500);
     /* Asserv communication */
     asserv_init ();
+    /* TWI master. */
+    twi_master_init ();
     /* Switch module */
     switch_init ();
     /* Path module */
@@ -265,16 +268,8 @@ main_loop (void)
 	    simu_send_pos_report (main_obstacles_pos, main_obstacles_nb, 0);
 	  }
 
-	/* Update TWI module to get new data from the asserv board */
-	asserv_update_status ();
-
-	/* Is last command has been acknowledged? */
-	if (asserv_last_cmd_ack () == 0)
-	  {
-	    /* Called function to manage retransmission */
-	    asserv_retransmit ();
-	  }
-	else
+	/* Are TWI slaves synchronised? */
+	if (twi_master_sync ())
 	  {
 	    /* First, update modules */
 	    /* Update switch module */
@@ -549,8 +544,9 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		 *  - 4b: x;
 		 *  - 4b: y.
 		 */
-		asserv_goto_back (v8_to_v32 (args[1], args[2], args[3], args[4]),
-			     v8_to_v32 (args[5], args[6], args[7], args[8]));
+		asserv_goto (v8_to_v32 (args[1], args[2], args[3], args[4]),
+			     v8_to_v32 (args[5], args[6], args[7], args[8]),
+			     ASSERV_REVERT_OK);
 		break;
 	      }
 	  }

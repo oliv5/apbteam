@@ -28,6 +28,7 @@
 #include "bot.h"
 #include "main_timer.h"
 #include "asserv.h"
+#include "twi_master.h"
 
 #include "modules/utils/utils.h"
 #include "modules/host/mex.h"
@@ -56,7 +57,7 @@
 #define CHRONO_LOOP_DURATION_MS 4
 
 /**
- * Time to wait before resetting asserv board, in ms.
+ * Time to wait before resetting slaves board, in ms.
  */
 #define CHRONO_WAIT_BEFORE_RESET_MS 1000
 
@@ -128,36 +129,15 @@ chrono_end_match (uint8_t block)
 {
     /* Make sure previous command has been acknowledged. If not, retransmit
      * until acknowledged */
-    while (asserv_last_cmd_ack () == 0)
-      {
-	/* Update status */
-	asserv_update_status ();
-	/* Manage retransmission */
-	asserv_retransmit ();
-	/* Wait a little */
+    while (!twi_master_sync ())
 	utils_delay_ms (CHRONO_LOOP_DURATION_MS);
-      }
 
     /* Make the bot stop moving */
     asserv_stop_motor ();
 
     /* Wait until complete */
-    while (42)
-      {
-	/* Update the asserv board */
-	asserv_update_status ();
-	/* Stop acknowledged ? */
-	if (asserv_last_cmd_ack () == 0)
-	  {
-	    /* Retransmit if needed */
-	    asserv_retransmit ();
-	    /* Wait a little */
-	    utils_delay_ms (CHRONO_LOOP_DURATION_MS);
-	  }
-	else
-	    /* Exit loop */
-	    break;
-      }
+    while (!twi_master_sync ())
+	utils_delay_ms (CHRONO_LOOP_DURATION_MS);
 
     /* Wait CHRONO_WAIT_BEFORE_RESET ms before reseting */
     utils_delay_ms (CHRONO_WAIT_BEFORE_RESET_MS);

@@ -108,13 +108,6 @@
 /* io - io/ai board. */
 /** TWI address of the io board. */
 #define AC_IO_TWI_ADDRESS 2
-/** TWI address of the asserv board. */
-#define AC_ASSERV_TWI_ADDRESS 4
-/**
- * Length of the status buffer maintains by the asserv board.
- * This length should not include the CRC byte!
- */
-#define AC_ASSERV_STATUS_LENGTH 15
 
 /* spi - SPI module. */
 /** Select driver: HARD, SOFT, or NONE. */
