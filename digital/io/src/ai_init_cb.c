@@ -103,40 +103,19 @@ ai__INIT_WAIT_FOR_HANDS_OUT__state_timeout (void)
 
 /*
  * INIT_GO_TO_THE_WALL =bot_move_succeed=>
- *  => INIT_SET_Y_POSITION
+ *  => INIT_GO_AWAY_FROM_THE_WALL
  *   reset the Y position of the bot.
+ *   reset the angular position of the bot.
+ *   move away from the wall (linear move).
  */
 fsm_branch_t
 ai__INIT_GO_TO_THE_WALL__bot_move_succeed (void)
 {
     asserv_set_y_position (PG_Y (PG_LENGTH - BOT_SIZE_FRONT));
-    return ai_next (INIT_GO_TO_THE_WALL, bot_move_succeed);
-}
-
-/*
- * INIT_SET_Y_POSITION =asserv_last_cmd_ack=>
- *  => INIT_SET_ANGULAR_POSITION
- *   reset the angular position of the bot.
- */
-fsm_branch_t
-ai__INIT_SET_Y_POSITION__asserv_last_cmd_ack (void)
-{
-    /* We are facing top border. */
     asserv_set_angle_position (PG_A_DEG (90));
-    return ai_next (INIT_SET_Y_POSITION, asserv_last_cmd_ack);
-}
-
-/*
- * INIT_SET_ANGULAR_POSITION =asserv_last_cmd_ack=>
- *  => INIT_GO_AWAY_FROM_THE_WALL
- *   move away from the wall (linear move).
- */
-fsm_branch_t
-ai__INIT_SET_ANGULAR_POSITION__asserv_last_cmd_ack (void)
-{
     /* Move away from the border. */
     asserv_move_linearly (- INIT_DIST);
-    return ai_next (INIT_SET_ANGULAR_POSITION, asserv_last_cmd_ack);
+    return ai_next (INIT_GO_TO_THE_WALL, bot_move_succeed);
 }
 
 /*
@@ -178,27 +157,17 @@ ai__INIT_WAIT_AFTER_ROTATION__state_timeout (void)
 
 /*
  * INIT_GO_TO_THE_WALL_AGAIN =bot_move_succeed=>
- *  => INIT_SET_X_POSITION
+ *  => INIT_GO_AWAY_FROM_THE_WALL_AGAIN
  *   reset the X position of the bot.
+ *   move away from the wall (linear move).
  */
 fsm_branch_t
 ai__INIT_GO_TO_THE_WALL_AGAIN__bot_move_succeed (void)
 {
     asserv_set_x_position (PG_X (BOT_SIZE_FRONT));
-    return ai_next (INIT_GO_TO_THE_WALL_AGAIN, bot_move_succeed);
-}
-
-/*
- * INIT_SET_X_POSITION =asserv_last_cmd_ack=>
- *  => INIT_GO_AWAY_FROM_THE_WALL_AGAIN
- *   move away from the wall (linear move).
- */
-fsm_branch_t
-ai__INIT_SET_X_POSITION__asserv_last_cmd_ack (void)
-{
     /* Move away from the border. */
     asserv_move_linearly (- INIT_DIST);
-    return ai_next (INIT_SET_X_POSITION, asserv_last_cmd_ack);
+    return ai_next (INIT_GO_TO_THE_WALL_AGAIN, bot_move_succeed);
 }
 
 /*

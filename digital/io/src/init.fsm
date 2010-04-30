@@ -19,15 +19,13 @@ States:
   wait the jack to be removed from the bot for the first time.
  INIT_WAIT_SECOND_JACK_IN
   wait for the jack to be inserted into the bot for the second time.
- INIT_WAIT_FOR_HANDS_OUT[timeout=450]
+ INIT_WAIT_FOR_HANDS_OUT[timeout=225]
   just wait for operator hands to be removed from the jack.
  INIT_GO_TO_THE_WALL
   go to the wall for the first time.
- INIT_SET_Y_POSITION
-  reset the Y position of the bot.
- INIT_SET_ANGULAR_POSITION
-  reset the angular position of the bot.
  INIT_GO_AWAY_FROM_THE_WALL
+  reset the Y position of the bot.
+  reset the angular position of the bot.
   go backward from the wall for a specific distance.
  INIT_FACE_OTHER_WALL
   make the bot face the other wall.
@@ -35,9 +33,8 @@ States:
   make sure rotation is really finished before continuing.
  INIT_GO_TO_THE_WALL_AGAIN
   go to the wall for the second time.
- INIT_SET_X_POSITION
-  reset the X position of the bot.
  INIT_GO_AWAY_FROM_THE_WALL_AGAIN
+  reset the X position of the bot.
   go backward from the wall for a specific distance.
  INIT_GO_TO_START_POSITION
   go to the start position.
@@ -72,15 +69,9 @@ INIT_WAIT_FOR_HANDS_OUT:
   fuck the wall in front.
 
 INIT_GO_TO_THE_WALL:
- bot_move_succeed -> INIT_SET_Y_POSITION
+ bot_move_succeed -> INIT_GO_AWAY_FROM_THE_WALL
   reset the Y position of the bot.
-
-INIT_SET_Y_POSITION:
- asserv_last_cmd_ack -> INIT_SET_ANGULAR_POSITION
   reset the angular position of the bot.
-
-INIT_SET_ANGULAR_POSITION:
- asserv_last_cmd_ack -> INIT_GO_AWAY_FROM_THE_WALL
   move away from the wall (linear move).
 
 INIT_GO_AWAY_FROM_THE_WALL:
@@ -96,11 +87,8 @@ INIT_WAIT_AFTER_ROTATION:
   fuck the wall in front.
 
 INIT_GO_TO_THE_WALL_AGAIN:
- bot_move_succeed -> INIT_SET_X_POSITION
+ bot_move_succeed -> INIT_GO_AWAY_FROM_THE_WALL_AGAIN
   reset the X position of the bot.
-
-INIT_SET_X_POSITION:
- asserv_last_cmd_ack -> INIT_GO_AWAY_FROM_THE_WALL_AGAIN
   move away from the wall (linear move).
 
 INIT_GO_AWAY_FROM_THE_WALL_AGAIN:
