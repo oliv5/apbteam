@@ -26,6 +26,7 @@
 #include "twi_master.h"
 
 #include "asserv.h"
+#include "mimot.h"
 
 #include "modules/twi/twi.h"
 #include "modules/utils/utils.h"
@@ -98,6 +99,7 @@ struct twi_master_slave_t
 /** Information on all slaves. */
 static struct twi_master_slave_t twi_master_slaves[] = {
       { ASSERV_TWI_ADDRESS, 0, ASSERV_STATUS_LENGTH, asserv_status_cb },
+      { MIMOT_TWI_ADDRESS, 0, MIMOT_STATUS_LENGTH, mimot_status_cb },
 };
 
 /** Send first pending message if available. */

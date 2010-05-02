@@ -5,7 +5,7 @@ PROGS = io
 # Sources to compile.
 io_SOURCES = main.c servo.avr.c eeprom.avr.c pwm.c \
 	     switch.avr.c chrono.c main_timer.avr.c servo_pos.c \
-	     twi_master.c asserv.c \
+	     twi_master.c asserv.c mimot.c \
 	     simu.host.c contact.c usdist.c radar.c \
 	     path.c food.c
 # Modules needed for IO.
