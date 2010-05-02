@@ -77,6 +77,18 @@ void motor_model_step (struct motor_t *m)
 	    + h * m->m.i_G * m->m.i_G * m->m.ro_G / m->m.J
 	    * (m->m.Kt * m->i - m->m.Rf * m->o);
 	th_ = m->th + h * m->o;
+	/* Test for limits overflow, I have no proof it works right for the
+	 * moment, only suspicions. */
+	if (th_ < m->m.th_min)
+	  {
+	    th_ = m->m.th_min;
+	    o_ = 0.0;
+	  }
+	else if (th_ > m->m.th_max)
+	  {
+	    th_ = m->m.th_max;
+	    o_ = 0.0;
+	  }
 	/* Ok, now store this step. */
 	m->i = i_;
 	m->o = o_;

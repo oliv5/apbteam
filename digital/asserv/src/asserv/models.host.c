@@ -22,6 +22,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#define _GNU_SOURCE 1 /* Need ISO C99 features as well. */
 #include "common.h"
 
 #include "motor_model.host.h"
@@ -46,6 +47,8 @@ static const struct motor_def_t re25cll_model =
     0.75,		/* Gearbox efficiency. */
     /* Load characteristics. */
     0.0,		/* Load (kg.m^2). */
+    /* Hardware limits. */
+    -INFINITY, +INFINITY,
 };
 
 /* RE25G with 1:20.25 gearbox model. */
@@ -63,6 +66,8 @@ static const struct motor_def_t re25g_model =
     0.75,		/* Gearbox efficiency. */
     /* Load characteristics. */
     0.0,		/* Load (kg.m^2). */
+    /* Hardware limits. */
+    -INFINITY, +INFINITY,
 };
 
 /* AMAX32GHP with 1:16 gearbox model. */
@@ -80,6 +85,8 @@ static const struct motor_def_t amax32ghp_model =
     0.75,		/* Gearbox efficiency. */
     /* Load characteristics. */
     0.0,		/* Load (kg.m^2). */
+    /* Hardware limits. */
+    -INFINITY, +INFINITY,
 };
 
 /* Gloubi, Efrei 2006. */
@@ -159,6 +166,8 @@ static const struct motor_def_t giboulee_arm_model =
     0.75,		/* Gearbox efficiency. */
     /* Load characteristics. */
     0.200 * 0.1 * 0.1,	/* Load (kg.m^2). */
+    /* Hardware limits. */
+    -INFINITY, +INFINITY,
 };
 
 /* Giboulée, APBTeam 2008. */
@@ -205,6 +214,8 @@ static const struct motor_def_t aquajim_arm_model =
     0.75,		/* Gearbox efficiency. */
     /* Load characteristics. */
     0.05 * 2.5 * 0.06 * 0.06,	/* Load (kg.m^2). */
+    /* Hardware limits. */
+    -INFINITY, +INFINITY,
 };
 
 /* AquaJim elevator model, with a RE25CLL and a 1:10 ratio gearbox. */
@@ -225,6 +236,8 @@ static const struct motor_def_t aquajim_elevator_model =
     /* Load characteristics. */
     0.200 * 0.01 * 0.01,/* Load (kg.m^2). */
     /* This is a pifometric estimation. */
+    /* Hardware limits. */
+    -INFINITY, +INFINITY,
 };
 
 /* AquaJim, APBTeam 2009. */
@@ -272,6 +285,8 @@ static const struct motor_def_t marcel_elevator_model =
     /* Load characteristics. */
     1.0 * 0.01 * 0.01,	/* Load (kg.m^2). */
     /* This is a pifometric estimation. */
+    /* Hardware limits. */
+    0.0, +INFINITY,
 };
 
 /* Marcel, APBTeam 2010. */
