@@ -192,6 +192,8 @@ twi_master_get_buffer (uint8_t slave)
     assert (twi_master.pending_nb < TWI_MASTER_PENDING_MAX);
     struct twi_master_command_t *c =
 	&twi_master.pending[TWI_MASTER_PENDING_TAIL];
+    /* Store slave. */
+    c->slave = slave;
     /* Skip CRC and sequence number. */
     return &c->command[2];
 }
