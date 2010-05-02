@@ -32,6 +32,8 @@ struct aux_t
     struct state_t *state;
     /** Controlled speed. */
     struct speed_t *speed;
+    /** Associated PWM. */
+    struct pwm_t *pwm;
     /** Absolute position. */
     int16_t pos;
     /** Trajectory mode. */
@@ -61,6 +63,9 @@ aux_traj_goto_start (struct aux_t *aux, uint16_t pos, uint8_t seq);
 
 void
 aux_traj_find_zero_start (struct aux_t *aux, int8_t speed, uint8_t seq);
+
+void
+aux_traj_find_limit_start (struct aux_t *aux, int8_t speed, uint8_t seq);
 
 void
 aux_traj_update (void);
