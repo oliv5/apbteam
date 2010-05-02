@@ -56,7 +56,7 @@ typedef u8 fsm_branch_t;
 typedef fsm_branch_t (*fsm_transition_t) (void);
 
 /** Maximum number of active states. */
-#define FSM_ACTIVE_STATES_MAX 3
+#define FSM_ACTIVE_STATES_MAX 4
 
 /** Context of an FSM. */
 struct fsm_t

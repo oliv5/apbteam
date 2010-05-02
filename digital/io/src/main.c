@@ -139,6 +139,11 @@ main_event_to_fsm (void)
     else if (move_status == failure)
 	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_bot_move_failed);
 
+    if (motor0_status == success)
+	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_elevator_succeed);
+    else if (motor0_status == failure)
+	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_elevator_failed);
+
     /* Jack */
     if (switch_get_jack ())
 	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_jack_removed_from_bot);

@@ -32,6 +32,7 @@ Events:
 
 import init.fsm
 import move.fsm
+import loader.fsm
 
 IDLE:
  start -> WAIT_INIT_TO_FINISH

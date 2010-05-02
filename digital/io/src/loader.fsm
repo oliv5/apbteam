@@ -1,0 +1,41 @@
+# loader FSM
+loader
+  Handle Eurobot 2010 robot clamp, elevator and output door.
+
+States:
+ *LOADER_IDLE
+  wait start
+ LOADER_WAIT_JACK_IN
+  wait until the jack is inserted for the first time
+ LOADER_WAIT_JACK_OUT
+  wait until the jack is removed to initialise robot
+ LOADER_INIT_ELEVATOR_ZERO
+  move the elevator down to find zero position
+ LOADER_INIT_ELEVATOR_UP
+  move the elevator up so that the robot can go to the wall
+
+Events:
+ elevator_succeed
+  asserv success result
+ elevator_failed
+  asserv failure result
+
+LOADER_IDLE:
+ start -> LOADER_WAIT_JACK_IN
+
+LOADER_WAIT_JACK_IN:
+ jack_inserted_into_bot -> LOADER_WAIT_JACK_OUT
+
+LOADER_WAIT_JACK_OUT:
+ jack_removed_from_bot -> LOADER_INIT_ELEVATOR_ZERO
+  find elevator zero
+
+LOADER_INIT_ELEVATOR_ZERO:
+ elevator_succeed -> LOADER_INIT_ELEVATOR_UP
+  move elevator up
+
+LOADER_INIT_ELEVATOR_UP:
+ elevator_succeed -> LOADER_IDLE
+ elevator_failed -> LOADER_IDLE
+  initialisation failure
+

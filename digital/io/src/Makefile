@@ -21,7 +21,7 @@ HOST_LIBS = -lm
 
 # FSM.
 FSM = ai
-FSM_SOURCES := top init move
+FSM_SOURCES := top init move loader
 # Include FSM makefile.
 include $(BASE)/make/Makefile.fsm
 
