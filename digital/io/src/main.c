@@ -466,10 +466,10 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		switch (args[1])
 		  {
 		  case 'e':
-		    asserv_motor1_zero_position ();
+		    asserv_motor0_zero_position (-BOT_ELEVATOR_ZERO_SPEED);
 		    break;
 		  case 'a':
-		    asserv_motor0_zero_position ();
+		    asserv_motor1_zero_position (0x10);
 		    break;
 		  }
 		break;
@@ -498,7 +498,8 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		 *  - 2b: offset angle ;
 		 *  - 1b: speed.
 		 */
-		asserv_move_motor0 (v8_to_v16 (args[1], args[2]), args[3]);
+		asserv_move_motor0_absolute (v8_to_v16 (args[1], args[2]),
+					     args[3]);
 		break;
 	      case 'c':
 		/* Move the motor1

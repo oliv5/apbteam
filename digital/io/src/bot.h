@@ -59,6 +59,15 @@
  */
 #define BOT_MIN_DISTANCE_TURN_FREE 300
 
+/** Elevator stroke in steps. */
+#define BOT_ELEVATOR_STROKE_STEP 11800
+
+/** Elevator work speed. */
+#define BOT_ELEVATOR_SPEED 0x40
+
+/** Elevator find zero speed. */
+#define BOT_ELEVATOR_ZERO_SPEED 0x10
+
 /**
  * Definition of the colors.
  */

@@ -78,10 +78,10 @@ mimot_move_motor1_absolute (uint16_t position, uint8_t speed);
 
 /** Reset motor0 to zero position. */
 void
-mimot_motor0_zero_position (void);
+mimot_motor0_zero_position (int8_t speed);
 
 /** Reset motor1 to zero position. */
 void
-mimot_motor1_zero_position (void);
+mimot_motor1_zero_position (int8_t speed);
 
 #endif /* mimot_h */

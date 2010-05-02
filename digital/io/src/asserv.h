@@ -200,16 +200,15 @@ void
 asserv_go_to_the_wall (uint8_t backward);
 
 /**
- * Move the motor0 to a certain number of steps.
+ * Move the motor0.
  * Motor0 class command.
- * This function take the number of steps you want to move to. This is not an
- * absolute position, this is only the number of steps you want to add to the
- * current position.
- * @param offset number of steps to add to the current position.
+ * This function take the number of steps you want to move to. This is an
+ * absolute position.
+ * @param position desired goal position (in step).
  * @param speed speed of the movement.
  */
 void
-asserv_move_motor0 (int16_t offset, uint8_t speed);
+asserv_move_motor0_absolute (uint16_t position, uint8_t speed);
 
 /**
  * Move the motor1.
@@ -286,16 +285,12 @@ asserv_goto (uint32_t x, uint32_t y, uint8_t backward);
 void
 asserv_set_scale (uint32_t scale);
 
-/**
- * Reset the motor0 to the zero position.
- */
+/** Reset the motor0 to the zero position. */
 void
-asserv_motor0_zero_position (void);
+asserv_motor0_zero_position (int8_t speed);
 
-/**
- * Reset the motor1 to the zero position.
- */
+/** Reset the motor1 to the zero position. */
 void
-asserv_motor1_zero_position (void);
+asserv_motor1_zero_position (int8_t speed);
 
 #endif /* asserv_h */

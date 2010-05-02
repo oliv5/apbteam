@@ -53,11 +53,11 @@ enum asserv_status_flag_e
     asserv_status_flag_move_backward = 3,
     /** Motor0 movement finished with success. */
     asserv_status_flag_motor0_succeed = 4,
-    /** Motor0 movement finished with failure (can not happen). */
+    /** Motor0 movement finished with failure. */
     asserv_status_flag_motor0_failed = 5,
     /** Motor1 movement finished with success. */
     asserv_status_flag_motor1_succeed = 6,
-    /** Motor1 movement finished with failure (can not happen). */
+    /** Motor1 movement finished with failure. */
     asserv_status_flag_motor1_failed = 7,
 };
 typedef enum asserv_status_flag_e asserv_status_flag_e;
@@ -105,21 +105,6 @@ typedef struct asserv_struct_s
  * Status variable.
  */
 asserv_struct_s asserv_status;
-
-/**
- * Move the motor0.
- * @param position desired goal position (in step).
- * @param speed speed of the movement.
- */
-static void
-asserv_move_motor0_absolute (uint16_t position, uint8_t speed);
-
-/**
- * Current position of the motor0.
- * We need to maintain it by ourself as it is more accurate than the one sent
- * by the asserv board.
- */
-static uint16_t asserv_motor0_current_position;
 
 void
 asserv_init (void)
@@ -311,8 +296,7 @@ asserv_go_to_the_wall (uint8_t backward)
     twi_master_send (2);
 }
 
-/* Move the motor0. */
-static void
+void
 asserv_move_motor0_absolute (uint16_t position, uint8_t speed)
 {
     uint8_t *buffer = twi_master_get_buffer (ASSERV_SLAVE);
@@ -321,15 +305,6 @@ asserv_move_motor0_absolute (uint16_t position, uint8_t speed)
     buffer[2] = v16_to_v8 (position, 0);
     buffer[3] = speed;
     twi_master_send (4);
-}
-
-void
-asserv_move_motor0 (int16_t offset, uint8_t speed)
-{
-    /* Compute the new desired position with the desired offset */
-    asserv_motor0_current_position += offset;
-    /* Move the motor0 to the desired position */
-    asserv_move_motor0_absolute (asserv_motor0_current_position, speed);
 }
 
 void
@@ -440,20 +415,20 @@ asserv_set_scale (uint32_t scale)
 }
 
 void
-asserv_motor0_zero_position (void)
+asserv_motor0_zero_position (int8_t speed)
 {
     uint8_t *buffer = twi_master_get_buffer (ASSERV_SLAVE);
     buffer[0] = 'B';
-    buffer[1] = 0x05;
+    buffer[1] = speed;
     twi_master_send (2);
 }
 
 void
-asserv_motor1_zero_position (void)
+asserv_motor1_zero_position (int8_t speed)
 {
     uint8_t *buffer = twi_master_get_buffer (ASSERV_SLAVE);
     buffer[0] = 'C';
-    buffer[1] = -0x10;
+    buffer[1] = speed;
     twi_master_send (2);
 }
 

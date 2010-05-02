@@ -140,20 +140,20 @@ mimot_move_motor1_absolute (uint16_t position, uint8_t speed)
 }
 
 void
-mimot_motor0_zero_position (void)
+mimot_motor0_zero_position (int8_t speed)
 {
     uint8_t *buffer = twi_master_get_buffer (MIMOT_SLAVE);
     buffer[0] = 'B';
-    buffer[1] = 0x10;
+    buffer[1] = speed;
     twi_master_send (2);
 }
 
 void
-mimot_motor1_zero_position (void)
+mimot_motor1_zero_position (int8_t speed)
 {
     uint8_t *buffer = twi_master_get_buffer (MIMOT_SLAVE);
     buffer[0] = 'C';
-    buffer[1] = 0x10;
+    buffer[1] = speed;
     twi_master_send (2);
 }
 
