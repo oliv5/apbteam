@@ -62,7 +62,7 @@ class TestSimuControl (TestSimu):
 
     def clamp_command (self):
         if self.clamp_var.get ():
-            pos = 6000
+            pos = 3441
         else:
             pos = 0
         self.mimot.goto_pos ('a0', pos)
@@ -70,7 +70,7 @@ class TestSimuControl (TestSimu):
 
     def elevator_command (self):
         if self.elevator_var.get ():
-            pos = 11800
+            pos = 7089
         else:
             pos = 0
         self.asserv.goto_pos ('a0', pos)

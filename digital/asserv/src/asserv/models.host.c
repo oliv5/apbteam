@@ -283,7 +283,7 @@ static const struct motor_def_t marcel_elevator_model =
     9.7,		/* Gearbox ratio. */
     0.80,		/* Gearbox efficiency. */
     /* Load characteristics. */
-    1.0 * 0.01 * 0.01,	/* Load (kg.m^2). */
+    1.0 * 0.01115 * 0.01115,/* Load (kg.m^2). */
     /* This is a pifometric estimation. */
     /* Hardware limits. */
     0.0, +INFINITY,
@@ -313,7 +313,7 @@ static const struct robot_t marcel_robot =
     /** Auxiliary motors, NULL if not present. */
     { &marcel_elevator_model, NULL },
     /** Number of steps for each auxiliary motor encoder. */
-    { 512, 0 },
+    { 256, 0 },
     /** Sensor update function. */
     simu_sensor_update_marcel,
 };

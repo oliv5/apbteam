@@ -60,22 +60,22 @@
 #define BOT_MIN_DISTANCE_TURN_FREE 300
 
 /** Elevator stroke in steps. */
-#define BOT_ELEVATOR_STROKE_STEP 11800
+#define BOT_ELEVATOR_STROKE_STEP 7089
 
 /** Elevator work speed. */
-#define BOT_ELEVATOR_SPEED 0x40
+#define BOT_ELEVATOR_SPEED 0x60
 
 /** Elevator find zero speed. */
 #define BOT_ELEVATOR_ZERO_SPEED 0x10
 
 /** Clamp stroke in steps. */
-#define BOT_CLAMP_STROKE_STEP 13500
+#define BOT_CLAMP_STROKE_STEP 5627
 
 /** Clamp work speed. */
-#define BOT_CLAMP_SPEED 0x40
+#define BOT_CLAMP_SPEED 0x60
 
 /** Clamp find zero speed. */
-#define BOT_CLAMP_ZERO_SPEED 0x10
+#define BOT_CLAMP_ZERO_SPEED 0x20
 
 /**
  * Definition of the colors.
