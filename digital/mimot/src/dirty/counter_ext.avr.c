@@ -46,9 +46,9 @@
 #define COUNTER_AUX1_REVERSE 0
 
 /** First auxiliary counter shift. */
-#define COUNTER_AUX0_SHIFT 0
+#define COUNTER_AUX0_SHIFT 1
 /** Second auxiliary counter shift. */
-#define COUNTER_AUX1_SHIFT 0
+#define COUNTER_AUX1_SHIFT 1
 
 /** Define to 1 to use the AVR External Memory system, or 0 to use hand made
  * signals. */

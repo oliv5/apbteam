@@ -78,16 +78,16 @@
 #define BOT_ELEVATOR_ZERO_SPEED 0x10
 
 /** Clamp stroke in steps. */
-#define BOT_CLAMP_STROKE_STEP 5627
+#define BOT_CLAMP_STROKE_STEP 2813
 
 /** Clamp open position in steps. */
-#define BOT_CLAMP_OPEN_STEP 30
+#define BOT_CLAMP_OPEN_STEP 15
 
 /** Clamp work speed. */
 #define BOT_CLAMP_SPEED 0x60
 
 /** Clamp find zero speed. */
-#define BOT_CLAMP_ZERO_SPEED 0x20
+#define BOT_CLAMP_ZERO_SPEED 0x10
 
 /**
  * Definition of the colors.

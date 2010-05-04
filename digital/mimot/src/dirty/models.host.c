@@ -58,7 +58,7 @@ static const struct robot_t marcel_robot =
     /** Auxiliary motors, NULL if not present. */
     { &marcel_clamp_f2342_model, &marcel_clamp_f2342_model },
     /** Number of steps for each auxiliary motor encoder. */
-    { 512, 512 },
+    { 256, 256 },
     /** Sensor update function. */
     simu_sensor_update_marcel,
 };
