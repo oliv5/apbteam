@@ -36,7 +36,8 @@ class Bag:
         self.contact = [ Switch (contact) for contact in link_bag.io.contact ]
         self.position = Position (link_bag.asserv.position)
         self.loader = Loader (table, self.position, link_bag.mimot.aux[0],
-                link_bag.mimot.aux[1], link_bag.asserv.aux[0])
+                link_bag.mimot.aux[1], link_bag.asserv.aux[0],
+                link_bag.io.contact[0:2])
         self.distance_sensor = [
                 DistanceSensorSensopart (link_bag.io.adc[0], scheduler, table,
                     (30 - 20, 0), 0, (self.position, ), 2),

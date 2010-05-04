@@ -40,18 +40,45 @@ class Loader (Observable):
     FRONT_ZONE_X_MAX = 120 + CLAMP_LENGTH - 15
 
     def __init__ (self, table, robot_position, left_clamp_link, right_clamp_link,
-            elevator_link):
+            elevator_link, element_contacts):
         Observable.__init__ (self)
         self.table = table
         self.robot_position = robot_position
         self.clamp_link = (left_clamp_link, right_clamp_link)
         self.elevator_link = elevator_link
+        self.element_contacts = element_contacts
+        self.element_contacts[1].state = True
+        self.element_contacts[1].notify ()
         self.clamp_load = [ ]
         self.load = [ ]
+        self.front_elements = [ ]
         self.clamp_pos = [ None, None ]
+        self.robot_position.register (self.__robot_position_notified)
         self.clamp_link[0].register (self.__left_clamp_notified)
         self.clamp_link[1].register (self.__right_clamp_notified)
         self.elevator_link.register (self.__elevator_notified)
+
+    def __robot_position_notified (self):
+        c = self.element_contacts[0]
+        if self.clamp_load:
+            if c.state:
+                c.state = False
+                c.notify ()
+        elif (self.robot_position.pos is not None
+                and self.elevator_height < self.ELEVATOR_LINEAR_STROKE):
+            # Is there elements?
+            self.front_elements = self.__get_front_elements ()
+            # Update contact.
+            if c.state and self.front_elements:
+                c.state = False
+                c.notify ()
+            elif not c.state and not self.front_elements:
+                c.state = True
+                c.notify ()
+        else:
+            if not c.state:
+                c.state = True
+                c.notify ()
 
     def __elevator_notified (self):
         if self.elevator_link.angle is None:
@@ -67,6 +94,9 @@ class Loader (Observable):
                 self.elevator_angle = ((self.elevator_height -
                     self.ELEVATOR_LINEAR_STROKE)
                     / self.ELEVATOR_ROTATING_STROKE * pi)
+            # If elevator low, may detect new elements.
+            if self.elevator_height < self.ELEVATOR_LINEAR_STROKE:
+                self.__robot_position_notified ()
         self.notify ()
 
     def __clamp_notified (self, clamp):
@@ -78,18 +108,19 @@ class Loader (Observable):
                     * self.CLAMP_PULLEY_RADIUS)
             # If elevator is low, pick elements.
             if (not self.clamp_load
-                    and self.elevator_height < self.ELEVATOR_LINEAR_STROKE):
-                elements = self.__get_front_elements ()
-                if elements:
-                    black = sum (hasattr (e, 'black') and e.black for e in
-                            elements)
-                    tickness = sum (e.radius * 2 for e in elements)
-                    if (not black and self.CLAMP_WIDTH - sum (self.clamp_pos)
-                            <= tickness):
-                        for e in elements:
-                            e.pos = None
-                            e.notify ()
-                        self.clamp_load = elements
+                    and self.elevator_height < self.ELEVATOR_LINEAR_STROKE
+                    and self.front_elements):
+                elements = self.front_elements
+                black = sum (hasattr (e, 'black') and e.black for e in
+                        elements)
+                tickness = sum (e.radius * 2 for e in elements)
+                if (not black and self.CLAMP_WIDTH - sum (self.clamp_pos)
+                        <= tickness):
+                    for e in elements:
+                        e.pos = None
+                        e.notify ()
+                    self.clamp_load = elements
+                    self.front_elements = [ ]
             # If elevator is high, drop elements.
             if (self.clamp_load
                     and self.elevator_height > self.ELEVATOR_LINEAR_STROKE +
@@ -98,6 +129,7 @@ class Loader (Observable):
                 if self.CLAMP_WIDTH - sum (self.clamp_pos) > tickness:
                     self.load += self.clamp_load
                     self.clamp_load = [ ]
+                    self.__robot_position_notified ()
         self.notify ()
 
     def __left_clamp_notified (self):
