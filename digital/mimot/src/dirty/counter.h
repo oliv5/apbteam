@@ -32,6 +32,9 @@ void
 counter_init (void);
 
 void
+counter_update_step (void);
+
+void
 counter_update (void);
 
 #endif /* counter_h */

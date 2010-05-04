@@ -27,6 +27,15 @@
 #include "modules/utils/utils.h"
 #include "io.h"
 
+#include "counter.h"
+
+/** Top timer value. */
+#define TIMER_TOP 255
+/** Number of steps during wait. */
+#define TIMER_STEPS 4
+/** Size of step. */
+#define TIMER_STEP ((TIMER_TOP + 1) / TIMER_STEPS)
+
 /** Initialise the timer. */
 void
 timer_init (void)
@@ -43,6 +52,15 @@ timer_init (void)
 void
 timer_wait (void)
 {
+    uint8_t i;
+    /* Make small steps with counter updates. */
+    for (i = 1; i < TIMER_STEPS; i++)
+      {
+	while (TCNT0 < i * TIMER_STEP)
+	    ;
+	counter_update_step ();
+      }
+    /* Wait overflow. */
     while (!(TIFR & _BV (TOV0)))
 	;
     /* Write 1 to clear. */
