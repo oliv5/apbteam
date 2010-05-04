@@ -22,6 +22,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#define _GNU_SOURCE 1 /* Need ISO C99 features as well. */
 #include "common.h"
 
 #include "motor_model.host.h"
@@ -47,6 +48,8 @@ static const struct motor_def_t marcel_clamp_f2342_model =
     /* Load characteristics. */
     0.100 * 0.005 * 0.005,/* Load (kg.m^2). */
     /* This is a pifometric estimation. */
+    /* Hardware limits. */
+    0.0, +INFINITY,
 };
 
 /* Marcel, APBTeam 2010. */

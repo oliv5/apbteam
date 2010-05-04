@@ -40,6 +40,9 @@ struct motor_def_t
     double ro_G;/* Gearbox efficiency. */
     /* Load characteristics. */
     double J;	/* Load at gearbox output (kg.m^2). */
+    /* Hardware limits (use +/-INFINITY for none). */
+    double th_min; /* Minimum theta value. */
+    double th_max; /* Maximum theta value. */
 };
 
 /** Motor and load characteristics and current data.  Angular speed and theta
