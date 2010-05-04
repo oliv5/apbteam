@@ -26,6 +26,7 @@
 #include "fsm.h"
 #include "ai_cb.h"
 #include "asserv.h"
+#include "mimot.h"
 #include "bot.h"
 
 /*
@@ -52,25 +53,53 @@ ai__LOADER_WAIT_JACK_IN__jack_inserted_into_bot (void)
  * LOADER_WAIT_JACK_OUT =jack_removed_from_bot=>
  *  => LOADER_INIT_ELEVATOR_ZERO
  *   find elevator zero
+ *   close clamp
  */
 fsm_branch_t
 ai__LOADER_WAIT_JACK_OUT__jack_removed_from_bot (void)
 {
     asserv_motor0_zero_position (-BOT_ELEVATOR_ZERO_SPEED);
+    mimot_move_motor0_absolute (BOT_CLAMP_STROKE_STEP / 4,
+				BOT_CLAMP_ZERO_SPEED);
+    mimot_move_motor1_absolute (BOT_CLAMP_STROKE_STEP / 4,
+				BOT_CLAMP_ZERO_SPEED);
     return ai_next (LOADER_WAIT_JACK_OUT, jack_removed_from_bot);
 }
 
 /*
  * LOADER_INIT_ELEVATOR_ZERO =elevator_succeed=>
- *  => LOADER_INIT_ELEVATOR_UP
- *   move elevator up
+ *  => LOADER_INIT_CLAMP_CLOSE
  */
 fsm_branch_t
 ai__LOADER_INIT_ELEVATOR_ZERO__elevator_succeed (void)
 {
+    return ai_next (LOADER_INIT_ELEVATOR_ZERO, elevator_succeed);
+}
+
+/*
+ * LOADER_INIT_CLAMP_CLOSE =clamp_succeed=>
+ *  => LOADER_INIT_CLAMP_ZERO
+ *   move elevator up
+ *   find clamp zero
+ */
+fsm_branch_t
+ai__LOADER_INIT_CLAMP_CLOSE__clamp_succeed (void)
+{
     asserv_move_motor0_absolute (BOT_ELEVATOR_STROKE_STEP,
 				 BOT_ELEVATOR_SPEED);
-    return ai_next (LOADER_INIT_ELEVATOR_ZERO, elevator_succeed);
+    mimot_motor0_zero_position (-BOT_CLAMP_ZERO_SPEED);
+    mimot_motor1_zero_position (-BOT_CLAMP_ZERO_SPEED);
+    return ai_next (LOADER_INIT_CLAMP_CLOSE, clamp_succeed);
+}
+
+/*
+ * LOADER_INIT_CLAMP_ZERO =clamp_succeed=>
+ *  => LOADER_INIT_ELEVATOR_UP
+ */
+fsm_branch_t
+ai__LOADER_INIT_CLAMP_ZERO__clamp_succeed (void)
+{
+    return ai_next (LOADER_INIT_CLAMP_ZERO, clamp_succeed);
 }
 
 /*

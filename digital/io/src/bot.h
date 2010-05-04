@@ -68,6 +68,15 @@
 /** Elevator find zero speed. */
 #define BOT_ELEVATOR_ZERO_SPEED 0x10
 
+/** Clamp stroke in steps. */
+#define BOT_CLAMP_STROKE_STEP 13500
+
+/** Clamp work speed. */
+#define BOT_CLAMP_SPEED 0x40
+
+/** Clamp find zero speed. */
+#define BOT_CLAMP_ZERO_SPEED 0x10
+
 /**
  * Definition of the colors.
  */

@@ -41,6 +41,7 @@
 #include "simu.host.h"
 
 #include "asserv.h"
+#include "mimot.h"
 #include "twi_master.h"
 #include "eeprom.h"	/* Parameters loaded/stored in the EEPROM */
 #include "fsm.h"	/* fsm_* */
@@ -126,12 +127,16 @@ main_event_to_fsm (void)
     asserv_status_e
 	move_status = none,
 	motor0_status = none,
-	motor1_status = none;
+	motor1_status = none,
+	motorm0_status = none,
+	motorm1_status = none;
 
     /* Get status of move, motor0 and motor1. */
     move_status = asserv_move_cmd_status ();
     motor0_status = asserv_motor0_cmd_status ();
     motor1_status = asserv_motor1_cmd_status ();
+    motorm0_status = mimot_motor0_cmd_status ();
+    motorm1_status = mimot_motor1_cmd_status ();
 
     /* Check commands move status. */
     if (move_status == success)
@@ -143,6 +148,9 @@ main_event_to_fsm (void)
 	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_elevator_succeed);
     else if (motor0_status == failure)
 	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_elevator_failed);
+
+    if (motorm0_status == success && motorm1_status == success)
+	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_clamp_succeed);
 
     /* Jack */
     if (switch_get_jack ())
@@ -195,6 +203,7 @@ main_init (void)
     utils_delay_ms (500);
     /* Asserv communication */
     asserv_init ();
+    mimot_init ();
     /* TWI master. */
     twi_master_init ();
     /* Switch module */

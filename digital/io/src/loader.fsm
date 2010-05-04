@@ -11,6 +11,10 @@ States:
   wait until the jack is removed to initialise robot
  LOADER_INIT_ELEVATOR_ZERO
   move the elevator down to find zero position
+ LOADER_INIT_CLAMP_CLOSE
+  test clamp closing
+ LOADER_INIT_CLAMP_ZERO
+  find clamp zero position
  LOADER_INIT_ELEVATOR_UP
   move the elevator up so that the robot can go to the wall
 
@@ -19,6 +23,8 @@ Events:
   asserv success result
  elevator_failed
   asserv failure result
+ clamp_succeed
+  asserv success result, clamp movement cannot fail
 
 LOADER_IDLE:
  start -> LOADER_WAIT_JACK_IN
@@ -29,10 +35,18 @@ LOADER_WAIT_JACK_IN:
 LOADER_WAIT_JACK_OUT:
  jack_removed_from_bot -> LOADER_INIT_ELEVATOR_ZERO
   find elevator zero
+  close clamp
 
 LOADER_INIT_ELEVATOR_ZERO:
- elevator_succeed -> LOADER_INIT_ELEVATOR_UP
+ elevator_succeed -> LOADER_INIT_CLAMP_CLOSE
+
+LOADER_INIT_CLAMP_CLOSE:
+ clamp_succeed -> LOADER_INIT_CLAMP_ZERO
   move elevator up
+  find clamp zero
+
+LOADER_INIT_CLAMP_ZERO:
+ clamp_succeed -> LOADER_INIT_ELEVATOR_UP
 
 LOADER_INIT_ELEVATOR_UP:
  elevator_succeed -> LOADER_IDLE
