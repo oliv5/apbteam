@@ -36,7 +36,7 @@ class Loader (Observable):
     ELEVATOR_LINEAR_STROKE = 32
     ELEVATOR_ROTATING_STROKE = 200 - 32
 
-    FRONT_ZONE_X_MIN = 120 + 15
+    FRONT_ZONE_X_MIN = 120 - 15
     FRONT_ZONE_X_MAX = 120 + CLAMP_LENGTH - 15
 
     def __init__ (self, table, robot_position, left_clamp_link, right_clamp_link,
@@ -155,8 +155,8 @@ class Loader (Observable):
         # pushed:
         #ymin = -self.CLAMP_WIDTH / 2 + self.clamp_pos[1]
         #ymax = self.CLAMP_WIDTH / 2 - self.clamp_pos[0]
-        ymin = -self.CLAMP_WIDTH + 40
-        ymax = self.CLAMP_WIDTH - 40
+        ymin = -self.CLAMP_WIDTH + 20
+        ymax = self.CLAMP_WIDTH - 20
         for o in self.table.obstacles:
             if o.level == 1 and o.pos is not None:
                 pos = m.apply (o.pos)
