@@ -115,6 +115,12 @@ SIGNAL (SIG_INTERRUPT5)
     counter_right_old = c;
 }
 
+void
+counter_update_step (void)
+{
+    /* No support for update steps. */
+}
+
 /** Update overall counter values and compute diffs. */
 void
 counter_update (void)

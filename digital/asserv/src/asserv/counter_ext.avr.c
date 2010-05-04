@@ -55,13 +55,28 @@
 /** Define to 1 to reverse the second auxiliary counter. */
 #define COUNTER_AUX1_REVERSE 0
 
+/** Left counter shift. */
+#define COUNTER_LEFT_SHIFT 0
+/** Right counter shift. */
+#define COUNTER_RIGHT_SHIFT 0
+/** First auxiliary counter shift. */
+#define COUNTER_AUX0_SHIFT 0
+/** Second auxiliary counter shift. */
+#define COUNTER_AUX1_SHIFT 0
+
 /** Define to 1 to use the AVR External Memory system, or 0 to use hand made
  * signals. */
 #define COUNTER_USE_XMEM 1
 
 /** Last values. */
-static uint8_t counter_left_old, counter_right_old,
-	       counter_aux_old[AC_ASSERV_AUX_NB];
+static uint16_t counter_left_old, counter_right_old,
+		counter_aux_old[AC_ASSERV_AUX_NB];
+/** New values, being updated by step update. */
+static uint16_t counter_left_new_step, counter_right_new_step,
+		counter_aux_new_step[AC_ASSERV_AUX_NB];
+/** Last raw step values */
+static uint8_t counter_left_old_step, counter_right_old_step,
+	       counter_aux_old_step[AC_ASSERV_AUX_NB];
 /** Overall counter values. */
 uint16_t counter_left, counter_right,
 	 counter_aux[AC_ASSERV_AUX_NB];
@@ -122,35 +137,60 @@ counter_init (void)
     DDRA = 0xff;
 #endif
     /* Begin with safe values. */
-    counter_left_old = counter_read (COUNTER_LEFT);
-    counter_right_old = counter_read (COUNTER_RIGHT);
-    counter_aux_old[0] = counter_read (COUNTER_AUX0);
-    counter_aux_old[1] = counter_read (COUNTER_AUX1);
+    counter_left_old_step = counter_read (COUNTER_LEFT);
+    counter_right_old_step = counter_read (COUNTER_RIGHT);
+    counter_aux_old_step[0] = counter_read (COUNTER_AUX0);
+    counter_aux_old_step[1] = counter_read (COUNTER_AUX1);
+}
+
+/** Update one step.  If counters are not read fast enough, they could
+ * overflow, call this function often to update step counters. */
+void
+counter_update_step (void)
+{
+    uint8_t left, right, aux0, aux1;
+    int8_t diff;
+    /* Sample counters. */
+    left = counter_read (COUNTER_LEFT);
+    right = counter_read (COUNTER_RIGHT);
+    aux0 = counter_read (COUNTER_AUX0);
+    aux1 = counter_read (COUNTER_AUX1);
+    /* Update step counters. */
+    diff = (int8_t) (left - counter_left_old_step);
+    counter_left_old_step = left;
+    counter_left_new_step += diff;
+    diff = (int8_t) (right - counter_right_old_step);
+    counter_right_old_step = right;
+    counter_right_new_step += diff;
+    diff = (int8_t) (aux0 - counter_aux_old_step[0]);
+    counter_aux_old_step[0] = aux0;
+    counter_aux_new_step[0] += diff;
+    diff = (int8_t) (aux1 - counter_aux_old_step[1]);
+    counter_aux_old_step[1] = aux1;
+    counter_aux_new_step[1] += diff;
 }
 
 /** Update overall counter values and compute diffs. */
 void
 counter_update (void)
 {
-    uint8_t left, right, aux0, aux1;
-    /* Sample counters. */
-    left = counter_read (COUNTER_LEFT);
-    right = counter_read (COUNTER_RIGHT);
-    aux0 = counter_read (COUNTER_AUX0);
-    aux1 = counter_read (COUNTER_AUX1);
+    /* Wants fresh data. */
+    counter_update_step ();
     /* Left counter. */
+    uint16_t left = counter_left_new_step >> COUNTER_LEFT_SHIFT;
 #if !COUNTER_LEFT_REVERSE
-    counter_left_diff = (int8_t) (left - counter_left_old);
+    counter_left_diff = (int16_t) (left - counter_left_old);
 #else
-    counter_left_diff = (int8_t) (counter_left_old - left);
+    counter_left_diff = (int16_t) (counter_left_old - left);
 #endif
     counter_left_old = left;
     counter_left += counter_left_diff;
     /* Right counter. */
+    uint16_t right = counter_right_new_step >> COUNTER_RIGHT_SHIFT;
 #if !COUNTER_RIGHT_REVERSE
-    counter_right_diff = (int8_t) (right - counter_right_old);
+    counter_right_diff = (int16_t) (right - counter_right_old);
 #else
-    counter_right_diff = (int8_t) (counter_right_old - right);
+    counter_right_diff = (int16_t) (counter_right_old - right);
 #endif
     counter_right_old = right;
     /* Fix right counter. */
@@ -160,18 +200,20 @@ counter_update (void)
     counter_right_diff = (int16_t) (right_new - counter_right);
     counter_right = right_new;
     /* First auxiliary counter. */
+    uint16_t aux0 = counter_aux_new_step[0] >> COUNTER_AUX0_SHIFT;
 #if !COUNTER_AUX0_REVERSE
-    counter_aux_diff[0] = (int8_t) (aux0 - counter_aux_old[0]);
+    counter_aux_diff[0] = (int16_t) (aux0 - counter_aux_old[0]);
 #else
-    counter_aux_diff[0] = (int8_t) (counter_aux_old[0] - aux0);
+    counter_aux_diff[0] = (int16_t) (counter_aux_old[0] - aux0);
 #endif
     counter_aux_old[0] = aux0;
     counter_aux[0] += counter_aux_diff[0];
     /* Second auxiliary counter. */
+    uint16_t aux1 = counter_aux_new_step[1] >> COUNTER_AUX1_SHIFT;
 #if !COUNTER_AUX1_REVERSE
-    counter_aux_diff[1] = (int8_t) (aux1 - counter_aux_old[1]);
+    counter_aux_diff[1] = (int16_t) (aux1 - counter_aux_old[1]);
 #else
-    counter_aux_diff[1] = (int8_t) (counter_aux_old[1] - aux1);
+    counter_aux_diff[1] = (int16_t) (counter_aux_old[1] - aux1);
 #endif
     counter_aux_old[1] = aux1;
     counter_aux[1] += counter_aux_diff[1];
