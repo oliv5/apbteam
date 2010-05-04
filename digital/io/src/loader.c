@@ -25,3 +25,17 @@
 #include "common.h"
 #include "loader.h"
 
+#include "fsm.h"
+
+void
+loader_up (void)
+{
+    fsm_handle_event (&ai_fsm, AI_EVENT_loader_up);
+}
+
+void
+loader_down (void)
+{
+    fsm_handle_event (&ai_fsm, AI_EVENT_loader_down);
+}
+

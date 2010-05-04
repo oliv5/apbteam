@@ -28,6 +28,7 @@
 #include "asserv.h"
 #include "mimot.h"
 #include "bot.h"
+#include "main.h"
 
 /*
  * LOADER_IDLE =start=>
@@ -85,7 +86,7 @@ ai__LOADER_INIT_ELEVATOR_ZERO__elevator_succeed (void)
 fsm_branch_t
 ai__LOADER_INIT_CLAMP_CLOSE__clamp_succeed (void)
 {
-    asserv_move_motor0_absolute (BOT_ELEVATOR_STROKE_STEP,
+    asserv_move_motor0_absolute (BOT_ELEVATOR_REST_STEP,
 				 BOT_ELEVATOR_SPEED);
     mimot_motor0_zero_position (-BOT_CLAMP_ZERO_SPEED);
     mimot_motor1_zero_position (-BOT_CLAMP_ZERO_SPEED);
@@ -104,7 +105,7 @@ ai__LOADER_INIT_CLAMP_ZERO__clamp_succeed (void)
 
 /*
  * LOADER_INIT_ELEVATOR_UP =elevator_succeed=>
- *  => LOADER_IDLE
+ *  => LOADER_UP
  */
 fsm_branch_t
 ai__LOADER_INIT_ELEVATOR_UP__elevator_succeed (void)
@@ -124,5 +125,101 @@ ai__LOADER_INIT_ELEVATOR_UP__elevator_failed (void)
     asserv_move_motor0_absolute (BOT_ELEVATOR_STROKE_STEP / 3,
 				 BOT_ELEVATOR_ZERO_SPEED);
     return ai_next (LOADER_INIT_ELEVATOR_UP, elevator_failed);
+}
+
+/*
+ * LOADER_UP =loader_down=>
+ *  => LOADER_DOWNING
+ *   move down
+ */
+fsm_branch_t
+ai__LOADER_UP__loader_down (void)
+{
+    asserv_move_motor0_absolute (BOT_ELEVATOR_DOWN_STEP, BOT_ELEVATOR_SPEED);
+    return ai_next (LOADER_UP, loader_down);
+}
+
+/*
+ * LOADER_DOWN =loader_up=>
+ *  => LOADER_UPING
+ *   move up
+ */
+fsm_branch_t
+ai__LOADER_DOWN__loader_up (void)
+{
+    asserv_move_motor0_absolute (BOT_ELEVATOR_REST_STEP, BOT_ELEVATOR_SPEED);
+    return ai_next (LOADER_DOWN, loader_up);
+}
+
+/*
+ * LOADER_UPING =elevator_succeed=>
+ *  => LOADER_UP
+ *   post loader_uped event
+ */
+fsm_branch_t
+ai__LOADER_UPING__elevator_succeed (void)
+{
+    main_post_event_for_top_fsm = AI_EVENT_loader_uped;
+    return ai_next (LOADER_UPING, elevator_succeed);
+}
+
+/*
+ * LOADER_UPING =elevator_failed=>
+ *  => LOADER_ERROR
+ *   post loader_errored event
+ */
+fsm_branch_t
+ai__LOADER_UPING__elevator_failed (void)
+{
+    main_post_event_for_top_fsm = AI_EVENT_loader_errored;
+    return ai_next (LOADER_UPING, elevator_failed);
+}
+
+/*
+ * LOADER_DOWNING =elevator_succeed=>
+ *  => LOADER_DOWN
+ *   post loader_downed event
+ */
+fsm_branch_t
+ai__LOADER_DOWNING__elevator_succeed (void)
+{
+    main_post_event_for_top_fsm = AI_EVENT_loader_downed;
+    return ai_next (LOADER_DOWNING, elevator_succeed);
+}
+
+/*
+ * LOADER_DOWNING =elevator_failed=>
+ *  => LOADER_UPING
+ *   something is blocking, move it up
+ */
+fsm_branch_t
+ai__LOADER_DOWNING__elevator_failed (void)
+{
+    asserv_move_motor0_absolute (BOT_ELEVATOR_REST_STEP, BOT_ELEVATOR_SPEED);
+    return ai_next (LOADER_DOWNING, elevator_failed);
+}
+
+/*
+ * LOADER_ERROR =loader_down=>
+ *  => LOADER_DOWNING
+ *   move down
+ */
+fsm_branch_t
+ai__LOADER_ERROR__loader_down (void)
+{
+    asserv_move_motor0_absolute (BOT_ELEVATOR_DOWN_STEP, BOT_ELEVATOR_SPEED);
+    return ai_next (LOADER_ERROR, loader_down);
+}
+
+/*
+ * LOADER_ERROR =loader_up=>
+ *  => LOADER_UPING
+ *   move up
+ */
+fsm_branch_t
+ai__LOADER_ERROR__loader_up (void)
+{
+    asserv_move_motor0_absolute (BOT_ELEVATOR_REST_STEP, BOT_ELEVATOR_SPEED);
+    return ai_next (LOADER_ERROR, loader_up);
 }
 

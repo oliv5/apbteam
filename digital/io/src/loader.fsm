@@ -17,6 +17,16 @@ States:
   find clamp zero position
  LOADER_INIT_ELEVATOR_UP
   move the elevator up so that the robot can go to the wall
+ LOADER_UP
+  up position, clamp is protected
+ LOADER_DOWN
+  down position, ready to take an element
+ LOADER_UPING
+  moving to the up position
+ LOADER_DOWNING
+  moving to the down position
+ LOADER_ERROR
+  error while moving up, stop in an unknown state
 
 Events:
  elevator_succeed
@@ -25,6 +35,16 @@ Events:
   asserv failure result
  clamp_succeed
   asserv success result, clamp movement cannot fail
+ loader_down
+  make the loader ready to load an element
+ loader_up
+  protect the clamp by moving it up
+ loader_downed
+  posted when loader successfully moved down
+ loader_uped
+  posted when loader successfully moved up
+ loader_errored
+  posted when loader in an unknown state due to error while moving up
 
 LOADER_IDLE:
  start -> LOADER_WAIT_JACK_IN
@@ -49,7 +69,33 @@ LOADER_INIT_CLAMP_ZERO:
  clamp_succeed -> LOADER_INIT_ELEVATOR_UP
 
 LOADER_INIT_ELEVATOR_UP:
- elevator_succeed -> LOADER_IDLE
+ elevator_succeed -> LOADER_UP
  elevator_failed -> LOADER_IDLE
   initialisation failure
+
+LOADER_UP:
+ loader_down -> LOADER_DOWNING
+  move down
+
+LOADER_DOWN:
+ loader_up -> LOADER_UPING
+  move up
+
+LOADER_ERROR:
+ loader_down -> LOADER_DOWNING
+  move down
+ loader_up -> LOADER_UPING
+  move up
+
+LOADER_DOWNING:
+ elevator_succeed -> LOADER_DOWN
+  post loader_downed event
+ elevator_failed -> LOADER_UPING
+  something is blocking, move it up
+
+LOADER_UPING:
+ elevator_succeed -> LOADER_UP
+  post loader_uped event
+ elevator_failed -> LOADER_ERROR
+  post loader_errored event
 

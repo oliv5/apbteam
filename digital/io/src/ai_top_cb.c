@@ -31,7 +31,7 @@
 #include "move.h"
 #include "chrono.h"
 #include "playground.h"
-#include "asserv.h"
+#include "loader.h"
 
 /**
  * Time limit.
@@ -73,6 +73,7 @@ ai__GO_FAR__move_fsm_succeed (void)
 {
     position_t pos = PG_POSITION_DEG (2625, 253, -90);
     move_start (pos, 0);
+    loader_down ();
     return ai_next (GO_FAR, move_fsm_succeed);
 }
 
@@ -98,6 +99,7 @@ ai__GO_NEAR__move_fsm_succeed (void)
 {
     position_t pos = PG_POSITION_DEG (825, 1253, -29);
     move_start (pos, 0);
+    loader_up ();
     return ai_next (GO_NEAR, move_fsm_succeed);
 }
 

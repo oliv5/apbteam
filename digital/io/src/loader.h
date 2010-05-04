@@ -25,4 +25,12 @@
  *
  * }}} */
 
+/** Move loader up, in a rest position. */
+void
+loader_up (void);
+
+/** Move loader down, ready to take elements. */
+void
+loader_down (void);
+
 #endif /* loader_h */

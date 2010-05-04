@@ -62,6 +62,12 @@
 /** Elevator stroke in steps. */
 #define BOT_ELEVATOR_STROKE_STEP 7089
 
+/** Elevator resting up position in steps. */
+#define BOT_ELEVATOR_REST_STEP 4111
+
+/** Elevator down position in steps. */
+#define BOT_ELEVATOR_DOWN_STEP 30
+
 /** Elevator work speed. */
 #define BOT_ELEVATOR_SPEED 0x60
 
