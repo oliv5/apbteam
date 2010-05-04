@@ -152,6 +152,10 @@ main_event_to_fsm (void)
     if (motorm0_status == success && motorm1_status == success)
 	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_clamp_succeed);
 
+    /* Contacts. */
+    if (!IO_GET (CONTACT_BUMPER0) || !IO_GET (CONTACT_BUMPER1))
+	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_loader_element);
+
     /* Jack */
     if (switch_get_jack ())
 	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_jack_removed_from_bot);

@@ -30,5 +30,6 @@ void
 contact_init (void)
 {
     /* Pull-up. */
-    //IO_SET (CONTACT_EXAMPLE);
+    IO_SET (CONTACT_BUMPER0);
+    IO_SET (CONTACT_BUMPER1);
 }

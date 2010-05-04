@@ -26,7 +26,8 @@
  * }}} */
 #include "simu.host.h"
 
-#define CONTACT_EXAMPLE C, 0
+#define CONTACT_BUMPER0 C, 0
+#define CONTACT_BUMPER1 C, 1
 
 /**
  * Initialize the contact module.

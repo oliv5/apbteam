@@ -152,6 +152,19 @@ ai__LOADER_DOWN__loader_up (void)
 }
 
 /*
+ * LOADER_DOWN =loader_element=>
+ *  => LOADER_LOAD_CLOSING
+ *   close clamp
+ */
+fsm_branch_t
+ai__LOADER_DOWN__loader_element (void)
+{
+    mimot_move_motor0_absolute (BOT_CLAMP_STROKE_STEP, BOT_CLAMP_SPEED);
+    mimot_move_motor1_absolute (BOT_CLAMP_STROKE_STEP, BOT_CLAMP_SPEED);
+    return ai_next (LOADER_DOWN, loader_element);
+}
+
+/*
  * LOADER_UPING =elevator_succeed=>
  *  => LOADER_UP
  *   post loader_uped event
@@ -221,5 +234,43 @@ ai__LOADER_ERROR__loader_up (void)
 {
     asserv_move_motor0_absolute (BOT_ELEVATOR_REST_STEP, BOT_ELEVATOR_SPEED);
     return ai_next (LOADER_ERROR, loader_up);
+}
+
+/*
+ * LOADER_LOAD_CLOSING =clamp_succeed=>
+ *  => LOADER_LOAD_UPING
+ *   move up
+ */
+fsm_branch_t
+ai__LOADER_LOAD_CLOSING__clamp_succeed (void)
+{
+    asserv_move_motor0_absolute (BOT_ELEVATOR_UNLOAD_STEP,
+				 BOT_ELEVATOR_SPEED);
+    return ai_next (LOADER_LOAD_CLOSING, clamp_succeed);
+}
+
+/*
+ * LOADER_LOAD_UPING =elevator_succeed=>
+ *  => LOADER_LOAD_UNLOADING
+ *   open clamp
+ */
+fsm_branch_t
+ai__LOADER_LOAD_UPING__elevator_succeed (void)
+{
+    mimot_move_motor0_absolute (BOT_CLAMP_OPEN_STEP, BOT_CLAMP_SPEED);
+    mimot_move_motor1_absolute (BOT_CLAMP_OPEN_STEP, BOT_CLAMP_SPEED);
+    return ai_next (LOADER_LOAD_UPING, elevator_succeed);
+}
+
+/*
+ * LOADER_LOAD_UNLOADING =clamp_succeed=>
+ *  => LOADER_DOWNING
+ *   move down
+ */
+fsm_branch_t
+ai__LOADER_LOAD_UNLOADING__clamp_succeed (void)
+{
+    asserv_move_motor0_absolute (BOT_ELEVATOR_DOWN_STEP, BOT_ELEVATOR_SPEED);
+    return ai_next (LOADER_LOAD_UNLOADING, clamp_succeed);
 }
 

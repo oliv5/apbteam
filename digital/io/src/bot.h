@@ -62,6 +62,9 @@
 /** Elevator stroke in steps. */
 #define BOT_ELEVATOR_STROKE_STEP 7089
 
+/** Elevator unloading up position in steps. */
+#define BOT_ELEVATOR_UNLOAD_STEP 5600
+
 /** Elevator resting up position in steps. */
 #define BOT_ELEVATOR_REST_STEP 4111
 
@@ -76,6 +79,9 @@
 
 /** Clamp stroke in steps. */
 #define BOT_CLAMP_STROKE_STEP 5627
+
+/** Clamp open position in steps. */
+#define BOT_CLAMP_OPEN_STEP 30
 
 /** Clamp work speed. */
 #define BOT_CLAMP_SPEED 0x60
