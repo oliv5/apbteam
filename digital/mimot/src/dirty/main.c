@@ -283,7 +283,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	if (!auxp) { proto_send0 ('?'); return; }
 	if (args[2] == state->sequence)
 	    break;
-	aux_traj_find_zero_start (auxp, args[1], args[2]);
+	aux_traj_find_limit_start (auxp, args[1], args[2]);
 	break;
       case c ('a', 2):
 	/* Set all acknoledge.

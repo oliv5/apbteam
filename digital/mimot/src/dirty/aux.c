@@ -33,6 +33,7 @@
 #include "counter.h"
 #include "pos.h"
 #include "speed.h"
+#include "pwm.h"
 
 #include "contacts.h"
 
@@ -54,6 +55,8 @@ enum
     AUX_TRAJ_FIND_ZERO_NOT,
     /* Find zero mode, turn until zero is seen. */
     AUX_TRAJ_FIND_ZERO,
+    /* Find zero by forcing into limit. */
+    AUX_TRAJ_FIND_LIMIT,
     /* Everything done. */
     AUX_TRAJ_DONE,
 };
@@ -64,11 +67,13 @@ aux_init (void)
 {
     aux[0].state = &state_aux[0];
     aux[0].speed = &speed_aux[0];
+    aux[0].pwm = &pwm_aux[0];
     aux[0].zero_pin = &IO_PIN (CONTACT_AUX0_ZERO_IO);
     aux[0].zero_bv = IO_BV (CONTACT_AUX0_ZERO_IO);
     aux[0].handle_blocking = 0;
     aux[1].state = &state_aux[1];
     aux[1].speed = &speed_aux[1];
+    aux[1].pwm = &pwm_aux[1];
     aux[1].zero_pin = &IO_PIN (CONTACT_AUX1_ZERO_IO);
     aux[1].zero_bv = IO_BV (CONTACT_AUX1_ZERO_IO);
     aux[1].handle_blocking = 0;
@@ -163,6 +168,34 @@ aux_traj_find_zero_start (struct aux_t *aux, int8_t speed, uint8_t seq)
     state_start (aux->state, MODE_TRAJ, seq);
 }
 
+/** Find limit mode. */
+void
+aux_traj_find_limit (struct aux_t *aux)
+{
+    /* If blocking, limit is found. */
+    if (aux->speed->pos->blocked_counter
+	> aux->speed->pos->blocked_counter_limit)
+      {
+	state_finish (aux->state);
+	pos_reset (aux->speed->pos);
+	aux->state->mode = MODE_PWM;
+	pwm_set (aux->pwm, 0);
+	aux->pos = 0;
+	aux->traj_mode = AUX_TRAJ_DONE;
+      }
+}
+
+/** Start find limit mode. */
+void
+aux_traj_find_limit_start (struct aux_t *aux, int8_t speed, uint8_t seq)
+{
+    aux->traj_mode = AUX_TRAJ_FIND_LIMIT;
+    aux->speed->use_pos = 0;
+    aux->speed->cons = speed << 8;
+    state_start (aux->state, MODE_TRAJ, seq);
+    aux->state->variant = 4;
+}
+
 /** Update trajectories for one motor. */
 static void
 aux_traj_update_single (struct aux_t *aux)
@@ -178,6 +211,9 @@ aux_traj_update_single (struct aux_t *aux)
 	  case AUX_TRAJ_FIND_ZERO_NOT:
 	  case AUX_TRAJ_FIND_ZERO:
 	    aux_traj_find_zero (aux);
+	    break;
+	  case AUX_TRAJ_FIND_LIMIT:
+	    aux_traj_find_limit (aux);
 	    break;
 	  case AUX_TRAJ_DONE:
 	    break;
