@@ -60,10 +60,8 @@ fsm_branch_t
 ai__LOADER_WAIT_JACK_OUT__jack_removed_from_bot (void)
 {
     asserv_motor0_zero_position (-BOT_ELEVATOR_ZERO_SPEED);
-    mimot_move_motor0_absolute (BOT_CLAMP_STROKE_STEP / 4,
-				BOT_CLAMP_ZERO_SPEED);
-    mimot_move_motor1_absolute (BOT_CLAMP_STROKE_STEP / 4,
-				BOT_CLAMP_ZERO_SPEED);
+    mimot_motor0_clamp (BOT_CLAMP_ZERO_SPEED, 0);
+    mimot_motor1_clamp (BOT_CLAMP_ZERO_SPEED, 0);
     return ai_next (LOADER_WAIT_JACK_OUT, jack_removed_from_bot);
 }
 
