@@ -159,8 +159,8 @@ ai__LOADER_DOWN__loader_up (void)
 fsm_branch_t
 ai__LOADER_DOWN__loader_element (void)
 {
-    mimot_move_motor0_absolute (BOT_CLAMP_STROKE_STEP, BOT_CLAMP_SPEED);
-    mimot_move_motor1_absolute (BOT_CLAMP_STROKE_STEP, BOT_CLAMP_SPEED);
+    mimot_motor0_clamp (BOT_CLAMP_SPEED, BOT_CLAMP_PWM);
+    mimot_motor1_clamp (BOT_CLAMP_SPEED, BOT_CLAMP_PWM);
     return ai_next (LOADER_DOWN, loader_element);
 }
 

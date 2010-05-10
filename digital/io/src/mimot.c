@@ -157,3 +157,27 @@ mimot_motor1_zero_position (int8_t speed)
     twi_master_send (2);
 }
 
+void
+mimot_motor0_clamp (int8_t speed, int16_t pwm)
+{
+    uint8_t *buffer = twi_master_get_buffer (MIMOT_SLAVE);
+    buffer[0] = 'l';
+    buffer[1] = 0;
+    buffer[2] = speed;
+    buffer[3] = v16_to_v8 (pwm, 1);
+    buffer[4] = v16_to_v8 (pwm, 0);
+    twi_master_send (5);
+}
+
+void
+mimot_motor1_clamp (int8_t speed, int16_t pwm)
+{
+    uint8_t *buffer = twi_master_get_buffer (MIMOT_SLAVE);
+    buffer[0] = 'l';
+    buffer[1] = 1;
+    buffer[2] = speed;
+    buffer[3] = v16_to_v8 (pwm, 1);
+    buffer[4] = v16_to_v8 (pwm, 0);
+    twi_master_send (5);
+}
+

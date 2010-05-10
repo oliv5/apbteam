@@ -89,6 +89,9 @@
 /** Clamp find zero speed. */
 #define BOT_CLAMP_ZERO_SPEED 0x10
 
+/** Clamp open loop PWM. */
+#define BOT_CLAMP_PWM 0x100
+
 /**
  * Definition of the colors.
  */

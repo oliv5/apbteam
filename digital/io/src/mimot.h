@@ -84,4 +84,12 @@ mimot_motor0_zero_position (int8_t speed);
 void
 mimot_motor1_zero_position (int8_t speed);
 
+/** Clamp motor0. */
+void
+mimot_motor0_clamp (int8_t speed, int16_t pwm);
+
+/** Clamp motor1. */
+void
+mimot_motor1_clamp (int8_t speed, int16_t pwm);
+
 #endif /* mimot_h */
