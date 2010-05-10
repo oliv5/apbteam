@@ -70,6 +70,7 @@ astar (struct astar_node_t *nodes, uint8_t nodes_nb, uint8_t initial,
 	/* OK, there is some work, move this node to the closed set, it will
 	 * never be consider again. */
 	nodes[lowest_node].score = ASTAR_NODE_SCORE_CLOSED;
+	nodes[lowest_node].heuristic = 0;
 	/* Now, process all its neighbors. */
 	struct astar_neighbor_t neighbors[nodes_nb - 1];
 	uint8_t neighbors_nb = AC_ASTAR_NEIGHBOR_CALLBACK (lowest_node,

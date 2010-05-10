@@ -26,9 +26,9 @@
  * }}} */
 
 /** Used instead of score for a unvisited node. */
-#define ASTAR_NODE_SCORE_UNVISITED 0xffff
+#define ASTAR_NODE_SCORE_UNVISITED ((uint16_t) 0xffff)
 /** Used instead of score for a node in the closed set. */
-#define ASTAR_NODE_SCORE_CLOSED 0xfffe
+#define ASTAR_NODE_SCORE_CLOSED ((uint16_t) 0xfffe)
 /** Test whether a node is in the open set. */
 #define ASTAR_NODE_SCORE_OPEN(score) ((score) < ASTAR_NODE_SCORE_CLOSED)
 
