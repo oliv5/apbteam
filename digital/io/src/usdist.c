@@ -93,8 +93,10 @@ usdist_update (void)
 		;
 	    uint16_t v = adc_read ();
 	    /* Our sensors return a value between 1 and 5 V proportional to
-	     * the distance between calibrated values. */
-	    if (v <= 1024 / 5)
+	     * the distance between calibrated values.  Ignore faulty sensors. */
+	    if (v <= 1024 / 5 / 4)
+		usdist_mm[current] = 0xffff;
+	    else if (v <= 1024 / 5)
 		usdist_mm[current] = USDIST_MM_MIN;
 	    else
 		usdist_mm[current] = USDIST_MM_MIN
