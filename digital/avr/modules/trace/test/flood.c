@@ -26,12 +26,11 @@
 #include "io.h"
 #include "modules/flash/flash.h"
 #include "modules/trace/trace.h"
-#include "modules/trace/events.h"
 #include "modules/proto/proto.h"
 #include "modules/utils/utils.h"
 #include "modules/utils/byte.h"
 #include "modules/uart/uart.h"
-
+#include "events.h"
 
 void
 flood (void)

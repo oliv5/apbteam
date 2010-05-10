@@ -28,7 +28,6 @@
   * You can find the example on the website :
   * http://gcc.gnu.org/ml/gcc-patches/2000-11/msg00016.html
   */
-#include "modules/trace/events.h"
 #define PASTE_EXPAND(a, b) PASTE(a, b)
 
 #define PASTE(a, b) a ## b
