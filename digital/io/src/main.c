@@ -156,6 +156,8 @@ main_event_to_fsm (void)
     /* Contacts. */
     if (!IO_GET (CONTACT_BUMPER0) || !IO_GET (CONTACT_BUMPER1))
 	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_loader_element);
+    if (!IO_GET (CONTACT_STRATEGY))
+	loader_down ();
 
     /* Jack */
     if (switch_get_jack ())

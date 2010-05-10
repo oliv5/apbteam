@@ -28,6 +28,7 @@
 
 #define CONTACT_BUMPER0 C, 0
 #define CONTACT_BUMPER1 C, 1
+#define CONTACT_STRATEGY C, 3
 
 /**
  * Initialize the contact module.
