@@ -31,8 +31,8 @@
 int16_t
 distance_point_point (vect_t *a, vect_t *b)
 {
-    int16_t dx = b->x - a->x;
-    int16_t dy = b->y - a->y;
+    int32_t dx = b->x - a->x;
+    int32_t dy = b->y - a->y;
     return fixed_sqrt_ui32 (dx * dx + dy * dy);
 }
 

@@ -70,7 +70,7 @@ vect_value_t
 vect_norm (const vect_t *v)
 {
     assert (v);
-    int16_t tx = v->x, ty = v->y;
+    int32_t tx = v->x, ty = v->y;
     return fixed_sqrt_ui32 (tx * tx + ty * ty);
 }
 
