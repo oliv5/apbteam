@@ -27,5 +27,5 @@ target = dict (
         a1be = 256, a1bs = 0x0c, a1bc = 10,
         E = 0x3ff, D = 0x1ff,
         l = 0x1000,
-        w = 0x00,
+        w = 0x09,
         )

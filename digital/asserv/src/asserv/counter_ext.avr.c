@@ -53,7 +53,7 @@
 /** Define to 1 to reverse the first auxiliary counter. */
 #define COUNTER_AUX0_REVERSE 1
 /** Define to 1 to reverse the second auxiliary counter. */
-#define COUNTER_AUX1_REVERSE 0
+#define COUNTER_AUX1_REVERSE 1
 
 /** Left counter shift. */
 #define COUNTER_LEFT_SHIFT 0
