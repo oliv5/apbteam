@@ -950,6 +950,27 @@
        inkscape:vp_y="0 : 1000 : 0"
        inkscape:vp_x="0 : 526.18109 : 1"
        sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective3384"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective3438"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective3579"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       sodipodi:type="inkscape:persp3d" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -958,14 +979,14 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.35355339"
-     inkscape:cx="810.21177"
-     inkscape:cy="861.64271"
+     inkscape:zoom="0.27014138"
+     inkscape:cx="1052.3622"
+     inkscape:cy="1489.9606"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="true"
      inkscape:window-width="1280"
-     inkscape:window-height="746"
+     inkscape:window-height="1006"
      inkscape:window-x="0"
      inkscape:window-y="0"
      showguides="true"
@@ -1325,7 +1346,7 @@
          inkscape:export-xdpi="90"
          height="274.97571"
          width="235.11351"
-         xlink:href="images\electronic-architecture.png"
+         xlink:href="images/electronic-architecture.png"
          sodipodi:absref="D:\projets\APBTeam\svn\public\eurobot\2009\planete-sciences\poster\images\electronic-architecture.png"
          id="image13439"
          x="2338.0439"
@@ -1387,27 +1408,31 @@
       <image
          height="152.89505"
          width="142.95688"
-         xlink:href="images\logo_elsys.jpg"
+         xlink:href="images/logo_elsys.jpg"
          sodipodi:absref="D:\projets\APBTeam\svn\public\eurobot\2009\planete-sciences\poster\images\logo_elsys.jpg"
          id="image12947"
          x="830.58722"
-         y="2691.5869" />
-      <image
-         height="97.866501"
-         width="230.31248"
-         xlink:href="images\logo_fama.gif"
-         sodipodi:absref="D:\projets\APBTeam\svn\public\eurobot\2009\planete-sciences\poster\images\logo_fama.gif"
-         id="image13006"
-         x="1021.5447"
-         y="2710.2004" />
-      <image
-         height="73.061005"
-         width="204.08371"
-         xlink:href="images\logo-efrei_robotique.png"
-         sodipodi:absref="D:\projets\APBTeam\svn\public\eurobot\2009\planete-sciences\poster\images\logo-efrei_robotique.png"
-         id="image13065"
-         x="1289.7474"
-         y="2728.8738" />
+         y="2699.0544" />
+      <g
+         id="g3390"
+         transform="translate(-2.4845703e-5,0)">
+        <image
+           y="2683.3628"
+           x="1248.2778"
+           id="image13006"
+           sodipodi:absref="D:\projets\APBTeam\svn\public\eurobot\2009\planete-sciences\poster\images\logo_fama.gif"
+           xlink:href="images/logo_fama.gif"
+           width="230.31248"
+           height="97.866501" />
+        <image
+           y="2794.5801"
+           x="1261.9841"
+           id="image13065"
+           sodipodi:absref="D:\projets\APBTeam\svn\public\eurobot\2009\planete-sciences\poster\images\logo-efrei_robotique.png"
+           xlink:href="images/logo-efrei_robotique.png"
+           width="204.08371"
+           height="73.061005" />
+      </g>
       <text
          sodipodi:linespacing="100%"
          id="text3741"
@@ -1419,6 +1444,14 @@
            x="1018.2076"
            id="tspan3745"
            sodipodi:role="line">Sponsors</tspan></text>
+      <image
+         y="2727.2356"
+         x="1001.1724"
+         id="image3386"
+         height="96.53257"
+         width="219.4772"
+         sodipodi:absref="/home/schodet/tmp/robot/git/eurobot/2010/planete-sciences/poster/images/logo-cadelec.png"
+         xlink:href="images/logo-cadelec.png" />
     </g>
     <flowRoot
        xml:space="preserve"
@@ -1518,7 +1551,7 @@
          id="flowPara3100" /><flowPara
          style="font-size:26px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;font-family:Arial;-inkscape-font-specification:Arial"
          id="flowPara3102" /></flowRoot>    <image
-       xlink:href="images\nestor-robot.PNG"
+       xlink:href="images/nestor-robot.PNG"
        sodipodi:absref="D:\projets\APBTeam\svn\public\eurobot\2009\planete-sciences\poster\images\nestor-robot.PNG"
        width="376.15222"
        height="175.23029"
@@ -1564,7 +1597,7 @@
            rx="25.867088" />
       </g>
       <image
-         xlink:href="images\getsamples.png"
+         xlink:href="images/getsamples.png"
          sodipodi:absref="D:\projets\APBTeam\svn\public\eurobot\2009\planete-sciences\poster\images\getsamples.png"
          width="288.75696"
          height="396.26181"
@@ -1666,61 +1699,7 @@
        style="font-size:50px;font-style:normal;font-variant:normal;font-weight:900;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#330033;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Arial Black;-inkscape-font-specification:Arial Black Heavy"
        d="M 320.25296,1028.5164 L 320.25296,1037.3288 L 331.50296,1037.3288 L 331.50296,1064.2976 L 342.56546,1064.2976 L 342.56546,1037.3288 L 353.84671,1037.3288 L 353.84671,1028.5164 L 320.25296,1028.5164 z M 371.62796,1037.7976 C 367.05438,1037.7976 363.47397,1039.0411 360.87796,1041.5476 C 358.28193,1044.0541 356.9717,1047.3385 356.97171,1051.3914 C 356.97171,1054.2397 357.61526,1056.7212 358.90921,1058.8288 C 360.20315,1060.9366 361.84605,1062.4542 363.81546,1063.4226 C 365.78485,1064.391 368.47495,1064.8914 371.90921,1064.8914 C 375.86427,1064.8913 378.9183,1064.3038 381.03421,1063.1726 C 383.15007,1062.0414 384.94303,1060.183 386.44046,1057.5788 L 376.65921,1056.6726 C 376.0407,1057.4539 375.47754,1058.0197 374.94046,1058.3288 C 374.06153,1058.8171 373.1045,1059.0476 372.12796,1059.0476 C 370.58172,1059.0476 369.33823,1058.4832 368.37796,1057.3601 C 367.69435,1056.5789 367.27573,1055.3927 367.09671,1053.7976 L 387.00296,1053.7976 L 387.00296,1052.6726 C 387.00293,1049.2546 386.43847,1046.4923 385.31546,1044.3601 C 384.19238,1042.228 382.55761,1040.577 380.40921,1039.4538 C 378.26075,1038.3308 375.33887,1037.7976 371.62796,1037.7976 z M 403.22171,1037.7976 C 401.87893,1037.8495 400.60549,1037.9964 399.40921,1038.2038 C 397.81415,1038.4806 396.57065,1038.8556 395.65921,1039.3601 C 394.38967,1040.06 393.39716,1040.908 392.72171,1041.8601 C 392.04625,1042.8123 391.54852,1044.1061 391.19046,1045.7664 L 400.69046,1046.7664 C 401.08107,1045.6433 401.58693,1044.892 402.22171,1044.4851 C 403.0355,1043.9643 404.25033,1043.704 405.87796,1043.7038 C 407.14747,1043.7039 408.02963,1043.9343 408.53421,1044.4226 C 409.03875,1044.9109 409.31543,1045.7644 409.31546,1046.9851 C 408.07846,1047.4734 406.89096,1047.8715 405.78421,1048.1726 C 404.67742,1048.4737 402.2614,1048.9864 398.53421,1049.7351 C 395.42548,1050.3536 393.28355,1051.3094 392.12796,1052.5788 C 390.97236,1053.8484 390.4092,1055.4532 390.40921,1057.4226 C 390.40921,1059.5222 391.21226,1061.3028 392.81546,1062.7351 C 394.41864,1064.1674 396.75425,1064.8914 399.84671,1064.8914 C 402.17417,1064.8913 404.21388,1064.5137 405.97171,1063.7976 C 407.2575,1063.2605 408.57585,1062.3634 409.87796,1061.1101 C 409.99187,1061.8588 410.0765,1062.4163 410.19046,1062.7664 C 410.30437,1063.1163 410.56608,1063.6303 410.94046,1064.2976 L 420.25296,1064.2976 C 419.7321,1063.2234 419.40755,1062.333 419.25296,1061.6414 C 419.09831,1060.9496 419.00292,1059.987 419.00296,1058.7664 L 419.00296,1047.3288 C 419.00293,1046.1082 418.77246,1044.8279 418.28421,1043.4851 C 417.7959,1042.1423 417.13053,1041.0925 416.28421,1040.3601 C 415.07976,1039.3022 413.55957,1038.6313 411.75296,1038.2976 C 409.9463,1037.964 407.5752,1037.7976 404.59671,1037.7976 C 404.13284,1037.7976 403.6693,1037.7803 403.22171,1037.7976 z M 443.34671,1037.7976 C 441.42612,1037.7976 439.76824,1038.1303 438.40921,1038.7976 C 437.05015,1039.4649 435.71258,1040.5625 434.37796,1042.1414 L 434.37796,1038.3601 L 425.09671,1038.3601 L 425.09671,1064.2976 L 435.06546,1064.2976 L 435.06546,1051.0788 C 435.06545,1049.1095 435.42677,1047.6916 436.15921,1046.8288 C 436.89162,1045.9662 437.83237,1045.5164 438.97171,1045.5164 C 439.67156,1045.5164 440.26335,1045.7114 440.78421,1046.1101 C 441.30502,1046.5089 441.6976,1047.0529 441.90921,1047.7038 C 442.0394,1048.1108 442.09668,1048.8769 442.09671,1050.0164 L 442.09671,1064.2976 L 452.06546,1064.2976 L 452.06546,1050.9226 C 452.06543,1049.0509 452.41178,1047.6753 453.12796,1046.8288 C 453.84407,1045.9825 454.7998,1045.579 455.97171,1045.5788 C 456.96451,1045.5789 457.7731,1046.0274 458.44046,1046.9226 C 458.89615,1047.4923 459.12792,1048.3444 459.12796,1049.5164 L 459.12796,1064.2976 L 469.09671,1064.2976 L 469.09671,1048.0164 C 469.09666,1044.5007 468.31541,1041.9183 466.75296,1040.2664 C 465.19042,1038.6144 463.00487,1037.7976 460.22171,1037.7976 C 458.33365,1037.7976 456.75748,1038.0936 455.47171,1038.7038 C 454.18587,1039.3142 452.75292,1040.4486 451.19046,1042.1414 C 450.42546,1040.6928 449.45735,1039.6237 448.25296,1038.8914 C 447.04851,1038.159 445.41374,1037.7976 443.34671,1037.7976 z M 372.03421,1043.6726 C 373.40138,1043.6726 374.50847,1044.0925 375.34671,1044.9226 C 376.18491,1045.7527 376.71387,1047.127 376.90921,1049.0476 L 367.12796,1049.0476 C 367.29071,1047.5014 367.65073,1046.3289 368.25296,1045.5476 C 369.19696,1044.2944 370.45541,1043.6726 372.03421,1043.6726 z M 409.31546,1051.9851 L 409.31546,1053.5788 C 409.31544,1054.8158 409.0892,1055.8058 408.69046,1056.5788 C 408.29168,1057.352 407.64258,1058.0105 406.69046,1058.5476 C 405.73829,1059.0847 404.70346,1059.3601 403.59671,1059.3601 C 402.53875,1059.3601 401.73569,1059.1065 401.19046,1058.6101 C 400.6452,1058.1137 400.37794,1057.4852 400.37796,1056.7038 C 400.37795,1056.0203 400.63706,1055.3972 401.19046,1054.8601 C 401.72756,1054.3393 403.01596,1053.8347 405.03421,1053.2976 C 406.51531,1052.9233 407.94825,1052.4734 409.31546,1051.9851 z"
        id="text3939" />
-    <flowRoot
-       xml:space="preserve"
-       id="flowRoot3254"
-       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Arial;-inkscape-font-specification:Arial"
-       transform="matrix(3.2604884,0,0,3.0969597,2099.3234,-5244.9013)"><flowRegion
-         id="flowRegion3256"><rect
-           style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;font-family:Arial;-inkscape-font-specification:Arial"
-           id="rect3258"
-           width="288.49957"
-           height="387.49454"
-           x="-610.94025"
-           y="2046.5402" /></flowRegion><flowPara
-         id="flowPara2802">méca </flowPara><flowPara
-         id="flowPara2804">Fréderic Denis</flowPara><flowPara
-         id="flowPara2806">Thomas Lambert </flowPara><flowPara
-         id="flowPara2808">élec</flowPara><flowPara
-         id="flowPara2811">Guillaume Chevillot</flowPara><flowPara
-         id="flowPara2814">Pierre Prot</flowPara><flowPara
-         id="flowPara2816">Antoine Leblanc</flowPara><flowPara
-         id="flowPara2818">info</flowPara><flowPara
-         id="flowPara2821">Jérémy Dufour</flowPara><flowPara
-         id="flowPara2823">Nicolas Haller</flowPara><flowPara
-         id="flowPara2825">Nélio Laranjeiro</flowPara><flowPara
-         id="flowPara2827" /><flowPara
-         id="flowPara2829" /><flowPara
-         id="flowPara2831" /><flowPara
-         id="flowPara2833" /><flowPara
-         id="flowPara2835" /><flowPara
-         id="flowPara2837" /><flowPara
-         id="flowPara2839" /></flowRoot>    <flowRoot
-       xml:space="preserve"
-       id="flowRoot3316"
-       style="font-size:27.99999999px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;display:inline;font-family:Arial;-inkscape-font-specification:Arial"
-       transform="matrix(1.0229035,0,0,1.1137017,1044.4866,-1185.4142)"><flowRegion
-         id="flowRegion3318"><rect
-           id="rect3320"
-           width="288.49957"
-           height="387.49454"
-           x="-610.94025"
-           y="2046.5402"
-           style="font-size:27.99999999px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr;text-anchor:start;font-family:Arial;-inkscape-font-specification:Arial" /></flowRegion><flowPara
-         id="flowPara2843">multitâche</flowPara><flowPara
-         id="flowPara2845">Nicolas Schodet</flowPara><flowPara
-         id="flowPara2847">granit</flowPara><flowPara
-         id="flowPara2849">Romain Dalmais</flowPara><flowPara
-         id="flowPara2851">orga</flowPara><flowPara
-         id="flowPara2853">Fleur-Mélusine Bouron</flowPara><flowPara
-         id="flowPara2855">Pierre-André Galmes</flowPara><flowPara
-         id="flowPara2857">Marie-Ève Schodet</flowPara><flowPara
-         id="flowPara2859">balise</flowPara><flowPara
-         id="flowPara2861">Florent Duchon</flowPara><flowPara
-         id="flowPara2863">admin</flowPara><flowPara
-         id="flowPara2865">Clément Demonchy</flowPara><flowPara
-         id="flowPara2867"></flowPara><flowPara
-         id="flowPara2869"></flowPara></flowRoot>    <rect
+    <rect
        style="opacity:0.96028885;fill:#cccccc;fill-opacity:1;stroke:#606398;stroke-width:0.65781564;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect4137"
        width="629.44696"
@@ -1863,7 +1842,7 @@
            id="tspan4993"
            sodipodi:role="line">Intelligence</tspan></text>
       <flowRoot
-         transform="translate(-704,-832)"
+         transform="matrix(0.9329787,0,0,0.9329787,-536.68638,-702.64435)"
          style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
          id="flowRoot3827"
          xml:space="preserve"><flowRegion
@@ -1914,7 +1893,7 @@
        xml:space="preserve"
        id="flowRoot3688"
        style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       transform="translate(-696.93652,388)"><flowRegion
+       transform="matrix(0.8878685,0,0,0.8878685,-415.54306,557.91143)"><flowRegion
          id="flowRegion3690"><rect
            id="rect3692"
            width="452.54831"
@@ -1929,29 +1908,13 @@
          style="font-size:26px" /><flowPara
          id="flowPara3710"
          style="font-size:26px" /></flowRoot>    <image
-       y="24.248753"
-       x="71.042244"
-       id="image2907"
-       height="438.9758"
-       width="515.49451"
-       sodipodi:absref="D:\Data\mes donnees sur pc fixe\projets\2010-05 APBTeam\svn\private\communication\logo\apbteam_avatar.png"
-       xlink:href="D:\Data\mes donnees sur pc fixe\projets\2010-05 APBTeam\svn\private\communication\logo\apbteam_avatar.png" />
-    <image
        y="2160.0825"
        x="1693.4238"
        id="image2987"
        height="229.11775"
        width="308.57608"
        sodipodi:absref="C:\Documents and Settings\Anthia\Bureau\marcel jackson\simu.png"
-       xlink:href="C:\Documents and Settings\Anthia\Bureau\marcel jackson\simu.png" />
-    <image
-       y="1532.0336"
-       x="841.88605"
-       id="image3037"
-       height="670.34674"
-       width="653.96045"
-       sodipodi:absref="C:\Documents and Settings\Anthia\Bureau\marcel jackson\vue3D.jpg"
-       xlink:href="C:\Documents and Settings\Anthia\Bureau\marcel jackson\vue3D.jpg" />
+       xlink:href="images/simu.png" />
     <image
        y="1077.0833"
        x="746.23889"
@@ -1959,6 +1922,50 @@
        height="298.35666"
        width="446.97629"
        sodipodi:absref="C:\Documents and Settings\Anthia\Bureau\marcel jackson\presentation_img.jpg"
-       xlink:href="C:\Documents and Settings\Anthia\Bureau\marcel jackson\presentation_img.jpg" />
+       xlink:href="images/presentation_img.jpg" />
+    <image
+       y="-31.531641"
+       x="95.921494"
+       id="image3440"
+       height="708.67548"
+       width="713.23291"
+       sodipodi:absref="/home/schodet/tmp/robot/git/eurobot/2010/planete-sciences/poster/images/apbteam_marceljackson2.png"
+       xlink:href="images/apbteam_marceljackson2.png" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot3447"
+       style="font-size:36px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Arial;-inkscape-font-specification:Arial"
+       transform="matrix(0.9014183,0,0,0.9014183,55.075741,106.58391)"><flowRegion
+         id="flowRegion3449"><rect
+           id="rect3451"
+           width="1153.8113"
+           height="551.75568"
+           x="66.631775"
+           y="1071.6611"
+           style="font-size:36px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;font-family:Arial;-inkscape-font-specification:Arial" /></flowRegion><flowPara
+         id="flowPara3453"
+         style="font-weight:bold;-inkscape-font-specification:Arial Bold">Méca :</flowPara><flowPara
+         id="flowPara3469">Clément Demonchy (Kermit)</flowPara><flowPara
+         id="flowPara3455">Florent Duchon (Flow)</flowPara><flowPara
+         id="flowPara3473">Frédéric Denis (Fred)</flowPara><flowPara
+         id="flowPara3487"
+         style="font-weight:bold;-inkscape-font-specification:Arial Bold">Electronique et informatique :</flowPara><flowPara
+         id="flowPara3475">Nélio Laranjeiro</flowPara><flowPara
+         id="flowPara3494">Nicolas Schodet (Ni)</flowPara><flowPara
+         id="flowPara3496"
+         style="font-weight:bold;-inkscape-font-specification:Arial Bold">Tout le reste :</flowPara><flowPara
+         id="flowPara3471">Fleur-Mélusine Bouron</flowPara><flowPara
+         id="flowPara3461">Marie-Eve Schodet</flowPara><flowPara
+         id="flowPara3485">Romain Dalmais (Capt’ain)</flowPara><flowPara
+         id="flowPara3463" /><flowPara
+         id="flowPara3465" /><flowPara
+         id="flowPara3467" /></flowRoot>    <image
+       y="1479.8899"
+       x="815.13727"
+       id="image3581"
+       height="801.5614"
+       width="686.92059"
+       sodipodi:absref="/home/schodet/tmp/robot/git/eurobot/2010/planete-sciences/poster/images/meca.png"
+       xlink:href="images/meca.png" />
   </g>
 </svg>
