@@ -398,6 +398,11 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	proto_send1b ('S', switch_get_color () << 1 | switch_get_jack ());
 	break;
 
+      case c ('C', 0):
+	/* Report contacts states. */
+	proto_send1b ('C', PINC);
+	break;
+
       case c ('M', 1):
 	/* Main stats timer.
 	 *   - 1b: 1 to enable, 0 to disable.
