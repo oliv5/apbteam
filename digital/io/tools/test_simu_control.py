@@ -46,6 +46,14 @@ class TestSimuControl (TestSimu):
                 text = 'Elevator', indicatoron = False,
                 variable = self.elevator_var, command = self.elevator_command)
         self.elevator_button.pack ()
+        self.loader_up_button = Button (self.control_frame,
+                text = 'Loader up', padx = 0, pady = 0,
+                command = self.loader_up_command)
+        self.loader_up_button.pack ()
+        self.loader_down_button = Button (self.control_frame,
+                text = 'Loader down', padx = 0, pady = 0,
+                command = self.loader_down_command)
+        self.loader_down_button.pack ()
         self.table_view.bind ('<1>', self.move)
         self.table_view.bind ('<3>', self.orient)
 
@@ -74,6 +82,12 @@ class TestSimuControl (TestSimu):
         else:
             pos = 0
         self.asserv.goto_pos ('a0', pos)
+
+    def loader_up_command (self):
+        self.io.loader ('u')
+
+    def loader_down_command (self):
+        self.io.loader ('d')
 
     def change_color (self, *dummy):
         pass

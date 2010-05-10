@@ -56,6 +56,7 @@
 #include "init.h"
 #include "move.h"
 #include "top.h"
+#include "loader.h"
 
 #include "io.h"
 
@@ -404,6 +405,23 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	 *   - 1w: pwm high time value (position).
 	 */
 	pwm_set (v8_to_v16 (args[0], args[1]), v8_to_v16 (args[2], args[3]));
+	break;
+
+      case c ('c', 1):
+	/* Loader control.
+	 * - 1b: command:
+	 *   - 'd': move elevator down.
+	 *   - 'u': move elevator up.
+	 */
+	switch (args[0])
+	{
+	case 'd':
+	  loader_down ();
+	  break;
+	case 'u':
+	  loader_up ();
+	  break;
+	}
 	break;
 
 	/* EEPROM command */

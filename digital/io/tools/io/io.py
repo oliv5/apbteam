@@ -55,6 +55,9 @@ class Proto:
     def pwm_set (self, value, timer):
         self.proto.send ('w', 'Hh', value, timer)
 
+    def loader (self, command):
+        self.proto.send ('c', 'c', command)
+
     def stats_usdist (self, cb):
         self.proto.send ('U', 'B', 2 * 4 * 2)
         self.usdist_cb = cb
