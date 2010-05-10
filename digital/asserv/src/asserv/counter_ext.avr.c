@@ -72,8 +72,8 @@
 static uint16_t counter_left_old, counter_right_old,
 		counter_aux_old[AC_ASSERV_AUX_NB];
 /** New values, being updated by step update. */
-static uint16_t counter_left_new_step, counter_right_new_step,
-		counter_aux_new_step[AC_ASSERV_AUX_NB];
+static int16_t counter_left_new_step, counter_right_new_step,
+	       counter_aux_new_step[AC_ASSERV_AUX_NB];
 /** Last raw step values */
 static uint8_t counter_left_old_step, counter_right_old_step,
 	       counter_aux_old_step[AC_ASSERV_AUX_NB];
