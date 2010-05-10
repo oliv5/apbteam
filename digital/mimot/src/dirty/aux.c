@@ -59,6 +59,8 @@ enum
     AUX_TRAJ_FIND_ZERO,
     /* Find zero by forcing into limit. */
     AUX_TRAJ_FIND_LIMIT,
+    /* Wait for mechanical elasticity. */
+    AUX_TRAJ_FIND_LIMIT_WAIT,
     /* Everything done. */
     AUX_TRAJ_DONE,
 };
@@ -203,16 +205,28 @@ aux_traj_find_zero_start (struct aux_t *aux, int8_t speed, uint8_t seq)
 void
 aux_traj_find_limit (struct aux_t *aux)
 {
-    /* If blocking, limit is found. */
-    if (aux->speed->pos->blocked_counter
-	> aux->speed->pos->blocked_counter_limit)
+    switch (aux->traj_mode)
       {
-	state_finish (aux->state);
-	pos_reset (aux->speed->pos);
-	aux->state->mode = MODE_PWM;
-	pwm_set (aux->pwm, 0);
-	aux->pos = 0;
-	aux->traj_mode = AUX_TRAJ_DONE;
+      case AUX_TRAJ_FIND_LIMIT:
+	/* If blocking, limit is found. */
+	if (aux->speed->pos->blocked_counter
+	    > aux->speed->pos->blocked_counter_limit)
+	  {
+	    pos_reset (aux->speed->pos);
+	    aux->state->variant = 1;
+	    pwm_set (aux->pwm, 0);
+	    aux->traj_mode = AUX_TRAJ_FIND_LIMIT_WAIT;
+	    aux->wait = 3 * 225;
+	  }
+	break;
+      case AUX_TRAJ_FIND_LIMIT_WAIT:
+	if (!--aux->wait)
+	  {
+	    state_finish (aux->state);
+	    aux->pos = 0;
+	    aux->traj_mode = AUX_TRAJ_DONE;
+	  }
+	break;
       }
 }
 
@@ -247,6 +261,7 @@ aux_traj_update_single (struct aux_t *aux)
 	    aux_traj_find_zero (aux);
 	    break;
 	  case AUX_TRAJ_FIND_LIMIT:
+	  case AUX_TRAJ_FIND_LIMIT_WAIT:
 	    aux_traj_find_limit (aux);
 	    break;
 	  case AUX_TRAJ_DONE:
