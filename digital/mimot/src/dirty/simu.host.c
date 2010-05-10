@@ -22,6 +22,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#define _GNU_SOURCE 1 /* Need ISO C99 features as well. */
 #include "common.h"
 #include "simu.host.h"
 
@@ -76,6 +77,37 @@ int simu_mex;
 /** Counter to limit the interval between information is sent. */
 int simu_send_cpt;
 
+static void
+simu_handle_limits__update_limit (double *th_limit, int32_t limit_int,
+				  double i_G, int sign)
+{
+    if (limit_int == -1)
+	/* No change. */
+	;
+    else if (limit_int == -2)
+	/* INFINITY. */
+	*th_limit = sign > 0 ? INFINITY : -INFINITY;
+    else
+	*th_limit = (double) limit_int / 1024.0 * i_G;
+}
+
+static void
+simu_handle_limits (void *user, mex_msg_t *msg)
+{
+    int i;
+    int32_t limit_min_int, limit_max_int;
+    for (i = 0; i < AC_ASSERV_AUX_NB; i++)
+      {
+	mex_msg_pop (msg, "ll", &limit_min_int, &limit_max_int);
+	simu_handle_limits__update_limit (&simu_aux_model[i].m.th_min,
+					  limit_min_int,
+					  simu_aux_model[i].m.i_G, -1);
+	simu_handle_limits__update_limit (&simu_aux_model[i].m.th_max,
+					  limit_max_int,
+					  simu_aux_model[i].m.i_G, +1);
+      }
+}
+
 /** Initialise simulation. */
 static void
 simu_init (void)
@@ -89,6 +121,7 @@ simu_init (void)
 	if (!simu_mex) simu_mex = 1;
 	simu_send_cpt = simu_mex;
 	mex_node_connect ();
+	mex_node_register (0xcc, simu_handle_limits, 0);
 	argc--; argv++;
       }
     if (argc != 1)
