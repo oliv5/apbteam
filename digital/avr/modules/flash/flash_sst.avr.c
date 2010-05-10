@@ -82,7 +82,7 @@ flash_sst_erase (flash_erase_cmd_t cmd, uint32_t start_addr)
 	sst_cmd = FLASH_SST_ERASE_64K;
 	break;
       default:
-	return;
+    sst_cmd = FLASH_SST_ERASE_FULL;
       }
     flash_sst_send_command (FLASH_SST_CMD_WREN);
     FLASH_CS_ENABLE;

@@ -145,7 +145,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
           {
               error = flash_log (size, args);
           }
-          else if (error || (cmd != 'l'))
+          else if (!error || (cmd != 'l'))
           {
               /* Error */
               proto_send0 ('?');
