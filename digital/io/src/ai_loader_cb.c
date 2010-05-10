@@ -85,7 +85,7 @@ fsm_branch_t
 ai__LOADER_INIT_CLAMP_CLOSE__clamp_succeed (void)
 {
     asserv_move_motor0_absolute (BOT_ELEVATOR_REST_STEP,
-				 BOT_ELEVATOR_SPEED);
+				 BOT_ELEVATOR_ZERO_SPEED);
     mimot_motor0_zero_position (-BOT_CLAMP_ZERO_SPEED);
     mimot_motor1_zero_position (-BOT_CLAMP_ZERO_SPEED);
     return ai_next (LOADER_INIT_CLAMP_CLOSE, clamp_succeed);
