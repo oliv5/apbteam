@@ -2,7 +2,7 @@
 host = dict (
         scale = 0.0395840674352314, f = 0xdd1,
         tkp = 1, tkd = 16,
-        ta = 0.75, tsm = 0x30, tss = 0x10,
+        ta = 0.75, tsm = 0x20, tss = 0x10,
         akp = 2, akd = 16,
         aa = 0.25, asm = 0x20, ass = 0x10,
         a0kp = 4,
@@ -16,7 +16,7 @@ target = dict (
         scale = 0.0413530725332892, f = 0xcf7,
         c = float (0x0100b9e4) / (1 << 24),
         tkp = 1, tkd = 16,
-        ta = 0.75, tsm = 0x30, tss = 0x10,
+        ta = 0.75, tsm = 0x20, tss = 0x10,
         akp = 2, akd = 16,
         aa = 0.25, asm = 0x20, ass = 0x10,
         a0kp = 4,
