@@ -426,6 +426,27 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	}
 	break;
 
+      case c ('p', 8):
+	/* Test path finding.
+	 * - 1w: source x.
+	 * - 1w: source y.
+	 * - 1w: destination x.
+	 * - 1w: destination y.
+	 */
+	  {
+	    vect_t s, d;
+	    s.x = v8_to_v16 (args[0], args[1]);
+	    s.y = v8_to_v16 (args[2], args[3]);
+	    d.x = v8_to_v16 (args[4], args[5]);
+	    d.y = v8_to_v16 (args[6], args[7]);
+	    path_endpoints (s, d);
+	    path_update ();
+	    vect_t p;
+	    if (path_get_next (&p))
+		proto_send0 ('p');
+	  }
+	break;
+
 	/* EEPROM command */
       case c ('e', 1):
 	  {
