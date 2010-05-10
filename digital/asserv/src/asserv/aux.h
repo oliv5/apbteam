@@ -65,6 +65,9 @@ void
 aux_traj_find_zero_start (struct aux_t *aux, int8_t speed, uint8_t seq);
 
 void
+aux_traj_find_zero_reverse_start (struct aux_t *aux, int8_t speed, uint8_t seq);
+
+void
 aux_traj_find_limit_start (struct aux_t *aux, int8_t speed, uint8_t seq);
 
 void
