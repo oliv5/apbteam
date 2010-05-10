@@ -32,7 +32,9 @@ States:
  LOADER_LOAD_UPING
   move load up to the unload position
  LOADER_LOAD_UNLOADING
-  open clamp to unload
+  open clamp to unload, wait until unload position
+ LOADER_LOAD_UNLOADING_OPEN
+  check clamp is open
  LOADER_LOAD_EMPTY_OPEN
   open clamp due to no elements to pick
 
@@ -41,6 +43,8 @@ Events:
   asserv success result
  elevator_failed
   asserv failure result
+ elevator_unload_position
+  elevator above unloading position
  clamp_succeed
   asserv success result, clamp movement cannot fail
  loader_element
@@ -118,10 +122,13 @@ LOADER_LOAD_CLOSING:
   open clamp
 
 LOADER_LOAD_UPING:
- elevator_succeed -> LOADER_LOAD_UNLOADING
+ elevator_unload_position -> LOADER_LOAD_UNLOADING
   open clamp
 
 LOADER_LOAD_UNLOADING:
+ elevator_succeed -> LOADER_LOAD_UNLOADING_OPEN
+
+LOADER_LOAD_UNLOADING_OPEN:
  clamp_succeed -> LOADER_DOWNING
   move down
 

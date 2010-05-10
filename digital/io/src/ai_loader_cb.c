@@ -252,7 +252,7 @@ ai__LOADER_LOAD_CLOSING__clamp_succeed (void)
 	- mimot_get_motor1_position ();
     if (tickness > BOT_CLAMP_EMPTY_STEP)
       {
-	asserv_move_motor0_absolute (BOT_ELEVATOR_UNLOAD_STEP,
+	asserv_move_motor0_absolute (BOT_ELEVATOR_STROKE_STEP,
 				     BOT_ELEVATOR_SPEED);
 	return ai_next_branch (LOADER_LOAD_CLOSING, clamp_succeed, full);
       }
@@ -265,28 +265,38 @@ ai__LOADER_LOAD_CLOSING__clamp_succeed (void)
 }
 
 /*
- * LOADER_LOAD_UPING =elevator_succeed=>
+ * LOADER_LOAD_UPING =elevator_unload_position=>
  *  => LOADER_LOAD_UNLOADING
  *   open clamp
  */
 fsm_branch_t
-ai__LOADER_LOAD_UPING__elevator_succeed (void)
+ai__LOADER_LOAD_UPING__elevator_unload_position (void)
 {
     mimot_move_motor0_absolute (BOT_CLAMP_OPEN_STEP, BOT_CLAMP_SPEED);
     mimot_move_motor1_absolute (BOT_CLAMP_OPEN_STEP, BOT_CLAMP_SPEED);
-    return ai_next (LOADER_LOAD_UPING, elevator_succeed);
+    return ai_next (LOADER_LOAD_UPING, elevator_unload_position);
 }
 
 /*
- * LOADER_LOAD_UNLOADING =clamp_succeed=>
+ * LOADER_LOAD_UNLOADING =elevator_succeed=>
+ *  => LOADER_LOAD_UNLOADING_OPEN
+ */
+fsm_branch_t
+ai__LOADER_LOAD_UNLOADING__elevator_succeed (void)
+{
+    return ai_next (LOADER_LOAD_UNLOADING, elevator_succeed);
+}
+
+/*
+ * LOADER_LOAD_UNLOADING_OPEN =clamp_succeed=>
  *  => LOADER_DOWNING
  *   move down
  */
 fsm_branch_t
-ai__LOADER_LOAD_UNLOADING__clamp_succeed (void)
+ai__LOADER_LOAD_UNLOADING_OPEN__clamp_succeed (void)
 {
     asserv_move_motor0_absolute (BOT_ELEVATOR_DOWN_STEP, BOT_ELEVATOR_SPEED);
-    return ai_next (LOADER_LOAD_UNLOADING, clamp_succeed);
+    return ai_next (LOADER_LOAD_UNLOADING_OPEN, clamp_succeed);
 }
 
 /*

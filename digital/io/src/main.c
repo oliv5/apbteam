@@ -153,6 +153,10 @@ main_event_to_fsm (void)
     if (motorm0_status == success && motorm1_status == success)
 	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_clamp_succeed);
 
+    /* Check positions. */
+    if (asserv_get_motor0_position () > BOT_ELEVATOR_UNLOAD_STEP)
+	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_elevator_unload_position);
+
     /* Contacts. */
     if (!IO_GET (CONTACT_BUMPER0) || !IO_GET (CONTACT_BUMPER1))
 	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_loader_element);
