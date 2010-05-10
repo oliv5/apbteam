@@ -52,6 +52,7 @@ class Loader (Observable):
         self.clamp_load = [ ]
         self.load = [ ]
         self.front_elements = [ ]
+        self.tickness = None
         self.clamp_pos = [ None, None ]
         self.robot_position.register (self.__robot_position_notified)
         self.clamp_link[0].register (self.__left_clamp_notified)
@@ -79,6 +80,16 @@ class Loader (Observable):
             if not c.state:
                 c.state = True
                 c.notify ()
+        # Update motors limits.
+        elements = self.clamp_load if self.clamp_load else self.front_elements
+        tickness = sum (e.radius * 2 for e in elements)
+        if tickness != self.tickness:
+            limit = (((self.CLAMP_WIDTH - tickness) * 0.5 + 5)
+                    / self.CLAMP_PULLEY_RADIUS)
+            for l in self.clamp_link:
+                l.limits.max = limit
+                l.limits.notify ()
+            self.tickness = tickness
 
     def __elevator_notified (self):
         if self.elevator_link.angle is None:
@@ -144,7 +155,7 @@ class Loader (Observable):
         if (self.robot_position is None
                 or self.clamp_pos[0] is None
                 or self.clamp_pos[1] is None):
-            return None
+            return elements
         # Matrix to transform an obstacle position into robot coordinates.
         m = TransMatrix ()
         m.translate ((-self.robot_position.pos[0],
