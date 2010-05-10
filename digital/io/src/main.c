@@ -487,6 +487,19 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		/* Stop motor */
 		asserv_stop_motor ();
 		break;
+	      case 'S':
+		/* Status. */
+		  {
+		    asserv_status_e move_status = asserv_move_cmd_status ();
+		    asserv_status_e motor0_status = asserv_motor0_cmd_status ();
+		    asserv_status_e motor1_status = asserv_motor1_cmd_status ();
+		    asserv_status_e motorm0_status = mimot_motor0_cmd_status ();
+		    asserv_status_e motorm1_status = mimot_motor1_cmd_status ();
+		    proto_send2b ('S', move_status, (motor0_status << 0)
+				  | (motor1_status << 2) | (motorm0_status << 4)
+				  | (motorm1_status << 6));
+		  }
+		break;
 	      }
 	  }
 	break;
