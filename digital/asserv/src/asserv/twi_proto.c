@@ -223,9 +223,9 @@ twi_proto_callback (u8 *buf, u8 size)
 	aux_traj_goto_start (&aux[1], v8_to_v16 (buf[2], buf[3]), 0);
 	break;
       case c ('C', 1):
-	/* Find the aux0 zero position.
+	/* Find the aux1 zero position.
 	 * - b: speed. */
-	aux_traj_find_limit_start (&aux[1], buf[2], 0);
+	aux_traj_find_zero_reverse_start (&aux[1], buf[2], 0);
 	break;
       case c ('p', x):
 	/* Set parameters. */
