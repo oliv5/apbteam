@@ -40,6 +40,8 @@ struct aux_t
     uint8_t traj_mode;
     /** Goto position position. */
     uint32_t goto_pos;
+    /** Clamping PWM. */
+    int16_t clampin_pwm;
     /** Wait counter. */
     uint16_t wait;
     /** Top zero port input register. */
@@ -60,6 +62,10 @@ aux_pos_update (void);
 
 void
 aux_traj_goto_start (struct aux_t *aux, uint16_t pos, uint8_t seq);
+
+void
+aux_traj_clamp_start (struct aux_t *aux, int8_t speed, int16_t clampin_pwm,
+		      uint8_t seq);
 
 void
 aux_traj_find_zero_start (struct aux_t *aux, int8_t speed, uint8_t seq);

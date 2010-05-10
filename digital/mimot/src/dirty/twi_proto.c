@@ -139,6 +139,17 @@ twi_proto_callback (u8 *buf, u8 size)
 	 * - b: speed. */
 	aux_traj_find_limit_start (&aux[1], buf[2], 0);
 	break;
+      case c ('l', 4):
+	/* Clamp.
+	 * - b: aux index.
+	 * - b: speed.
+	 * - w: claming PWM. */
+	if (buf[2] < AC_ASSERV_AUX_NB)
+	     aux_traj_clamp_start (&aux[buf[2]], buf[3],
+				   v8_to_v16 (buf[4], buf[5]), 0);
+	else
+	    buf[0] = 0;
+	break;
       case c ('p', x):
 	/* Set parameters. */
 	if (twi_proto_params (&buf[2], size - 2) != 0)

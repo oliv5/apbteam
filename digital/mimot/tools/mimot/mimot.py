@@ -155,6 +155,13 @@ class Proto:
 	self.proto.send ('y', 'BhB', i, pos, self.aseq[i])
         self.wait (self.finished, auto = True)
 
+    def clamp (self, w, s, pwm):
+        """Clamp (speed control, then open loop PWM)."""
+	i = self._index[w]
+	self.aseq[i] += 1
+	self.proto.send ('y', 'BBhB', i, s, pwm, self.aseq[i])
+        self.wait (self.finished, auto = True)
+
     def send_param (self):
         """Send all parameters."""
         p = self.param

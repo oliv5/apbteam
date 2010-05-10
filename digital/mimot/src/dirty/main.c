@@ -275,6 +275,18 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	    break;
 	aux_traj_goto_start (auxp, v8_to_v16 (args[1], args[2]), args[3]);
 	break;
+      case c ('y', 5):
+	/* Auxiliary clamp.
+	 * - b: aux index.
+	 * - b: speed.
+	 * - w: clamping PWM.
+	 * - b: sequence number. */
+	if (!auxp) { proto_send0 ('?'); return; }
+	if (args[4] == state->sequence)
+	    break;
+	aux_traj_clamp_start (auxp, args[1], v8_to_v16 (args[2], args[3]),
+			      args[4]);
+	break;
       case c ('y', 3):
 	/* Auxiliary find zero.
 	 * - b: aux index.
