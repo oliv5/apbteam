@@ -34,7 +34,7 @@
 #include "move.h"
 #include "bot.h"
 #include "radar.h"
-#include "trace_event.h"
+#include "events.h"
 
 #include "main.h"      /* main_post_event_for_top_fsm */
 #include "modules/math/fixed/fixed.h"	/* fixed_* */

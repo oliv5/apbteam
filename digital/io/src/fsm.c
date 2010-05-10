@@ -27,7 +27,7 @@
 
 #include "modules/trace/trace.h"
 #include "modules/proto/proto.h"
-#include "trace_event.h"
+#include "events.h"
 
 #ifdef HOST
 # include <stdio.h>

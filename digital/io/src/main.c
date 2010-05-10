@@ -30,7 +30,7 @@
 #include "modules/path/path.h"
 #include "modules/flash/flash.h"
 #include "modules/trace/trace.h"
-#include "trace_event.h"
+#include "events.h"
 
 /* AVR include, non HOST */
 #ifndef HOST

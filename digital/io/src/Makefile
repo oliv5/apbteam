@@ -7,7 +7,7 @@ io_SOURCES = main.c servo.avr.c eeprom.avr.c pwm.c \
 	     switch.avr.c chrono.c main_timer.avr.c servo_pos.c \
 	     twi_master.c asserv.c mimot.c \
 	     simu.host.c contact.c usdist.c radar.c \
-	     path.c food.c
+	     path.c food.c events.host.c
 # Modules needed for IO.
 MODULES = proto uart twi utils adc math/fixed math/geometry path/astar \
 	  trace flash spi
@@ -26,6 +26,6 @@ FSM_SOURCES := top init move loader
 include $(BASE)/make/Makefile.fsm
 
 trace_event.h: trace.trc
-	PYTHONPATH=$(BASE)/../../host python $(BASE)/../../tools/trace/trace.py -t create -e $(@:%.h=%_t) -i $< -o $@
+	PYTHONPATH=$(BASE)/../../host python $(BASE)/../../tools/trace/trace.py -t create -i $< -o $@
 
 main.c: trace_event.h
