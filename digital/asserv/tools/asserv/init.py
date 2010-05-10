@@ -19,7 +19,7 @@ target = dict (
         ta = 0.75, tsm = 0x20, tss = 0x10,
         akp = 2, akd = 16,
         aa = 0.25, asm = 0x20, ass = 0x10,
-        a0kp = 4,
+        a0kp = 4, a0kd = 16,
         a0a = 4, a0sm = 0x60, a0ss = 0x10,
         a0be = 256, a0bs = 0x04, a0bc = 10,
         a1kp = 2,
