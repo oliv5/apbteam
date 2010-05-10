@@ -43,7 +43,7 @@ class Proto:
             }
     # The last occuring stats will increment stats_count, so they have to
     # be in the same order than in asserv program.
-    stats_order = 'CSPW'
+    stats_order = 'CSPQW'
     stats_items = {
             'lc': ('C', 0),
             'rc': ('C', 1),
