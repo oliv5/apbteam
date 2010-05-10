@@ -33,6 +33,8 @@ States:
   move load up to the unload position
  LOADER_LOAD_UNLOADING
   open clamp to unload
+ LOADER_LOAD_EMPTY_OPEN
+  open clamp due to no elements to pick
 
 Events:
  elevator_succeed
@@ -89,7 +91,7 @@ LOADER_DOWN:
  loader_up -> LOADER_UPING
   move up
  loader_element -> LOADER_LOAD_CLOSING
-  close clamp
+  clamp
 
 LOADER_ERROR:
  loader_down -> LOADER_DOWNING
@@ -110,8 +112,10 @@ LOADER_UPING:
   post loader_errored event
 
 LOADER_LOAD_CLOSING:
- clamp_succeed -> LOADER_LOAD_UPING
+ clamp_succeed: full -> LOADER_LOAD_UPING
   move up
+ clamp_succeed: empty -> LOADER_LOAD_EMPTY_OPEN
+  open clamp
 
 LOADER_LOAD_UPING:
  elevator_succeed -> LOADER_LOAD_UNLOADING
@@ -120,4 +124,7 @@ LOADER_LOAD_UPING:
 LOADER_LOAD_UNLOADING:
  clamp_succeed -> LOADER_DOWNING
   move down
+
+LOADER_LOAD_EMPTY_OPEN:
+ clamp_succeed -> LOADER_DOWN
 

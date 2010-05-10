@@ -154,7 +154,7 @@ ai__LOADER_DOWN__loader_up (void)
 /*
  * LOADER_DOWN =loader_element=>
  *  => LOADER_LOAD_CLOSING
- *   close clamp
+ *   clamp
  */
 fsm_branch_t
 ai__LOADER_DOWN__loader_element (void)
@@ -238,15 +238,30 @@ ai__LOADER_ERROR__loader_up (void)
 
 /*
  * LOADER_LOAD_CLOSING =clamp_succeed=>
- *  => LOADER_LOAD_UPING
+ * full => LOADER_LOAD_UPING
  *   move up
+ * empty => LOADER_LOAD_EMPTY_OPEN
+ *   open clamp
  */
 fsm_branch_t
 ai__LOADER_LOAD_CLOSING__clamp_succeed (void)
 {
-    asserv_move_motor0_absolute (BOT_ELEVATOR_UNLOAD_STEP,
-				 BOT_ELEVATOR_SPEED);
-    return ai_next (LOADER_LOAD_CLOSING, clamp_succeed);
+    /* Measure load using clamp position. */
+    uint16_t tickness = BOT_CLAMP_WIDTH_STEP
+	- mimot_get_motor0_position ()
+	- mimot_get_motor1_position ();
+    if (tickness > BOT_CLAMP_EMPTY_STEP)
+      {
+	asserv_move_motor0_absolute (BOT_ELEVATOR_UNLOAD_STEP,
+				     BOT_ELEVATOR_SPEED);
+	return ai_next_branch (LOADER_LOAD_CLOSING, clamp_succeed, full);
+      }
+    else
+      {
+	mimot_move_motor0_absolute (BOT_CLAMP_OPEN_STEP, BOT_CLAMP_SPEED);
+	mimot_move_motor1_absolute (BOT_CLAMP_OPEN_STEP, BOT_CLAMP_SPEED);
+	return ai_next_branch (LOADER_LOAD_CLOSING, clamp_succeed, empty);
+      }
 }
 
 /*
@@ -272,5 +287,15 @@ ai__LOADER_LOAD_UNLOADING__clamp_succeed (void)
 {
     asserv_move_motor0_absolute (BOT_ELEVATOR_DOWN_STEP, BOT_ELEVATOR_SPEED);
     return ai_next (LOADER_LOAD_UNLOADING, clamp_succeed);
+}
+
+/*
+ * LOADER_LOAD_EMPTY_OPEN =clamp_succeed=>
+ *  => LOADER_DOWN
+ */
+fsm_branch_t
+ai__LOADER_LOAD_EMPTY_OPEN__clamp_succeed (void)
+{
+    return ai_next (LOADER_LOAD_EMPTY_OPEN, clamp_succeed);
 }
 

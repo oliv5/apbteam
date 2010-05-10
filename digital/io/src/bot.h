@@ -83,6 +83,12 @@
 /** Clamp open position in steps. */
 #define BOT_CLAMP_OPEN_STEP 15
 
+/** Clamp width in steps. */
+#define BOT_CLAMP_WIDTH_STEP 4604
+
+/** Distance under which the clamp is considered empty. */
+#define BOT_CLAMP_EMPTY_STEP 800
+
 /** Clamp work speed. */
 #define BOT_CLAMP_SPEED 0x60
 
