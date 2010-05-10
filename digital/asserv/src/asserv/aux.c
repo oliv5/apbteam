@@ -104,8 +104,8 @@ aux_traj_goto (struct aux_t *aux)
 	    aux->speed->pos_cons -= 250;
 	    aux->wait = 225 / 2;
 	  }
-	else if (UTILS_ABS (aux->speed->pos_cons - aux->speed->pos->cur)
-		 < 300)
+	else if (UTILS_ABS ((int32_t) (aux->speed->pos_cons -
+				       aux->speed->pos->cur)) < 300)
 	  {
 	    aux->traj_mode = AUX_TRAJ_DONE;
 	    aux->state->variant = 0;
