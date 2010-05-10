@@ -31,7 +31,7 @@
 #define CONTACT_FRONT_LEFT_IO C, 2
 #define CONTACT_FRONT_RIGHT_IO C, 3
 #define CONTACT_CENTER_IO C, 4
-#define CONTACT_AUX0_ZERO_IO C, 5
-#define CONTACT_AUX1_ZERO_IO C, 7
+#define CONTACT_AUX0_ZERO_IO C, 7
+#define CONTACT_AUX1_ZERO_IO C, 5
 
 #endif /* contacts_h */
