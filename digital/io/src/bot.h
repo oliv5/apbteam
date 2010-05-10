@@ -40,7 +40,7 @@
 #ifdef HOST
 # define BOT_SCALE 0.0395840674352314
 #else
-# define BOT_SCALE 0.0413530725332892
+# define BOT_SCALE 0.0415178942124
 #endif
 
 /** Distance from the robot axis to the front. */

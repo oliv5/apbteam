@@ -13,8 +13,8 @@ host = dict (
         l = 0x1000,
         )
 target = dict (
-        scale = 0.0413530725332892, f = 0xcf7,
-        c = float (0x0100b9e4) / (1 << 24),
+        scale = 0.0415178942124, f = 0xcef,
+        c = float (0x00ffbabf) / (1 << 24),
         tkp = 1, tkd = 16,
         ta = 0.75, tsm = 0x20, tss = 0x10,
         akp = 2, akd = 16,
