@@ -26,6 +26,7 @@
 #include "fsm.h"
 
 #include "modules/trace/trace.h"
+#include "modules/proto/proto.h"
 #include "trace_event.h"
 
 #ifdef HOST
@@ -72,6 +73,7 @@ fsm_handle_event_single (fsm_t *fsm, uint8_t active, uint8_t event)
 	new_state = br & 0xff;
 #else
 	new_state = br;
+	proto_send3b ('f', old_state, event, new_state);
 #endif
 	TRACE (TRACE_FSM__HANDLE_EVENT, (u8) old_state, (u8) event,
 	       (u8) new_state);
