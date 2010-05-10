@@ -87,7 +87,7 @@
 #define BOT_CLAMP_WIDTH_STEP 4604
 
 /** Distance under which the clamp is considered empty. */
-#define BOT_CLAMP_EMPTY_STEP 800
+#define BOT_CLAMP_EMPTY_STEP 639
 
 /** Clamp work speed. */
 #define BOT_CLAMP_SPEED 0x60
