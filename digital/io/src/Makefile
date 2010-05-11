@@ -25,7 +25,7 @@ FSM_SOURCES := top init move loader
 # Include FSM makefile.
 include $(BASE)/make/Makefile.fsm
 
-trace_event.h: trace.trc
-	PYTHONPATH=$(BASE)/../../host python $(BASE)/../../tools/trace/trace.py -t create -i $< -o $@
+events.h events.host.c: trace.trc
+	PYTHONPATH=$(BASE)/../../host python $(BASE)/../../tools/trace/trace.py -t create -i $< -o
 
-main.c: trace_event.h
+main.c: events.h
