@@ -289,6 +289,28 @@ static const struct motor_def_t marcel_elevator_model =
     0.0, +INFINITY,
 };
 
+/* Marcel gate model, with a RE25CLL and a 1:10 ratio gearbox. */
+static const struct motor_def_t marcel_gate_model =
+{
+    /* Motor characteristics. */
+    407 * (2*M_PI) / 60,/* Speed constant ((rad/s)/V). */
+    23.4 / 1000,	/* Torque constant (N.m/A). */
+    0,			/* Bearing friction (N.m/(rad/s)). */
+    2.18,		/* Terminal resistance (Ohm). */
+    0.24 / 1000,	/* Terminal inductance (H). */
+    24.0,		/* Maximum voltage (V). */
+    /* WARNING: this motor uses a 12V motor on 24V power, PWM should be
+     * limited to half scale. */
+    /* Gearbox characteristics. */
+    10,			/* Gearbox ratio. */
+    0.75,		/* Gearbox efficiency. */
+    /* Load characteristics. */
+    0.100 * 0.01 * 0.01,/* Load (kg.m^2). */
+    /* This is a pifometric estimation. */
+    /* Hardware limits. */
+    -INFINITY, +INFINITY,
+};
+
 /* Marcel, APBTeam 2010. */
 static const struct robot_t marcel_robot =
 {
@@ -311,9 +333,9 @@ static const struct robot_t marcel_robot =
     /** Distance between the encoders wheels (m). */
     0.28,
     /** Auxiliary motors, NULL if not present. */
-    { &marcel_elevator_model, NULL },
+    { &marcel_elevator_model, &marcel_gate_model },
     /** Number of steps for each auxiliary motor encoder. */
-    { 256, 0 },
+    { 256, 250 },
     /** Sensor update function. */
     simu_sensor_update_marcel,
 };

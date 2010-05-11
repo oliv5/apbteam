@@ -36,16 +36,19 @@ class Loader (Observable):
     ELEVATOR_LINEAR_STROKE = 32
     ELEVATOR_ROTATING_STROKE = 200 - 32
 
+    GATE_STROKE = 3.3284 * pi
+
     FRONT_ZONE_X_MIN = 120 - 15
     FRONT_ZONE_X_MAX = 120 + CLAMP_LENGTH - 15
 
     def __init__ (self, table, robot_position, left_clamp_link, right_clamp_link,
-            elevator_link, element_contacts):
+            elevator_link, gate_link, element_contacts):
         Observable.__init__ (self)
         self.table = table
         self.robot_position = robot_position
         self.clamp_link = (left_clamp_link, right_clamp_link)
         self.elevator_link = elevator_link
+        self.gate_link = gate_link
         self.element_contacts = element_contacts
         self.element_contacts[1].state = True
         self.element_contacts[1].notify ()
@@ -58,6 +61,7 @@ class Loader (Observable):
         self.clamp_link[0].register (self.__left_clamp_notified)
         self.clamp_link[1].register (self.__right_clamp_notified)
         self.elevator_link.register (self.__elevator_notified)
+        self.gate_link.register (self.__gate_notified)
 
     def __robot_position_notified (self):
         c = self.element_contacts[0]
@@ -148,6 +152,21 @@ class Loader (Observable):
 
     def __right_clamp_notified (self):
         self.__clamp_notified (1)
+
+    def __gate_notified (self):
+        self.gate_angle = self.gate_link.angle
+        if self.gate_angle is not None and self.robot_position is not None:
+            # If gate is high, drop elements.
+            if self.load and self.gate_angle > self.GATE_STROKE / 2:
+                m = TransMatrix ()
+                m.rotate (self.robot_position.angle)
+                m.translate (self.robot_position.pos)
+                pos = m.apply ((-250, 0))
+                for e in self.load:
+                    e.pos = pos
+                    e.notify ()
+                self.load = [ ]
+        self.notify ()
 
     def __get_front_elements (self):
         """Return a list of elements in front of the robot, between clamp."""

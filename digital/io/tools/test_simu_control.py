@@ -46,6 +46,11 @@ class TestSimuControl (TestSimu):
                 text = 'Elevator', indicatoron = False,
                 variable = self.elevator_var, command = self.elevator_command)
         self.elevator_button.pack ()
+        self.gate_var = IntVar ()
+        self.gate_button = Checkbutton (self.control_frame,
+                text = 'Gate', indicatoron = False,
+                variable = self.gate_var, command = self.gate_command)
+        self.gate_button.pack ()
         self.loader_up_button = Button (self.control_frame,
                 text = 'Loader up', padx = 0, pady = 0,
                 command = self.loader_up_command)
@@ -82,6 +87,13 @@ class TestSimuControl (TestSimu):
         else:
             pos = 0
         self.asserv.goto_pos ('a0', pos)
+
+    def gate_command (self):
+        if self.gate_var.get ():
+            pos = 0x2081
+        else:
+            pos = 0
+        self.asserv.goto_pos ('a1', pos)
 
     def loader_up_command (self):
         self.io.loader ('u')
