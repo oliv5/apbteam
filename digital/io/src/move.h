@@ -47,6 +47,8 @@ struct move_data_t
 {
     /** Final position. */
     position_t final;
+    /** Use angle consign for final point. */
+    uint8_t with_angle;
     /** Next step. */
     vect_t step;
     /** Backward direction allowed flag. */
@@ -70,6 +72,10 @@ extern struct move_data_t move_data;
  */
 void
 move_start (position_t position, uint8_t backward);
+
+/** Go to a position, with no angle consign. */
+void
+move_start_noangle (vect_t position, uint8_t backward);
 
 /** To be called when obstacles positions are computed. */
 void

@@ -61,8 +61,7 @@ fsm_branch_t
 ai__WAIT_INIT_TO_FINISH__init_match_is_started (void)
 {
     asserv_set_speed (BOT_MOVE_FAST);
-    position_t pos = PG_POSITION_DEG (375, 1503, -29);
-    move_start (pos, 0);
+    move_start_noangle (PG_VECT (375, 1503), 0);
     return ai_next (WAIT_INIT_TO_FINISH, init_match_is_started);
 }
 
@@ -75,8 +74,7 @@ ai__WAIT_INIT_TO_FINISH__init_match_is_started (void)
 fsm_branch_t
 ai__FIRST_GO_BEGIN_OF_LINE_FAST__move_fsm_succeed (void)
 {
-    position_t pos = PG_POSITION_DEG (2625, 253, -29);
-    move_start (pos, 0);
+    move_start_noangle (PG_VECT (2625, 253), 0);
     loader_down ();
     return ai_next (FIRST_GO_BEGIN_OF_LINE_FAST, move_fsm_succeed);
 }
@@ -91,8 +89,7 @@ fsm_branch_t
 ai__FIRST_GO_BEGIN_OF_LINE_FAST__move_fsm_failed (void)
 {
     asserv_set_speed (BOT_MOVE_SLOW);
-    position_t pos = PG_POSITION_DEG (375, 1503, -29);
-    move_start (pos, 0);
+    move_start_noangle (PG_VECT (375, 1503), 0);
     return ai_next (FIRST_GO_BEGIN_OF_LINE_FAST, move_fsm_failed);
 }
 
@@ -156,8 +153,7 @@ ai__FIRST_GO_END_OF_LINE_SLOW__move_fsm_succeed (void)
 fsm_branch_t
 ai__FIRST_GO_END_OF_LINE_SLOW__move_fsm_failed (void)
 {
-    position_t pos = PG_POSITION_DEG (2625, 253, -29);
-    move_start (pos, 0);
+    move_start_noangle (PG_VECT (2625, 253), 0);
     return ai_next (FIRST_GO_END_OF_LINE_SLOW, move_fsm_failed);
 }
 

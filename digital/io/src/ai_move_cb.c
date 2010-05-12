@@ -88,8 +88,12 @@ move_get_next_position (void)
 	  {
 	    /* Final position. */
 	    move_data.final_move = 1;
-	    /* Goto with angle. */
-	    asserv_goto_xya (dst.x, dst.y, move_data.final.a,
+	    /* Goto with angle if requested. */
+	    if (move_data.with_angle)
+		asserv_goto_xya (dst.x, dst.y, move_data.final.a,
+				 move_data.backward_movement_allowed);
+	    else
+		asserv_goto (dst.x, dst.y,
 			     move_data.backward_movement_allowed);
 	  }
 	move_data.step = dst;

@@ -76,6 +76,10 @@
 #define PG_POSITION_DEG(x, y, a) \
     { { PG_X (x), PG_Y (y) }, PG_A_DEG (a) }
 
+/** Initialiser for vect_t applying symmetry according to color. */
+#define PG_VECT(x, y) \
+    (vect_t) { PG_X (x), PG_Y (y) }
+
 /**
  * Start zone.
  */
