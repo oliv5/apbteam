@@ -227,6 +227,19 @@ twi_proto_callback (u8 *buf, u8 size)
 	 * - b: speed. */
 	aux_traj_find_zero_reverse_start (&aux[1], buf[2], 0);
 	break;
+      case c ('r', 1):
+	/* Set aux zero pwm.
+	 * - b: aux index.
+	 */
+	if (buf[2] < AC_ASSERV_AUX_NB)
+	  {
+	    pos_reset (&pos_aux[buf[2]]);
+	    state_aux[buf[2]].mode = MODE_PWM;
+	    pwm_set (&pwm_aux[buf[2]], 0);
+	  }
+	else
+	    buf[0] = 0;
+	break;
       case c ('p', x):
 	/* Set parameters. */
 	if (twi_proto_params (&buf[2], size - 2) != 0)

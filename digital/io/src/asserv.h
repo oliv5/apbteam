@@ -293,4 +293,12 @@ asserv_motor0_zero_position (int8_t speed);
 void
 asserv_motor1_zero_position (int8_t speed);
 
+/** Set PWM to zero for motor0. */
+void
+asserv_motor0_free (void);
+
+/** Set PWM to zero for motor1. */
+void
+asserv_motor1_free (void);
+
 #endif /* asserv_h */

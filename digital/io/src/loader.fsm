@@ -105,6 +105,7 @@ LOADER_ERROR:
 
 LOADER_DOWNING:
  elevator_succeed -> LOADER_DOWN
+  release elevator motor
   post loader_downed event
  elevator_failed -> LOADER_UPING
   something is blocking, move it up

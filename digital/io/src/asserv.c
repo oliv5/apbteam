@@ -432,3 +432,21 @@ asserv_motor1_zero_position (int8_t speed)
     twi_master_send (2);
 }
 
+void
+asserv_motor0_free (void)
+{
+    uint8_t *buffer = twi_master_get_buffer (ASSERV_SLAVE);
+    buffer[0] = 'r';
+    buffer[1] = 0;
+    twi_master_send (2);
+}
+
+void
+asserv_motor1_free (void)
+{
+    uint8_t *buffer = twi_master_get_buffer (ASSERV_SLAVE);
+    buffer[0] = 'r';
+    buffer[1] = 1;
+    twi_master_send (2);
+}
+

@@ -189,11 +189,13 @@ ai__LOADER_UPING__elevator_failed (void)
 /*
  * LOADER_DOWNING =elevator_succeed=>
  *  => LOADER_DOWN
+ *   release elevator motor
  *   post loader_downed event
  */
 fsm_branch_t
 ai__LOADER_DOWNING__elevator_succeed (void)
 {
+    asserv_motor0_free ();
     main_post_event_for_top_fsm = AI_EVENT_loader_downed;
     return ai_next (LOADER_DOWNING, elevator_succeed);
 }
