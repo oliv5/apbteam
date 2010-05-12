@@ -45,6 +45,8 @@
 
 /** Distance from the robot axis to the front. */
 #define BOT_SIZE_FRONT 120
+/** Distance from the robot axis to the front clamp. */
+#define BOT_SIZE_FRONT_CLAMP (120 + 100)
 /** Distance from the robot axis to the back. */
 #define BOT_SIZE_BACK (280 - 120)
 /** Distance from the robot axis to the side. */
@@ -66,7 +68,7 @@
 #define BOT_MIN_DISTANCE_TURN_FREE 300
 
 /** Fast parameters. */
-#define BOT_MOVE_FAST 0x50, 0x50, 0x20, 0x20
+#define BOT_MOVE_FAST 0x30, 0x30, 0x20, 0x20
 
 /** Slow parameters. */
 #define BOT_MOVE_SLOW 0x20, 0x20, 0x10, 0x10

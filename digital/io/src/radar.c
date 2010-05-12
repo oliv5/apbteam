@@ -158,10 +158,11 @@ radar_blocking (const vect_t *robot_pos, const vect_t *dest_pos,
      * stop length. */
     uint16_t length;
     if (d < RADAR_STOP_MM - RADAR_CLEARANCE_MM)
-	length = d + BOT_SIZE_FRONT + RADAR_CLEARANCE_MM
+	length = d + BOT_SIZE_FRONT_CLAMP + RADAR_CLEARANCE_MM
 	    + RADAR_OBSTACLE_RADIUS_MM;
     else
-	length = BOT_SIZE_FRONT + RADAR_STOP_MM + RADAR_OBSTACLE_RADIUS_MM;
+	length = BOT_SIZE_FRONT_CLAMP + RADAR_STOP_MM
+	    + RADAR_OBSTACLE_RADIUS_MM;
     /* To save divisions, multiply limits by vd length. */
     int32_t limit = (uint32_t) d * length;
     int32_t limitn = (uint32_t) d * (BOT_SIZE_SIDE + RADAR_CLEARANCE_MM
