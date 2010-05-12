@@ -266,6 +266,9 @@ simu_sensor_update_marcel (void)
 	    && (x < stand_x_min || x >= stand_x_max || y < stand_y))
 	    PINC |= sensors_bit[i];
       }
+    /** Top zero sensors. */
+    if (simu_aux_model[1].th > 0)
+	PINC |= IO_BV (CONTACT_AUX1_ZERO_IO);
 }
 
 /** Do a simulation step. */
