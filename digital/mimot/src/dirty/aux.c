@@ -213,6 +213,8 @@ aux_traj_find_limit (struct aux_t *aux)
 	    > aux->speed->pos->blocked_counter_limit)
 	  {
 	    pos_reset (aux->speed->pos);
+	    aux->speed->cons = 0;
+	    aux->speed->cur = 0;
 	    aux->state->variant = 1;
 	    pwm_set (aux->pwm, 0);
 	    aux->traj_mode = AUX_TRAJ_FIND_LIMIT_WAIT;
