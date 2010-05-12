@@ -75,7 +75,7 @@ ai__WAIT_INIT_TO_FINISH__init_match_is_started (void)
 fsm_branch_t
 ai__FIRST_GO_BEGIN_OF_LINE_FAST__move_fsm_succeed (void)
 {
-    position_t pos = PG_POSITION_DEG (2625, 253, -90);
+    position_t pos = PG_POSITION_DEG (2625, 253, -29);
     move_start (pos, 0);
     loader_down ();
     return ai_next (FIRST_GO_BEGIN_OF_LINE_FAST, move_fsm_succeed);
@@ -110,8 +110,9 @@ ai__FIRST_GO_END_OF_LINE_FAST__in_field (void)
 
 /*
  * FIRST_GO_END_OF_LINE_FAST =move_fsm_succeed=>
- *  => IDLE
+ *  => UNLOAD_LOADER_UP
  *   set slow speed
+ *   move loader up
  */
 fsm_branch_t
 ai__FIRST_GO_END_OF_LINE_FAST__move_fsm_succeed (void)
@@ -137,11 +138,13 @@ ai__FIRST_GO_END_OF_LINE_FAST__move_fsm_failed (void)
 
 /*
  * FIRST_GO_END_OF_LINE_SLOW =move_fsm_succeed=>
- *  => IDLE
+ *  => UNLOAD_LOADER_UP
+ *   move loader up
  */
 fsm_branch_t
 ai__FIRST_GO_END_OF_LINE_SLOW__move_fsm_succeed (void)
 {
+    loader_up ();
     return ai_next (FIRST_GO_END_OF_LINE_SLOW, move_fsm_succeed);
 }
 
@@ -153,8 +156,56 @@ ai__FIRST_GO_END_OF_LINE_SLOW__move_fsm_succeed (void)
 fsm_branch_t
 ai__FIRST_GO_END_OF_LINE_SLOW__move_fsm_failed (void)
 {
-    position_t pos = PG_POSITION_DEG (2625, 253, -90);
+    position_t pos = PG_POSITION_DEG (2625, 253, -29);
     move_start (pos, 0);
     return ai_next (FIRST_GO_END_OF_LINE_SLOW, move_fsm_failed);
+}
+
+/*
+ * UNLOAD_LOADER_UP =loader_uped=>
+ *  => UNLOAD_FACE_BIN
+ *   turn toward bin
+ */
+fsm_branch_t
+ai__UNLOAD_LOADER_UP__loader_uped (void)
+{
+    asserv_goto_angle (PG_A_DEG (90));
+    return ai_next (UNLOAD_LOADER_UP, loader_uped);
+}
+
+/*
+ * UNLOAD_FACE_BIN =bot_move_succeed=>
+ *  => UNLOAD_BACK_BIN
+ *   go backward to bin
+ */
+fsm_branch_t
+ai__UNLOAD_FACE_BIN__bot_move_succeed (void)
+{
+    asserv_move_linearly (-(128 + 250 / 2 - BOT_SIZE_BACK - 50));
+    return ai_next (UNLOAD_FACE_BIN, bot_move_succeed);
+}
+
+/*
+ * UNLOAD_BACK_BIN =bot_move_succeed=>
+ *  => IDLE
+ *   unload
+ */
+fsm_branch_t
+ai__UNLOAD_BACK_BIN__bot_move_succeed (void)
+{
+    asserv_move_motor1_absolute (BOT_GATE_STROKE_STEP, BOT_GATE_SPEED);
+    return ai_next (UNLOAD_BACK_BIN, bot_move_succeed);
+}
+
+/*
+ * UNLOAD_BACK_BIN =bot_move_failed=>
+ *  => IDLE
+ *   unload
+ */
+fsm_branch_t
+ai__UNLOAD_BACK_BIN__bot_move_failed (void)
+{
+    ai__UNLOAD_BACK_BIN__bot_move_succeed ();
+    return ai_next (UNLOAD_BACK_BIN, bot_move_failed);
 }
 
