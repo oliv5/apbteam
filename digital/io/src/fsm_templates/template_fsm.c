@@ -11,7 +11,7 @@
 #define NULL ((void *)0L)
 
 /* %(name)s transition table. */
-static const fsm_transition_t
+static const fsm_transition_t PROGMEM
 %(prefix)s_transition_table[%(PREFIX)s_STATE_NB][%(PREFIX)s_EVENT_NB] = {
 %(transition_table)s};
 

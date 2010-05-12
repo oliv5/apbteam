@@ -25,6 +25,17 @@
  *
  * }}} */
 
+#ifndef HOST
+
+# include <avr/pgmspace.h>
+
+#else
+
+# define PROGMEM
+# define pgm_read_word(addr) (*(addr))
+
+#endif
+
 /**
  * The io board includes an FSM with several concurrent active states.
  *
@@ -87,6 +98,10 @@ struct fsm_t
 #endif
 };
 typedef struct fsm_t fsm_t;
+
+#define FSM_TRANSITION(fsm, state, event) \
+    ((fsm_transition_t) pgm_read_word ( \
+	&(fsm)->transition_table[(state) * (fsm)->events_nb + (event)]))
 
 /** Reset a FSM. */
 void

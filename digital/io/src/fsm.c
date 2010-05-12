@@ -55,8 +55,7 @@ fsm_handle_event_single (fsm_t *fsm, uint8_t active, uint8_t event)
     assert (event < fsm->events_nb);
     /* Lookup transition. */
     uint8_t old_state = fsm->states_active[active];
-    fsm_transition_t tr = fsm->transition_table[
-	old_state * fsm->events_nb + event];
+    fsm_transition_t tr = FSM_TRANSITION (fsm, old_state, event);
     /* Ignore unhandled events. */
     if (tr)
       {
@@ -130,7 +129,7 @@ fsm_can_handle_event (fsm_t *fsm, uint8_t event)
     for (i = 0; i < fsm->active_states_nb; i++)
       {
 	uint8_t state = fsm->states_active[i];
-	if (fsm->transition_table[state * fsm->events_nb + event])
+	if (FSM_TRANSITION (fsm, state, event))
 	    return 1;
       }
     return 0;
