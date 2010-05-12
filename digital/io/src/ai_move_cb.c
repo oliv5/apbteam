@@ -126,7 +126,7 @@ ai__MOVE_IDLE__move_start (void)
 	return ai_next_branch (MOVE_IDLE, move_start, path_found);
     else
       {
-	main_post_event_for_top_fsm = AI_EVENT_move_fsm_failed;
+	main_post_event (AI_EVENT_move_fsm_failed);
 	return ai_next_branch (MOVE_IDLE, move_start, no_path_found);
       }
 }
@@ -145,7 +145,7 @@ ai__MOVE_MOVING__bot_move_succeed (void)
 {
     if (move_data.final_move)
       {
-	main_post_event_for_top_fsm = AI_EVENT_move_fsm_succeed;
+	main_post_event (AI_EVENT_move_fsm_succeed);
 	return ai_next_branch (MOVE_MOVING, bot_move_succeed, done);
       }
     else if (move_get_next_position ())
@@ -154,7 +154,7 @@ ai__MOVE_MOVING__bot_move_succeed (void)
       }
     else
       {
-	main_post_event_for_top_fsm = AI_EVENT_move_fsm_failed;
+	main_post_event (AI_EVENT_move_fsm_failed);
 	return ai_next_branch (MOVE_MOVING, bot_move_succeed, no_path_found);
       }
 }
@@ -216,7 +216,7 @@ ai__MOVE_MOVING_BACKWARD_TO_TURN_FREELY__bot_move_succeed (void)
       }
     else
       {
-	main_post_event_for_top_fsm = AI_EVENT_move_fsm_failed;
+	main_post_event (AI_EVENT_move_fsm_failed);
 	return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_succeed, no_path_found);
       }
 }
@@ -260,7 +260,7 @@ ai__MOVE_WAIT_FOR_CLEAR_PATH__state_timeout (void)
 	/* Error, no new position, should we try again? */
 	if (--move_data.try_again_counter == 0)
 	  {
-	    main_post_event_for_top_fsm = AI_EVENT_move_fsm_failed;
+	    main_post_event (AI_EVENT_move_fsm_failed);
 	    return ai_next_branch (MOVE_WAIT_FOR_CLEAR_PATH, state_timeout,
 				   no_path_found_and_no_try_again);
 	  }

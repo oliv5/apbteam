@@ -216,7 +216,7 @@ ai__LOADER_DOWN__loader_element (void)
 fsm_branch_t
 ai__LOADER_UPING__elevator_succeed (void)
 {
-    main_post_event_for_top_fsm = AI_EVENT_loader_uped;
+    main_post_event (AI_EVENT_loader_uped);
     return ai_next (LOADER_UPING, elevator_succeed);
 }
 
@@ -228,7 +228,7 @@ ai__LOADER_UPING__elevator_succeed (void)
 fsm_branch_t
 ai__LOADER_UPING__elevator_failed (void)
 {
-    main_post_event_for_top_fsm = AI_EVENT_loader_errored;
+    main_post_event (AI_EVENT_loader_errored);
     return ai_next (LOADER_UPING, elevator_failed);
 }
 
@@ -242,7 +242,7 @@ fsm_branch_t
 ai__LOADER_DOWNING__elevator_succeed (void)
 {
     asserv_motor0_free ();
-    main_post_event_for_top_fsm = AI_EVENT_loader_downed;
+    main_post_event (AI_EVENT_loader_downed);
     return ai_next (LOADER_DOWNING, elevator_succeed);
 }
 

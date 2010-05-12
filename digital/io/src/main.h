@@ -25,16 +25,12 @@
  *
  * }}} */
 
-/**
- * Post a event to the top FSM in the next iteration of main loop.
- * You just need to set variable to the value of the event you want to post to
- * the top FSM.
- * It will be posted and cleared in the next main loop iteration.
- */
-extern uint8_t main_post_event_for_top_fsm;
-
 extern vect_t main_obstacles_pos[2];
 
 extern uint8_t main_obstacles_nb;
+
+/** Post an event to be processed in the next main loop. */
+void
+main_post_event (uint8_t event);
 
 #endif /* main_h */
