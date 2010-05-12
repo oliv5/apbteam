@@ -65,6 +65,12 @@
  */
 #define BOT_MIN_DISTANCE_TURN_FREE 300
 
+/** Fast parameters. */
+#define BOT_MOVE_FAST 0x50, 0x50, 0x20, 0x20
+
+/** Slow parameters. */
+#define BOT_MOVE_SLOW 0x20, 0x20, 0x10, 0x10
+
 /** Elevator stroke in steps. */
 #define BOT_ELEVATOR_STROKE_STEP 7089
 

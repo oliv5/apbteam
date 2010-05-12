@@ -7,10 +7,12 @@ States:
   waiting for the beginning of the top FSM.
  WAIT_INIT_TO_FINISH
   waiting for the end of init.
- GO_FAR
-  testing move fsm, going to a far point.
- GO_NEAR
-  testing move fsm, going to a near point.
+ FIRST_GO_BEGIN_OF_LINE_FAST
+  first sequence, go to start of diagonal line
+ FIRST_GO_END_OF_LINE_FAST
+  first sequence, go to end of line
+ FIRST_GO_END_OF_LINE_SLOW
+  slow down to take elements
 
 Events:
  start
@@ -41,18 +43,30 @@ IDLE:
   nothing to do.
 
 WAIT_INIT_TO_FINISH:
- init_match_is_started -> GO_FAR
+ init_match_is_started -> FIRST_GO_BEGIN_OF_LINE_FAST
   the match start
-  go to a far point
+  set fast speed
+  go to first sequence begin of line
 
-GO_FAR:
- move_fsm_succeed -> GO_NEAR
-  go to a near point
- move_fsm_failed -> GO_NEAR
-  go to a near point
+FIRST_GO_BEGIN_OF_LINE_FAST:
+ move_fsm_succeed -> FIRST_GO_END_OF_LINE_FAST
+  go to end of line
+  loader down
+ move_fsm_failed -> .
+  set slow speed
+  retry
 
-GO_NEAR:
- move_fsm_succeed -> GO_FAR
-  restart
- move_fsm_failed -> GO_FAR
-  restart
+FIRST_GO_END_OF_LINE_FAST:
+ in_field -> FIRST_GO_END_OF_LINE_SLOW
+  set slow speed
+ move_fsm_succeed -> IDLE
+  set slow speed
+ move_fsm_failed -> FIRST_GO_END_OF_LINE_SLOW
+  set slow speed
+  retry
+
+FIRST_GO_END_OF_LINE_SLOW:
+ move_fsm_succeed -> IDLE
+ move_fsm_failed -> FIRST_GO_END_OF_LINE_SLOW
+  retry
+

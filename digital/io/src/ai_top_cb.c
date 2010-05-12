@@ -31,6 +31,7 @@
 #include "move.h"
 #include "chrono.h"
 #include "playground.h"
+#include "asserv.h"
 #include "loader.h"
 
 /**
@@ -51,67 +52,109 @@ ai__IDLE__start (void)
 
 /*
  * WAIT_INIT_TO_FINISH =init_match_is_started=>
- *  => GO_FAR
+ *  => FIRST_GO_BEGIN_OF_LINE_FAST
  *   the match start
- *   go to a far point
+ *   set fast speed
+ *   go to first sequence begin of line
  */
 fsm_branch_t
 ai__WAIT_INIT_TO_FINISH__init_match_is_started (void)
 {
+    asserv_set_speed (BOT_MOVE_FAST);
     position_t pos = PG_POSITION_DEG (375, 1503, -29);
     move_start (pos, 0);
     return ai_next (WAIT_INIT_TO_FINISH, init_match_is_started);
 }
 
 /*
- * GO_FAR =move_fsm_succeed=>
- *  => GO_NEAR
- *   go to a near point
+ * FIRST_GO_BEGIN_OF_LINE_FAST =move_fsm_succeed=>
+ *  => FIRST_GO_END_OF_LINE_FAST
+ *   go to end of line
+ *   loader down
  */
 fsm_branch_t
-ai__GO_FAR__move_fsm_succeed (void)
+ai__FIRST_GO_BEGIN_OF_LINE_FAST__move_fsm_succeed (void)
 {
     position_t pos = PG_POSITION_DEG (2625, 253, -90);
     move_start (pos, 0);
     loader_down ();
-    return ai_next (GO_FAR, move_fsm_succeed);
+    return ai_next (FIRST_GO_BEGIN_OF_LINE_FAST, move_fsm_succeed);
 }
 
 /*
- * GO_FAR =move_fsm_failed=>
- *  => GO_NEAR
- *   go to a near point
+ * FIRST_GO_BEGIN_OF_LINE_FAST =move_fsm_failed=>
+ *  => FIRST_GO_BEGIN_OF_LINE_FAST
+ *   set slow speed
+ *   retry
  */
 fsm_branch_t
-ai__GO_FAR__move_fsm_failed (void)
+ai__FIRST_GO_BEGIN_OF_LINE_FAST__move_fsm_failed (void)
 {
-    ai__GO_FAR__move_fsm_succeed ();
-    return ai_next (GO_FAR, move_fsm_failed);
-}
-
-/*
- * GO_NEAR =move_fsm_succeed=>
- *  => GO_FAR
- *   restart
- */
-fsm_branch_t
-ai__GO_NEAR__move_fsm_succeed (void)
-{
+    asserv_set_speed (BOT_MOVE_SLOW);
     position_t pos = PG_POSITION_DEG (375, 1503, -29);
     move_start (pos, 0);
-    loader_up ();
-    return ai_next (GO_NEAR, move_fsm_succeed);
+    return ai_next (FIRST_GO_BEGIN_OF_LINE_FAST, move_fsm_failed);
 }
 
 /*
- * GO_NEAR =move_fsm_failed=>
- *  => GO_FAR
- *   restart
+ * FIRST_GO_END_OF_LINE_FAST =in_field=>
+ *  => FIRST_GO_END_OF_LINE_SLOW
+ *   set slow speed
  */
 fsm_branch_t
-ai__GO_NEAR__move_fsm_failed (void)
+ai__FIRST_GO_END_OF_LINE_FAST__in_field (void)
 {
-    ai__GO_NEAR__move_fsm_succeed ();
-    return ai_next (GO_NEAR, move_fsm_failed);
+    asserv_set_speed (BOT_MOVE_SLOW);
+    return ai_next (FIRST_GO_END_OF_LINE_FAST, in_field);
+}
+
+/*
+ * FIRST_GO_END_OF_LINE_FAST =move_fsm_succeed=>
+ *  => IDLE
+ *   set slow speed
+ */
+fsm_branch_t
+ai__FIRST_GO_END_OF_LINE_FAST__move_fsm_succeed (void)
+{
+    asserv_set_speed (BOT_MOVE_SLOW);
+    ai__FIRST_GO_END_OF_LINE_SLOW__move_fsm_succeed ();
+    return ai_next (FIRST_GO_END_OF_LINE_FAST, move_fsm_succeed);
+}
+
+/*
+ * FIRST_GO_END_OF_LINE_FAST =move_fsm_failed=>
+ *  => FIRST_GO_END_OF_LINE_SLOW
+ *   set slow speed
+ *   retry
+ */
+fsm_branch_t
+ai__FIRST_GO_END_OF_LINE_FAST__move_fsm_failed (void)
+{
+    asserv_set_speed (BOT_MOVE_SLOW);
+    ai__FIRST_GO_END_OF_LINE_SLOW__move_fsm_failed ();
+    return ai_next (FIRST_GO_END_OF_LINE_FAST, move_fsm_failed);
+}
+
+/*
+ * FIRST_GO_END_OF_LINE_SLOW =move_fsm_succeed=>
+ *  => IDLE
+ */
+fsm_branch_t
+ai__FIRST_GO_END_OF_LINE_SLOW__move_fsm_succeed (void)
+{
+    return ai_next (FIRST_GO_END_OF_LINE_SLOW, move_fsm_succeed);
+}
+
+/*
+ * FIRST_GO_END_OF_LINE_SLOW =move_fsm_failed=>
+ *  => FIRST_GO_END_OF_LINE_SLOW
+ *   retry
+ */
+fsm_branch_t
+ai__FIRST_GO_END_OF_LINE_SLOW__move_fsm_failed (void)
+{
+    position_t pos = PG_POSITION_DEG (2625, 253, -90);
+    move_start (pos, 0);
+    return ai_next (FIRST_GO_END_OF_LINE_SLOW, move_fsm_failed);
 }
 
