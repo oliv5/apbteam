@@ -110,6 +110,12 @@
 /** Clamp open loop PWM. */
 #define BOT_CLAMP_PWM 0x100
 
+/** Gate work speed. */
+#define BOT_GATE_SPEED 0x46
+
+/** Gate stroke in steps. */
+#define BOT_GATE_STROKE_STEP 0x2081
+
 /**
  * Definition of the colors.
  */

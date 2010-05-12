@@ -150,6 +150,11 @@ main_event_to_fsm (void)
     else if (motor0_status == failure)
 	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_elevator_failed);
 
+    if (motor1_status == success)
+	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_gate_succeed);
+    else if (motor1_status == failure)
+	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_gate_failed);
+
     if (motorm0_status == success && motorm1_status == success)
 	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_clamp_succeed);
 

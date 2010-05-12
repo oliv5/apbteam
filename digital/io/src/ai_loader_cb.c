@@ -55,6 +55,7 @@ ai__LOADER_WAIT_JACK_IN__jack_inserted_into_bot (void)
  *  => LOADER_INIT_ELEVATOR_ZERO
  *   find elevator zero
  *   close clamp
+ *   find gate zero
  */
 fsm_branch_t
 ai__LOADER_WAIT_JACK_OUT__jack_removed_from_bot (void)
@@ -62,6 +63,7 @@ ai__LOADER_WAIT_JACK_OUT__jack_removed_from_bot (void)
     asserv_motor0_zero_position (-BOT_ELEVATOR_ZERO_SPEED);
     mimot_motor0_clamp (BOT_CLAMP_ZERO_SPEED, 0);
     mimot_motor1_clamp (BOT_CLAMP_ZERO_SPEED, 0);
+    asserv_motor1_zero_position (BOT_GATE_SPEED);
     return ai_next (LOADER_WAIT_JACK_OUT, jack_removed_from_bot);
 }
 
@@ -93,7 +95,7 @@ ai__LOADER_INIT_CLAMP_CLOSE__clamp_succeed (void)
 
 /*
  * LOADER_INIT_CLAMP_ZERO =clamp_succeed=>
- *  => LOADER_INIT_ELEVATOR_UP
+ *  => LOADER_INIT_GATE_ZERO
  */
 fsm_branch_t
 ai__LOADER_INIT_CLAMP_ZERO__clamp_succeed (void)
@@ -102,12 +104,24 @@ ai__LOADER_INIT_CLAMP_ZERO__clamp_succeed (void)
 }
 
 /*
+ * LOADER_INIT_GATE_ZERO =gate_succeed=>
+ *  => LOADER_INIT_ELEVATOR_UP
+ */
+fsm_branch_t
+ai__LOADER_INIT_GATE_ZERO__gate_succeed (void)
+{
+    return ai_next (LOADER_INIT_GATE_ZERO, gate_succeed);
+}
+
+/*
  * LOADER_INIT_ELEVATOR_UP =elevator_succeed=>
- *  => LOADER_UP
+ *  => LOADER_INIT_GATE_OPEN
+ *   open gate
  */
 fsm_branch_t
 ai__LOADER_INIT_ELEVATOR_UP__elevator_succeed (void)
 {
+    asserv_move_motor1_absolute (BOT_GATE_STROKE_STEP, BOT_GATE_SPEED);
     return ai_next (LOADER_INIT_ELEVATOR_UP, elevator_succeed);
 }
 
@@ -123,6 +137,38 @@ ai__LOADER_INIT_ELEVATOR_UP__elevator_failed (void)
     asserv_move_motor0_absolute (BOT_ELEVATOR_STROKE_STEP / 3,
 				 BOT_ELEVATOR_ZERO_SPEED);
     return ai_next (LOADER_INIT_ELEVATOR_UP, elevator_failed);
+}
+
+/*
+ * LOADER_INIT_GATE_OPEN =gate_succeed=>
+ *  => LOADER_INIT_GATE_WAIT
+ */
+fsm_branch_t
+ai__LOADER_INIT_GATE_OPEN__gate_succeed (void)
+{
+    return ai_next (LOADER_INIT_GATE_OPEN, gate_succeed);
+}
+
+/*
+ * LOADER_INIT_GATE_WAIT =state_timeout=>
+ *  => LOADER_INIT_GATE_CLOSE
+ *   close gate
+ */
+fsm_branch_t
+ai__LOADER_INIT_GATE_WAIT__state_timeout (void)
+{
+    asserv_move_motor1_absolute (0, BOT_GATE_SPEED);
+    return ai_next (LOADER_INIT_GATE_WAIT, state_timeout);
+}
+
+/*
+ * LOADER_INIT_GATE_CLOSE =gate_succeed=>
+ *  => LOADER_UP
+ */
+fsm_branch_t
+ai__LOADER_INIT_GATE_CLOSE__gate_succeed (void)
+{
+    return ai_next (LOADER_INIT_GATE_CLOSE, gate_succeed);
 }
 
 /*

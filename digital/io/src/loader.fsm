@@ -15,8 +15,16 @@ States:
   test clamp closing
  LOADER_INIT_CLAMP_ZERO
   find clamp zero position
+ LOADER_INIT_GATE_ZERO
+  find gate zero
  LOADER_INIT_ELEVATOR_UP
   move the elevator up so that the robot can go to the wall
+ LOADER_INIT_GATE_OPEN
+  open gate to unload elements before start
+ LOADER_INIT_GATE_WAIT[timeout=225]
+  wait with gate open
+ LOADER_INIT_GATE_CLOSE
+  close gate before start
  LOADER_UP
   up position, clamp is protected
  LOADER_DOWN
@@ -47,6 +55,10 @@ Events:
   elevator above unloading position
  clamp_succeed
   asserv success result, clamp movement cannot fail
+ gate_succeed
+  asserv success result
+ gate_failed
+  asserv failure result
  loader_element
   element sensed between clamp to be loaded
  loader_down
@@ -70,6 +82,7 @@ LOADER_WAIT_JACK_OUT:
  jack_removed_from_bot -> LOADER_INIT_ELEVATOR_ZERO
   find elevator zero
   close clamp
+  find gate zero
 
 LOADER_INIT_ELEVATOR_ZERO:
  elevator_succeed -> LOADER_INIT_CLAMP_CLOSE
@@ -80,12 +93,26 @@ LOADER_INIT_CLAMP_CLOSE:
   find clamp zero
 
 LOADER_INIT_CLAMP_ZERO:
- clamp_succeed -> LOADER_INIT_ELEVATOR_UP
+ clamp_succeed -> LOADER_INIT_GATE_ZERO
+
+LOADER_INIT_GATE_ZERO:
+ gate_succeed -> LOADER_INIT_ELEVATOR_UP
 
 LOADER_INIT_ELEVATOR_UP:
- elevator_succeed -> LOADER_UP
+ elevator_succeed -> LOADER_INIT_GATE_OPEN
+  open gate
  elevator_failed -> LOADER_IDLE
   initialisation failure
+
+LOADER_INIT_GATE_OPEN:
+ gate_succeed -> LOADER_INIT_GATE_WAIT
+
+LOADER_INIT_GATE_WAIT:
+ state_timeout -> LOADER_INIT_GATE_CLOSE
+  close gate
+
+LOADER_INIT_GATE_CLOSE:
+ gate_succeed -> LOADER_UP
 
 LOADER_UP:
  loader_down -> LOADER_DOWNING
