@@ -179,9 +179,7 @@ fsm_branch_t
 ai__INIT_GO_AWAY_FROM_THE_WALL_AGAIN__bot_move_succeed (void)
 {
     /* Move away from the border. */
-    asserv_goto_xya (PG_X (PG_START_ZONE_WIDTH / 2),
-		     PG_Y (PG_LENGTH - PG_START_ZONE_LENGTH / 2),
-		     PG_A_DEG (0), 0);
+    asserv_goto_xya (BOT_INIT_XYA, 0);
     return ai_next (INIT_GO_AWAY_FROM_THE_WALL_AGAIN, bot_move_succeed);
 }
 

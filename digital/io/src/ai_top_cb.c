@@ -58,7 +58,7 @@ ai__IDLE__start (void)
 fsm_branch_t
 ai__WAIT_INIT_TO_FINISH__init_match_is_started (void)
 {
-    position_t pos = PG_POSITION_DEG (825, 1253, -29);
+    position_t pos = PG_POSITION_DEG (375, 1503, -29);
     move_start (pos, 0);
     return ai_next (WAIT_INIT_TO_FINISH, init_match_is_started);
 }
@@ -97,7 +97,7 @@ ai__GO_FAR__move_fsm_failed (void)
 fsm_branch_t
 ai__GO_NEAR__move_fsm_succeed (void)
 {
-    position_t pos = PG_POSITION_DEG (825, 1253, -29);
+    position_t pos = PG_POSITION_DEG (375, 1503, -29);
     move_start (pos, 0);
     loader_up ();
     return ai_next (GO_NEAR, move_fsm_succeed);

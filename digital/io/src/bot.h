@@ -53,6 +53,12 @@
  * circle needed when rotating. */
 #define BOT_SIZE_RADIUS 196
 
+/** Start position. */
+#define BOT_INIT_XYA \
+    PG_X (PG_START_ZONE_WIDTH - BOT_SIZE_RADIUS), \
+    PG_Y (PG_LENGTH - PG_START_ZONE_LENGTH + BOT_SIZE_RADIUS), \
+    PG_A_DEG (-76)
+
 /**
  * Distance required to be away from a border to be able to turn freely.
  * In millimeter.
