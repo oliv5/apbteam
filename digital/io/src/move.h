@@ -75,8 +75,8 @@ move_start (position_t position, uint8_t backward);
 void
 move_obstacles_update (void);
 
-/** Check for blocking obstacles. */
-void
+/** Check for blocking obstacles, return non zero if an event is handled. */
+uint8_t
 move_check_obstacles (void);
 
 #endif /* move_h */

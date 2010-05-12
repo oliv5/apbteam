@@ -58,7 +58,7 @@ move_obstacles_update (void)
 		       MOVE_OBSTACLE_VALIDITY);
 }
 
-void
+uint8_t
 move_check_obstacles (void)
 {
     if (fsm_can_handle_event (&ai_fsm, AI_EVENT_obstacle_in_front))
@@ -67,7 +67,9 @@ move_check_obstacles (void)
 	asserv_get_position (&robot_pos);
 	if (radar_blocking (&robot_pos.v, &move_data.step, main_obstacles_pos,
 			    main_obstacles_nb))
-	    fsm_handle_event (&ai_fsm, AI_EVENT_obstacle_in_front);
+	    if (fsm_handle_event (&ai_fsm, AI_EVENT_obstacle_in_front))
+		return 1;
       }
+    return 0;
 }
 

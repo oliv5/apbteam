@@ -192,7 +192,15 @@ main_event_to_fsm (void)
       }
 
     /* Check obstacles. */
-    move_check_obstacles ();
+    if (move_check_obstacles ())
+	return;
+
+    /* Top events. */
+    position_t robot_pos;
+    asserv_get_position (&robot_pos);
+    if (robot_pos.v.y < PG_FIELD_Y_MAX)
+	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_in_field);
+
     /* TODO: Check other sensors */
 }
 

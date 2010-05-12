@@ -25,6 +25,8 @@ Events:
   when the bot has failed its asserv movement.
  init_match_is_started
   when the init FSM has finished and the match start.
+ in_field
+  the robot is in the zone containing interesting elements.
  state_timeout
   timeout in cycle count.
  asserv_last_cmd_ack

@@ -86,4 +86,7 @@
 #define PG_SLOPE_WIDTH (500 + 519 + 500)
 #define PG_SLOPE_LENGTH (500 + 22)
 
+/** Start of field zone. */
+#define PG_FIELD_Y_MAX 1128
+
 #endif // playground_h
