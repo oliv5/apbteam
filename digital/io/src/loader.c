@@ -27,6 +27,8 @@
 
 #include "fsm.h"
 
+uint8_t loader_elements;
+
 void
 loader_up (void)
 {

@@ -171,6 +171,7 @@ LOADER_UPING:
 LOADER_LOAD_CLOSING:
  clamp_succeed: full -> LOADER_LOAD_UPING
   move up
+  count one element
  clamp_succeed: empty -> LOADER_LOAD_EMPTY_OPEN
   open clamp
 

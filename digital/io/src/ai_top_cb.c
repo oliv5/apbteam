@@ -234,6 +234,30 @@ ai__FIRST_GO_END_OF_LINE_UNBLOCKING__loader_errored (void)
 }
 
 /*
+ * UNLOAD =move_fsm_succeed=>
+ *  => UNLOAD_LOADER_UP
+ *   move loader up
+ */
+fsm_branch_t
+ai__UNLOAD__move_fsm_succeed (void)
+{
+    loader_up ();
+    return ai_next (UNLOAD, move_fsm_succeed);
+}
+
+/*
+ * UNLOAD =move_fsm_failed=>
+ *  => UNLOAD
+ *   retry
+ */
+fsm_branch_t
+ai__UNLOAD__move_fsm_failed (void)
+{
+    move_start_noangle (PG_VECT (2625, 253), 0);
+    return ai_next (UNLOAD, move_fsm_failed);
+}
+
+/*
  * UNLOAD_LOADER_UP =loader_uped=>
  *  => UNLOAD_FACE_BIN
  *   turn toward bin
@@ -291,6 +315,7 @@ ai__UNLOAD_BACK_BIN__bot_move_failed (void)
 fsm_branch_t
 ai__UNLOAD_UNLOAD__state_timeout (void)
 {
+    loader_elements = 0;
     asserv_move_motor1_absolute (BOT_GATE_STROKE_STEP, BOT_GATE_SPEED);
     loader_down ();
     top_collect (1);

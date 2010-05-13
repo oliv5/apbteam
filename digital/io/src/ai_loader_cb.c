@@ -30,6 +30,7 @@
 #include "bot.h"
 #include "main.h"
 #include "food.h"
+#include "loader.h"
 
 /*
  * LOADER_IDLE =start=>
@@ -351,6 +352,7 @@ ai__LOADER_ERROR_UPING_OPEN__clamp_succeed (void)
  * LOADER_LOAD_CLOSING =clamp_succeed=>
  * full => LOADER_LOAD_UPING
  *   move up
+ *   count one element
  * empty => LOADER_LOAD_EMPTY_OPEN
  *   open clamp
  */
@@ -368,6 +370,7 @@ ai__LOADER_LOAD_CLOSING__clamp_succeed (void)
 	position_t robot_position;
 	asserv_get_position (&robot_position);
 	food_taken (robot_position);
+	loader_elements++;
 	return ai_next_branch (LOADER_LOAD_CLOSING, clamp_succeed, full);
       }
     else

@@ -27,6 +27,9 @@
 #include "top.h"
 #include "food.h"
 #include "asserv.h"
+#include "loader.h"
+#include "move.h"
+#include "playground.h"
 
 void
 top_init (void)
@@ -36,13 +39,22 @@ top_init (void)
 uint8_t
 top_collect (uint8_t force)
 {
-    position_t robot_position;
-    asserv_get_position (&robot_position);
-    uint8_t food = food_best (robot_position);
-    if (food == 0xff)
+    if (loader_elements < 4 || force)
+      {
+	position_t robot_position;
+	asserv_get_position (&robot_position);
+	uint8_t food = food_best (robot_position);
+	if (food == 0xff)
+	    return 0;
+	vect_t food_v;
+	food_pos (food, &food_v);
+	move_start_noangle (food_v, 0);
+	return 1;
+      }
+    else
+      {
+	move_start_noangle (PG_VECT (2625, 253), 0);
 	return 0;
-    vect_t food_v;
-    food_pos (food, &food_v);
-    move_start_noangle (food_v, 0);
+      }
 }
 
