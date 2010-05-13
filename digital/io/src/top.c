@@ -39,7 +39,7 @@ top_init (void)
 uint8_t
 top_collect (uint8_t force)
 {
-    if (loader_elements < 4 || force)
+    if (loader_elements < 3 || force)
       {
 	position_t robot_position;
 	asserv_get_position (&robot_position);
