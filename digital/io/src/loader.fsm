@@ -33,6 +33,14 @@ States:
   moving to the down position
  LOADER_ERROR
   error while moving up, stop in an unknown state
+ LOADER_ERROR_DOWNING
+  error recovery moving down
+ LOADER_ERROR_DOWNING_OPEN
+  error recovery moving down, open clamp
+ LOADER_ERROR_UPING
+  error recovery moving up
+ LOADER_ERROR_UPING_OPEN
+  error recovery moving up, open clamp
  LOADER_LOAD_CLOSING
   close clamp
  LOADER_LOAD_UPING
@@ -52,7 +60,9 @@ Events:
  elevator_unload_position
   elevator above unloading position
  clamp_succeed
-  asserv success result, clamp movement cannot fail
+  asserv success result
+ clamp_failed
+  asserv failure result
  gate_succeed
   asserv success result
  gate_failed
@@ -119,10 +129,31 @@ LOADER_DOWN:
   clamp
 
 LOADER_ERROR:
- loader_down -> LOADER_DOWNING
+ loader_down -> LOADER_ERROR_DOWNING
   move down
- loader_up -> LOADER_UPING
+ loader_up -> LOADER_ERROR_UPING
   move up
+
+LOADER_ERROR_DOWNING:
+ elevator_succeed -> LOADER_ERROR_DOWNING_OPEN
+  release elevator motor
+  open clamp
+ elevator_failed -> LOADER_ERROR
+  post loader_errored event
+
+LOADER_ERROR_DOWNING_OPEN:
+ clamp_succeed -> LOADER_DOWN
+  post loader_downed event
+
+LOADER_ERROR_UPING:
+ elevator_succeed -> LOADER_ERROR_UPING_OPEN
+  open clamp
+ elevator_failed -> LOADER_ERROR
+  post loader_errored event
+
+LOADER_ERROR_UPING_OPEN:
+ clamp_succeed -> LOADER_UP
+  post loader_uped event
 
 LOADER_DOWNING:
  elevator_succeed -> LOADER_DOWN
@@ -146,9 +177,13 @@ LOADER_LOAD_CLOSING:
 LOADER_LOAD_UPING:
  elevator_unload_position -> LOADER_LOAD_UNLOADING
   open clamp
+ elevator_failed -> LOADER_ERROR
+  post loader_errored event
 
 LOADER_LOAD_UNLOADING:
  elevator_succeed -> LOADER_LOAD_UNLOADING_OPEN
+ elevator_failed -> LOADER_ERROR
+  post loader_errored event
 
 LOADER_LOAD_UNLOADING_OPEN:
  clamp_succeed -> LOADER_DOWNING

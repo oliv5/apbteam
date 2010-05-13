@@ -248,7 +248,7 @@ ai__LOADER_DOWNING__elevator_failed (void)
 
 /*
  * LOADER_ERROR =loader_down=>
- *  => LOADER_DOWNING
+ *  => LOADER_ERROR_DOWNING
  *   move down
  */
 fsm_branch_t
@@ -260,7 +260,7 @@ ai__LOADER_ERROR__loader_down (void)
 
 /*
  * LOADER_ERROR =loader_up=>
- *  => LOADER_UPING
+ *  => LOADER_ERROR_UPING
  *   move up
  */
 fsm_branch_t
@@ -268,6 +268,82 @@ ai__LOADER_ERROR__loader_up (void)
 {
     asserv_move_motor0_absolute (BOT_ELEVATOR_REST_STEP, BOT_ELEVATOR_SPEED);
     return ai_next (LOADER_ERROR, loader_up);
+}
+
+/*
+ * LOADER_ERROR_DOWNING =elevator_succeed=>
+ *  => LOADER_ERROR_DOWNING_OPEN
+ *   release elevator motor
+ *   open clamp
+ */
+fsm_branch_t
+ai__LOADER_ERROR_DOWNING__elevator_succeed (void)
+{
+    asserv_motor0_free ();
+    mimot_move_motor0_absolute (BOT_CLAMP_OPEN_STEP, BOT_CLAMP_SPEED);
+    mimot_move_motor1_absolute (BOT_CLAMP_OPEN_STEP, BOT_CLAMP_SPEED);
+    return ai_next (LOADER_ERROR_DOWNING, elevator_succeed);
+}
+
+/*
+ * LOADER_ERROR_DOWNING =elevator_failed=>
+ *  => LOADER_ERROR
+ *   post loader_errored event
+ */
+fsm_branch_t
+ai__LOADER_ERROR_DOWNING__elevator_failed (void)
+{
+    main_post_event (AI_EVENT_loader_errored);
+    return ai_next (LOADER_ERROR_DOWNING, elevator_failed);
+}
+
+/*
+ * LOADER_ERROR_DOWNING_OPEN =clamp_succeed=>
+ *  => LOADER_DOWN
+ *   post loader_downed event
+ */
+fsm_branch_t
+ai__LOADER_ERROR_DOWNING_OPEN__clamp_succeed (void)
+{
+    main_post_event (AI_EVENT_loader_downed);
+    return ai_next (LOADER_ERROR_DOWNING_OPEN, clamp_succeed);
+}
+
+/*
+ * LOADER_ERROR_UPING =elevator_succeed=>
+ *  => LOADER_ERROR_UPING_OPEN
+ *   open clamp
+ */
+fsm_branch_t
+ai__LOADER_ERROR_UPING__elevator_succeed (void)
+{
+    mimot_move_motor0_absolute (BOT_CLAMP_OPEN_STEP, BOT_CLAMP_SPEED);
+    mimot_move_motor1_absolute (BOT_CLAMP_OPEN_STEP, BOT_CLAMP_SPEED);
+    return ai_next (LOADER_ERROR_UPING, elevator_succeed);
+}
+
+/*
+ * LOADER_ERROR_UPING =elevator_failed=>
+ *  => LOADER_ERROR
+ *   post loader_errored event
+ */
+fsm_branch_t
+ai__LOADER_ERROR_UPING__elevator_failed (void)
+{
+    main_post_event (AI_EVENT_loader_errored);
+    return ai_next (LOADER_ERROR_UPING, elevator_failed);
+}
+
+/*
+ * LOADER_ERROR_UPING_OPEN =clamp_succeed=>
+ *  => LOADER_UP
+ *   post loader_uped event
+ */
+fsm_branch_t
+ai__LOADER_ERROR_UPING_OPEN__clamp_succeed (void)
+{
+    main_post_event (AI_EVENT_loader_uped);
+    return ai_next (LOADER_ERROR_UPING_OPEN, clamp_succeed);
 }
 
 /*
@@ -312,6 +388,18 @@ ai__LOADER_LOAD_UPING__elevator_unload_position (void)
 }
 
 /*
+ * LOADER_LOAD_UPING =elevator_failed=>
+ *  => LOADER_ERROR
+ *   post loader_errored event
+ */
+fsm_branch_t
+ai__LOADER_LOAD_UPING__elevator_failed (void)
+{
+    main_post_event (AI_EVENT_loader_errored);
+    return ai_next (LOADER_LOAD_UPING, elevator_failed);
+}
+
+/*
  * LOADER_LOAD_UNLOADING =elevator_succeed=>
  *  => LOADER_LOAD_UNLOADING_OPEN
  */
@@ -319,6 +407,18 @@ fsm_branch_t
 ai__LOADER_LOAD_UNLOADING__elevator_succeed (void)
 {
     return ai_next (LOADER_LOAD_UNLOADING, elevator_succeed);
+}
+
+/*
+ * LOADER_LOAD_UNLOADING =elevator_failed=>
+ *  => LOADER_ERROR
+ *   post loader_errored event
+ */
+fsm_branch_t
+ai__LOADER_LOAD_UNLOADING__elevator_failed (void)
+{
+    main_post_event (AI_EVENT_loader_errored);
+    return ai_next (LOADER_LOAD_UNLOADING, elevator_failed);
 }
 
 /*

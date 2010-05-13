@@ -187,6 +187,8 @@ main_event_to_fsm (void)
 
     if (motorm0_status == success && motorm1_status == success)
 	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_clamp_succeed);
+    else if (motorm0_status == failure || motorm1_status == failure)
+	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_clamp_failed);
 
     /* Check positions. */
     if (asserv_get_motor0_position () > BOT_ELEVATOR_UNLOAD_STEP)
