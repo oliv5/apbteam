@@ -189,7 +189,7 @@ ai__UNLOAD_FACE_BIN__bot_move_succeed (void)
 fsm_branch_t
 ai__UNLOAD_BACK_BIN__bot_move_succeed (void)
 {
-    asserv_move_motor1_absolute (BOT_GATE_STROKE_STEP, BOT_GATE_SPEED);
+    asserv_move_motor1_absolute (0, BOT_GATE_SPEED);
     return ai_next (UNLOAD_BACK_BIN, bot_move_succeed);
 }
 

@@ -19,8 +19,6 @@ States:
   find gate zero
  LOADER_INIT_ELEVATOR_UP
   move the elevator up so that the robot can go to the wall
- LOADER_INIT_GATE_OPEN
-  open gate to unload elements before start
  LOADER_INIT_GATE_WAIT[timeout=225]
   wait with gate open
  LOADER_INIT_GATE_CLOSE
@@ -99,13 +97,9 @@ LOADER_INIT_GATE_ZERO:
  gate_succeed -> LOADER_INIT_ELEVATOR_UP
 
 LOADER_INIT_ELEVATOR_UP:
- elevator_succeed -> LOADER_INIT_GATE_OPEN
-  open gate
+ elevator_succeed -> LOADER_INIT_GATE_WAIT
  elevator_failed -> LOADER_IDLE
   initialisation failure
-
-LOADER_INIT_GATE_OPEN:
- gate_succeed -> LOADER_INIT_GATE_WAIT
 
 LOADER_INIT_GATE_WAIT:
  state_timeout -> LOADER_INIT_GATE_CLOSE

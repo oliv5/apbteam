@@ -36,7 +36,7 @@ class Loader (Observable):
     ELEVATOR_LINEAR_STROKE = 32
     ELEVATOR_ROTATING_STROKE = 200 - 32
 
-    GATE_STROKE = 3.3284 * pi
+    GATE_STROKE = -3.0124 * 2 * pi
 
     FRONT_ZONE_X_MIN = 120 - 15
     FRONT_ZONE_X_MAX = 120 + CLAMP_LENGTH - 15

@@ -116,7 +116,7 @@
 #define BOT_GATE_SPEED 0x46
 
 /** Gate stroke in steps. */
-#define BOT_GATE_STROKE_STEP 0x2081
+#define BOT_GATE_STROKE_STEP -0x1d6b
 
 /**
  * Definition of the colors.

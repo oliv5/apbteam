@@ -60,11 +60,11 @@ class Loader (Drawable):
                     x = 0
                     y += 40
         if self.model.gate_angle is not None:
-            ratio = self.model.gate_angle / self.model.GATE_STROKE
+            ratio = 1 - self.model.gate_angle / self.model.GATE_STROKE
             # Draw gate.
             for i in xrange (0, 4):
                 self.draw_line ((100, 125 + 5 * i),
-                        (300, 25 + 25 * i + (75 - 10 * i) * ratio))
+                        (300, 25 + 25 * i + (150 - 20 * i) * ratio))
         if self.model.elevator_height is not None:
             self.trans_identity ()
             self.trans_rotate (-self.model.elevator_angle)

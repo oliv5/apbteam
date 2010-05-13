@@ -90,7 +90,7 @@ class TestSimuControl (TestSimu):
 
     def gate_command (self):
         if self.gate_var.get ():
-            pos = 0x2081
+            pos = -0x1d6b
         else:
             pos = 0
         self.asserv.goto_pos ('a1', pos)

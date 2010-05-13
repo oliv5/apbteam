@@ -63,7 +63,7 @@ ai__LOADER_WAIT_JACK_OUT__jack_removed_from_bot (void)
     asserv_motor0_zero_position (-BOT_ELEVATOR_ZERO_SPEED);
     mimot_motor0_clamp (BOT_CLAMP_ZERO_SPEED, 0);
     mimot_motor1_clamp (BOT_CLAMP_ZERO_SPEED, 0);
-    asserv_motor1_zero_position (BOT_GATE_SPEED);
+    asserv_motor1_zero_position (-BOT_GATE_SPEED);
     return ai_next (LOADER_WAIT_JACK_OUT, jack_removed_from_bot);
 }
 
@@ -115,13 +115,11 @@ ai__LOADER_INIT_GATE_ZERO__gate_succeed (void)
 
 /*
  * LOADER_INIT_ELEVATOR_UP =elevator_succeed=>
- *  => LOADER_INIT_GATE_OPEN
- *   open gate
+ *  => LOADER_INIT_GATE_WAIT
  */
 fsm_branch_t
 ai__LOADER_INIT_ELEVATOR_UP__elevator_succeed (void)
 {
-    asserv_move_motor1_absolute (BOT_GATE_STROKE_STEP, BOT_GATE_SPEED);
     return ai_next (LOADER_INIT_ELEVATOR_UP, elevator_succeed);
 }
 
@@ -140,16 +138,6 @@ ai__LOADER_INIT_ELEVATOR_UP__elevator_failed (void)
 }
 
 /*
- * LOADER_INIT_GATE_OPEN =gate_succeed=>
- *  => LOADER_INIT_GATE_WAIT
- */
-fsm_branch_t
-ai__LOADER_INIT_GATE_OPEN__gate_succeed (void)
-{
-    return ai_next (LOADER_INIT_GATE_OPEN, gate_succeed);
-}
-
-/*
  * LOADER_INIT_GATE_WAIT =state_timeout=>
  *  => LOADER_INIT_GATE_CLOSE
  *   close gate
@@ -157,7 +145,7 @@ ai__LOADER_INIT_GATE_OPEN__gate_succeed (void)
 fsm_branch_t
 ai__LOADER_INIT_GATE_WAIT__state_timeout (void)
 {
-    asserv_move_motor1_absolute (0, BOT_GATE_SPEED);
+    asserv_move_motor1_absolute (BOT_GATE_STROKE_STEP, BOT_GATE_SPEED);
     return ai_next (LOADER_INIT_GATE_WAIT, state_timeout);
 }
 
