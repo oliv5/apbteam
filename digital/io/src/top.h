@@ -31,4 +31,9 @@
 void
 top_init (void);
 
+/** Go collect food unless no time left unless forced, return non zero if
+ * collecting. */
+uint8_t
+top_collect (uint8_t force);
+
 #endif /* top_h */

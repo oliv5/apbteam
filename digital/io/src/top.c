@@ -23,10 +23,26 @@
  *
  * }}} */
 #include "common.h"
+#include "defs.h"
 #include "top.h"
+#include "food.h"
+#include "asserv.h"
 
 void
 top_init (void)
 {
+}
+
+uint8_t
+top_collect (uint8_t force)
+{
+    position_t robot_position;
+    asserv_get_position (&robot_position);
+    uint8_t food = food_best (robot_position);
+    if (food == 0xff)
+	return 0;
+    vect_t food_v;
+    food_pos (food, &food_v);
+    move_start_noangle (food_v, 0);
 }
 

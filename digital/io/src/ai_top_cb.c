@@ -259,7 +259,7 @@ ai__UNLOAD_FACE_BIN__bot_move_succeed (void)
 
 /*
  * UNLOAD_BACK_BIN =bot_move_succeed=>
- *  => IDLE
+ *  => UNLOAD_UNLOAD
  *   unload
  */
 fsm_branch_t
@@ -271,7 +271,7 @@ ai__UNLOAD_BACK_BIN__bot_move_succeed (void)
 
 /*
  * UNLOAD_BACK_BIN =bot_move_failed=>
- *  => IDLE
+ *  => UNLOAD_UNLOAD
  *   unload
  */
 fsm_branch_t
@@ -279,5 +279,49 @@ ai__UNLOAD_BACK_BIN__bot_move_failed (void)
 {
     ai__UNLOAD_BACK_BIN__bot_move_succeed ();
     return ai_next (UNLOAD_BACK_BIN, bot_move_failed);
+}
+
+/*
+ * UNLOAD_UNLOAD =state_timeout=>
+ *  => COLLECT
+ *   close gate
+ *   loader down
+ *   choose best food to collect
+ */
+fsm_branch_t
+ai__UNLOAD_UNLOAD__state_timeout (void)
+{
+    asserv_move_motor1_absolute (BOT_GATE_STROKE_STEP, BOT_GATE_SPEED);
+    loader_down ();
+    top_collect (1);
+    return ai_next (UNLOAD_UNLOAD, state_timeout);
+}
+
+/*
+ * COLLECT =move_fsm_succeed=>
+ * unload => UNLOAD
+ * collect => COLLECT
+ */
+fsm_branch_t
+ai__COLLECT__move_fsm_succeed (void)
+{
+    if (top_collect (0))
+	return ai_next_branch (COLLECT, move_fsm_succeed, collect);
+    else
+	return ai_next_branch (COLLECT, move_fsm_succeed, unload);
+}
+
+/*
+ * COLLECT =move_fsm_failed=>
+ * unload => UNLOAD
+ * collect => COLLECT
+ */
+fsm_branch_t
+ai__COLLECT__move_fsm_failed (void)
+{
+    if (top_collect (0))
+	return ai_next_branch (COLLECT, move_fsm_failed, collect);
+    else
+	return ai_next_branch (COLLECT, move_fsm_failed, unload);
 }
 

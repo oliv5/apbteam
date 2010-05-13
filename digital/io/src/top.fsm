@@ -17,12 +17,18 @@ States:
   unblock problem with loader, move loader up
  FIRST_GO_END_OF_LINE_UNBLOCKING
   unblock problem with loader, go backward
+ UNLOAD
+  go to unloading position
  UNLOAD_LOADER_UP
   move loader to up position
  UNLOAD_FACE_BIN
   orient robot to unload angle
  UNLOAD_BACK_BIN
   move back to unload bin
+ UNLOAD_UNLOAD[timeout=225]
+  unloading, wait
+ COLLECT
+  collecting elements
 
 Events:
  start
@@ -109,8 +115,20 @@ UNLOAD_FACE_BIN:
   go backward to bin
 
 UNLOAD_BACK_BIN:
- bot_move_succeed -> IDLE
+ bot_move_succeed -> UNLOAD_UNLOAD
   unload
- bot_move_failed -> IDLE
+ bot_move_failed -> UNLOAD_UNLOAD
   unload
+
+UNLOAD_UNLOAD:
+ state_timeout -> COLLECT
+  close gate
+  loader down
+  choose best food to collect
+
+COLLECT:
+ move_fsm_succeed: unload -> UNLOAD
+ move_fsm_succeed: collect -> COLLECT
+ move_fsm_failed: unload -> UNLOAD
+ move_fsm_failed: collect -> COLLECT
 
