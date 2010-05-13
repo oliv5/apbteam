@@ -202,6 +202,8 @@ food_best (position_t robot_pos)
 	  }
       }
     TRACE (TRACE_FOOD__BEST, best);
+    if (best != 0xff)
+	food_table[best].valid = 0;
     return best;
 }
 
