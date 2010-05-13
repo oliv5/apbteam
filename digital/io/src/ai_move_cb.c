@@ -35,6 +35,7 @@
 #include "bot.h"
 #include "radar.h"
 #include "events.h"
+#include "loader.h"
 
 #include "main.h"      /* main_post_event_for_top_fsm */
 #include "modules/math/fixed/fixed.h"	/* fixed_* */
@@ -71,6 +72,7 @@ move_go_or_rotate (vect_t dst, uint16_t angle, uint8_t with_angle,
     /* Move or rotate. */
     if (UTILS_ABS (diff) < 0x1000)
       {
+	loader_down ();
 	if (with_angle)
 	    asserv_goto_xya (dst.x, dst.y, angle, backward);
 	else
@@ -79,6 +81,7 @@ move_go_or_rotate (vect_t dst, uint16_t angle, uint8_t with_angle,
       }
     else
       {
+	loader_up ();
 	asserv_goto_angle (dst_angle);
 	return 2;
       }
@@ -198,6 +201,7 @@ ai__MOVE_IDLE__move_start (void)
 fsm_branch_t
 ai__MOVE_ROTATING__bot_move_succeed (void)
 {
+    loader_down ();
     if (move_data.step_with_angle)
 	asserv_goto_xya (move_data.step.x, move_data.step.y,
 			 move_data.step_angle, move_data.step_backward);
