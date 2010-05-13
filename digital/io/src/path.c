@@ -90,6 +90,8 @@ struct path_t
 {
     /** List of obstacles. */
     struct path_obstacle_t obstacles[PATH_OBSTACLES_NB];
+    /** Escape factor, 0 if none. */
+    uint8_t escape_factor;
     /** List of nodes used for A*. */
     struct astar_node_t astar_nodes[PATH_NODES_NB];
     /** Cache of whether a node is blocked. */
@@ -202,6 +204,9 @@ path_blocking (uint8_t a, uint8_t b, int16_t *dp)
     uint8_t i;
     vect_t va;
     vect_t vb;
+    uint8_t escape_factor = 0;
+    if (a == PATH_SRC_NODE_INDEX || b == PATH_SRC_NODE_INDEX)
+	escape_factor = path.escape_factor;
     path_pos (a, &va);
     path_pos (b, &vb);
     /* Test for a blocking obstacle. */
@@ -212,15 +217,40 @@ path_blocking (uint8_t a, uint8_t b, int16_t *dp)
 	    uint16_t d = distance_segment_point (&va, &vb,
 						 &path.obstacles[i].c);
 	    if (d < path.obstacles[i].r)
-		return 1;
+	      {
+		if (escape_factor)
+		  {
+		    int16_t d = distance_point_point (&va, &vb);
+		    *dp = d * escape_factor;
+		    return 0;
+		  }
+		else
+		    return 1;
+	      }
 	  }
       }
     /* Test for a blocking food. */
     int16_t d = distance_point_point (&va, &vb);
-    *dp = d;
     if (d == 0)
+      {
+	*dp = 0;
 	return 0;
-    return food_blocking_path (va, vb, d);
+      }
+    else if (food_blocking_path (va, vb, d))
+      {
+	if (escape_factor)
+	  {
+	    *dp = d * escape_factor;
+	    return 0;
+	  }
+	else
+	    return 1;
+      }
+    else
+      {
+	*dp = d;
+	return 0;
+      }
 }
 
 /** Update the cache of blocked nodes. */
@@ -277,7 +307,7 @@ path_endpoints (vect_t s, vect_t d)
 void
 path_escape (uint8_t factor)
 {
-    /* TODO */
+    path.escape_factor = factor;
 }
 
 void
