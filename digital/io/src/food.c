@@ -166,7 +166,7 @@ food_score (position_t robot_pos, uint8_t food)
     if (food_table[food].type == FOOD_TYPE_TOMATO)
 	score += 100;
     else
-	score -= 1000;
+	score -= 4000;
     /* Distance to robot. */
     food_pos (food, &v);
     int32_t dr = distance_point_point (&v, &robot_pos.v);
@@ -182,8 +182,10 @@ food_score (position_t robot_pos, uint8_t food)
       }
     /* Distance to unloading area. */
     /* Avoid food near border. */
+    if (food == 15 || food == 1)
+	score -= 300;
     if (v.y < BOT_SIZE_RADIUS)
-	score -= 2000;
+	score -= 6000;
     /* Done. */
     return score;
 }
