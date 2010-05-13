@@ -38,7 +38,7 @@
 			      + BOT_SIZE_SIDE)
 
 /** Obstacle validity time (in term of number of cycles). */
-#define MOVE_OBSTACLE_VALIDITY (6 * 225)
+#define MOVE_OBSTACLE_VALIDITY (3 * 225)
 
 /**
  * Move FSM associated data.
