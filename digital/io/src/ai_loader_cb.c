@@ -29,6 +29,7 @@
 #include "mimot.h"
 #include "bot.h"
 #include "main.h"
+#include "food.h"
 
 /*
  * LOADER_IDLE =start=>
@@ -364,6 +365,9 @@ ai__LOADER_LOAD_CLOSING__clamp_succeed (void)
       {
 	asserv_move_motor0_absolute (BOT_ELEVATOR_STROKE_STEP,
 				     BOT_ELEVATOR_SPEED);
+	position_t robot_position;
+	asserv_get_position (&robot_position);
+	food_taken (robot_position);
 	return ai_next_branch (LOADER_LOAD_CLOSING, clamp_succeed, full);
       }
     else

@@ -46,4 +46,17 @@ food_blocking (uint8_t food);
 uint8_t
 food_blocking_path (vect_t a, vect_t b, int16_t ab);
 
+/** Choose the best next food to pick.
+ * - robot_pos: current robot position. */
+uint8_t
+food_best (position_t robot_pos);
+
+/** Get position of a food. */
+void
+food_pos (uint8_t food, vect_t *v);
+
+/** Mark a food has taken. */
+void
+food_taken (position_t robot_pos);
+
 #endif /* food_h */

@@ -27,6 +27,9 @@
 #include "food.h"
 
 #include "modules/utils/utils.h"
+#include "modules/math/geometry/distance.h"
+#include "modules/trace/trace.h"
+#include "events.h"
 
 /** Maximum distance from a line segment to food center so that the robot is
  * able to pick a food. */
@@ -149,5 +152,83 @@ food_blocking_path (vect_t a, vect_t b, int16_t ab)
 	  }
       }
     return 0;
+}
+
+static int32_t
+food_score (position_t robot_pos, uint8_t food)
+{
+    int32_t score = 0;
+    vect_t v;
+    assert (food < UTILS_COUNT (food_table));
+    /* Type of food. */
+    if (food_table[food].type == FOOD_TYPE_TOMATO)
+	score += 100;
+    else
+	score -= 1000;
+    /* Distance to robot. */
+    food_pos (food, &v);
+    int32_t dr = distance_point_point (&v, &robot_pos.v);
+    score += dr * -1;
+    /* Alignment with robot. */
+    if (dr > 100)
+      {
+	vect_t vr = v; vect_sub (&vr, &robot_pos.v);
+	vect_t u; vect_from_polar_uf016 (&u, 100, robot_pos.a);
+	int32_t dp = vect_dot_product (&u, &vr);
+	int32_t align = dp / dr;
+	score += align;
+      }
+    /* Distance to unloading area. */
+    /* Done. */
+    return score;
+}
+
+uint8_t
+food_best (position_t robot_pos)
+{
+    uint8_t i;
+    int32_t score;
+    uint8_t best = 0xff;
+    int32_t best_score = 0;
+    for (i = 0; i < UTILS_COUNT (food_table); i++)
+      {
+	if (!food_table[i].valid)
+	    continue;
+	score = food_score (robot_pos, i);
+	if (best == 0xff || best_score < score)
+	  {
+	    best = i;
+	    best_score = score;
+	  }
+      }
+    TRACE (TRACE_FOOD__BEST, best);
+    return best;
+}
+
+void
+food_pos (uint8_t food, vect_t *v)
+{
+    assert (food < UTILS_COUNT (food_table));
+    *v = food_table[food].pos;
+}
+
+void
+food_taken (position_t robot_pos)
+{
+    uint8_t i;
+    for (i = 0; i < UTILS_COUNT (food_table); i++)
+      {
+	vect_t v;
+	food_pos (i, &v);
+	if (robot_pos.v.x > v.x - 450 / 2
+	    && robot_pos.v.x < v.x + 450 / 2
+	    && robot_pos.v.y > v.y - 250 / 2
+	    && robot_pos.v.y < v.y + 250 / 2)
+	  {
+	    food_table[i].valid = 0;
+	    TRACE (TRACE_FOOD__TAKEN, i);
+	    break;
+	  }
+      }
 }
 
