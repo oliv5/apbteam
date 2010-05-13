@@ -236,13 +236,13 @@ ai__LOADER_DOWNING__elevator_succeed (void)
 
 /*
  * LOADER_DOWNING =elevator_failed=>
- *  => LOADER_UPING
- *   something is blocking, move it up
+ *  => LOADER_ERROR
+ *   post loader_errored event
  */
 fsm_branch_t
 ai__LOADER_DOWNING__elevator_failed (void)
 {
-    asserv_move_motor0_absolute (BOT_ELEVATOR_REST_STEP, BOT_ELEVATOR_SPEED);
+    main_post_event (AI_EVENT_loader_errored);
     return ai_next (LOADER_DOWNING, elevator_failed);
 }
 

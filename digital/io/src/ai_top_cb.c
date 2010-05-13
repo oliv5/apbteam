@@ -135,9 +135,8 @@ ai__FIRST_GO_END_OF_LINE_FAST__move_fsm_failed (void)
 
 /*
  * FIRST_GO_END_OF_LINE_FAST =loader_errored=>
- *  => FIRST_GO_END_OF_LINE_UNBLOCKING
- *   move backward
- *   move loader down
+ *  => FIRST_GO_END_OF_LINE_UNBLOCKING_UP
+ *   same as below
  */
 fsm_branch_t
 ai__FIRST_GO_END_OF_LINE_FAST__loader_errored (void)
@@ -173,33 +172,46 @@ ai__FIRST_GO_END_OF_LINE_SLOW__move_fsm_failed (void)
 
 /*
  * FIRST_GO_END_OF_LINE_SLOW =loader_errored=>
- *  => FIRST_GO_END_OF_LINE_UNBLOCKING
+ *  => FIRST_GO_END_OF_LINE_UNBLOCKING_UP
  *   move backward
- *   move loader down
+ *   loader up
  */
 fsm_branch_t
 ai__FIRST_GO_END_OF_LINE_SLOW__loader_errored (void)
 {
     asserv_move_linearly (-90);
-    loader_down ();
+    loader_up ();
     return ai_next (FIRST_GO_END_OF_LINE_SLOW, loader_errored);
+}
+
+/*
+ * FIRST_GO_END_OF_LINE_UNBLOCKING_UP =loader_uped=>
+ *  => FIRST_GO_END_OF_LINE_UNBLOCKING
+ */
+fsm_branch_t
+ai__FIRST_GO_END_OF_LINE_UNBLOCKING_UP__loader_uped (void)
+{
+    return ai_next (FIRST_GO_END_OF_LINE_UNBLOCKING_UP, loader_uped);
 }
 
 /*
  * FIRST_GO_END_OF_LINE_UNBLOCKING =bot_move_succeed=>
  *  => FIRST_GO_END_OF_LINE_SLOW
+ *   move loader down
  *   retry
  */
 fsm_branch_t
 ai__FIRST_GO_END_OF_LINE_UNBLOCKING__bot_move_succeed (void)
 {
     move_start_noangle (PG_VECT (2625, 253), 0);
+    loader_down ();
     return ai_next (FIRST_GO_END_OF_LINE_UNBLOCKING, bot_move_succeed);
 }
 
 /*
  * FIRST_GO_END_OF_LINE_UNBLOCKING =bot_move_failed=>
  *  => FIRST_GO_END_OF_LINE_SLOW
+ *   move loader down
  *   retry
  */
 fsm_branch_t
@@ -218,7 +230,6 @@ fsm_branch_t
 ai__FIRST_GO_END_OF_LINE_UNBLOCKING__loader_errored (void)
 {
     asserv_move_linearly (-90);
-    loader_down ();
     return ai_next (FIRST_GO_END_OF_LINE_UNBLOCKING, loader_errored);
 }
 
