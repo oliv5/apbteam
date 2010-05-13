@@ -51,6 +51,9 @@ struct move_data_t
     uint8_t with_angle;
     /** Next step. */
     vect_t step;
+    /** Non zero means this is a tricky move, slow down, and minimize
+     * turns. */
+    uint8_t slow;
     /** Backward direction allowed flag. */
     uint8_t backward_movement_allowed;
     /** Try again counter. */

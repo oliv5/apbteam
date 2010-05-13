@@ -1,3 +1,3 @@
 EVENT main_timer__late "MainTimer: we are late."
 EVENT fsm__handle_event from 1 event 1 to 1 "FSM: %i =%i=> %i."
-EVENT move__go_to xs 2 ys 2 as 2 xd 2 yd 2 ad 2 "Move: (%d, %d, %x) -> (%d, %d, %x)."
+EVENT move__go_to xd 2 yd 2 "Move: (%d, %d)."

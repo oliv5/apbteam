@@ -44,17 +44,45 @@
 
 #include "debug.host.h"
 
-/**
- * Easier function to get the next intermediate position from the path module.
- * @return
- *   - 0 if no path could be found ;
- *   - 1 if a path has been found.
- */
-uint8_t
-move_get_next_position (void)
+/** Go to next position computed by path module, to be called by
+ * move_path_init and move_path_next. */
+static void
+move_go_to_next (vect_t dst)
+{
+    /* If it is not the last position. */
+    if (dst.x != move_data.final.v.x || dst.y != move_data.final.v.y)
+      {
+	/* Not final position. */
+	move_data.final_move = 0;
+	/* Goto without angle. */
+	asserv_goto (dst.x, dst.y, move_data.backward_movement_allowed
+		     | (move_data.slow ? ASSERV_REVERT_OK : 0));
+      }
+    else
+      {
+	/* Final position. */
+	move_data.final_move = 1;
+	/* Goto with angle if requested. */
+	if (move_data.with_angle)
+	    asserv_goto_xya (dst.x, dst.y, move_data.final.a,
+			     move_data.backward_movement_allowed);
+	else
+	    asserv_goto (dst.x, dst.y,
+			 move_data.backward_movement_allowed);
+      }
+    move_data.step = dst;
+    TRACE (TRACE_MOVE__GO_TO, dst.x, dst.y);
+    /* Reset try counter. */
+    move_data.try_again_counter = 3;
+    /* Next time, do not use slow. */
+    move_data.slow = 0;
+}
+
+/** Update and go to first position, return non zero if a path is found. */
+static uint8_t
+move_path_init (void)
 {
     uint8_t found;
-    uint8_t slow = 0;
     vect_t dst;
     /* Get the current position */
     position_t current_pos;
@@ -62,46 +90,21 @@ move_get_next_position (void)
     /* Give the current position of the bot to the path module */
     path_endpoints (current_pos.v, move_data.final.v);
     /* Update the path module */
+    move_data.slow = 0;
     path_update ();
     found = path_get_next (&dst);
     /* If not found, try to escape. */
     if (!found)
       {
-	slow = 1;
+	move_data.slow = 1;
 	path_escape (8);
 	path_update ();
 	found = path_get_next (&dst);
       }
-    /* If the path is found, move. */
+    /* If found, go. */
     if (found)
       {
-	/* If it is not the last position. */
-	if (dst.x != move_data.final.v.x || dst.y != move_data.final.v.y)
-	  {
-	    /* Not final position. */
-	    move_data.final_move = 0;
-	    /* Goto without angle. */
-	    asserv_goto (dst.x, dst.y, move_data.backward_movement_allowed
-			 | (slow ? ASSERV_REVERT_OK : 0));
-	  }
-	else
-	  {
-	    /* Final position. */
-	    move_data.final_move = 1;
-	    /* Goto with angle if requested. */
-	    if (move_data.with_angle)
-		asserv_goto_xya (dst.x, dst.y, move_data.final.a,
-				 move_data.backward_movement_allowed);
-	    else
-		asserv_goto (dst.x, dst.y,
-			     move_data.backward_movement_allowed);
-	  }
-	move_data.step = dst;
-	TRACE (TRACE_MOVE__GO_TO, (u16) current_pos.v.x,
-	       (u16) current_pos.v.y, current_pos.a, dst.x, dst.y,
-	       move_data.final.a);
-	/* Reset try counter. */
-	move_data.try_again_counter = 3;
+	move_go_to_next (dst);
 	return 1;
       }
     else
@@ -110,6 +113,15 @@ move_get_next_position (void)
 	move_data.final_move = 0;
 	return 0;
       }
+}
+
+/** Go to next position in path. */
+static void
+move_path_next (void)
+{
+    vect_t dst;
+    path_get_next (&dst);
+    move_go_to_next (dst);
 }
 
 /*
@@ -122,7 +134,7 @@ move_get_next_position (void)
 fsm_branch_t
 ai__MOVE_IDLE__move_start (void)
 {
-    if (move_get_next_position ())
+    if (move_path_init ())
 	return ai_next_branch (MOVE_IDLE, move_start, path_found);
     else
       {
@@ -148,15 +160,12 @@ ai__MOVE_MOVING__bot_move_succeed (void)
 	main_post_event (AI_EVENT_move_fsm_succeed);
 	return ai_next_branch (MOVE_MOVING, bot_move_succeed, done);
       }
-    else if (move_get_next_position ())
-      {
-	return ai_next_branch (MOVE_MOVING, bot_move_succeed, path_found);
-      }
     else
       {
-	main_post_event (AI_EVENT_move_fsm_failed);
-	return ai_next_branch (MOVE_MOVING, bot_move_succeed, no_path_found);
+	move_path_next ();
+	return ai_next_branch (MOVE_MOVING, bot_move_succeed, path_found);
       }
+    //return ai_next_branch (MOVE_MOVING, bot_move_succeed, no_path_found);
 }
 
 /*
@@ -210,7 +219,7 @@ ai__MOVE_MOVING__obstacle_in_front (void)
 fsm_branch_t
 ai__MOVE_MOVING_BACKWARD_TO_TURN_FREELY__bot_move_succeed (void)
 {
-    if (move_get_next_position ())
+    if (move_path_init ())
       {
 	return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_succeed, path_found);
       }
@@ -231,7 +240,7 @@ ai__MOVE_MOVING_BACKWARD_TO_TURN_FREELY__bot_move_succeed (void)
 fsm_branch_t
 ai__MOVE_MOVING_BACKWARD_TO_TURN_FREELY__bot_move_failed (void)
 {
-    if (move_get_next_position ())
+    if (move_path_init ())
 	return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed, path_found);
     else
 	return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed, no_path_found);
@@ -250,7 +259,7 @@ fsm_branch_t
 ai__MOVE_WAIT_FOR_CLEAR_PATH__state_timeout (void)
 {
     /* Try to move. */
-    if (move_get_next_position ())
+    if (move_path_init ())
       {
 	return ai_next_branch (MOVE_WAIT_FOR_CLEAR_PATH, state_timeout,
 			       path_found);
