@@ -83,6 +83,10 @@ struct path_node_t
     /** If this node can carry a corn, this is the index of the carried corn
      * in the food table, else, 0xff. */
     uint8_t carry_corn;
+    /** If this node is to the upper or lower left of a corn, this is the
+     * index of the corresponding corn, else 0xff.  This is used for
+     * horizontal movements of two columns. */
+    uint8_t left_of_corn;
 };
 
 /** Context. */
@@ -108,71 +112,71 @@ static struct path_t path;
 /** Static information on nodes. */
 static const struct path_node_t path_nodes[PATH_GRID_NODES_NB] = {
     /* {{{ */
-      { 1,    0 }, /*  0 column 0. */
-      { 1, 0xff }, /*  1 */
-      { 1,    2 }, /*  2 */
-      { 1, 0xff }, /*  3 */
-      { 1,    4 }, /*  4 */
-      { 1, 0xff }, /*  5 column 1. */
-      { 1, 0xff }, /*  6 */
-      { 1, 0xff }, /*  7 */
-      { 1, 0xff }, /*  8 */
-      { 1, 0xff }, /*  9 */
-      { 1, 0xff }, /* 10 column 2. */
-      { 1,    5 }, /* 11 */
-      { 1, 0xff }, /* 12 */
-      { 1,    7 }, /* 13 */
-      { 1, 0xff }, /* 14 */
-      { 1, 0xff }, /* 15 column 3. */
-      { 1, 0xff }, /* 16 */
-      { 1, 0xff }, /* 17 */
-      { 1, 0xff }, /* 18 */
-      { 1, 0xff }, /* 19 */
-      { 0, 0xff }, /* 20 column 4. */
-      { 1, 0xff }, /* 21 */
-      { 1,   10 }, /* 22 */
-      { 1, 0xff }, /* 23 */
-      { 1,   12 }, /* 24 */
-      { 1, 0xff }, /* 25 column 5. */
-      { 1, 0xff }, /* 26 */
-      { 1, 0xff }, /* 27 */
-      { 1, 0xff }, /* 28 */
-      { 1, 0xff }, /* 29 */
-      { 0, 0xff }, /* 30 column 6. */
-      { 1, 0xff }, /* 31 */
-      { 1, 0xff }, /* 32 */
-      { 1,   29 }, /* 33 */
-      { 1, 0xff }, /* 34 */
-      { 1, 0xff }, /* 35 column 7. */
-      { 1, 0xff }, /* 36 */
-      { 1, 0xff }, /* 37 */
-      { 1, 0xff }, /* 38 */
-      { 1, 0xff }, /* 39 */
-      { 0, 0xff }, /* 40 column 8. */
-      { 1, 0xff }, /* 41 */
-      { 1,   24 }, /* 42 */
-      { 1, 0xff }, /* 43 */
-      { 1,   26 }, /* 44 */
-      { 1, 0xff }, /* 45 column 9. */
-      { 1, 0xff }, /* 46 */
-      { 1, 0xff }, /* 47 */
-      { 1, 0xff }, /* 48 */
-      { 1, 0xff }, /* 49 */
-      { 1, 0xff }, /* 50 column 10. */
-      { 1,   19 }, /* 51 */
-      { 1, 0xff }, /* 52 */
-      { 1,   21 }, /* 53 */
-      { 1, 0xff }, /* 54 */
-      { 1, 0xff }, /* 55 column 11. */
-      { 1, 0xff }, /* 56 */
-      { 1, 0xff }, /* 57 */
-      { 1, 0xff }, /* 58 */
-      { 1, 0xff }, /* 59 */
-      { 1,   14 }, /* 60 column 12. */
-      { 1, 0xff }, /* 61 */
-      { 1,   16 }, /* 62 */
-      { 1, 0xff }, /* 63 */
-      { 1,   18 }, /* 64 */
+      { 1,    0, 0xff }, /*  0 column 0. */
+      { 1, 0xff, 0xff }, /*  1 */
+      { 1,    2, 0xff }, /*  2 */
+      { 1, 0xff, 0xff }, /*  3 */
+      { 1,    4, 0xff }, /*  4 */
+      { 1, 0xff,    5 }, /*  5 column 1. */
+      { 1, 0xff,    5 }, /*  6 */
+      { 1, 0xff,    7 }, /*  7 */
+      { 1, 0xff,    7 }, /*  8 */
+      { 1, 0xff,    9 }, /*  9 */
+      { 1, 0xff, 0xff }, /* 10 column 2. */
+      { 1,    5, 0xff }, /* 11 */
+      { 1, 0xff, 0xff }, /* 12 */
+      { 1,    7, 0xff }, /* 13 */
+      { 1, 0xff, 0xff }, /* 14 */
+      { 1, 0xff, 0xff }, /* 15 column 3. */
+      { 1, 0xff,   10 }, /* 16 */
+      { 1, 0xff,   10 }, /* 17 */
+      { 1, 0xff,   12 }, /* 18 */
+      { 1, 0xff,   12 }, /* 19 */
+      { 0, 0xff, 0xff }, /* 20 column 4. */
+      { 1, 0xff, 0xff }, /* 21 */
+      { 1,   10, 0xff }, /* 22 */
+      { 1, 0xff, 0xff }, /* 23 */
+      { 1,   12, 0xff }, /* 24 */
+      { 1, 0xff, 0xff }, /* 25 column 5. */
+      { 1, 0xff, 0xff }, /* 26 */
+      { 1, 0xff,   29 }, /* 27 */
+      { 1, 0xff,   29 }, /* 28 */
+      { 1, 0xff,   31 }, /* 29 */
+      { 0, 0xff, 0xff }, /* 30 column 6. */
+      { 1, 0xff, 0xff }, /* 31 */
+      { 1, 0xff, 0xff }, /* 32 */
+      { 1,   29, 0xff }, /* 33 */
+      { 1, 0xff, 0xff }, /* 34 */
+      { 1, 0xff, 0xff }, /* 35 column 7. */
+      { 1, 0xff,   24 }, /* 36 */
+      { 1, 0xff,   24 }, /* 37 */
+      { 1, 0xff,   26 }, /* 38 */
+      { 1, 0xff,   26 }, /* 39 */
+      { 0, 0xff, 0xff }, /* 40 column 8. */
+      { 1, 0xff, 0xff }, /* 41 */
+      { 1,   24, 0xff }, /* 42 */
+      { 1, 0xff, 0xff }, /* 43 */
+      { 1,   26, 0xff }, /* 44 */
+      { 1, 0xff,   19 }, /* 45 column 9. */
+      { 1, 0xff,   19 }, /* 46 */
+      { 1, 0xff,   21 }, /* 47 */
+      { 1, 0xff,   21 }, /* 48 */
+      { 1, 0xff,   23 }, /* 49 */
+      { 1, 0xff, 0xff }, /* 50 column 10. */
+      { 1,   19, 0xff }, /* 51 */
+      { 1, 0xff, 0xff }, /* 52 */
+      { 1,   21, 0xff }, /* 53 */
+      { 1, 0xff, 0xff }, /* 54 */
+      { 1, 0xff, 0xff }, /* 55 column 11. */
+      { 1, 0xff, 0xff }, /* 56 */
+      { 1, 0xff, 0xff }, /* 57 */
+      { 1, 0xff, 0xff }, /* 58 */
+      { 1, 0xff, 0xff }, /* 59 */
+      { 1,   14, 0xff }, /* 60 column 12. */
+      { 1, 0xff, 0xff }, /* 61 */
+      { 1,   16, 0xff }, /* 62 */
+      { 1, 0xff, 0xff }, /* 63 */
+      { 1,   18, 0xff }, /* 64 */
     /* }}} */
 };
 
@@ -377,7 +381,7 @@ path_astar_neighbor_callback_grid (uint8_t node,
 {
     uint8_t neighbors_nb = 0;
     uint8_t i;
-    /* Add neighbors in all 6 directions. */
+    /* Add neighbors in all 8 directions. */
     static const struct {
 	/** Column offset of this neighbor. */
 	int8_t column_offset;
@@ -390,9 +394,11 @@ path_astar_neighbor_callback_grid (uint8_t node,
     } star_n[] = {
 	  { 0, -1, 0, 250 }, /* N */
 	  { -1, -1, 1, 514 / 2 }, /* NW */
+	  { -2, 0, 0, 450 }, /* Wx2 */
 	  { -1, 0, 1, 514 / 2 }, /* SW */
 	  { 0, 1, 0, 250 }, /* S */
 	  { 1, 0, 1, 514 / 2 }, /* SE */
+	  { 2, 0, 0, 450 }, /* Ex2 */
 	  { 1, -1, 1, 514 / 2 }, /* NE */
     };
     uint8_t col = node / PATH_COLUMN_NODES_NB;
@@ -405,12 +411,21 @@ path_astar_neighbor_callback_grid (uint8_t node,
 	    + (odd ? star_n[i].odd_line_offset : 0);
 	int8_t new_node = new_col * PATH_COLUMN_NODES_NB + new_line;
 	if (new_col >= 0 && new_col < PATH_COLUMNS_NB
-	    && new_line >= 0 && new_line < PATH_COLUMN_NODES_NB
-	    && path.valid[new_node])
+	    && new_line >= 0 && new_line < PATH_COLUMN_NODES_NB)
 	  {
-	    neighbors[neighbors_nb].node = new_node;
-	    neighbors[neighbors_nb].weight = star_n[i].weight + 1;
-	    neighbors_nb++;
+	    uint8_t valid = path.valid[new_node];
+	    if (star_n[i].column_offset == -2)
+		valid = valid
+		    && !food_blocking (path_nodes[new_node].left_of_corn);
+	    else if (star_n[i].column_offset == 2)
+		valid = valid
+		    && !food_blocking (path_nodes[node].left_of_corn);
+	    if (valid)
+	      {
+		neighbors[neighbors_nb].node = new_node;
+		neighbors[neighbors_nb].weight = star_n[i].weight + 1;
+		neighbors_nb++;
+	      }
 	  }
       }
     /* Check if direct path OK. */
