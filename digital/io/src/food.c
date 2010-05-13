@@ -25,6 +25,8 @@
 #include "common.h"
 #include "defs.h"
 #include "food.h"
+#include "bot.h"
+#include "playground.h"
 
 #include "modules/utils/utils.h"
 #include "modules/math/geometry/distance.h"
@@ -179,6 +181,9 @@ food_score (position_t robot_pos, uint8_t food)
 	score += align;
       }
     /* Distance to unloading area. */
+    /* Avoid food near border. */
+    if (v.y < BOT_SIZE_RADIUS)
+	score -= 2000;
     /* Done. */
     return score;
 }
@@ -212,6 +217,10 @@ food_pos (uint8_t food, vect_t *v)
 {
     assert (food < UTILS_COUNT (food_table));
     *v = food_table[food].pos;
+    if (v->x < BOT_SIZE_RADIUS + 30)
+	v->x = BOT_SIZE_RADIUS + 30;
+    else if (v->x > PG_WIDTH - BOT_SIZE_RADIUS - 30)
+	v->x = PG_WIDTH - BOT_SIZE_RADIUS - 30;
 }
 
 void
