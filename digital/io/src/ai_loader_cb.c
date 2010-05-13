@@ -223,6 +223,18 @@ ai__LOADER_UPING__elevator_failed (void)
 }
 
 /*
+ * LOADER_UPING =loader_down=>
+ *  => LOADER_DOWNING
+ *   move down
+ */
+fsm_branch_t
+ai__LOADER_UPING__loader_down (void)
+{
+    asserv_move_motor0_absolute (BOT_ELEVATOR_DOWN_STEP, BOT_ELEVATOR_SPEED);
+    return ai_next (LOADER_UPING, loader_down);
+}
+
+/*
  * LOADER_DOWNING =elevator_succeed=>
  *  => LOADER_DOWN
  *   release elevator motor
@@ -246,6 +258,18 @@ ai__LOADER_DOWNING__elevator_failed (void)
 {
     main_post_event (AI_EVENT_loader_errored);
     return ai_next (LOADER_DOWNING, elevator_failed);
+}
+
+/*
+ * LOADER_DOWNING =loader_up=>
+ *  => LOADER_UPING
+ *   move up
+ */
+fsm_branch_t
+ai__LOADER_DOWNING__loader_up (void)
+{
+    asserv_move_motor0_absolute (BOT_ELEVATOR_REST_STEP, BOT_ELEVATOR_SPEED);
+    return ai_next (LOADER_DOWNING, loader_up);
 }
 
 /*
@@ -430,23 +454,44 @@ ai__LOADER_LOAD_UNLOADING__elevator_failed (void)
 
 /*
  * LOADER_LOAD_UNLOADING_OPEN =clamp_succeed=>
- *  => LOADER_DOWNING
+ * down => LOADER_DOWNING
  *   move down
+ * up => LOADER_UPING
+ *   move up
  */
 fsm_branch_t
 ai__LOADER_LOAD_UNLOADING_OPEN__clamp_succeed (void)
 {
-    asserv_move_motor0_absolute (BOT_ELEVATOR_DOWN_STEP, BOT_ELEVATOR_SPEED);
-    return ai_next (LOADER_LOAD_UNLOADING_OPEN, clamp_succeed);
+    if (loader_want_up)
+      {
+	asserv_move_motor0_absolute (BOT_ELEVATOR_REST_STEP,
+				     BOT_ELEVATOR_SPEED);
+	return ai_next_branch (LOADER_LOAD_UNLOADING_OPEN, clamp_succeed, up);
+      }
+    else
+      {
+	asserv_move_motor0_absolute (BOT_ELEVATOR_DOWN_STEP,
+				     BOT_ELEVATOR_SPEED);
+	return ai_next_branch (LOADER_LOAD_UNLOADING_OPEN, clamp_succeed, down);
+      }
 }
 
 /*
  * LOADER_LOAD_EMPTY_OPEN =clamp_succeed=>
- *  => LOADER_DOWN
+ * down => LOADER_DOWN
+ * up => LOADER_UPING
+ *   move up
  */
 fsm_branch_t
 ai__LOADER_LOAD_EMPTY_OPEN__clamp_succeed (void)
 {
-    return ai_next (LOADER_LOAD_EMPTY_OPEN, clamp_succeed);
+    if (loader_want_up)
+      {
+	asserv_move_motor0_absolute (BOT_ELEVATOR_REST_STEP,
+				     BOT_ELEVATOR_SPEED);
+	return ai_next_branch (LOADER_LOAD_EMPTY_OPEN, clamp_succeed, up);
+      }
+    else
+	return ai_next_branch (LOADER_LOAD_EMPTY_OPEN, clamp_succeed, down);
 }
 

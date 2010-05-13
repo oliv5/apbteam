@@ -28,16 +28,19 @@
 #include "fsm.h"
 
 uint8_t loader_elements;
+uint8_t loader_want_up;
 
 void
 loader_up (void)
 {
+    loader_want_up = 1;
     fsm_handle_event (&ai_fsm, AI_EVENT_loader_up);
 }
 
 void
 loader_down (void)
 {
+    loader_want_up = 0;
     fsm_handle_event (&ai_fsm, AI_EVENT_loader_down);
 }
 

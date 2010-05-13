@@ -28,6 +28,9 @@
 /** Number of loaded elements. */
 extern uint8_t loader_elements;
 
+/** Loader up requested. */
+extern uint8_t loader_want_up;
+
 /** Move loader up, in a rest position. */
 void
 loader_up (void);
