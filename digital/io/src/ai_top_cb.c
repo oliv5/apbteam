@@ -134,6 +134,20 @@ ai__FIRST_GO_END_OF_LINE_FAST__move_fsm_failed (void)
 }
 
 /*
+ * FIRST_GO_END_OF_LINE_FAST =loader_errored=>
+ *  => FIRST_GO_END_OF_LINE_UNBLOCKING
+ *   move backward
+ *   move loader down
+ */
+fsm_branch_t
+ai__FIRST_GO_END_OF_LINE_FAST__loader_errored (void)
+{
+    asserv_set_speed (BOT_MOVE_SLOW);
+    ai__FIRST_GO_END_OF_LINE_SLOW__loader_errored ();
+    return ai_next (FIRST_GO_END_OF_LINE_FAST, loader_errored);
+}
+
+/*
  * FIRST_GO_END_OF_LINE_SLOW =move_fsm_succeed=>
  *  => UNLOAD_LOADER_UP
  *   move loader up
@@ -155,6 +169,57 @@ ai__FIRST_GO_END_OF_LINE_SLOW__move_fsm_failed (void)
 {
     move_start_noangle (PG_VECT (2625, 253), 0);
     return ai_next (FIRST_GO_END_OF_LINE_SLOW, move_fsm_failed);
+}
+
+/*
+ * FIRST_GO_END_OF_LINE_SLOW =loader_errored=>
+ *  => FIRST_GO_END_OF_LINE_UNBLOCKING
+ *   move backward
+ *   move loader down
+ */
+fsm_branch_t
+ai__FIRST_GO_END_OF_LINE_SLOW__loader_errored (void)
+{
+    asserv_move_linearly (-90);
+    loader_down ();
+    return ai_next (FIRST_GO_END_OF_LINE_SLOW, loader_errored);
+}
+
+/*
+ * FIRST_GO_END_OF_LINE_UNBLOCKING =bot_move_succeed=>
+ *  => FIRST_GO_END_OF_LINE_SLOW
+ *   retry
+ */
+fsm_branch_t
+ai__FIRST_GO_END_OF_LINE_UNBLOCKING__bot_move_succeed (void)
+{
+    move_start_noangle (PG_VECT (2625, 253), 0);
+    return ai_next (FIRST_GO_END_OF_LINE_UNBLOCKING, bot_move_succeed);
+}
+
+/*
+ * FIRST_GO_END_OF_LINE_UNBLOCKING =bot_move_failed=>
+ *  => FIRST_GO_END_OF_LINE_SLOW
+ *   retry
+ */
+fsm_branch_t
+ai__FIRST_GO_END_OF_LINE_UNBLOCKING__bot_move_failed (void)
+{
+    ai__FIRST_GO_END_OF_LINE_UNBLOCKING__bot_move_succeed ();
+    return ai_next (FIRST_GO_END_OF_LINE_UNBLOCKING, bot_move_failed);
+}
+
+/*
+ * FIRST_GO_END_OF_LINE_UNBLOCKING =loader_errored=>
+ *  => FIRST_GO_END_OF_LINE_UNBLOCKING
+ *   unblock again
+ */
+fsm_branch_t
+ai__FIRST_GO_END_OF_LINE_UNBLOCKING__loader_errored (void)
+{
+    asserv_move_linearly (-90);
+    loader_down ();
+    return ai_next (FIRST_GO_END_OF_LINE_UNBLOCKING, loader_errored);
 }
 
 /*
