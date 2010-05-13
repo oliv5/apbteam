@@ -44,41 +44,80 @@
 
 #include "debug.host.h"
 
+#include <math.h>
+
+/** Go or rotate toward position, returns 1 for linear move, 2 for angular
+ * move. */
+static uint8_t
+move_go_or_rotate (vect_t dst, uint16_t angle, uint8_t with_angle,
+		   uint8_t backward)
+{
+    position_t robot_position;
+    /* Remember step. */
+    move_data.step = dst;
+    move_data.step_angle = angle;
+    move_data.step_with_angle = with_angle;
+    move_data.step_backward = backward;
+    /* Compute angle to destination. */
+    asserv_get_position (&robot_position);
+    vect_t v = dst; vect_sub (&v, &robot_position.v);
+    uint16_t dst_angle = atan2 (v.y, v.x) * ((1l << 16) / (2 * M_PI));
+    if (backward & ASSERV_BACKWARD)
+	dst_angle += 0x8000;
+    if ((backward & ASSERV_REVERT_OK)
+	&& (dst_angle ^ robot_position.a) & 0x8000)
+	dst_angle += 0x8000;
+    int16_t diff = dst_angle - robot_position.a;
+    /* Move or rotate. */
+    if (UTILS_ABS (diff) < 0x1000)
+      {
+	if (with_angle)
+	    asserv_goto_xya (dst.x, dst.y, angle, backward);
+	else
+	    asserv_goto (dst.x, dst.y, backward);
+	return 1;
+      }
+    else
+      {
+	asserv_goto_angle (dst_angle);
+	return 2;
+      }
+}
+
 /** Go to next position computed by path module, to be called by
- * move_path_init and move_path_next. */
-static void
+ * move_path_init and move_path_next. Returns 1 for linear move, 2 for angular
+ * move. */
+static uint8_t
 move_go_to_next (vect_t dst)
 {
+    uint8_t r;
     /* If it is not the last position. */
     if (dst.x != move_data.final.v.x || dst.y != move_data.final.v.y)
       {
 	/* Not final position. */
 	move_data.final_move = 0;
 	/* Goto without angle. */
-	asserv_goto (dst.x, dst.y, move_data.backward_movement_allowed
-		     | (move_data.slow ? ASSERV_REVERT_OK : 0));
+	r = move_go_or_rotate (dst, 0, 0, move_data.backward_movement_allowed
+			       | (move_data.slow ? ASSERV_REVERT_OK : 0));
       }
     else
       {
 	/* Final position. */
 	move_data.final_move = 1;
 	/* Goto with angle if requested. */
-	if (move_data.with_angle)
-	    asserv_goto_xya (dst.x, dst.y, move_data.final.a,
-			     move_data.backward_movement_allowed);
-	else
-	    asserv_goto (dst.x, dst.y,
-			 move_data.backward_movement_allowed);
+	r = move_go_or_rotate (dst, move_data.final.a, move_data.with_angle,
+			       move_data.backward_movement_allowed);
       }
-    move_data.step = dst;
     TRACE (TRACE_MOVE__GO_TO, dst.x, dst.y);
     /* Reset try counter. */
     move_data.try_again_counter = 3;
     /* Next time, do not use slow. */
     move_data.slow = 0;
+    return r;
 }
 
-/** Update and go to first position, return non zero if a path is found. */
+/** Update and go to first position, return non zero if a path is found, 1 for
+ * linear move, 2 for angular move. */
 static uint8_t
 move_path_init (void)
 {
@@ -104,8 +143,7 @@ move_path_init (void)
     /* If found, go. */
     if (found)
       {
-	move_go_to_next (dst);
-	return 1;
+	return move_go_to_next (dst);
       }
     else
       {
@@ -115,17 +153,20 @@ move_path_init (void)
       }
 }
 
-/** Go to next position in path. */
-static void
+/** Go to next position in path. Returns 1 for linear move, 2 for angular
+ * move. */
+static uint8_t
 move_path_next (void)
 {
     vect_t dst;
     path_get_next (&dst);
-    move_go_to_next (dst);
+    return move_go_to_next (dst);
 }
 
 /*
  * MOVE_IDLE =move_start=>
+ * path_found_rotate => MOVE_ROTATING
+ *   rotate towards next position.
  * path_found => MOVE_MOVING
  *   move to next position.
  * no_path_found => MOVE_IDLE
@@ -134,8 +175,14 @@ move_path_next (void)
 fsm_branch_t
 ai__MOVE_IDLE__move_start (void)
 {
-    if (move_path_init ())
-	return ai_next_branch (MOVE_IDLE, move_start, path_found);
+    uint8_t next = move_path_init ();
+    if (next)
+      {
+	if (next == 2)
+	    return ai_next_branch (MOVE_IDLE, move_start, path_found_rotate);
+	else
+	    return ai_next_branch (MOVE_IDLE, move_start, path_found);
+      }
     else
       {
 	main_post_event (AI_EVENT_move_fsm_failed);
@@ -144,9 +191,28 @@ ai__MOVE_IDLE__move_start (void)
 }
 
 /*
+ * MOVE_ROTATING =bot_move_succeed=>
+ *  => MOVE_MOVING
+ *   move to next position.
+ */
+fsm_branch_t
+ai__MOVE_ROTATING__bot_move_succeed (void)
+{
+    if (move_data.step_with_angle)
+	asserv_goto_xya (move_data.step.x, move_data.step.y,
+			 move_data.step_angle, move_data.step_backward);
+    else
+	asserv_goto (move_data.step.x, move_data.step.y,
+		     move_data.step_backward);
+    return ai_next (MOVE_ROTATING, bot_move_succeed);
+}
+
+/*
  * MOVE_MOVING =bot_move_succeed=>
  * done => MOVE_IDLE
  *   post success event.
+ * path_found_rotate => MOVE_ROTATING
+ *   rotate towards next position.
  * path_found => MOVE_MOVING
  *   move to next position.
  * no_path_found => MOVE_IDLE
@@ -162,8 +228,11 @@ ai__MOVE_MOVING__bot_move_succeed (void)
       }
     else
       {
-	move_path_next ();
-	return ai_next_branch (MOVE_MOVING, bot_move_succeed, path_found);
+	uint8_t next = move_path_next ();
+	if (next == 2)
+	    return ai_next_branch (MOVE_MOVING, bot_move_succeed, path_found_rotate);
+	else
+	    return ai_next_branch (MOVE_MOVING, bot_move_succeed, path_found);
       }
     //return ai_next_branch (MOVE_MOVING, bot_move_succeed, no_path_found);
 }
@@ -211,6 +280,8 @@ ai__MOVE_MOVING__obstacle_in_front (void)
 
 /*
  * MOVE_MOVING_BACKWARD_TO_TURN_FREELY =bot_move_succeed=>
+ * path_found_rotate => MOVE_ROTATING
+ *   rotate towards next position.
  * path_found => MOVE_MOVING
  *   move to next position.
  * no_path_found => MOVE_IDLE
@@ -219,9 +290,13 @@ ai__MOVE_MOVING__obstacle_in_front (void)
 fsm_branch_t
 ai__MOVE_MOVING_BACKWARD_TO_TURN_FREELY__bot_move_succeed (void)
 {
-    if (move_path_init ())
+    uint8_t next = move_path_init ();
+    if (next)
       {
-	return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_succeed, path_found);
+	if (next == 2)
+	    return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_succeed, path_found_rotate);
+	else
+	    return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_succeed, path_found);
       }
     else
       {
@@ -232,6 +307,8 @@ ai__MOVE_MOVING_BACKWARD_TO_TURN_FREELY__bot_move_succeed (void)
 
 /*
  * MOVE_MOVING_BACKWARD_TO_TURN_FREELY =bot_move_failed=>
+ * path_found_rotate => MOVE_ROTATING
+ *   rotate towards next position.
  * path_found => MOVE_MOVING
  *   move to next position.
  * no_path_found => MOVE_WAIT_FOR_CLEAR_PATH
@@ -240,14 +317,22 @@ ai__MOVE_MOVING_BACKWARD_TO_TURN_FREELY__bot_move_succeed (void)
 fsm_branch_t
 ai__MOVE_MOVING_BACKWARD_TO_TURN_FREELY__bot_move_failed (void)
 {
-    if (move_path_init ())
-	return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed, path_found);
+    uint8_t next = move_path_init ();
+    if (next)
+      {
+	if (next == 2)
+	    return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed, path_found_rotate);
+	else
+	    return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed, path_found);
+      }
     else
 	return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed, no_path_found);
 }
 
 /*
  * MOVE_WAIT_FOR_CLEAR_PATH =state_timeout=>
+ * path_found_rotate => MOVE_ROTATING
+ *   rotate towards next position.
  * path_found => MOVE_MOVING
  *   move to next position.
  * no_path_found_and_try_again => MOVE_WAIT_FOR_CLEAR_PATH
@@ -259,10 +344,13 @@ fsm_branch_t
 ai__MOVE_WAIT_FOR_CLEAR_PATH__state_timeout (void)
 {
     /* Try to move. */
-    if (move_path_init ())
+    uint8_t next = move_path_init ();
+    if (next)
       {
-	return ai_next_branch (MOVE_WAIT_FOR_CLEAR_PATH, state_timeout,
-			       path_found);
+	if (next == 2)
+	    return ai_next_branch (MOVE_WAIT_FOR_CLEAR_PATH, state_timeout, path_found_rotate);
+	else
+	    return ai_next_branch (MOVE_WAIT_FOR_CLEAR_PATH, state_timeout, path_found);
       }
     else
       {

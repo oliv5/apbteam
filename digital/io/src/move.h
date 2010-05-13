@@ -51,6 +51,12 @@ struct move_data_t
     uint8_t with_angle;
     /** Next step. */
     vect_t step;
+    /** Next step angle. */
+    uint16_t step_angle;
+    /** Next step with_angle. */
+    uint8_t step_with_angle;
+    /** Next step backward. */
+    uint8_t step_backward;
     /** Non zero means this is a tricky move, slow down, and minimize
      * turns. */
     uint8_t slow;
