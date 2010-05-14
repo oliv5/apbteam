@@ -25,6 +25,9 @@
  *
  * }}} */
 
+/** Currently collected food. */
+extern uint8_t top_food;
+
 /**
  * Initialize top module.
  */

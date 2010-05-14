@@ -63,4 +63,8 @@ food_taken (position_t robot_pos);
 int16_t
 food_shorten (uint8_t food);
 
+/** Slow motion distance to be used to pick this food. */
+int16_t
+food_slow_motion (uint8_t food);
+
 #endif /* food_h */

@@ -25,6 +25,8 @@ States:
   unloading, wait
  COLLECT
   collecting elements
+ COLLECT_SLOW_MOTION
+  slowly move toward element to collect
 
 Events:
  start
@@ -113,6 +115,17 @@ UNLOAD_UNLOAD:
 COLLECT:
  move_fsm_succeed: unload -> UNLOAD
  move_fsm_succeed: collect -> COLLECT
+ move_fsm_succeed: slow_motion -> COLLECT_SLOW_MOTION
+  slow down
+  move to food
  move_fsm_failed: unload -> UNLOAD
  move_fsm_failed: collect -> COLLECT
 
+COLLECT_SLOW_MOTION:
+ bot_move_succeed: unload -> UNLOAD
+ bot_move_succeed: collect -> COLLECT
+  speed up
+  collect
+ bot_move_failed: unload -> UNLOAD
+ bot_move_failed: collect -> COLLECT
+  same as above

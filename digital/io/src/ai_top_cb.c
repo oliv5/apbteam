@@ -33,6 +33,7 @@
 #include "playground.h"
 #include "asserv.h"
 #include "loader.h"
+#include "food.h"
 
 /*
  * IDLE =start=>
@@ -245,11 +246,21 @@ ai__UNLOAD_UNLOAD__state_timeout (void)
  * COLLECT =move_fsm_succeed=>
  * unload => UNLOAD
  * collect => COLLECT
+ * slow_motion => COLLECT_SLOW_MOTION
+ *   slow down
+ *   move to food
  */
 fsm_branch_t
 ai__COLLECT__move_fsm_succeed (void)
 {
-    if (top_collect (0))
+    int16_t slow_motion = food_slow_motion (top_food);
+    if (slow_motion)
+      {
+	asserv_set_speed (BOT_MOVE_SNAYLE);
+	asserv_move_linearly (slow_motion);
+	return ai_next_branch (COLLECT, move_fsm_succeed, slow_motion);
+      }
+    else if (top_collect (0))
 	return ai_next_branch (COLLECT, move_fsm_succeed, collect);
     else
 	return ai_next_branch (COLLECT, move_fsm_succeed, unload);
@@ -268,4 +279,38 @@ ai__COLLECT__move_fsm_failed (void)
     else
 	return ai_next_branch (COLLECT, move_fsm_failed, unload);
 }
+
+/*
+ * COLLECT_SLOW_MOTION =bot_move_succeed=>
+ * unload => UNLOAD
+ * collect => COLLECT
+ *   speed up
+ *   collect
+ */
+fsm_branch_t
+ai__COLLECT_SLOW_MOTION__bot_move_succeed (void)
+{
+    asserv_set_speed (BOT_MOVE_SLOW);
+    if (top_collect (0))
+	return ai_next_branch (COLLECT_SLOW_MOTION, bot_move_succeed, collect);
+    else
+	return ai_next_branch (COLLECT_SLOW_MOTION, bot_move_succeed, unload);
+}
+
+/*
+ * COLLECT_SLOW_MOTION =bot_move_failed=>
+ * unload => UNLOAD
+ * collect => COLLECT
+ *   same as above
+ */
+fsm_branch_t
+ai__COLLECT_SLOW_MOTION__bot_move_failed (void)
+{
+    asserv_set_speed (BOT_MOVE_SLOW);
+    if (top_collect (0))
+	return ai_next_branch (COLLECT_SLOW_MOTION, bot_move_failed, collect);
+    else
+	return ai_next_branch (COLLECT_SLOW_MOTION, bot_move_failed, unload);
+}
+
 

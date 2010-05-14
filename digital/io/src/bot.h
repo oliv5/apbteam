@@ -73,6 +73,9 @@
 /** Slow parameters. */
 #define BOT_MOVE_SLOW 0x20, 0x20, 0x10, 0x10
 
+/** Very slow parameters. */
+#define BOT_MOVE_SNAYLE 0x8, 0x8, 0x8, 0x8
+
 /** Elevator stroke in steps. */
 #define BOT_ELEVATOR_STROKE_STEP 7089
 

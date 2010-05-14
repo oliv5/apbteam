@@ -32,6 +32,8 @@
 #include "chrono.h"
 #include "playground.h"
 
+uint8_t top_food;
+
 /** Maximum elements to load before unloading. */
 #define TOP_LOADER_MAX 3
 /** Time to reserve for unloading at end of round. */
@@ -52,12 +54,12 @@ top_collect (uint8_t force)
       {
 	position_t robot_position;
 	asserv_get_position (&robot_position);
-	uint8_t food = food_best (robot_position);
-	if (food == 0xff)
+	top_food = food_best (robot_position);
+	if (top_food == 0xff)
 	    return 0;
 	vect_t food_v;
-	food_pos (food, &food_v);
-	move_start_noangle (food_v, 0, food_shorten (food));
+	food_pos (top_food, &food_v);
+	move_start_noangle (food_v, 0, food_shorten (top_food));
 	return 1;
       }
     else

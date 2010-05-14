@@ -228,7 +228,7 @@ food_shorten (uint8_t food)
     int16_t shorten = 0;
     /* Corns. */
     if (food_table[food].type == FOOD_TYPE_CORN)
-	shorten = BOT_SIZE_FRONT + 50;
+	shorten = BOT_SIZE_FRONT + 70;
     /* Food on playground sides. */
     if (food <= 4 || (food >= 14 && food <= 18))
 	shorten = BOT_SIZE_FRONT;
@@ -253,5 +253,15 @@ food_taken (position_t robot_pos)
 	    break;
 	  }
       }
+}
+
+int16_t
+food_slow_motion (uint8_t food)
+{
+    assert (food < UTILS_COUNT (food_table));
+    if (food_table[food].type == FOOD_TYPE_CORN)
+	return 50;
+    else
+	return 0;
 }
 
