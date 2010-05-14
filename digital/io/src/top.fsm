@@ -19,6 +19,8 @@ States:
   move loader to up position
  UNLOAD_FACE_BIN
   orient robot to unload angle
+ UNLOAD_FACE_BIN_UNBLOCK
+  move backward to unblock
  UNLOAD_BACK_BIN
   move back to unload bin
  UNLOAD_UNLOAD[timeout=225]
@@ -97,10 +99,20 @@ UNLOAD:
 UNLOAD_LOADER_UP:
  loader_uped -> UNLOAD_FACE_BIN
   turn toward bin
+ loader_errored -> UNLOAD_FACE_BIN
+  turn toward bin
 
 UNLOAD_FACE_BIN:
  bot_move_succeed -> UNLOAD_BACK_BIN
   go backward to bin
+ bot_move_failed -> UNLOAD_FACE_BIN_UNBLOCK
+  move backward
+
+UNLOAD_FACE_BIN_UNBLOCK:
+ bot_move_succeed -> UNLOAD_FACE_BIN
+  turn toward bin
+ bot_move_failed -> UNLOAD_FACE_BIN
+  turn toward bin
 
 UNLOAD_BACK_BIN:
  bot_move_succeed -> UNLOAD_UNLOAD

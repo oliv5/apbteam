@@ -364,6 +364,18 @@ ai__LOADER_ERROR_DOWNING_OPEN__clamp_succeed (void)
 }
 
 /*
+ * LOADER_ERROR_DOWNING_OPEN =clamp_failed=>
+ *  => LOADER_ERROR
+ *   post loader_errored event
+ */
+fsm_branch_t
+ai__LOADER_ERROR_DOWNING_OPEN__clamp_failed (void)
+{
+    main_post_event (AI_EVENT_loader_errored);
+    return ai_next (LOADER_ERROR_DOWNING_OPEN, clamp_failed);
+}
+
+/*
  * LOADER_ERROR_UPING =elevator_succeed=>
  *  => LOADER_ERROR_UPING_OPEN
  *   open clamp
@@ -398,6 +410,18 @@ ai__LOADER_ERROR_UPING_OPEN__clamp_succeed (void)
 {
     main_post_event (AI_EVENT_loader_uped);
     return ai_next (LOADER_ERROR_UPING_OPEN, clamp_succeed);
+}
+
+/*
+ * LOADER_ERROR_UPING_OPEN =clamp_failed=>
+ *  => LOADER_ERROR
+ *   post loader_errored event
+ */
+fsm_branch_t
+ai__LOADER_ERROR_UPING_OPEN__clamp_failed (void)
+{
+    main_post_event (AI_EVENT_loader_errored);
+    return ai_next (LOADER_ERROR_UPING_OPEN, clamp_failed);
 }
 
 /*
@@ -514,6 +538,18 @@ ai__LOADER_LOAD_UNLOADING_OPEN__clamp_succeed (void)
 }
 
 /*
+ * LOADER_LOAD_UNLOADING_OPEN =clamp_failed=>
+ *  => LOADER_ERROR
+ *   post loader_errored event
+ */
+fsm_branch_t
+ai__LOADER_LOAD_UNLOADING_OPEN__clamp_failed (void)
+{
+    main_post_event (AI_EVENT_loader_errored);
+    return ai_next (LOADER_LOAD_UNLOADING_OPEN, clamp_failed);
+}
+
+/*
  * LOADER_LOAD_EMPTY_OPEN =clamp_succeed=>
  * down => LOADER_DOWN
  * up => LOADER_UPING
@@ -531,4 +567,17 @@ ai__LOADER_LOAD_EMPTY_OPEN__clamp_succeed (void)
     else
 	return ai_next_branch (LOADER_LOAD_EMPTY_OPEN, clamp_succeed, down);
 }
+
+/*
+ * LOADER_LOAD_EMPTY_OPEN =clamp_failed=>
+ *  => LOADER_ERROR
+ *   post loader_errored event
+ */
+fsm_branch_t
+ai__LOADER_LOAD_EMPTY_OPEN__clamp_failed (void)
+{
+    main_post_event (AI_EVENT_loader_errored);
+    return ai_next (LOADER_LOAD_EMPTY_OPEN, clamp_failed);
+}
+
 

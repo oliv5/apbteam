@@ -190,6 +190,18 @@ ai__UNLOAD_LOADER_UP__loader_uped (void)
 }
 
 /*
+ * UNLOAD_LOADER_UP =loader_errored=>
+ *  => UNLOAD_FACE_BIN
+ *   turn toward bin
+ */
+fsm_branch_t
+ai__UNLOAD_LOADER_UP__loader_errored (void)
+{
+    asserv_goto_angle (PG_A_DEG (90));
+    return ai_next (UNLOAD_LOADER_UP, loader_errored);
+}
+
+/*
  * UNLOAD_FACE_BIN =bot_move_succeed=>
  *  => UNLOAD_BACK_BIN
  *   go backward to bin
@@ -199,6 +211,42 @@ ai__UNLOAD_FACE_BIN__bot_move_succeed (void)
 {
     asserv_move_linearly (-(128 + 250 / 2 - BOT_SIZE_BACK - 50));
     return ai_next (UNLOAD_FACE_BIN, bot_move_succeed);
+}
+
+/*
+ * UNLOAD_FACE_BIN =bot_move_failed=>
+ *  => UNLOAD_FACE_BIN_UNBLOCK
+ *   move backward
+ */
+fsm_branch_t
+ai__UNLOAD_FACE_BIN__bot_move_failed (void)
+{
+    asserv_move_linearly (-40);
+    return ai_next (UNLOAD_FACE_BIN, bot_move_failed);
+}
+
+/*
+ * UNLOAD_FACE_BIN_UNBLOCK =bot_move_succeed=>
+ *  => UNLOAD_FACE_BIN
+ *   turn toward bin
+ */
+fsm_branch_t
+ai__UNLOAD_FACE_BIN_UNBLOCK__bot_move_succeed (void)
+{
+    asserv_goto_angle (PG_A_DEG (90));
+    return ai_next (UNLOAD_FACE_BIN_UNBLOCK, bot_move_succeed);
+}
+
+/*
+ * UNLOAD_FACE_BIN_UNBLOCK =bot_move_failed=>
+ *  => UNLOAD_FACE_BIN
+ *   turn toward bin
+ */
+fsm_branch_t
+ai__UNLOAD_FACE_BIN_UNBLOCK__bot_move_failed (void)
+{
+    asserv_goto_angle (PG_A_DEG (90));
+    return ai_next (UNLOAD_FACE_BIN_UNBLOCK, bot_move_failed);
 }
 
 /*

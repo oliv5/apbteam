@@ -149,6 +149,8 @@ LOADER_ERROR_DOWNING:
 LOADER_ERROR_DOWNING_OPEN:
  clamp_succeed -> LOADER_DOWN
   post loader_downed event
+ clamp_failed -> LOADER_ERROR
+  post loader_errored event
 
 LOADER_ERROR_UPING:
  elevator_succeed -> LOADER_ERROR_UPING_OPEN
@@ -159,6 +161,8 @@ LOADER_ERROR_UPING:
 LOADER_ERROR_UPING_OPEN:
  clamp_succeed -> LOADER_UP
   post loader_uped event
+ clamp_failed -> LOADER_ERROR
+  post loader_errored event
 
 LOADER_DOWNING:
  elevator_succeed -> LOADER_DOWN
@@ -205,9 +209,13 @@ LOADER_LOAD_UNLOADING_OPEN:
   move down
  clamp_succeed: up -> LOADER_UPING
   move up
+ clamp_failed -> LOADER_ERROR
+  post loader_errored event
 
 LOADER_LOAD_EMPTY_OPEN:
  clamp_succeed: down -> LOADER_DOWN
  clamp_succeed: up -> LOADER_UPING
   move up
+ clamp_failed -> LOADER_ERROR
+  post loader_errored event
 
