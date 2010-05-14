@@ -34,11 +34,6 @@
 #include "asserv.h"
 #include "loader.h"
 
-/**
- * Time limit.
- */
-#define TOP_TIME_LIMIT 25000
-
 /*
  * IDLE =start=>
  *  => WAIT_INIT_TO_FINISH

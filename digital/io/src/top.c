@@ -29,7 +29,13 @@
 #include "asserv.h"
 #include "loader.h"
 #include "move.h"
+#include "chrono.h"
 #include "playground.h"
+
+/** Maximum elements to load before unloading. */
+#define TOP_LOADER_MAX 3
+/** Time to reserve for unloading at end of round. */
+#define TOP_TIME_LIMIT_MS 20000ll
 
 void
 top_init (void)
@@ -39,7 +45,10 @@ top_init (void)
 uint8_t
 top_collect (uint8_t force)
 {
-    if (loader_elements < 3 || force)
+    if ((loader_elements < TOP_LOADER_MAX
+	 && (loader_elements == 0
+	     || chrono_remaining_time () > TOP_TIME_LIMIT_MS))
+	|| force)
       {
 	position_t robot_position;
 	asserv_get_position (&robot_position);
