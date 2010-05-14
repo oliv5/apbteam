@@ -59,4 +59,8 @@ food_pos (uint8_t food, vect_t *v);
 void
 food_taken (position_t robot_pos);
 
+/** Return shorten distance to be used to pick this food. */
+int16_t
+food_shorten (uint8_t food);
+
 #endif /* food_h */

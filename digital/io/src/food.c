@@ -166,7 +166,7 @@ food_score (position_t robot_pos, uint8_t food)
     if (food_table[food].type == FOOD_TYPE_TOMATO)
 	score += 100;
     else
-	score -= 4000;
+	score -= 200;
     /* Distance to robot. */
     food_pos (food, &v);
     int32_t dr = distance_point_point (&v, &robot_pos.v);
@@ -219,10 +219,20 @@ food_pos (uint8_t food, vect_t *v)
 {
     assert (food < UTILS_COUNT (food_table));
     *v = food_table[food].pos;
-    if (v->x < BOT_SIZE_RADIUS + 30)
-	v->x = BOT_SIZE_RADIUS + 30;
-    else if (v->x > PG_WIDTH - BOT_SIZE_RADIUS - 30)
-	v->x = PG_WIDTH - BOT_SIZE_RADIUS - 30;
+}
+
+int16_t
+food_shorten (uint8_t food)
+{
+    assert (food < UTILS_COUNT (food_table));
+    int16_t shorten = 0;
+    /* Corns. */
+    if (food_table[food].type == FOOD_TYPE_CORN)
+	shorten = BOT_SIZE_FRONT + 50;
+    /* Food on playground sides. */
+    if (food <= 4 || (food >= 14 && food <= 18))
+	shorten = BOT_SIZE_FRONT;
+    return shorten;
 }
 
 void
