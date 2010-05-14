@@ -49,6 +49,34 @@
 
 #define MOVE_LOADER_UNBLOCKING_DISTANCE 70
 
+/** Go to current step, low level function. */
+static void
+move_go (void)
+{
+    vect_t dst = move_data.step;
+    /* Modify final point if requested. */
+    if (move_data.final_move && move_data.shorten)
+      {
+	/* Compute a vector from destination to robot with lenght
+	 * 'shorten'. */
+	position_t robot_position;
+	asserv_get_position (&robot_position);
+	vect_t v = robot_position.v;
+	vect_sub (&v, &move_data.step);
+	int16_t d = vect_norm (&v);
+	if (d > move_data.shorten)
+	  {
+	    vect_scale_f824 (&v, 0x1000000 / d * move_data.shorten);
+	    vect_translate (&dst, &v);
+	  }
+      }
+    if (move_data.step_with_angle)
+	asserv_goto_xya (dst.x, dst.y, move_data.step_angle,
+			 move_data.step_backward);
+    else
+	asserv_goto (dst.x, dst.y, move_data.step_backward);
+}
+
 /** Go or rotate toward position, returns 1 for linear move, 2 for angular
  * move. */
 static uint8_t
@@ -75,10 +103,7 @@ move_go_or_rotate (vect_t dst, uint16_t angle, uint8_t with_angle,
     if (UTILS_ABS (diff) < 0x1000)
       {
 	loader_down ();
-	if (with_angle)
-	    asserv_goto_xya (dst.x, dst.y, angle, backward);
-	else
-	    asserv_goto (dst.x, dst.y, backward);
+	move_go ();
 	return 1;
       }
     else
@@ -204,12 +229,7 @@ fsm_branch_t
 ai__MOVE_ROTATING__bot_move_succeed (void)
 {
     loader_down ();
-    if (move_data.step_with_angle)
-	asserv_goto_xya (move_data.step.x, move_data.step.y,
-			 move_data.step_angle, move_data.step_backward);
-    else
-	asserv_goto (move_data.step.x, move_data.step.y,
-		     move_data.step_backward);
+    move_go ();
     return ai_next (MOVE_ROTATING, bot_move_succeed);
 }
 

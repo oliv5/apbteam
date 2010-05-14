@@ -46,18 +46,20 @@ move_start (position_t position, uint8_t backward)
     move_data.with_angle = 1;
     move_data.backward_movement_allowed = backward;
     move_data.final_move = 0;
+    move_data.shorten = 0;
     /* Start the FSM. */
     fsm_handle_event (&ai_fsm, AI_EVENT_move_start);
 }
 
 void
-move_start_noangle (vect_t position, uint8_t backward)
+move_start_noangle (vect_t position, uint8_t backward, int16_t shorten)
 {
     /* Set parameters. */
     move_data.final.v = position;
     move_data.with_angle = 0;
     move_data.backward_movement_allowed = backward;
     move_data.final_move = 0;
+    move_data.shorten = shorten;
     /* Start the FSM. */
     fsm_handle_event (&ai_fsm, AI_EVENT_move_start);
 }

@@ -66,6 +66,8 @@ struct move_data_t
     uint8_t try_again_counter;
     /** Dirty fix to know this is the final move. */
     uint8_t final_move;
+    /** Distance to remove from path. */
+    int16_t shorten;
 };
 
 /**
@@ -84,7 +86,7 @@ move_start (position_t position, uint8_t backward);
 
 /** Go to a position, with no angle consign. */
 void
-move_start_noangle (vect_t position, uint8_t backward);
+move_start_noangle (vect_t position, uint8_t backward, int16_t shorten);
 
 /** To be called when obstacles positions are computed. */
 void

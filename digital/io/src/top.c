@@ -57,12 +57,12 @@ top_collect (uint8_t force)
 	    return 0;
 	vect_t food_v;
 	food_pos (food, &food_v);
-	move_start_noangle (food_v, 0);
+	move_start_noangle (food_v, 0, 0);
 	return 1;
       }
     else
       {
-	move_start_noangle (PG_VECT (2625, 253), 0);
+	move_start_noangle (PG_VECT (2625, 253), 0, 0);
 	return 0;
       }
 }
