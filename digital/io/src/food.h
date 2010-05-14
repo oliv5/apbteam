@@ -67,4 +67,8 @@ food_shorten (uint8_t food);
 int16_t
 food_slow_motion (uint8_t food);
 
+/** Declare a food as black. */
+void
+food_black (uint8_t food);
+
 #endif /* food_h */
