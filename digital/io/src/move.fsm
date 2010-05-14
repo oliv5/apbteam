@@ -54,9 +54,12 @@ MOVE_MOVING:
  bot_move_failed -> MOVE_MOVING_BACKWARD_TO_TURN_FREELY
   reset final_move.
   move backward to turn freely.
- obstacle_in_front -> MOVE_WAIT_FOR_CLEAR_PATH
+ obstacle_in_front: tryagain -> MOVE_WAIT_FOR_CLEAR_PATH
   reset final_move.
   stop the bot.
+ obstacle_in_front: tryout -> MOVE_IDLE
+  stop the bot.
+  post failure event.
  loader_errored -> MOVE_LOADER_UNBLOCKING_UPING
   move backward
   loader up
@@ -72,17 +75,19 @@ MOVE_MOVING_BACKWARD_TO_TURN_FREELY:
   rotate towards next position.
  bot_move_failed: path_found -> MOVE_MOVING
   move to next position.
- bot_move_failed: no_path_found -> MOVE_WAIT_FOR_CLEAR_PATH
+ bot_move_failed: no_path_found_tryagain -> MOVE_WAIT_FOR_CLEAR_PATH
   nothing to do.
+ bot_move_failed: no_path_found_tryout -> MOVE_IDLE
+  post failure event.
 
 MOVE_WAIT_FOR_CLEAR_PATH:
  state_timeout: path_found_rotate -> MOVE_ROTATING
   rotate towards next position.
  state_timeout: path_found -> MOVE_MOVING
   move to next position.
- state_timeout: no_path_found_and_try_again -> .
+ state_timeout: no_path_found_tryagain -> .
   decrement counter.
- state_timeout: no_path_found_and_no_try_again -> MOVE_IDLE
+ state_timeout: no_path_found_tryout -> MOVE_IDLE
   post failure.
 
 MOVE_LOADER_UNBLOCKING_UPING:

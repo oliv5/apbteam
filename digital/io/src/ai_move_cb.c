@@ -146,8 +146,6 @@ move_go_to_next (vect_t dst)
 			       move_data.backward_movement_allowed);
       }
     TRACE (TRACE_MOVE__GO_TO, dst.x, dst.y);
-    /* Reset try counter. */
-    move_data.try_again_counter = 3;
     /* Next time, do not use slow. */
     move_data.slow = 0;
     return r;
@@ -322,16 +320,25 @@ ai__MOVE_MOVING__bot_move_failed (void)
 
 /*
  * MOVE_MOVING =obstacle_in_front=>
- *  => MOVE_WAIT_FOR_CLEAR_PATH
+ * tryagain => MOVE_WAIT_FOR_CLEAR_PATH
  *   reset final_move.
  *   stop the bot.
+ * tryout => MOVE_IDLE
+ *   stop the bot.
+ *   post failure event.
  */
 fsm_branch_t
 ai__MOVE_MOVING__obstacle_in_front (void)
 {
     move_data.final_move = 0;
     asserv_stop_motor ();
-    return ai_next (MOVE_MOVING, obstacle_in_front);
+    if (--move_data.try_again_counter == 0)
+      {
+	main_post_event (AI_EVENT_move_fsm_failed);
+	return ai_next_branch (MOVE_MOVING, obstacle_in_front, tryout);
+      }
+    else
+	return ai_next_branch (MOVE_MOVING, obstacle_in_front, tryagain);
 }
 
 /*
@@ -381,8 +388,10 @@ ai__MOVE_MOVING_BACKWARD_TO_TURN_FREELY__bot_move_succeed (void)
  *   rotate towards next position.
  * path_found => MOVE_MOVING
  *   move to next position.
- * no_path_found => MOVE_WAIT_FOR_CLEAR_PATH
+ * no_path_found_tryagain => MOVE_WAIT_FOR_CLEAR_PATH
  *   nothing to do.
+ * no_path_found_tryout => MOVE_IDLE
+ *   post failure event.
  */
 fsm_branch_t
 ai__MOVE_MOVING_BACKWARD_TO_TURN_FREELY__bot_move_failed (void)
@@ -396,7 +405,15 @@ ai__MOVE_MOVING_BACKWARD_TO_TURN_FREELY__bot_move_failed (void)
 	    return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed, path_found);
       }
     else
-	return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed, no_path_found);
+      {
+	if (--move_data.try_again_counter == 0)
+	  {
+	    main_post_event (AI_EVENT_move_fsm_failed);
+	    return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed, no_path_found_tryout);
+	  }
+	else
+	    return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed, no_path_found_tryagain);
+      }
 }
 
 /*
@@ -405,9 +422,9 @@ ai__MOVE_MOVING_BACKWARD_TO_TURN_FREELY__bot_move_failed (void)
  *   rotate towards next position.
  * path_found => MOVE_MOVING
  *   move to next position.
- * no_path_found_and_try_again => MOVE_WAIT_FOR_CLEAR_PATH
+ * no_path_found_tryagain => MOVE_WAIT_FOR_CLEAR_PATH
  *   decrement counter.
- * no_path_found_and_no_try_again => MOVE_IDLE
+ * no_path_found_tryout => MOVE_IDLE
  *   post failure.
  */
 fsm_branch_t
@@ -428,12 +445,10 @@ ai__MOVE_WAIT_FOR_CLEAR_PATH__state_timeout (void)
 	if (--move_data.try_again_counter == 0)
 	  {
 	    main_post_event (AI_EVENT_move_fsm_failed);
-	    return ai_next_branch (MOVE_WAIT_FOR_CLEAR_PATH, state_timeout,
-				   no_path_found_and_no_try_again);
+	    return ai_next_branch (MOVE_WAIT_FOR_CLEAR_PATH, state_timeout, no_path_found_tryout);
 	  }
 	else
-	    return ai_next_branch (MOVE_WAIT_FOR_CLEAR_PATH, state_timeout,
-				   no_path_found_and_try_again);
+	    return ai_next_branch (MOVE_WAIT_FOR_CLEAR_PATH, state_timeout, no_path_found_tryagain);
       }
 }
 

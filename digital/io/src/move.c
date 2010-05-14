@@ -47,6 +47,8 @@ move_start (position_t position, uint8_t backward)
     move_data.backward_movement_allowed = backward;
     move_data.final_move = 0;
     move_data.shorten = 0;
+    /* Reset try counter. */
+    move_data.try_again_counter = 3;
     /* Start the FSM. */
     fsm_handle_event (&ai_fsm, AI_EVENT_move_start);
 }
@@ -60,6 +62,8 @@ move_start_noangle (vect_t position, uint8_t backward, int16_t shorten)
     move_data.backward_movement_allowed = backward;
     move_data.final_move = 0;
     move_data.shorten = shorten;
+    /* Reset try counter. */
+    move_data.try_again_counter = 3;
     /* Start the FSM. */
     fsm_handle_event (&ai_fsm, AI_EVENT_move_start);
 }
