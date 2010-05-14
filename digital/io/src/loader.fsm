@@ -190,11 +190,13 @@ LOADER_LOAD_UPING:
   open clamp
  elevator_failed -> LOADER_ERROR
   post loader_errored event
+  open clamp
 
 LOADER_LOAD_UNLOADING:
  elevator_succeed -> LOADER_LOAD_UNLOADING_OPEN
  elevator_failed -> LOADER_ERROR
   post loader_errored event
+  open clamp
 
 LOADER_LOAD_UNLOADING_OPEN:
  clamp_succeed: down -> LOADER_DOWNING

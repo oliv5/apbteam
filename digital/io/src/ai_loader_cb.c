@@ -450,11 +450,14 @@ ai__LOADER_LOAD_UPING__elevator_unload_position (void)
  * LOADER_LOAD_UPING =elevator_failed=>
  *  => LOADER_ERROR
  *   post loader_errored event
+ *   open clamp
  */
 fsm_branch_t
 ai__LOADER_LOAD_UPING__elevator_failed (void)
 {
     main_post_event (AI_EVENT_loader_errored);
+    mimot_move_motor0_absolute (BOT_CLAMP_OPEN_STEP, BOT_CLAMP_SPEED);
+    mimot_move_motor1_absolute (BOT_CLAMP_OPEN_STEP, BOT_CLAMP_SPEED);
     return ai_next (LOADER_LOAD_UPING, elevator_failed);
 }
 
@@ -472,11 +475,14 @@ ai__LOADER_LOAD_UNLOADING__elevator_succeed (void)
  * LOADER_LOAD_UNLOADING =elevator_failed=>
  *  => LOADER_ERROR
  *   post loader_errored event
+ *   open clamp
  */
 fsm_branch_t
 ai__LOADER_LOAD_UNLOADING__elevator_failed (void)
 {
     main_post_event (AI_EVENT_loader_errored);
+    mimot_move_motor0_absolute (BOT_CLAMP_OPEN_STEP, BOT_CLAMP_SPEED);
+    mimot_move_motor1_absolute (BOT_CLAMP_OPEN_STEP, BOT_CLAMP_SPEED);
     return ai_next (LOADER_LOAD_UNLOADING, elevator_failed);
 }
 
