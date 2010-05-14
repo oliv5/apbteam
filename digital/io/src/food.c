@@ -185,7 +185,7 @@ food_score (position_t robot_pos, uint8_t food)
       }
     /* Distance to unloading area. */
     /* Avoid food near border. */
-    if (food == 15 || food == 1)
+    if (food <= 4 || (food >= 14 && food <= 18))
 	score -= 300;
     if (v.y < BOT_SIZE_RADIUS)
 	score -= 6000;
