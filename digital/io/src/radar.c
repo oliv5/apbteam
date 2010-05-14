@@ -29,6 +29,7 @@
 #include "usdist.h"
 
 #include "modules/math/geometry/geometry.h"
+#include "modules/math/geometry/distance.h"
 #include "modules/utils/utils.h"
 
 /** Margin to be considered inside the playground.  An obstacle can not be
@@ -156,28 +157,28 @@ radar_blocking (const vect_t *robot_pos, const vect_t *dest_pos,
 	return 0;
     /* If destination is near, use clearance to destination point instead of
      * stop length. */
-    uint16_t length;
-    if (d < RADAR_STOP_MM - RADAR_CLEARANCE_MM / 2)
-	length = d + BOT_SIZE_FRONT + RADAR_CLEARANCE_MM / 2
-	    + RADAR_OBSTACLE_RADIUS_MM;
+    vect_t t;
+    if (d < RADAR_STOP_MM)
+	t = *dest_pos;
     else
-	length = BOT_SIZE_FRONT + RADAR_STOP_MM
-	    + RADAR_OBSTACLE_RADIUS_MM;
-    /* To save divisions, multiply limits by vd length. */
-    int32_t limit = (uint32_t) d * length;
-    int32_t limitn = (uint32_t) d * (BOT_SIZE_SIDE + RADAR_CLEARANCE_MM / 2
-				     + RADAR_OBSTACLE_RADIUS_MM);
+      {
+	vect_scale_f824 (&vd, (1ll << 24) / d * RADAR_STOP_MM);
+	t = *robot_pos;
+	vect_translate (&t, &vd);
+      }
     /* Now, look at obstacles. */
     for (i = 0; i < obs_nb; i++)
       {
 	/* Vector from robot to obstacle. */
 	vect_t vo = obs_pos[i]; vect_sub (&vo, robot_pos);
-	/* Test if within rectangle (see RADAR_CLEARANCE_MM comment). */
+	/* Ignore if in our back. */
 	int32_t dp = vect_dot_product (&vd, &vo);
-	if (dp < 0 || dp > limit)
+	if (dp < 0)
 	    continue;
-	int32_t dpn = vect_normal_dot_product (&vd, &vo);
-	if (dpn < -limitn || dpn > limitn)
+	/* Check distance. */
+	int16_t od = distance_segment_point (robot_pos, &t, &obs_pos[i]);
+	if (od > BOT_SIZE_SIDE + RADAR_CLEARANCE_MM / 2
+	    + RADAR_OBSTACLE_RADIUS_MM)
 	    continue;
 	/* Else, obstacle is blocking. */
 	return 1;
