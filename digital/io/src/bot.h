@@ -86,7 +86,7 @@
 #define BOT_ELEVATOR_REST_STEP 4111
 
 /** Elevator down position in steps. */
-#define BOT_ELEVATOR_DOWN_STEP 60
+#define BOT_ELEVATOR_DOWN_STEP 160
 
 /** Elevator work speed. */
 #define BOT_ELEVATOR_SPEED 0x60
