@@ -13,10 +13,6 @@ States:
   first sequence, go to end of line
  FIRST_GO_END_OF_LINE_SLOW
   slow down to take elements
- FIRST_GO_END_OF_LINE_UNBLOCKING_UP
-  unblock problem with loader, move loader up
- FIRST_GO_END_OF_LINE_UNBLOCKING
-  unblock problem with loader, go backward
  UNLOAD
   go to unloading position
  UNLOAD_LOADER_UP
@@ -81,30 +77,12 @@ FIRST_GO_END_OF_LINE_FAST:
  move_fsm_failed -> FIRST_GO_END_OF_LINE_SLOW
   set slow speed
   retry
- loader_errored -> FIRST_GO_END_OF_LINE_UNBLOCKING_UP
-  same as below
 
 FIRST_GO_END_OF_LINE_SLOW:
  move_fsm_succeed -> UNLOAD_LOADER_UP
   move loader up
  move_fsm_failed -> FIRST_GO_END_OF_LINE_SLOW
   retry
- loader_errored -> FIRST_GO_END_OF_LINE_UNBLOCKING_UP
-  move backward
-  loader up
-
-FIRST_GO_END_OF_LINE_UNBLOCKING_UP:
- loader_uped -> FIRST_GO_END_OF_LINE_UNBLOCKING
-
-FIRST_GO_END_OF_LINE_UNBLOCKING:
- bot_move_succeed -> FIRST_GO_END_OF_LINE_SLOW
-  move loader down
-  retry
- bot_move_failed -> FIRST_GO_END_OF_LINE_SLOW
-  move loader down
-  retry
- loader_errored -> .
-  unblock again
 
 UNLOAD:
  move_fsm_succeed -> UNLOAD_LOADER_UP
