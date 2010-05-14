@@ -25,6 +25,8 @@
 #include "common.h"
 #include "defs.h"
 #include "path.h"
+#include "bot.h"
+#include "playground.h"
 
 #include "food.h"
 
@@ -250,11 +252,27 @@ path_blocking (uint8_t a, uint8_t b, int16_t *dp)
 	else
 	    return 1;
       }
-    else
+    /* Test for the wall. */
+    if (va.x < BOT_SIZE_RADIUS || va.x >= PG_WIDTH - BOT_SIZE_RADIUS
+	|| vb.x < BOT_SIZE_RADIUS || vb.x >= PG_WIDTH - BOT_SIZE_RADIUS)
       {
-	*dp = d;
-	return 0;
+	int16_t dx = va.x - vb.x;
+	int16_t dy = va.y - vb.y;
+	/* Do not authorise path going parallel to the wall. */
+	if (UTILS_ABS (dx) < UTILS_ABS (dy))
+	  {
+	    if (escape_factor)
+	      {
+		*dp = d * escape_factor;
+		return 0;
+	      }
+	    else
+		return 1;
+	  }
       }
+    /* No blocking. */
+    *dp = d;
+    return 0;
 }
 
 /** Update the cache of blocked nodes. */
