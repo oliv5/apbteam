@@ -338,20 +338,6 @@ ai__LOADER_ERROR_DOWNING__elevator_failed (void)
 }
 
 /*
- * LOADER_ERROR_DOWNING =loader_element=>
- *  => LOADER_ERROR
- *   emergency stop
- *   post loader_errored event
- */
-fsm_branch_t
-ai__LOADER_ERROR_DOWNING__loader_element (void)
-{
-    asserv_motor0_free ();
-    main_post_event (AI_EVENT_loader_errored);
-    return ai_next (LOADER_ERROR_DOWNING, loader_element);
-}
-
-/*
  * LOADER_ERROR_DOWNING_OPEN =clamp_succeed=>
  *  => LOADER_DOWN
  *   post loader_downed event
