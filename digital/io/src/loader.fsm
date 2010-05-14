@@ -79,6 +79,8 @@ Events:
   posted when loader successfully moved up
  loader_errored
   posted when loader in an unknown state due to error while moving up
+ loader_black
+  loader blocked, due to a black corn
 
 LOADER_IDLE:
  start -> LOADER_WAIT_JACK_IN
@@ -189,7 +191,7 @@ LOADER_LOAD_UPING:
  elevator_unload_position -> LOADER_LOAD_UNLOADING
   open clamp
  elevator_failed -> LOADER_ERROR
-  post loader_errored event
+  post loader_errored or loader_black event
   open clamp
 
 LOADER_LOAD_UNLOADING:

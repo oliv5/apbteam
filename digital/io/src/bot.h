@@ -85,6 +85,10 @@
 /** Elevator resting up position in steps. */
 #define BOT_ELEVATOR_REST_STEP 4111
 
+/** Elevator position under which a blocking is considered as due to a black
+ * corn in steps. */
+#define BOT_ELEVATOR_BLACK_THRESHOLD_STEP 3000
+
 /** Elevator down position in steps. */
 #define BOT_ELEVATOR_DOWN_STEP 160
 

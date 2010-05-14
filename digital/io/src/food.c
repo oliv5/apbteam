@@ -46,6 +46,7 @@ enum food_type_t
 {
     FOOD_TYPE_TOMATO,
     FOOD_TYPE_CORN,
+    FOOD_TYPE_CORN_BLACK,
 };
 
 /** Food information. */
@@ -111,7 +112,7 @@ uint8_t
 food_blocking (uint8_t food)
 {
     assert (food < UTILS_COUNT (food_table) || food == 0xff);
-    return food != 0xff && food_table[food].type == FOOD_TYPE_CORN;
+    return food != 0xff && food_table[food].type != FOOD_TYPE_TOMATO;
 }
 
 uint8_t
@@ -165,8 +166,10 @@ food_score (position_t robot_pos, uint8_t food)
     /* Type of food. */
     if (food_table[food].type == FOOD_TYPE_TOMATO)
 	score += 100;
+    else if (food_table[food].type == FOOD_TYPE_CORN)
+	score -= 500;
     else
-	score -= 200;
+	score -= 100000;
     /* Distance to robot. */
     food_pos (food, &v);
     int32_t dr = distance_point_point (&v, &robot_pos.v);
@@ -265,3 +268,10 @@ food_slow_motion (uint8_t food)
 	return 0;
 }
 
+void
+food_black (uint8_t food)
+{
+    assert (food < UTILS_COUNT (food_table));
+    food_table[food].valid = 1;
+    food_table[food].type = FOOD_TYPE_CORN_BLACK;
+}

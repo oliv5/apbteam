@@ -313,4 +313,48 @@ ai__COLLECT_SLOW_MOTION__bot_move_failed (void)
 	return ai_next_branch (COLLECT_SLOW_MOTION, bot_move_failed, unload);
 }
 
+/*
+ * COLLECT_SLOW_MOTION =loader_black=>
+ *  => COLLECT_BLACK
+ *   speed up
+ *   move backward
+ *   mark as black
+ */
+fsm_branch_t
+ai__COLLECT_SLOW_MOTION__loader_black (void)
+{
+    asserv_set_speed (BOT_MOVE_SLOW);
+    asserv_move_linearly (-90);
+    food_black (top_food);
+    return ai_next (COLLECT_SLOW_MOTION, loader_black);
+}
+
+/*
+ * COLLECT_BLACK =bot_move_succeed=>
+ * unload => UNLOAD
+ * collect => COLLECT
+ */
+fsm_branch_t
+ai__COLLECT_BLACK__bot_move_succeed (void)
+{
+    if (top_collect (0))
+	return ai_next_branch (COLLECT_BLACK, bot_move_succeed, collect);
+    else
+	return ai_next_branch (COLLECT_BLACK, bot_move_succeed, unload);
+}
+
+/*
+ * COLLECT_BLACK =bot_move_failed=>
+ * unload => UNLOAD
+ * collect => COLLECT
+ */
+fsm_branch_t
+ai__COLLECT_BLACK__bot_move_failed (void)
+{
+    if (top_collect (0))
+	return ai_next_branch (COLLECT_BLACK, bot_move_failed, collect);
+    else
+	return ai_next_branch (COLLECT_BLACK, bot_move_failed, unload);
+}
+
 

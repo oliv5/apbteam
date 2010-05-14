@@ -449,13 +449,16 @@ ai__LOADER_LOAD_UPING__elevator_unload_position (void)
 /*
  * LOADER_LOAD_UPING =elevator_failed=>
  *  => LOADER_ERROR
- *   post loader_errored event
+ *   post loader_errored or loader_black event
  *   open clamp
  */
 fsm_branch_t
 ai__LOADER_LOAD_UPING__elevator_failed (void)
 {
-    main_post_event (AI_EVENT_loader_errored);
+    if (asserv_get_motor0_position () < BOT_ELEVATOR_BLACK_THRESHOLD_STEP)
+	main_post_event (AI_EVENT_loader_black);
+    else
+	main_post_event (AI_EVENT_loader_errored);
     mimot_move_motor0_absolute (BOT_CLAMP_OPEN_STEP, BOT_CLAMP_SPEED);
     mimot_move_motor1_absolute (BOT_CLAMP_OPEN_STEP, BOT_CLAMP_SPEED);
     return ai_next (LOADER_LOAD_UPING, elevator_failed);

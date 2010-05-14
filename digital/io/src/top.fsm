@@ -27,6 +27,8 @@ States:
   collecting elements
  COLLECT_SLOW_MOTION
   slowly move toward element to collect
+ COLLECT_BLACK
+  moving backward after trying to collect a black corn
 
 Events:
  start
@@ -129,3 +131,13 @@ COLLECT_SLOW_MOTION:
  bot_move_failed: unload -> UNLOAD
  bot_move_failed: collect -> COLLECT
   same as above
+ loader_black -> COLLECT_BLACK
+  speed up
+  move backward
+  mark as black
+
+COLLECT_BLACK:
+ bot_move_succeed: unload -> UNLOAD
+ bot_move_succeed: collect -> COLLECT
+ bot_move_failed: unload -> UNLOAD
+ bot_move_failed: collect -> COLLECT
