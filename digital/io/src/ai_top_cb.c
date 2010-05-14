@@ -318,12 +318,16 @@ ai__COLLECT__move_fsm_succeed (void)
  * COLLECT =move_fsm_failed=>
  * unload => UNLOAD
  * collect => COLLECT
+ *   cancel this element
  */
 fsm_branch_t
 ai__COLLECT__move_fsm_failed (void)
 {
     if (top_collect (0))
+      {
+	food_cancel (top_food);
 	return ai_next_branch (COLLECT, move_fsm_failed, collect);
+      }
     else
 	return ai_next_branch (COLLECT, move_fsm_failed, unload);
 }

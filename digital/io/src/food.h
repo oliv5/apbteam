@@ -71,4 +71,8 @@ food_slow_motion (uint8_t food);
 void
 food_black (uint8_t food);
 
+/** Cancel a food pickup. */
+void
+food_cancel (uint8_t food);
+
 #endif /* food_h */

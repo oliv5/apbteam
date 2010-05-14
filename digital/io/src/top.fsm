@@ -134,6 +134,7 @@ COLLECT:
   move to food
  move_fsm_failed: unload -> UNLOAD
  move_fsm_failed: collect -> COLLECT
+  cancel this element
 
 COLLECT_SLOW_MOTION:
  bot_move_succeed: unload -> UNLOAD

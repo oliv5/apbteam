@@ -58,6 +58,8 @@ struct food_t
     vect_t pos;
     /** Food type.  Corn can be good or bad. */
     enum food_type_t type;
+    /** Score modifier. */
+    int16_t score;
 };
 
 /** Information gathered on food. */
@@ -65,46 +67,46 @@ struct food_t food_table[] =
 {
     /* {{{ */
     /* First half. */
-      { 1, { 150, 128 + 5 * 250 }, FOOD_TYPE_CORN },
-      { 1, { 150, 128 + 4 * 250 }, FOOD_TYPE_TOMATO },
-      { 1, { 150, 128 + 3 * 250 }, FOOD_TYPE_CORN },
-      { 1, { 150, 128 + 2 * 250 }, FOOD_TYPE_TOMATO },
-      { 1, { 150, 128 + 1 * 250 }, FOOD_TYPE_CORN },
+      { 1, { 150, 128 + 5 * 250 }, FOOD_TYPE_CORN, 0 },
+      { 1, { 150, 128 + 4 * 250 }, FOOD_TYPE_TOMATO, 0 },
+      { 1, { 150, 128 + 3 * 250 }, FOOD_TYPE_CORN, 0 },
+      { 1, { 150, 128 + 2 * 250 }, FOOD_TYPE_TOMATO, 0 },
+      { 1, { 150, 128 + 1 * 250 }, FOOD_TYPE_CORN, 0 },
 
-      { 1, { 150 + 1 * 450, 128 + 4 * 250 }, FOOD_TYPE_CORN },
-      { 1, { 150 + 1 * 450, 128 + 3 * 250 }, FOOD_TYPE_TOMATO },
-      { 1, { 150 + 1 * 450, 128 + 2 * 250 }, FOOD_TYPE_CORN },
-      { 1, { 150 + 1 * 450, 128 + 1 * 250 }, FOOD_TYPE_TOMATO },
-      { 1, { 150 + 1 * 450, 128 + 0 * 250 }, FOOD_TYPE_CORN },
+      { 1, { 150 + 1 * 450, 128 + 4 * 250 }, FOOD_TYPE_CORN, 0 },
+      { 1, { 150 + 1 * 450, 128 + 3 * 250 }, FOOD_TYPE_TOMATO, 0 },
+      { 1, { 150 + 1 * 450, 128 + 2 * 250 }, FOOD_TYPE_CORN, 0 },
+      { 1, { 150 + 1 * 450, 128 + 1 * 250 }, FOOD_TYPE_TOMATO, 0 },
+      { 1, { 150 + 1 * 450, 128 + 0 * 250 }, FOOD_TYPE_CORN, 0 },
 
-      { 1, { 150 + 2 * 450, 128 + 3 * 250 }, FOOD_TYPE_CORN },
-      { 1, { 150 + 2 * 450, 128 + 2 * 250 }, FOOD_TYPE_TOMATO },
-      { 1, { 150 + 2 * 450, 128 + 1 * 250 }, FOOD_TYPE_CORN },
-      { 1, { 150 + 2 * 450, 128 + 0 * 250 }, FOOD_TYPE_TOMATO },
+      { 1, { 150 + 2 * 450, 128 + 3 * 250 }, FOOD_TYPE_CORN, 0 },
+      { 1, { 150 + 2 * 450, 128 + 2 * 250 }, FOOD_TYPE_TOMATO, 0 },
+      { 1, { 150 + 2 * 450, 128 + 1 * 250 }, FOOD_TYPE_CORN, 0 },
+      { 1, { 150 + 2 * 450, 128 + 0 * 250 }, FOOD_TYPE_TOMATO, 0 },
 
     /* Second half. */
-      { 1, { 3000 - 150, 128 + 5 * 250 }, FOOD_TYPE_CORN },
-      { 1, { 3000 - 150, 128 + 4 * 250 }, FOOD_TYPE_TOMATO },
-      { 1, { 3000 - 150, 128 + 3 * 250 }, FOOD_TYPE_CORN },
-      { 1, { 3000 - 150, 128 + 2 * 250 }, FOOD_TYPE_TOMATO },
-      { 1, { 3000 - 150, 128 + 1 * 250 }, FOOD_TYPE_CORN },
+      { 1, { 3000 - 150, 128 + 5 * 250 }, FOOD_TYPE_CORN, 0 },
+      { 1, { 3000 - 150, 128 + 4 * 250 }, FOOD_TYPE_TOMATO, 0 },
+      { 1, { 3000 - 150, 128 + 3 * 250 }, FOOD_TYPE_CORN, 0 },
+      { 1, { 3000 - 150, 128 + 2 * 250 }, FOOD_TYPE_TOMATO, 0 },
+      { 1, { 3000 - 150, 128 + 1 * 250 }, FOOD_TYPE_CORN, 0 },
 
-      { 1, { 3000 - 150 - 1 * 450, 128 + 4 * 250 }, FOOD_TYPE_CORN },
-      { 1, { 3000 - 150 - 1 * 450, 128 + 3 * 250 }, FOOD_TYPE_TOMATO },
-      { 1, { 3000 - 150 - 1 * 450, 128 + 2 * 250 }, FOOD_TYPE_CORN },
-      { 1, { 3000 - 150 - 1 * 450, 128 + 1 * 250 }, FOOD_TYPE_TOMATO },
-      { 1, { 3000 - 150 - 1 * 450, 128 + 0 * 250 }, FOOD_TYPE_CORN },
+      { 1, { 3000 - 150 - 1 * 450, 128 + 4 * 250 }, FOOD_TYPE_CORN, 0 },
+      { 1, { 3000 - 150 - 1 * 450, 128 + 3 * 250 }, FOOD_TYPE_TOMATO, 0 },
+      { 1, { 3000 - 150 - 1 * 450, 128 + 2 * 250 }, FOOD_TYPE_CORN, 0 },
+      { 1, { 3000 - 150 - 1 * 450, 128 + 1 * 250 }, FOOD_TYPE_TOMATO, 0 },
+      { 1, { 3000 - 150 - 1 * 450, 128 + 0 * 250 }, FOOD_TYPE_CORN, 0 },
 
-      { 1, { 3000 - 150 - 2 * 450, 128 + 3 * 250 }, FOOD_TYPE_CORN },
-      { 1, { 3000 - 150 - 2 * 450, 128 + 2 * 250 }, FOOD_TYPE_TOMATO },
-      { 1, { 3000 - 150 - 2 * 450, 128 + 1 * 250 }, FOOD_TYPE_CORN },
-      { 1, { 3000 - 150 - 2 * 450, 128 + 0 * 250 }, FOOD_TYPE_TOMATO },
+      { 1, { 3000 - 150 - 2 * 450, 128 + 3 * 250 }, FOOD_TYPE_CORN, 0 },
+      { 1, { 3000 - 150 - 2 * 450, 128 + 2 * 250 }, FOOD_TYPE_TOMATO, 0 },
+      { 1, { 3000 - 150 - 2 * 450, 128 + 1 * 250 }, FOOD_TYPE_CORN, 0 },
+      { 1, { 3000 - 150 - 2 * 450, 128 + 0 * 250 }, FOOD_TYPE_TOMATO, 0 },
 
     /* Center. */
-      { 1, { 3000 / 2, 128 + 3 * 250 }, FOOD_TYPE_TOMATO },
-      { 1, { 3000 / 2, 128 + 2 * 250 }, FOOD_TYPE_CORN },
-      { 1, { 3000 / 2, 128 + 1 * 250 }, FOOD_TYPE_TOMATO },
-      { 1, { 3000 / 2, 128 + 0 * 250 }, FOOD_TYPE_CORN },
+      { 1, { 3000 / 2, 128 + 3 * 250 }, FOOD_TYPE_TOMATO, 0 },
+      { 1, { 3000 / 2, 128 + 2 * 250 }, FOOD_TYPE_CORN, 0 },
+      { 1, { 3000 / 2, 128 + 1 * 250 }, FOOD_TYPE_TOMATO, 0 },
+      { 1, { 3000 / 2, 128 + 0 * 250 }, FOOD_TYPE_CORN, 0 },
     /* }}} */
 };
 
@@ -170,6 +172,8 @@ food_score (position_t robot_pos, uint8_t food)
 	score -= 500;
     else
 	score -= 100000;
+    /* Score modifier. */
+    score += food_table[food].score;
     /* Distance to robot. */
     food_pos (food, &v);
     int32_t dr = distance_point_point (&v, &robot_pos.v);
@@ -275,3 +279,12 @@ food_black (uint8_t food)
     food_table[food].valid = 1;
     food_table[food].type = FOOD_TYPE_CORN_BLACK;
 }
+
+void
+food_cancel (uint8_t food)
+{
+    assert (food < UTILS_COUNT (food_table));
+    food_table[food].valid = 1;
+    food_table[food].score += 300;
+}
+
