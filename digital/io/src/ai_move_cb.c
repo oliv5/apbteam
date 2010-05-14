@@ -49,6 +49,13 @@
 
 #define MOVE_LOADER_UNBLOCKING_DISTANCE 70
 
+/** Used to define a grid.  If robot is outside the grid, be careful. */
+#define MOVE_GRID_X 450
+#define MOVE_GRID_X_ORIGIN 150
+#define MOVE_GRID_Y 250
+#define MOVE_GRID_Y_ORIGIN 128
+#define MOVE_GRID_MARGIN 50
+
 /** Go to current step, low level function. */
 static void
 move_go (void)
@@ -170,6 +177,15 @@ move_path_init (void)
 	path_update ();
 	found = path_get_next (&dst);
       }
+    /* If not on the grid, slow down. */
+    int16_t mx = current_pos.v.x % MOVE_GRID_X;
+    int16_t my = current_pos.v.y % MOVE_GRID_Y;
+    if (mx < MOVE_GRID_X_ORIGIN - MOVE_GRID_MARGIN
+	|| mx > MOVE_GRID_X_ORIGIN + MOVE_GRID_MARGIN
+	|| my < MOVE_GRID_Y_ORIGIN - MOVE_GRID_MARGIN
+	|| my > MOVE_GRID_Y_ORIGIN + MOVE_GRID_MARGIN
+	)
+	move_data.slow = 1;
     /* If found, go. */
     if (found)
       {
