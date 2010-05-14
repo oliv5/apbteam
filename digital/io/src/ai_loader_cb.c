@@ -261,6 +261,20 @@ ai__LOADER_DOWNING__elevator_failed (void)
 }
 
 /*
+ * LOADER_DOWNING =loader_element=>
+ *  => LOADER_ERROR
+ *   emergency stop
+ *   post loader_errored event
+ */
+fsm_branch_t
+ai__LOADER_DOWNING__loader_element (void)
+{
+    asserv_motor0_free ();
+    main_post_event (AI_EVENT_loader_errored);
+    return ai_next (LOADER_DOWNING, loader_element);
+}
+
+/*
  * LOADER_DOWNING =loader_up=>
  *  => LOADER_UPING
  *   move up
@@ -321,6 +335,20 @@ ai__LOADER_ERROR_DOWNING__elevator_failed (void)
 {
     main_post_event (AI_EVENT_loader_errored);
     return ai_next (LOADER_ERROR_DOWNING, elevator_failed);
+}
+
+/*
+ * LOADER_ERROR_DOWNING =loader_element=>
+ *  => LOADER_ERROR
+ *   emergency stop
+ *   post loader_errored event
+ */
+fsm_branch_t
+ai__LOADER_ERROR_DOWNING__loader_element (void)
+{
+    asserv_motor0_free ();
+    main_post_event (AI_EVENT_loader_errored);
+    return ai_next (LOADER_ERROR_DOWNING, loader_element);
 }
 
 /*

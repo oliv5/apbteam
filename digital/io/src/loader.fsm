@@ -140,6 +140,9 @@ LOADER_ERROR_DOWNING:
   open clamp
  elevator_failed -> LOADER_ERROR
   post loader_errored event
+ loader_element -> LOADER_ERROR
+  emergency stop
+  post loader_errored event
 
 LOADER_ERROR_DOWNING_OPEN:
  clamp_succeed -> LOADER_DOWN
@@ -160,6 +163,9 @@ LOADER_DOWNING:
   release elevator motor
   post loader_downed event
  elevator_failed -> LOADER_ERROR
+  post loader_errored event
+ loader_element -> LOADER_ERROR
+  emergency stop
   post loader_errored event
  loader_up -> LOADER_UPING
   move up
