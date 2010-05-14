@@ -47,8 +47,8 @@ Events:
   last command sent to the asserv board has been acquitted.
 
 import init.fsm
-import move.fsm
 import loader.fsm
+import move.fsm
 
 IDLE:
  start -> WAIT_INIT_TO_FINISH

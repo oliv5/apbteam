@@ -47,6 +47,8 @@
 
 #include <math.h>
 
+#define MOVE_LOADER_UNBLOCKING_DISTANCE 70
+
 /** Go or rotate toward position, returns 1 for linear move, 2 for angular
  * move. */
 static uint8_t
@@ -212,6 +214,20 @@ ai__MOVE_ROTATING__bot_move_succeed (void)
 }
 
 /*
+ * MOVE_ROTATING =loader_errored=>
+ *  => MOVE_LOADER_UNBLOCKING_UPING
+ *   move backward
+ *   loader up
+ */
+fsm_branch_t
+ai__MOVE_ROTATING__loader_errored (void)
+{
+    asserv_move_linearly (-MOVE_LOADER_UNBLOCKING_DISTANCE);
+    loader_up ();
+    return ai_next (MOVE_ROTATING, loader_errored);
+}
+
+/*
  * MOVE_MOVING =bot_move_succeed=>
  * done => MOVE_IDLE
  *   post success event.
@@ -280,6 +296,20 @@ ai__MOVE_MOVING__obstacle_in_front (void)
     move_data.final_move = 0;
     asserv_stop_motor ();
     return ai_next (MOVE_MOVING, obstacle_in_front);
+}
+
+/*
+ * MOVE_MOVING =loader_errored=>
+ *  => MOVE_LOADER_UNBLOCKING_UPING
+ *   move backward
+ *   loader up
+ */
+fsm_branch_t
+ai__MOVE_MOVING__loader_errored (void)
+{
+    asserv_move_linearly (-MOVE_LOADER_UNBLOCKING_DISTANCE);
+    loader_up ();
+    return ai_next (MOVE_MOVING, loader_errored);
 }
 
 /*
@@ -369,6 +399,62 @@ ai__MOVE_WAIT_FOR_CLEAR_PATH__state_timeout (void)
 	    return ai_next_branch (MOVE_WAIT_FOR_CLEAR_PATH, state_timeout,
 				   no_path_found_and_try_again);
       }
+}
+
+/*
+ * MOVE_LOADER_UNBLOCKING_UPING =bot_move_succeed=>
+ *  => MOVE_LOADER_UNBLOCKING_DOWNING
+ *   loader down
+ */
+fsm_branch_t
+ai__MOVE_LOADER_UNBLOCKING_UPING__bot_move_succeed (void)
+{
+    loader_down ();
+    return ai_next (MOVE_LOADER_UNBLOCKING_UPING, bot_move_succeed);
+}
+
+/*
+ * MOVE_LOADER_UNBLOCKING_UPING =bot_move_failed=>
+ *  => MOVE_LOADER_UNBLOCKING_DOWNING
+ *   loader down
+ */
+fsm_branch_t
+ai__MOVE_LOADER_UNBLOCKING_UPING__bot_move_failed (void)
+{
+    loader_down ();
+    return ai_next (MOVE_LOADER_UNBLOCKING_UPING, bot_move_failed);
+}
+
+/*
+ * MOVE_LOADER_UNBLOCKING_DOWNING =loader_downed=>
+ * rotate => MOVE_ROTATING
+ *   repeat last rotate
+ * move => MOVE_MOVING
+ *   repeat last move
+ */
+fsm_branch_t
+ai__MOVE_LOADER_UNBLOCKING_DOWNING__loader_downed (void)
+{
+    if (move_go_or_rotate (move_data.step, move_data.step_angle,
+			   move_data.step_with_angle,
+			   move_data.step_backward) == 2)
+	return ai_next_branch (MOVE_LOADER_UNBLOCKING_DOWNING, loader_downed, rotate);
+    else
+	return ai_next_branch (MOVE_LOADER_UNBLOCKING_DOWNING, loader_downed, move);
+}
+
+/*
+ * MOVE_LOADER_UNBLOCKING_DOWNING =loader_errored=>
+ *  => MOVE_LOADER_UNBLOCKING_UPING
+ *   move backward
+ *   loader up
+ */
+fsm_branch_t
+ai__MOVE_LOADER_UNBLOCKING_DOWNING__loader_errored (void)
+{
+    asserv_move_linearly (-MOVE_LOADER_UNBLOCKING_DISTANCE);
+    loader_up ();
+    return ai_next (MOVE_LOADER_UNBLOCKING_DOWNING, loader_errored);
 }
 
 
