@@ -381,11 +381,31 @@ path_get_next (vect_t *p)
 {
     if (path.found)
       {
-	/* TODO: remove useless nodes. */
 	assert (path.get != PATH_DST_NODE_INDEX);
+	uint8_t prev = path.get;
+	vect_t pp;
+	path_pos (prev, &pp);
 	uint8_t next = path.astar_nodes[path.get].prev;
 	path.get = next;
 	path_pos (next, p);
+	while (next != 0xff)
+	  {
+	    /* Try to remove useless points. */
+	    uint8_t next = path.astar_nodes[path.get].prev;
+	    if (next == 0xff || next == PATH_DST_NODE_INDEX)
+		break;
+	    vect_t np;
+	    path_pos (next, &np);
+	    vect_t vnp = np; vect_sub (&vnp, &pp);
+	    vect_t vp = *p; vect_sub (&vp, &pp);
+	    if (vect_normal_dot_product (&vp, &vnp) == 0)
+	      {
+		path.get = next;
+		*p = np;
+	      }
+	    else
+		break;
+	  }
 	return 1;
       }
     else
