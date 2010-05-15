@@ -456,11 +456,13 @@ ai__MOVE_WAIT_FOR_CLEAR_PATH__state_timeout (void)
  * MOVE_LOADER_UNBLOCKING_UPING =bot_move_succeed=>
  *  => MOVE_LOADER_UNBLOCKING_DOWNING
  *   loader down
+ *   reset unblocking retry counter
  */
 fsm_branch_t
 ai__MOVE_LOADER_UNBLOCKING_UPING__bot_move_succeed (void)
 {
     loader_down ();
+    move_data.loader_unblocking_retry = 2;
     return ai_next (MOVE_LOADER_UNBLOCKING_UPING, bot_move_succeed);
 }
 
@@ -468,44 +470,122 @@ ai__MOVE_LOADER_UNBLOCKING_UPING__bot_move_succeed (void)
  * MOVE_LOADER_UNBLOCKING_UPING =bot_move_failed=>
  *  => MOVE_LOADER_UNBLOCKING_DOWNING
  *   loader down
+ *   reset unblocking retry counter
  */
 fsm_branch_t
 ai__MOVE_LOADER_UNBLOCKING_UPING__bot_move_failed (void)
 {
     loader_down ();
+    move_data.loader_unblocking_retry = 2;
     return ai_next (MOVE_LOADER_UNBLOCKING_UPING, bot_move_failed);
 }
 
 /*
  * MOVE_LOADER_UNBLOCKING_DOWNING =loader_downed=>
- * rotate => MOVE_ROTATING
- *   repeat last rotate
- * move => MOVE_MOVING
- *   repeat last move
+ * path_found_rotate => MOVE_ROTATING
+ *   rotate towards next position.
+ * path_found => MOVE_MOVING
+ *   move to next position.
+ * no_path_found => MOVE_IDLE
+ *   post failure.
  */
 fsm_branch_t
 ai__MOVE_LOADER_UNBLOCKING_DOWNING__loader_downed (void)
 {
-    if (move_go_or_rotate (move_data.step, move_data.step_angle,
-			   move_data.step_with_angle,
-			   move_data.step_backward) == 2)
-	return ai_next_branch (MOVE_LOADER_UNBLOCKING_DOWNING, loader_downed, rotate);
+    /* Try to move. */
+    uint8_t next = move_path_init ();
+    if (next)
+      {
+	if (next == 2)
+	    return ai_next_branch (MOVE_LOADER_UNBLOCKING_DOWNING, loader_downed, path_found_rotate);
+	else
+	    return ai_next_branch (MOVE_LOADER_UNBLOCKING_DOWNING, loader_downed, path_found);
+      }
     else
-	return ai_next_branch (MOVE_LOADER_UNBLOCKING_DOWNING, loader_downed, move);
+      {
+	main_post_event (AI_EVENT_move_fsm_failed);
+	return ai_next_branch (MOVE_LOADER_UNBLOCKING_DOWNING, loader_downed, no_path_found);
+      }
 }
 
 /*
  * MOVE_LOADER_UNBLOCKING_DOWNING =loader_errored=>
- *  => MOVE_LOADER_UNBLOCKING_UPING
+ * tryagain => MOVE_LOADER_UNBLOCKING_UPING
  *   move backward
  *   loader up
+ * tryout_path_found_rotate => MOVE_ROTATING
+ *   rotate towards next position.
+ * tryout_path_found => MOVE_ROTATING
+ *   move to next position.
+ * tryout_no_path_found => MOVE_IDLE
+ *   post failure.
  */
 fsm_branch_t
 ai__MOVE_LOADER_UNBLOCKING_DOWNING__loader_errored (void)
 {
-    asserv_move_linearly (-MOVE_LOADER_UNBLOCKING_DISTANCE);
-    loader_up ();
-    return ai_next (MOVE_LOADER_UNBLOCKING_DOWNING, loader_errored);
+    if (--move_data.loader_unblocking_retry)
+      {
+	asserv_move_linearly (-MOVE_LOADER_UNBLOCKING_DISTANCE);
+	loader_up ();
+	return ai_next_branch (MOVE_LOADER_UNBLOCKING_DOWNING, loader_errored, tryagain);
+      }
+    else
+      {
+	/* Try to move. */
+	uint8_t next = move_path_init ();
+	if (next)
+	  {
+	    if (next == 2)
+		return ai_next_branch (MOVE_LOADER_UNBLOCKING_DOWNING, loader_errored, tryout_path_found_rotate);
+	    else
+		return ai_next_branch (MOVE_LOADER_UNBLOCKING_DOWNING, loader_errored, tryout_path_found);
+	  }
+	else
+	  {
+	    main_post_event (AI_EVENT_move_fsm_failed);
+	    return ai_next_branch (MOVE_LOADER_UNBLOCKING_DOWNING, loader_errored, tryout_no_path_found);
+	  }
+      }
+}
+
+/*
+ * MOVE_LOADER_UNBLOCKING_DOWNING =state_timeout=>
+ * tryagain => MOVE_LOADER_UNBLOCKING_UPING
+ *   move backward
+ *   loader up
+ * tryout_path_found_rotate => MOVE_ROTATING
+ *   rotate towards next position.
+ * tryout_path_found => MOVE_ROTATING
+ *   move to next position.
+ * tryout_no_path_found => MOVE_IDLE
+ *   post failure.
+ */
+fsm_branch_t
+ai__MOVE_LOADER_UNBLOCKING_DOWNING__state_timeout (void)
+{
+    if (--move_data.loader_unblocking_retry)
+      {
+	asserv_move_linearly (-MOVE_LOADER_UNBLOCKING_DISTANCE);
+	loader_up ();
+	return ai_next_branch (MOVE_LOADER_UNBLOCKING_DOWNING, state_timeout, tryagain);
+      }
+    else
+      {
+	/* Try to move. */
+	uint8_t next = move_path_init ();
+	if (next)
+	  {
+	    if (next == 2)
+		return ai_next_branch (MOVE_LOADER_UNBLOCKING_DOWNING, state_timeout, tryout_path_found_rotate);
+	    else
+		return ai_next_branch (MOVE_LOADER_UNBLOCKING_DOWNING, state_timeout, tryout_path_found);
+	  }
+	else
+	  {
+	    main_post_event (AI_EVENT_move_fsm_failed);
+	    return ai_next_branch (MOVE_LOADER_UNBLOCKING_DOWNING, state_timeout, tryout_no_path_found);
+	  }
+      }
 }
 
 

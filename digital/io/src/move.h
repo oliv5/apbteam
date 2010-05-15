@@ -68,6 +68,8 @@ struct move_data_t
     uint8_t final_move;
     /** Distance to remove from path. */
     int16_t shorten;
+    /** Loader unblocking retry counter. */
+    uint8_t loader_unblocking_retry;
 };
 
 /**

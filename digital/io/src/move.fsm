@@ -18,7 +18,7 @@ States:
   waiting for obstacle to disappear.
  MOVE_LOADER_UNBLOCKING_UPING
   moving loader up and move backward to unblock loader.
- MOVE_LOADER_UNBLOCKING_DOWNING
+ MOVE_LOADER_UNBLOCKING_DOWNING [timeout=450]
   moving loader down.
 
 Events:
@@ -93,15 +93,34 @@ MOVE_WAIT_FOR_CLEAR_PATH:
 MOVE_LOADER_UNBLOCKING_UPING:
  bot_move_succeed -> MOVE_LOADER_UNBLOCKING_DOWNING
   loader down
+  reset unblocking retry counter
  bot_move_failed -> MOVE_LOADER_UNBLOCKING_DOWNING
   loader down
+  reset unblocking retry counter
 
 MOVE_LOADER_UNBLOCKING_DOWNING:
- loader_downed: rotate -> MOVE_ROTATING
-  repeat last rotate
- loader_downed: move -> MOVE_MOVING
-  repeat last move
- loader_errored -> MOVE_LOADER_UNBLOCKING_UPING
+ loader_downed: path_found_rotate -> MOVE_ROTATING
+  rotate towards next position.
+ loader_downed: path_found -> MOVE_MOVING
+  move to next position.
+ loader_downed: no_path_found -> MOVE_IDLE
+  post failure.
+ loader_errored: tryagain -> MOVE_LOADER_UNBLOCKING_UPING
   move backward
   loader up
+ loader_errored: tryout_path_found_rotate -> MOVE_ROTATING
+  rotate towards next position.
+ loader_errored: tryout_path_found -> MOVE_ROTATING
+  move to next position.
+ loader_errored: tryout_no_path_found -> MOVE_IDLE
+  post failure.
+ state_timeout: tryagain -> MOVE_LOADER_UNBLOCKING_UPING
+  move backward
+  loader up
+ state_timeout: tryout_path_found_rotate -> MOVE_ROTATING
+  rotate towards next position.
+ state_timeout: tryout_path_found -> MOVE_ROTATING
+  move to next position.
+ state_timeout: tryout_no_path_found -> MOVE_IDLE
+  post failure.
 
