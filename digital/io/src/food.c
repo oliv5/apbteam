@@ -169,7 +169,7 @@ food_score (position_t robot_pos, uint8_t food)
     if (food_table[food].type == FOOD_TYPE_TOMATO)
 	score += 100;
     else if (food_table[food].type == FOOD_TYPE_CORN)
-	score -= 500;
+	score -= 1500;
     else
 	score -= 100000;
     /* Score modifier. */
@@ -192,7 +192,7 @@ food_score (position_t robot_pos, uint8_t food)
     if (food <= 4 || (food >= 14 && food <= 18))
 	score -= 300;
     if (v.y < BOT_SIZE_RADIUS)
-	score -= 6000;
+	score -= 500;
     /* Done. */
     return score;
 }
@@ -239,6 +239,8 @@ food_shorten (uint8_t food)
     /* Food on playground sides. */
     if (food <= 4 || (food >= 14 && food <= 18))
 	shorten = BOT_SIZE_FRONT;
+    if (food == 27 || food == 13)
+	shorten = BOT_SIZE_FRONT + 50;
     return shorten;
 }
 
