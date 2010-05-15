@@ -306,7 +306,7 @@ ai__LOADER_ERROR__loader_down (void)
 fsm_branch_t
 ai__LOADER_ERROR__loader_up (void)
 {
-    asserv_move_motor0_absolute (BOT_ELEVATOR_REST_STEP, BOT_ELEVATOR_SPEED);
+    asserv_move_motor0_absolute (BOT_ELEVATOR_STROKE_STEP, BOT_ELEVATOR_SPEED);
     return ai_next (LOADER_ERROR, loader_up);
 }
 
