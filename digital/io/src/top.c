@@ -32,6 +32,8 @@
 #include "chrono.h"
 #include "playground.h"
 
+#include "modules/utils/utils.h"
+
 uint8_t top_food;
 
 /** Maximum elements to load before unloading. */
@@ -59,6 +61,13 @@ top_collect (uint8_t force)
 	    return 0;
 	vect_t food_v;
 	food_pos (top_food, &food_v);
+	/* If loaded an next ball is far away, go unload. */
+	if (loader_elements
+	    && UTILS_ABS (food_v.x - robot_position.v.x) > 1000)
+	  {
+	    move_start_noangle (PG_VECT (2625, 253), 0, 0);
+	    return 0;
+	  }
 	move_start_noangle (food_v, 0, food_shorten (top_food));
 	return 1;
       }
