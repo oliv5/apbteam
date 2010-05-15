@@ -33,13 +33,13 @@ States:
   moving to the down position
  LOADER_ERROR
   error while moving up, stop in an unknown state
- LOADER_ERROR_DOWNING
+ LOADER_ERROR_DOWNING [timeout=225]
   error recovery moving down
- LOADER_ERROR_DOWNING_OPEN
+ LOADER_ERROR_DOWNING_OPEN [timeout=225]
   error recovery moving down, open clamp
- LOADER_ERROR_UPING
+ LOADER_ERROR_UPING [timeout=225]
   error recovery moving up
- LOADER_ERROR_UPING_OPEN
+ LOADER_ERROR_UPING_OPEN [timeout=225]
   error recovery moving up, open clamp
  LOADER_LOAD_CLOSING
   close clamp
@@ -142,11 +142,15 @@ LOADER_ERROR_DOWNING:
   open clamp
  elevator_failed -> LOADER_ERROR
   post loader_errored event
+ state_timeout -> LOADER_ERROR
+  post loader_errored event
 
 LOADER_ERROR_DOWNING_OPEN:
  clamp_succeed -> LOADER_DOWN
   post loader_downed event
  clamp_failed -> LOADER_ERROR
+  post loader_errored event
+ state_timeout -> LOADER_ERROR
   post loader_errored event
 
 LOADER_ERROR_UPING:
@@ -154,11 +158,15 @@ LOADER_ERROR_UPING:
   open clamp
  elevator_failed -> LOADER_ERROR
   post loader_errored event
+ state_timeout -> LOADER_ERROR
+  post loader_errored event
 
 LOADER_ERROR_UPING_OPEN:
  clamp_succeed -> LOADER_UP
   post loader_uped event
  clamp_failed -> LOADER_ERROR
+  post loader_errored event
+ state_timeout -> LOADER_ERROR
   post loader_errored event
 
 LOADER_DOWNING:

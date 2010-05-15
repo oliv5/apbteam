@@ -338,6 +338,18 @@ ai__LOADER_ERROR_DOWNING__elevator_failed (void)
 }
 
 /*
+ * LOADER_ERROR_DOWNING =state_timeout=>
+ *  => LOADER_ERROR
+ *   post loader_errored event
+ */
+fsm_branch_t
+ai__LOADER_ERROR_DOWNING__state_timeout (void)
+{
+    main_post_event (AI_EVENT_loader_errored);
+    return ai_next (LOADER_ERROR_DOWNING, state_timeout);
+}
+
+/*
  * LOADER_ERROR_DOWNING_OPEN =clamp_succeed=>
  *  => LOADER_DOWN
  *   post loader_downed event
@@ -359,6 +371,18 @@ ai__LOADER_ERROR_DOWNING_OPEN__clamp_failed (void)
 {
     main_post_event (AI_EVENT_loader_errored);
     return ai_next (LOADER_ERROR_DOWNING_OPEN, clamp_failed);
+}
+
+/*
+ * LOADER_ERROR_DOWNING_OPEN =state_timeout=>
+ *  => LOADER_ERROR
+ *   post loader_errored event
+ */
+fsm_branch_t
+ai__LOADER_ERROR_DOWNING_OPEN__state_timeout (void)
+{
+    main_post_event (AI_EVENT_loader_errored);
+    return ai_next (LOADER_ERROR_DOWNING_OPEN, state_timeout);
 }
 
 /*
@@ -387,6 +411,18 @@ ai__LOADER_ERROR_UPING__elevator_failed (void)
 }
 
 /*
+ * LOADER_ERROR_UPING =state_timeout=>
+ *  => LOADER_ERROR
+ *   post loader_errored event
+ */
+fsm_branch_t
+ai__LOADER_ERROR_UPING__state_timeout (void)
+{
+    main_post_event (AI_EVENT_loader_errored);
+    return ai_next (LOADER_ERROR_UPING, state_timeout);
+}
+
+/*
  * LOADER_ERROR_UPING_OPEN =clamp_succeed=>
  *  => LOADER_UP
  *   post loader_uped event
@@ -408,6 +444,18 @@ ai__LOADER_ERROR_UPING_OPEN__clamp_failed (void)
 {
     main_post_event (AI_EVENT_loader_errored);
     return ai_next (LOADER_ERROR_UPING_OPEN, clamp_failed);
+}
+
+/*
+ * LOADER_ERROR_UPING_OPEN =state_timeout=>
+ *  => LOADER_ERROR
+ *   post loader_errored event
+ */
+fsm_branch_t
+ai__LOADER_ERROR_UPING_OPEN__state_timeout (void)
+{
+    main_post_event (AI_EVENT_loader_errored);
+    return ai_next (LOADER_ERROR_UPING_OPEN, state_timeout);
 }
 
 /*
