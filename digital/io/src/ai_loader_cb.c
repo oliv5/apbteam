@@ -53,6 +53,16 @@ ai__LOADER_WAIT_JACK_IN__jack_inserted_into_bot (void)
 }
 
 /*
+ * LOADER_WAIT_JACK_IN =hola_start=>
+ *  => LOADER_IDLE
+ */
+fsm_branch_t
+ai__LOADER_WAIT_JACK_IN__hola_start (void)
+{
+    return ai_next (LOADER_WAIT_JACK_IN, hola_start);
+}
+
+/*
  * LOADER_WAIT_JACK_OUT =jack_removed_from_bot=>
  *  => LOADER_INIT_ELEVATOR_ZERO
  *   find elevator zero

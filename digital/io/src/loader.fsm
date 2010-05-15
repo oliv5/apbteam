@@ -59,8 +59,6 @@ Events:
   asserv failure result
  elevator_unload_position
   elevator above unloading position
- clamp_succeed
-  asserv success result
  clamp_failed
   asserv failure result
  gate_succeed
@@ -87,6 +85,7 @@ LOADER_IDLE:
 
 LOADER_WAIT_JACK_IN:
  jack_inserted_into_bot -> LOADER_WAIT_JACK_OUT
+ hola_start -> LOADER_IDLE
 
 LOADER_WAIT_JACK_OUT:
  jack_removed_from_bot -> LOADER_INIT_ELEVATOR_ZERO

@@ -51,8 +51,11 @@ Events:
   timeout in cycle count.
  asserv_last_cmd_ack
   last command sent to the asserv board has been acquitted.
+ clamp_succeed
+  asserv success result
 
 import init.fsm
+import hola.fsm
 import loader.fsm
 import move.fsm
 

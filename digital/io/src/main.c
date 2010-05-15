@@ -198,7 +198,12 @@ main_event_to_fsm (void)
     if (!IO_GET (CONTACT_BUMPER0) || !IO_GET (CONTACT_BUMPER1))
 	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_loader_element);
     if (!IO_GET (CONTACT_STRATEGY))
-	loader_down ();
+      {
+	if (switch_get_color ())
+	    loader_down ();
+	else
+	    FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_hola_start);
+      }
 
     /* Jack */
     if (switch_get_jack ())
