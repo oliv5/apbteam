@@ -38,6 +38,8 @@ uint8_t top_food;
 
 /** Maximum elements to load before unloading. */
 #define TOP_LOADER_MAX 3
+/** Maximum elements to load before unloading when far from unload area. */
+#define TOP_LOADER_MAX_FAR 4
 /** Time to reserve for unloading at end of round. */
 #define TOP_TIME_LIMIT_MS 20000ll
 
@@ -49,13 +51,18 @@ top_init (void)
 uint8_t
 top_collect (uint8_t force)
 {
-    if ((loader_elements < TOP_LOADER_MAX
+    uint8_t loader_max;
+    position_t robot_position;
+    asserv_get_position (&robot_position);
+    if (UTILS_ABS (PG_X (PG_WIDTH) - robot_position.v.x) < PG_WIDTH / 2)
+	loader_max = TOP_LOADER_MAX;
+    else
+	loader_max = TOP_LOADER_MAX_FAR;
+    if ((loader_elements < loader_max
 	 && (loader_elements == 0
 	     || chrono_remaining_time () > TOP_TIME_LIMIT_MS))
 	|| force)
       {
-	position_t robot_position;
-	asserv_get_position (&robot_position);
 	top_food = food_best (robot_position);
 	if (top_food == 0xff)
 	    return 0;
