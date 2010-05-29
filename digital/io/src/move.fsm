@@ -72,11 +72,15 @@ MOVE_MOVING:
   loader up
 
 MOVE_MOVING_BACKWARD_TO_TURN_FREELY:
+ bot_move_succeed: tryout -> MOVE_IDLE
+  post failure event.
  bot_move_succeed: path_found_rotate -> MOVE_ROTATING
   rotate towards next position.
  bot_move_succeed: path_found -> MOVE_MOVING
   move to next position.
  bot_move_succeed: no_path_found -> MOVE_IDLE
+  post failure event.
+ bot_move_failed: tryout -> MOVE_IDLE
   post failure event.
  bot_move_failed: path_found_rotate -> MOVE_ROTATING
   rotate towards next position.

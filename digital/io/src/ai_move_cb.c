@@ -394,6 +394,8 @@ ai__MOVE_MOVING__loader_errored (void)
 
 /*
  * MOVE_MOVING_BACKWARD_TO_TURN_FREELY =bot_move_succeed=>
+ * tryout => MOVE_IDLE
+ *   post failure event.
  * path_found_rotate => MOVE_ROTATING
  *   rotate towards next position.
  * path_found => MOVE_MOVING
@@ -404,23 +406,33 @@ ai__MOVE_MOVING__loader_errored (void)
 fsm_branch_t
 ai__MOVE_MOVING_BACKWARD_TO_TURN_FREELY__bot_move_succeed (void)
 {
-    uint8_t next = move_path_init ();
-    if (next)
+    if (--move_data.try_again_counter == 0)
       {
-	if (next == 2)
-	    return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_succeed, path_found_rotate);
-	else
-	    return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_succeed, path_found);
+	main_post_event (AI_EVENT_move_fsm_failed);
+	return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_succeed, tryout);
       }
     else
       {
-	main_post_event (AI_EVENT_move_fsm_failed);
-	return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_succeed, no_path_found);
+	uint8_t next = move_path_init ();
+	if (next)
+	  {
+	    if (next == 2)
+		return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_succeed, path_found_rotate);
+	    else
+		return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_succeed, path_found);
+	  }
+	else
+	  {
+	    main_post_event (AI_EVENT_move_fsm_failed);
+	    return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_succeed, no_path_found);
+	  }
       }
 }
 
 /*
  * MOVE_MOVING_BACKWARD_TO_TURN_FREELY =bot_move_failed=>
+ * tryout => MOVE_IDLE
+ *   post failure event.
  * path_found_rotate => MOVE_ROTATING
  *   rotate towards next position.
  * path_found => MOVE_MOVING
@@ -433,23 +445,31 @@ ai__MOVE_MOVING_BACKWARD_TO_TURN_FREELY__bot_move_succeed (void)
 fsm_branch_t
 ai__MOVE_MOVING_BACKWARD_TO_TURN_FREELY__bot_move_failed (void)
 {
-    uint8_t next = move_path_init ();
-    if (next)
+    if (--move_data.try_again_counter == 0)
       {
-	if (next == 2)
-	    return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed, path_found_rotate);
-	else
-	    return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed, path_found);
+	main_post_event (AI_EVENT_move_fsm_failed);
+	return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed, tryout);
       }
     else
       {
-	if (--move_data.try_again_counter == 0)
+	uint8_t next = move_path_init ();
+	if (next)
 	  {
-	    main_post_event (AI_EVENT_move_fsm_failed);
-	    return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed, no_path_found_tryout);
+	    if (next == 2)
+		return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed, path_found_rotate);
+	    else
+		return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed, path_found);
 	  }
 	else
-	    return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed, no_path_found_tryagain);
+	  {
+	    if (--move_data.try_again_counter == 0)
+	      {
+		main_post_event (AI_EVENT_move_fsm_failed);
+		return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed, no_path_found_tryout);
+	      }
+	    else
+		return ai_next_branch (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed, no_path_found_tryagain);
+	  }
       }
 }
 
