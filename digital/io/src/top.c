@@ -69,7 +69,7 @@ top_collect (uint8_t force)
 	    move_start_noangle (PG_VECT (2625, 253), 0, 0);
 	    return 0;
 	  }
-	asserv_set_speed (BOT_MOVE_SLOW);
+	asserv_set_speed (BOT_MOVE_MEDIUM);
 	move_start_noangle (food_v, 0, food_shorten (top_food));
 	return 1;
       }

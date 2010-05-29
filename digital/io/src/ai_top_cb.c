@@ -342,7 +342,6 @@ ai__COLLECT__move_fsm_failed (void)
 fsm_branch_t
 ai__COLLECT_SLOW_MOTION__bot_move_succeed (void)
 {
-    asserv_set_speed (BOT_MOVE_SLOW);
     if (top_collect (0))
 	return ai_next_branch (COLLECT_SLOW_MOTION, bot_move_succeed, collect);
     else
@@ -358,7 +357,6 @@ ai__COLLECT_SLOW_MOTION__bot_move_succeed (void)
 fsm_branch_t
 ai__COLLECT_SLOW_MOTION__bot_move_failed (void)
 {
-    asserv_set_speed (BOT_MOVE_SLOW);
     if (top_collect (0))
 	return ai_next_branch (COLLECT_SLOW_MOTION, bot_move_failed, collect);
     else

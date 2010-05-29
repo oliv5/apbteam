@@ -70,6 +70,9 @@
 /** Fast parameters. */
 #define BOT_MOVE_FAST 0x38, 0x38, 0x20, 0x20
 
+/** Medium parameters. */
+#define BOT_MOVE_MEDIUM 0x30, 0x30, 0x18, 0x18
+
 /** Slow parameters. */
 #define BOT_MOVE_SLOW 0x20, 0x20, 0x10, 0x10
 
