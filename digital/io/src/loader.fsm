@@ -200,6 +200,7 @@ LOADER_LOAD_UPING:
   open clamp
  elevator_failed -> LOADER_ERROR
   post loader_errored or loader_black event
+  remove one element
   open clamp
 
 LOADER_LOAD_UNLOADING:
