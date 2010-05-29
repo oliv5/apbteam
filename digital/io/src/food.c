@@ -192,7 +192,7 @@ food_score (position_t robot_pos, uint8_t food)
     if (food <= 4 || (food >= 14 && food <= 18))
 	score -= 300;
     if (v.y < BOT_SIZE_RADIUS)
-	score -= 500;
+	score -= 100;
     /* Done. */
     return score;
 }
