@@ -193,9 +193,6 @@ food_score (position_t robot_pos, uint8_t food)
 	score -= 300;
     if (v.y < BOT_SIZE_RADIUS)
 	score -= 500;
-    /* Avoid food near ISEP robot. */
-    if ((bot_color && food <= 4) || (!bot_color && food >= 14 && food <= 18))
-	score -= 2000;
     /* Done. */
     return score;
 }
