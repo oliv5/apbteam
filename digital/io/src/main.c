@@ -195,7 +195,8 @@ main_event_to_fsm (void)
 	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_elevator_unload_position);
 
     /* Contacts. */
-    if (!IO_GET (CONTACT_BUMPER0) || !IO_GET (CONTACT_BUMPER1))
+    if (asserv_get_motor0_position () < BOT_ELEVATOR_REST_STEP
+	&& (!IO_GET (CONTACT_BUMPER0) || !IO_GET (CONTACT_BUMPER1)))
 	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_loader_element);
     if (!IO_GET (CONTACT_STRATEGY))
       {
