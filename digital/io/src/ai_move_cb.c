@@ -248,6 +248,30 @@ ai__MOVE_ROTATING__bot_move_succeed (void)
 }
 
 /*
+ * MOVE_ROTATING =bot_move_failed=>
+ *  => MOVE_MOVING
+ *   move to next position.
+ */
+fsm_branch_t
+ai__MOVE_ROTATING__bot_move_failed (void)
+{
+    ai__MOVE_ROTATING__bot_move_succeed ();
+    return ai_next (MOVE_ROTATING, bot_move_failed);
+}
+
+/*
+ * MOVE_ROTATING =state_timeout=>
+ *  => MOVE_MOVING
+ *   move to next position.
+ */
+fsm_branch_t
+ai__MOVE_ROTATING__state_timeout (void)
+{
+    ai__MOVE_ROTATING__bot_move_succeed ();
+    return ai_next (MOVE_ROTATING, state_timeout);
+}
+
+/*
  * MOVE_ROTATING =loader_errored=>
  *  => MOVE_LOADER_UNBLOCKING_UPING
  *   move backward
@@ -316,6 +340,19 @@ ai__MOVE_MOVING__bot_move_failed (void)
     asserv_move_linearly (asserv_get_last_moving_direction () == 1 ?
 			  - 300 : 300);
     return ai_next (MOVE_MOVING, bot_move_failed);
+}
+
+/*
+ * MOVE_MOVING =state_timeout=>
+ *  => MOVE_MOVING_BACKWARD_TO_TURN_FREELY
+ *   reset final_move.
+ *   move backward to turn freely.
+ */
+fsm_branch_t
+ai__MOVE_MOVING__state_timeout (void)
+{
+    ai__MOVE_MOVING__bot_move_failed ();
+    return ai_next (MOVE_MOVING, state_timeout);
 }
 
 /*

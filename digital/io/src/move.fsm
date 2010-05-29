@@ -8,9 +8,9 @@ move
 States:
  *MOVE_IDLE
   waiting for the beginning of the move FSM.
- MOVE_ROTATING
+ MOVE_ROTATING [timeout=1125]
   rotating towards next point.
- MOVE_MOVING
+ MOVE_MOVING [timeout=2250]
   moving to a position (intermediate or final).
  MOVE_MOVING_BACKWARD_TO_TURN_FREELY
   moving backward to go away from what is blocking the bot.
@@ -38,6 +38,10 @@ MOVE_IDLE:
 MOVE_ROTATING:
  bot_move_succeed -> MOVE_MOVING
   move to next position.
+ bot_move_failed -> MOVE_MOVING
+  move to next position.
+ state_timeout -> MOVE_MOVING
+  move to next position.
  loader_errored -> MOVE_LOADER_UNBLOCKING_UPING
   move backward
   loader up
@@ -52,6 +56,9 @@ MOVE_MOVING:
  bot_move_succeed: no_path_found -> MOVE_IDLE
   post failure event.
  bot_move_failed -> MOVE_MOVING_BACKWARD_TO_TURN_FREELY
+  reset final_move.
+  move backward to turn freely.
+ state_timeout -> MOVE_MOVING_BACKWARD_TO_TURN_FREELY
   reset final_move.
   move backward to turn freely.
  obstacle_in_front: tryagain -> MOVE_WAIT_FOR_CLEAR_PATH
