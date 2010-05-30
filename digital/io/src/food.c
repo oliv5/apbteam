@@ -239,9 +239,9 @@ food_shorten (uint8_t food)
     if (food_table[food].type == FOOD_TYPE_CORN)
 	shorten = BOT_SIZE_FRONT + 70;
     /* Food on playground sides. */
-    if (food <= 4 || (food >= 14 && food <= 18))
+    else if (food <= 4 || (food >= 14 && food <= 18))
 	shorten = BOT_SIZE_FRONT;
-    if (food == 27 || food == 13)
+    else if (food == 27 || food == 13)
 	shorten = BOT_SIZE_FRONT + 50;
     return shorten;
 }
