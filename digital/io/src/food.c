@@ -169,7 +169,7 @@ food_score (position_t robot_pos, uint8_t food)
     if (food_table[food].type == FOOD_TYPE_TOMATO)
 	score += 100;
     else if (food_table[food].type == FOOD_TYPE_CORN)
-	score -= 1500;
+	score -= 1000;
     else
 	score -= 100000;
     /* Score modifier. */
