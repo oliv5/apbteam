@@ -295,8 +295,7 @@ ai__UNLOAD_UNLOAD__state_timeout (void)
  * unload => UNLOAD
  * collect => COLLECT
  * slow_motion => COLLECT_SLOW_MOTION
- *   slow down
- *   move to food
+ *   post loader_element event
  */
 fsm_branch_t
 ai__COLLECT__move_fsm_succeed (void)
@@ -304,8 +303,7 @@ ai__COLLECT__move_fsm_succeed (void)
     int16_t slow_motion = food_slow_motion (top_food);
     if (slow_motion)
       {
-	asserv_set_speed (BOT_MOVE_SNAYLE);
-	asserv_move_linearly (slow_motion);
+	fsm_handle_event (&ai_fsm, AI_EVENT_loader_element);
 	return ai_next_branch (COLLECT, move_fsm_succeed, slow_motion);
       }
     else if (top_collect (0))
@@ -333,47 +331,59 @@ ai__COLLECT__move_fsm_failed (void)
 }
 
 /*
- * COLLECT_SLOW_MOTION =bot_move_succeed=>
+ * COLLECT_SLOW_MOTION =loader_downed=>
  * unload => UNLOAD
  * collect => COLLECT
- *   speed up
  *   collect
  */
 fsm_branch_t
-ai__COLLECT_SLOW_MOTION__bot_move_succeed (void)
+ai__COLLECT_SLOW_MOTION__loader_downed (void)
 {
     if (top_collect (0))
-	return ai_next_branch (COLLECT_SLOW_MOTION, bot_move_succeed, collect);
+	return ai_next_branch (COLLECT_SLOW_MOTION, loader_downed, collect);
     else
-	return ai_next_branch (COLLECT_SLOW_MOTION, bot_move_succeed, unload);
+	return ai_next_branch (COLLECT_SLOW_MOTION, loader_downed, unload);
 }
 
 /*
- * COLLECT_SLOW_MOTION =bot_move_failed=>
+ * COLLECT_SLOW_MOTION =loader_errored=>
  * unload => UNLOAD
  * collect => COLLECT
  *   same as above
  */
 fsm_branch_t
-ai__COLLECT_SLOW_MOTION__bot_move_failed (void)
+ai__COLLECT_SLOW_MOTION__loader_errored (void)
 {
     if (top_collect (0))
-	return ai_next_branch (COLLECT_SLOW_MOTION, bot_move_failed, collect);
+	return ai_next_branch (COLLECT_SLOW_MOTION, loader_errored, collect);
     else
-	return ai_next_branch (COLLECT_SLOW_MOTION, bot_move_failed, unload);
+	return ai_next_branch (COLLECT_SLOW_MOTION, loader_errored, unload);
+}
+
+/*
+ * COLLECT_SLOW_MOTION =state_timeout=>
+ * unload => UNLOAD
+ * collect => COLLECT
+ *   same as above
+ */
+fsm_branch_t
+ai__COLLECT_SLOW_MOTION__state_timeout (void)
+{
+    if (top_collect (0))
+	return ai_next_branch (COLLECT_SLOW_MOTION, state_timeout, collect);
+    else
+	return ai_next_branch (COLLECT_SLOW_MOTION, state_timeout, unload);
 }
 
 /*
  * COLLECT_SLOW_MOTION =loader_black=>
  *  => COLLECT_BLACK
- *   speed up
  *   move backward
  *   mark as black
  */
 fsm_branch_t
 ai__COLLECT_SLOW_MOTION__loader_black (void)
 {
-    asserv_set_speed (BOT_MOVE_SLOW);
     asserv_move_linearly (-90);
     food_black (top_food);
     return ai_next (COLLECT_SLOW_MOTION, loader_black);

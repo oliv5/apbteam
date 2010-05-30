@@ -27,8 +27,8 @@ States:
   unloading, wait
  COLLECT
   collecting elements
- COLLECT_SLOW_MOTION
-  slowly move toward element to collect
+ COLLECT_SLOW_MOTION[timeout=450]
+  picking element before bumper contact
  COLLECT_BLACK
   moving backward after trying to collect a black corn
 
@@ -133,22 +133,22 @@ COLLECT:
  move_fsm_succeed: unload -> UNLOAD
  move_fsm_succeed: collect -> COLLECT
  move_fsm_succeed: slow_motion -> COLLECT_SLOW_MOTION
-  slow down
-  move to food
+  post loader_element event
  move_fsm_failed: unload -> UNLOAD
  move_fsm_failed: collect -> COLLECT
   cancel this element
 
 COLLECT_SLOW_MOTION:
- bot_move_succeed: unload -> UNLOAD
- bot_move_succeed: collect -> COLLECT
-  speed up
+ loader_downed: unload -> UNLOAD
+ loader_downed: collect -> COLLECT
   collect
- bot_move_failed: unload -> UNLOAD
- bot_move_failed: collect -> COLLECT
+ loader_errored: unload -> UNLOAD
+ loader_errored: collect -> COLLECT
+  same as above
+ state_timeout: unload -> UNLOAD
+ state_timeout: collect -> COLLECT
   same as above
  loader_black -> COLLECT_BLACK
-  speed up
   move backward
   mark as black
 
