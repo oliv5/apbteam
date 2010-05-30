@@ -331,6 +331,20 @@ ai__COLLECT__move_fsm_failed (void)
 }
 
 /*
+ * COLLECT =loader_black=>
+ *  => COLLECT_BLACK
+ *   move backward
+ *   mark as black
+ */
+fsm_branch_t
+ai__COLLECT__loader_black (void)
+{
+    asserv_move_linearly (-90);
+    food_black (top_food);
+    return ai_next (COLLECT, loader_black);
+}
+
+/*
  * COLLECT_SLOW_MOTION =loader_downed=>
  * unload => UNLOAD
  * collect => COLLECT

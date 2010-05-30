@@ -137,6 +137,9 @@ COLLECT:
  move_fsm_failed: unload -> UNLOAD
  move_fsm_failed: collect -> COLLECT
   cancel this element
+ loader_black -> COLLECT_BLACK
+  move backward
+  mark as black
 
 COLLECT_SLOW_MOTION:
  loader_downed: unload -> UNLOAD
