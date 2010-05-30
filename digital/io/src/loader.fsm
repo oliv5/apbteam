@@ -219,6 +219,7 @@ LOADER_LOAD_UNLOADING_OPEN:
 
 LOADER_LOAD_EMPTY_OPEN:
  clamp_succeed: down -> LOADER_DOWN
+  post loader_downed event
  clamp_succeed: up -> LOADER_UPING
   move up
  clamp_failed -> LOADER_ERROR

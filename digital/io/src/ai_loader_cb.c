@@ -601,6 +601,7 @@ ai__LOADER_LOAD_UNLOADING_OPEN__clamp_failed (void)
 /*
  * LOADER_LOAD_EMPTY_OPEN =clamp_succeed=>
  * down => LOADER_DOWN
+ *   post loader_downed event
  * up => LOADER_UPING
  *   move up
  */
@@ -614,7 +615,10 @@ ai__LOADER_LOAD_EMPTY_OPEN__clamp_succeed (void)
 	return ai_next_branch (LOADER_LOAD_EMPTY_OPEN, clamp_succeed, up);
       }
     else
+      {
+	main_post_event (AI_EVENT_loader_downed);
 	return ai_next_branch (LOADER_LOAD_EMPTY_OPEN, clamp_succeed, down);
+      }
 }
 
 /*
