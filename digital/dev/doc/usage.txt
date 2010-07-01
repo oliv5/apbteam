@@ -4,6 +4,8 @@ How to use the development card
 :Author: djerem
 
 
+This board is deprecated, see README file.
+
 Introduction
 ============
 

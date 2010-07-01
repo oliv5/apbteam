@@ -1,0 +1,36 @@
+dev - development board based on USBProg.
+
+This board is supposed to support several development task:
+
+ - AVR microcontroller programming,
+ - AVR JTAG debugger,
+ - CPLD programming,
+ - serial port connection.
+
+We do not use this board any longer for future development because upstream
+code is very buggy, and messy (svn without commit messages, with binaries,
+multiple copies of the almost same code...).  We never tried to make the JTAG
+part work.
+
+Please see our dev2 board.
+
+
+Copyright (C) 2008 Nicolas Schodet
+
+APBTeam:
+       Web: http://apbteam.org/
+     Email: team AT apbteam DOT org
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
