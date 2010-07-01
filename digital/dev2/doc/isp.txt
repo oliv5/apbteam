@@ -1,0 +1,28 @@
+====================
+ dev2 isp - AVR ISP
+====================
+
+This isp module provides an STK500v2 compatible AVR programmer.  It can be
+combined with the serial module in the same firmware.
+
+Do not forget to select an output using the control script!
+
+Usage with avrdude
+==================
+
+This programmer is recognised as a regular STK500v2 programmer on a serial
+port.
+
+Example to access the terminal mode:
+
+ avrdude -c stk500v2 -P /dev/ttyUSB1 -p atmega128 -t
+
+If the AVR frequency is too loo, you may have to lower the programmer
+frequency to have reliable communications:
+
+ avrdude -c stk500v2 -P /dev/ttyUSB1 -p atmega128 -B 100 -t
+
+To program a hex file:
+
+ avrdude -c stk500v2 -P /dev/ttyUSB1 -p atmega128 -U flash:w:foobar.hex
+

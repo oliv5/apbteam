@@ -1,0 +1,39 @@
+==========================================
+ dev2 gpio - General Purpose Input Output
+==========================================
+
+The gpio module provides eight I/O to be controlled by the host.
+
+Do not forget to select an output using the control script!
+
+Controlling ouput
+=================
+
+Use the control script to set outputs and directions.
+
+ dev2ctl.py --gpio *DDR* *PORT*
+
+DDR and PORT have the same meaning as the corresponding AVR registers.  Each
+parameter is an eight bit value, with each bit corresponding to one I/O port.
+
+ - if DDR bit is 0, corresponding port is an input, use PORT to activate a
+   pull-up,
+ - if DDR bit is 1, corresponding port is an output, use PORT to select the
+   output value.
+
+For example:
+
+ dev2ctl.py --gpio 0xc 0xa
+
+ - ports 0, 4, 5, 6, 7 will be input with no pull-up,
+ - port 1 will be input with pull-up,
+ - port 2 will be output with value 0,
+ - port 3 will be output with value 1.
+
+Reading input
+=============
+
+To read inputs, use a serial monitor (minicom, picocom, gtkterm, screen,
+socat...).  For each character sent to the console, input port current state
+will be echoed back.
+

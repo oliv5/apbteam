@@ -13,6 +13,9 @@ serial ports, you should load the generic serial driver:
 
 Then look at kernel messages to locate the new serial devices (/dev/ttyUSBx).
 
+If two functions are presents in the same firmware, two serial devices should
+be detected.
+
 Controlling the output
 ======================
 
@@ -24,9 +27,37 @@ You can also use it to deselect an output so that no current flows into it.
 
 It can also be used to control GPIO when available in the loaded firmware.
 
+To select an output:
+
+ dev2ctl.py -s *1 to 4*
+
+To make all output unconnected:
+
+ dev2ctl.py -u
+
+Before powering off connected boards, you should deselect outputs so that it
+is not powered by dev2 I/O pins.
+
 About the vendor and product ID
 ===============================
 
 They come from LUFA, the USB library we use for dev2.  This is not supposed to
 be done in a commercial USB product, but this is OK for hobbyists.  That's why
 dev2ctl parses the product name to make sure it talks to the right device.
+
+Changing firmware
+=================
+
+The dev2 firmware can be updated using the USB bootloader.  First of all,
+switch the board in DFU mode:
+
+ dev2ctl.py --dfu
+
+Then you can use a DFU programmer to update the firmware.  For example:
+
+ dfu-programmer at90usb162 erase
+ dfu-programmer at90usb162 flash dev2_gpio.hex
+
+Then the uploaded firmware can be started and used directly:
+
+ dfu-programmer at90usb162 start

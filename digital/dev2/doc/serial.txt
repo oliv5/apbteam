@@ -1,0 +1,13 @@
+===========================
+ dev2 serial - Serial port
+===========================
+
+This serial module provides a regular UART.
+
+Do not forget to select an output using the control script!
+
+Serial port parameters are fixed at compilation time, so there is no need to
+setup your serial port monitor.
+
+There is nothing special apart from this.
+
