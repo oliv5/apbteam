@@ -1,10 +1,10 @@
 ===============================
 How to use the development card
 ===============================
-:Author: djerem
+:Author: djerem, ni
 
 
-This board is deprecated, see README file.
+*This board is deprecated, see README file.*
 
 Introduction
 ============
@@ -61,4 +61,25 @@ Voodoo power should not be used any more:
     ``modprobe -r cdc_acm``, then put the development card in program mode:
     ``sudo usbprog device 0 upload blinkdemo devices``, the card is ready to
     be used for programming.
+
+Firmware update mode
+====================
+
+Firmware update mode can be selected:
+
+ - on the first board revision (dev) by shorting PA1 to 0 when booting.  You
+   can use the JTAG_PRG1 to do this.  Warning, name position in PCB is
+   misleading.
+
+ - on the second board revision (dev-2) by shorting PA7 to 0 when booting.
+   You can do this using the USER connector.
+
+CPLD programming
+================
+
+Use Firmware update mode to upload the ``usbprog_apbteam_xsvf.bin`` firmware.
+It has been tuned to work with our JTAG pin out.
+
+You can afterward load a XSVF file using ``xsvfplayer`` from the USBProg
+repository.  Warning: you will probably need super user privileges.
 
