@@ -29,9 +29,9 @@ Article 3: Siège social
 Le siège social est fixé au :
 
 |   APBTeam
-|   chez Pierre-André Galmes
-|   26, rue Marcel Bourdarias
-|   94140 Alfortville
+|   chez Nicolas Schodet
+|   18, rue des Crocheteurs
+|   92160 Antony
 
 Il pourra être transféré sur simple décision du Conseil d'Administration.
 
@@ -183,12 +183,12 @@ L'assemblée générale se réunit sur convocation du président de l'associatio
 Elle peut être également convoquée sur la demande collective des 2/3 des
 membres, adressée au président.
 
-Les convocations sont faites au moins 15 jours à l'avance par notification
+Les convocations sont faites au moins 7 jours à l'avance par notification
 (par courrier papier ou électronique) indiquant le jour et le lieu de la
 réunion, ainsi que l'ordre du jour dressé par le conseil d'administration.
 
 Tout membre de l'association peut adresser au conseil d'administration,
-jusqu'à 7jours avant la date de la réunion, une proposition d'inscription d'un
+jusqu'à 7 jours avant la date de la réunion, une proposition d'inscription d'un
 sujet à l'ordre du jour. Toute proposition faisant l'objet d'un vote positif
 d'un quart au moins des membres de l'association, participants ou représentés
 à l'assemblée générale, sera rajouté à l'ordre du jour.
