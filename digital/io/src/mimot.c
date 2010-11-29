@@ -114,7 +114,7 @@ mimot_reset (void)
 {
     uint8_t *buffer = twi_master_get_buffer (MIMOT_SLAVE);
     buffer[0] = 'z';
-    twi_master_send (1);
+    twi_master_send_buffer (1);
 }
 
 void
@@ -125,7 +125,7 @@ mimot_move_motor0_absolute (uint16_t position, uint8_t speed)
     buffer[1] = v16_to_v8 (position, 1);
     buffer[2] = v16_to_v8 (position, 0);
     buffer[3] = speed;
-    twi_master_send (4);
+    twi_master_send_buffer (4);
 }
 
 void
@@ -136,7 +136,7 @@ mimot_move_motor1_absolute (uint16_t position, uint8_t speed)
     buffer[1] = v16_to_v8 (position, 1);
     buffer[2] = v16_to_v8 (position, 0);
     buffer[3] = speed;
-    twi_master_send (4);
+    twi_master_send_buffer (4);
 }
 
 void
@@ -145,7 +145,7 @@ mimot_motor0_zero_position (int8_t speed)
     uint8_t *buffer = twi_master_get_buffer (MIMOT_SLAVE);
     buffer[0] = 'B';
     buffer[1] = speed;
-    twi_master_send (2);
+    twi_master_send_buffer (2);
 }
 
 void
@@ -154,7 +154,7 @@ mimot_motor1_zero_position (int8_t speed)
     uint8_t *buffer = twi_master_get_buffer (MIMOT_SLAVE);
     buffer[0] = 'C';
     buffer[1] = speed;
-    twi_master_send (2);
+    twi_master_send_buffer (2);
 }
 
 void
@@ -166,7 +166,7 @@ mimot_motor0_clamp (int8_t speed, int16_t pwm)
     buffer[2] = speed;
     buffer[3] = v16_to_v8 (pwm, 1);
     buffer[4] = v16_to_v8 (pwm, 0);
-    twi_master_send (5);
+    twi_master_send_buffer (5);
 }
 
 void
@@ -178,6 +178,6 @@ mimot_motor1_clamp (int8_t speed, int16_t pwm)
     buffer[2] = speed;
     buffer[3] = v16_to_v8 (pwm, 1);
     buffer[4] = v16_to_v8 (pwm, 0);
-    twi_master_send (5);
+    twi_master_send_buffer (5);
 }
 

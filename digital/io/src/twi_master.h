@@ -63,6 +63,6 @@ twi_master_get_buffer (uint8_t slave);
 
 /** Send previously got buffer with the given length. */
 void
-twi_master_send (uint8_t length);
+twi_master_send_buffer (uint8_t length);
 
 #endif /* twi_master_h */

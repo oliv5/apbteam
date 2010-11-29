@@ -201,7 +201,7 @@ twi_master_get_buffer (uint8_t slave)
 }
 
 void
-twi_master_send (uint8_t length)
+twi_master_send_buffer (uint8_t length)
 {
     assert (length != 0);
     struct twi_master_command_t *c =
