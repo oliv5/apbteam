@@ -36,7 +36,13 @@
 # if AC_TWI_MASTER_ENABLE && AC_TWI_SLAVE_ENABLE
 /* To support multi-master mode, care should be taken in the master send and
  * receive functions as they can no longer assume that the TWI is idle if
- * master status is busy. */
+ * master status is busy.
+ *
+ * In case of arbitration lost and acting as a slave, transfer should be
+ * restarted or canceled.  Current code just forget it.
+ *
+ * When a bus error occurs, the code should be adapted to restart in the right
+ * mode. */
 #  error "twi: multi-master not implemented"
 # endif
 # if AC_TWI_PULL_UP
@@ -283,8 +289,9 @@ SIGNAL (SIG_2WIRE_SERIAL)
 	index = 0;
 	break;
       case TW_MT_ARB_LOST:
-	/* Arbitration lost, same as TW_MR_ARB_LOST. */
-	/* TODO */
+	/* Arbitration lost, same as TW_MR_ARB_LOST.
+	 * Retry after running transfer. */
+	TWCR = TWCR_OK | _BV (TWSTA);
 	break;
       case TW_MT_DATA_ACK:
       case TW_MT_SLA_ACK:
@@ -335,6 +342,23 @@ SIGNAL (SIG_2WIRE_SERIAL)
 	    TWCR = TWCR_OK | _BV (TWEA);
 	break;
 # endif/* AC_TWI_MASTER_ENABLE */
+      case TW_BUS_ERROR:
+	/* Bus error condition.
+	 * Reset TWI to a sane state. */
+	TWCR = TWCR_OK | _BV (TWSTO);
+# if AC_TWI_SLAVE_ENABLE
+	/* Restore addressable mode. */
+	TWCR = TWCR_OK | _BV (TWEA);
+# else
+	/* Signal error. */
+	if (ctx.master_current_status == TWI_MASTER_BUSY)
+	  {
+	    ctx.master_current_status = TWI_MASTER_ERROR;
+	    /* Call master done callback. */
+	    TWI_MASTER_DONE ();
+	  }
+# endif
+	break;
       }
 }
 
