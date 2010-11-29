@@ -1,0 +1,63 @@
+=====================================
+ dev2 twi - Two Wire Interface (I2C)
+=====================================
+
+The twi module provides a master twi controlled by the host.
+
+Do not forget to select an output using the control script!
+
+Controlling using a serial monitor
+==================================
+
+To control twi master, use a serial monitor (minicom, picocom, gtkterm,
+screen, socat...).  This module defines a language to make twi requests.
+
+Commands are composed of a command letter, followed by hexadecimal parameters,
+and finally a carriage return.
+
+Protocol errors are signaled using an exclamation mark followed by a carriage
+return.
+
+Sending data
+------------
+
+Command::
+
+    s<slave><data string>\r
+
+Response::
+
+    S<number of bytes sent>\r
+
+For example::
+
+    s04010203\r
+    S03\r
+
+The example sends the bytes 0x01, 0x02 and 0x03 to the slave at address 0x04.
+The modules responded that all three bytes were sent.
+
+Receiving data
+--------------
+
+Command::
+
+    r<slave><number of bytes to receive>\r
+
+Response::
+
+    R<data string>\r
+
+For example::
+
+    r0403\r
+    R010203\r
+
+The example request to read three bytes from the slave at address 0x04.  The
+modules responded with the received data.
+
+Controlling using python
+========================
+
+The `dev2.twi` python modules defines the Twi class to easily access the twi
+module.
