@@ -1,4 +1,4 @@
-/* twi.host.c */
+/* twi.host.c - Implementation for host system. */
 /* avr.twi - TWI AVR module. {{{
  *
  * Copyright (C) 2008 Nicolas Schodet
@@ -24,12 +24,10 @@
  * }}} */
 #include "common.h"
 #include "twi.h"
+
+#include "modules/utils/utils.h"
 #include "modules/host/mex.h"
-
 #include <string.h>
-
-/** This implementation should cover all usual cases, and assert in other
- * cases. */
 
 /** Read messages are sent as request.
  * In request, first byte is address, second byte is length.
@@ -39,19 +37,28 @@
  * First byte is address, rest of payload is data. */
 #define TWI_WRITE 0x91
 
-/** TWI address. */
-static uint8_t twi_address;
+/** Module context. */
+struct twi_host_t
+{
+    /** Slave address. */
+    uint8_t address;
+#if AC_TWI_SLAVE_ENABLE
+    /** Slave transmission buffer. */
+    uint8_t slave_send_buffer[AC_TWI_SLAVE_SEND_BUFFER_SIZE];
+    /** Slave transmission buffer current size. */
+    uint8_t slave_send_buffer_size;
+#endif /* AC_TWI_SLAVE_ENABLE */
+#if AC_TWI_MASTER_ENABLE
+    /** Current master status. */
+    uint8_t master_current_status;
+#endif /* AC_TWI_MASTER_ENABLE */
+};
+
+/** Global context. */
+static struct twi_host_t twi_host_global;
+#define ctx twi_host_global
 
 #if AC_TWI_SLAVE_ENABLE
-
-/** Received data. */
-static uint8_t rcpt_buf_sl[AC_TWI_SL_RECV_BUFFER_SIZE];
-/** Received data size. */
-static uint8_t rcpt_size_sl;
-/** Whether new received data are ready. */
-static uint8_t data_ready_sl;
-/** Data sent on master request. */
-static uint8_t send_buf_sl[AC_TWI_SL_SEND_BUFFER_SIZE];
 
 /** Handle READ requests from master. */
 static void
@@ -63,57 +70,51 @@ twi_handle_WRITE (void *user, mex_msg_t *msg);
 
 #endif /* AC_TWI_SLAVE_ENABLE */
 
-/** Initialise twi. */
 void
 twi_init (uint8_t addr)
 {
-    twi_address = addr;
+    assert ((addr & 1) == 0);
+    ctx.address = addr;
 #if AC_TWI_SLAVE_ENABLE
-    data_ready_sl = 0;
+    ctx.slave_send_buffer_size = 1;
+    ctx.slave_send_buffer[0] = 0;
     mex_node_register (TWI_READ, twi_handle_READ, NULL);
     mex_node_register (TWI_WRITE, twi_handle_WRITE, NULL);
 #endif /* AC_TWI_SLAVE_ENABLE */
+#if AC_TWI_MASTER_ENABLE
+    ctx.master_current_status = TWI_MASTER_ERROR;
+#endif /* AC_TWI_MASTER_ENABLE */
+}
+
+void
+twi_uninit (void)
+{
+    ctx.address = 0xff;
 }
 
 #if AC_TWI_SLAVE_ENABLE
 
-/** Récupère dans buffer les données recues en tant qu'esclave */
-uint8_t 
-twi_sl_poll (uint8_t *buffer, uint8_t size)
+/** Update buffer to be sent to master if requested. */
+void
+twi_slave_update (const uint8_t *buffer, uint8_t size)
 {
-    uint8_t i;
-    if (data_ready_sl)
-      {
-	data_ready_sl = 0;
-	if (size > rcpt_size_sl)
-	    size = rcpt_size_sl;
-	for (i = 0; i < size; i++)
-	    buffer[i] = rcpt_buf_sl[i];
-	return size;
-      }
-    else
-	return 0;
-}
-
-/** Met à jour le buffer de donnée à envoyer */
-void 
-twi_sl_update (uint8_t *buffer, uint8_t size)
-{
-    while (size--)
-	send_buf_sl[size] = buffer[size];
+    assert (size && size <= AC_TWI_SLAVE_SEND_BUFFER_SIZE);
+    memcpy (ctx.slave_send_buffer, buffer, size);
+    ctx.slave_send_buffer_size = size;
 }
 
 /** Handle READ requests from master. */
 static void
 twi_handle_READ (void *user, mex_msg_t *msg)
 {
-    u8 addr, size;
+    uint8_t addr, size;
     mex_msg_pop (msg, "BB", &addr, &size);
-    if (addr == twi_address)
+    if (addr == ctx.address)
       {
-	assert (size <= AC_TWI_SL_SEND_BUFFER_SIZE);
+	assert (size <= AC_TWI_SLAVE_SEND_BUFFER_SIZE);
 	mex_msg_t *m = mex_msg_new (TWI_READ);
-	mex_msg_push_buffer (m, send_buf_sl, size);
+	mex_msg_push_buffer (m, ctx.slave_send_buffer,
+			     UTILS_MIN (size, ctx.slave_send_buffer_size));
 	mex_node_response (m);
       }
 }
@@ -122,15 +123,13 @@ twi_handle_READ (void *user, mex_msg_t *msg)
 static void
 twi_handle_WRITE (void *user, mex_msg_t *msg)
 {
-    u8 addr, size;
+    uint8_t addr, size;
     mex_msg_pop (msg, "B", &addr);
-    if (addr == twi_address)
+    if (addr == ctx.address)
       {
 	size = mex_msg_len (msg);
-	assert (size <= AC_TWI_SL_RECV_BUFFER_SIZE);
-	memcpy (rcpt_buf_sl, mex_msg_pop_buffer (msg), size);
-	rcpt_size_sl = size;
-	data_ready_sl = 1;
+	AC_TWI_SLAVE_RECV (mex_msg_pop_buffer (msg),
+			   UTILS_MIN (size, AC_TWI_SLAVE_RECV_BUFFER_SIZE));
       }
 }
 
@@ -138,35 +137,62 @@ twi_handle_WRITE (void *user, mex_msg_t *msg)
 
 #if AC_TWI_MASTER_ENABLE
 
-/** Is the current transaction finished ? */
-int8_t 
-twi_ms_is_finished (void)
+void
+twi_master_send (uint8_t addr, const uint8_t *buffer, uint8_t size)
 {
-    return 1;
-}
-
-/** Send len bytes of data to address */
-int8_t
-twi_ms_send (uint8_t address, uint8_t *data, uint8_t len)
-{
+    /* Send message. */
     mex_msg_t *m = mex_msg_new (TWI_WRITE);
-    mex_msg_push (m, "B", address);
-    mex_msg_push_buffer (m, data, len);
+    mex_msg_push (m, "B", addr);
+    mex_msg_push_buffer (m, buffer, size);
     mex_node_send (m);
-    return 0;
+    /* Update status, there is no background task. */
+    ctx.master_current_status = size;
+    /* If defined, call master done callback. */
+#ifdef AC_TWI_MASTER_DONE
+    AC_TWI_MASTER_DONE ();
+#endif
 }
 
-/** Read len bytes at addresse en put them in data */
-int8_t
-twi_ms_read (uint8_t address, uint8_t *data, uint8_t len)
+void
+twi_master_recv (uint8_t addr, uint8_t *buffer, uint8_t size)
 {
+    /* Send request and wait for response. */
     mex_msg_t *m = mex_msg_new (TWI_READ);
-    mex_msg_push (m, "BB", address, len);
+    mex_msg_push (m, "BB", addr, size);
     m = mex_node_request (m);
-    assert (mex_msg_len (m) == len);
-    memcpy (data, mex_msg_pop_buffer (m), len);
-    return 0;
+    int recv = mex_msg_len (m);
+    assert (recv <= size);
+    memcpy (buffer, mex_msg_pop_buffer (m), recv);
+    /* Update status, there is no background task. */
+    ctx.master_current_status = recv;
+    /* If defined, call master done callback. */
+#ifdef AC_TWI_MASTER_DONE
+    AC_TWI_MASTER_DONE ();
+#endif
+}
+
+uint8_t
+twi_master_status (void)
+{
+    return ctx.master_current_status;
+}
+
+uint8_t
+twi_master_wait (void)
+{
+    /* No background task, nothing to wait. */
+    return ctx.master_current_status;
 }
 
 #endif /* AC_TWI_MASTER_ENABLE */
+
+#if AC_TWI_NO_INTERRUPT
+
+void
+twi_update (void)
+{
+    /* Nothing to do. */
+}
+
+#endif /* AC_TWI_NO_INTERRUPT */
 

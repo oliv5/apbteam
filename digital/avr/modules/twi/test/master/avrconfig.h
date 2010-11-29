@@ -3,17 +3,17 @@
 /* avrconfig.h */
 /* avr.twi - TWI AVR module. {{{
  *
- * Copyright (C) 2005 Demonchy Clément
+ * Copyright (C) 2010 Nicolas Schodet
  *
- * Robot APB Team/Efrei 2006.
- *        Web: http://assos.efrei.fr/robot/
- *      Email: robot AT efrei DOT fr
+ * APBTeam:
+ *        Web: http://apbteam.org/
+ *      Email: team AT apbteam DOT org
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -25,30 +25,10 @@
  *
  * }}} */
 
-/* global */
+/* utils */
 /** AVR Frequency : 1000000, 1843200, 2000000, 3686400, 4000000, 7372800,
  * 8000000, 11059200, 14745600, 16000000, 18432000, 20000000. */
 #define AC_FREQ 14745600
-
-/* twi - TWI module. */
-/** Activate master part. */
-#define AC_TWI_MASTER_ENABLE 1
-/** Activate slave part. */
-#define AC_TWI_SLAVE_ENABLE 0
-/** Slave recv buffer size. */
-#define AC_TWI_SL_RECV_BUFFER_SIZE 16
-/** Slave send buffer size. */
-#define AC_TWI_SL_SEND_BUFFER_SIZE 16
-
-/* proto - Protocol module. */
-/** Maximum argument size. */
-#define AC_PROTO_ARGS_MAX_SIZE 16
-/** Callback function name. */
-#define AC_PROTO_CALLBACK proto_callback
-/** Putchar function name. */
-#define AC_PROTO_PUTC uart0_putc
-/** Support for quote parameter. */
-#define AC_PROTO_QUOTE 1
 
 /* uart - UART module. */
 /** Select hardware uart for primary uart: 0, 1 or -1 to disable. */
@@ -59,9 +39,9 @@
 /** Send mode:
  *  - POLLING: no interrupts.
  *  - RING: interrupts, ring buffer. */
-#define AC_UART0_SEND_MODE POLLING
+#define AC_UART0_SEND_MODE RING
 /** Recv mode, same as send mode. */
-#define AC_UART0_RECV_MODE POLLING
+#define AC_UART0_RECV_MODE RING
 /** Character size: 5, 6, 7, 8, 9 (only 8 implemented). */
 #define AC_UART0_CHAR_SIZE 8
 /** Parity : ODD, EVEN, NONE. */
@@ -91,7 +71,33 @@
 #define AC_UART1_SEND_BUFFER_SIZE 32
 #define AC_UART1_RECV_BUFFER_SIZE 32
 #define AC_UART1_SEND_BUFFER_FULL WAIT
-#define AC_UART1_HOST_DRIVER STDIO
+#define AC_UART1_HOST_DRIVER PTS
 
+/* proto - Protocol module. */
+/** Maximum argument size. */
+#define AC_PROTO_ARGS_MAX_SIZE 32
+/** Callback function name. */
+#define AC_PROTO_CALLBACK proto_callback
+/** Putchar function name. */
+#define AC_PROTO_PUTC uart0_putc
+/** Support for quote parameter. */
+#define AC_PROTO_QUOTE 1
+
+/* twi - TWI module. */
+/** Driver to implement TWI: HARD, SOFT, or USI. */
+#define AC_TWI_DRIVER HARD
+/** Do not use interrupts. */
+#define AC_TWI_NO_INTERRUPT 0
+/** TWI frequency, should really be 100 kHz. */
+#define AC_TWI_FREQ 100000
+/** Enable slave part. */
+#define AC_TWI_SLAVE_ENABLE 0
+/** Enable master part. */
+#define AC_TWI_MASTER_ENABLE 1
+/** Master transfer completion callback, optionally defined by the user, called
+ * at end of master transfer. */
+#undef AC_TWI_MASTER_DONE
+/** Use internal pull up. */
+#define AC_TWI_PULL_UP 0
 
 #endif /* avrconfig_h */

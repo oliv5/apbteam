@@ -111,10 +111,9 @@ twi_master_send_head (void)
 	struct twi_master_command_t *c =
 	    &twi_master.pending[twi_master.pending_head];
 	/* Send command. */
-	twi_ms_send (twi_master_slaves[c->slave].address, c->command,
-		     c->length + 1);
-	while (!twi_ms_is_finished ())
-	    ;
+	twi_master_send (twi_master_slaves[c->slave].address, c->command,
+			 c->length + 1);
+	twi_master_wait ();
 	/* Reset retransmission counter. */
 	twi_master.retransmit_counter = TWI_MASTER_RETRANSMIT_INTERVAL;
       }
@@ -126,10 +125,11 @@ twi_master_update_status (uint8_t slave, uint8_t init)
 {
     uint8_t buffer[TWI_MASTER_STATUS_PAYLOAD_MAX + 1];
     /* Read status. */
-    twi_ms_read (twi_master_slaves[slave].address, buffer,
-		 twi_master_slaves[slave].status_length + 1);
-    while (!twi_ms_is_finished ())
-	;
+    twi_master_recv (twi_master_slaves[slave].address, buffer,
+		     twi_master_slaves[slave].status_length + 1);
+    uint8_t ret = twi_master_wait ();
+    if (ret != twi_master_slaves[slave].status_length + 1)
+	return 0;
     uint8_t crc = crc_compute (buffer + 1,
 			       twi_master_slaves[slave].status_length);
     if (crc != buffer[0])

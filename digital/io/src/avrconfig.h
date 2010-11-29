@@ -84,10 +84,22 @@
 #define AC_PROTO_QUOTE 1
 
 /* twi - TWI module. */
-/** Activate master part. */
-#define AC_TWI_MASTER_ENABLE 1
-/** Activate slave part. */
+/** Driver to implement TWI: HARD, SOFT, or USI. */
+#define AC_TWI_DRIVER HARD
+/** Do not use interrupts. */
+#define AC_TWI_NO_INTERRUPT 0
+/** TWI frequency, should really be 100 kHz. */
+#define AC_TWI_FREQ 100000
+/** Enable slave part. */
 #define AC_TWI_SLAVE_ENABLE 0
+/** Enable master part. */
+#define AC_TWI_MASTER_ENABLE 1
+/** Master transfer completion callback, optionally defined by the user, called
+ * at end of master transfer. */
+#undef AC_TWI_MASTER_DONE
+/** Use internal pull up. */
+#define AC_TWI_PULL_UP 0
+
 
 /* path - Path finding module. */
 /** Report path found for debug. */

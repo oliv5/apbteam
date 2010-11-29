@@ -70,10 +70,10 @@ twi_proto_init (void)
 void
 twi_proto_update (void)
 {
-    u8 buf[AC_TWI_SL_RECV_BUFFER_SIZE];
+    u8 buf[AC_TWI_SLAVE_RECV_BUFFER_SIZE];
     u8 read_data;
     /* Handle incoming command. */
-    while ((read_data = twi_sl_poll (buf, sizeof (buf))))
+    while ((read_data = twi_slave_poll (buf, sizeof (buf))))
 	twi_proto_callback (buf, read_data);
     /* Update status. */
     u8 status_with_crc[16];
@@ -104,7 +104,7 @@ twi_proto_update (void)
     /* Compute CRC. */
     status_with_crc[0] = crc_compute (&status_with_crc[1],
                                       sizeof (status_with_crc) - 1);
-    twi_sl_update (status_with_crc, sizeof (status_with_crc));
+    twi_slave_update (status_with_crc, sizeof (status_with_crc));
 }
 
 /** Handle one command. */

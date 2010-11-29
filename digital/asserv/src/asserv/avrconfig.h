@@ -92,14 +92,28 @@
 #define AC_ASSERV_TWI_ADDRESS 4
 
 /* twi - TWI module. */
-/** Activate master part. */
-#define AC_TWI_MASTER_ENABLE 0
-/** Activate slave part. */
+/** Driver to implement TWI: HARD, SOFT, or USI. */
+#define AC_TWI_DRIVER HARD
+/** Do not use interrupts. */
+#define AC_TWI_NO_INTERRUPT 0
+/** TWI frequency, should really be 100 kHz. */
+#define AC_TWI_FREQ 100000
+/** Enable slave part. */
 #define AC_TWI_SLAVE_ENABLE 1
-/** Slave recv buffer size. */
-#define AC_TWI_SL_RECV_BUFFER_SIZE 16
-/** Slave send buffer size. */
-#define AC_TWI_SL_SEND_BUFFER_SIZE 16
+/** Enable master part. */
+#define AC_TWI_MASTER_ENABLE 0
+/** Use polled slave mode: received data is stored in a buffer which can be
+ * polled using twi_slave_poll. */
+#define AC_TWI_SLAVE_POLLED 1
+/** Slave reception callback to be defined by the user when not in polled
+ * mode. */
+#undef AC_TWI_SLAVE_RECV
+/** Use internal pull up. */
+#define AC_TWI_PULL_UP 0
+/** Slave reception buffer size. */
+#define AC_TWI_SLAVE_RECV_BUFFER_SIZE 16
+/** Slave transmission buffer size. */
+#define AC_TWI_SLAVE_SEND_BUFFER_SIZE 16
 
 /* spi - SPI module. */
 /** Select driver: HARD, SOFT, or NONE. */
