@@ -37,6 +37,28 @@
 #  define ISR SIGNAL
 #endif
 
+/** Saved interrupts state. */
+typedef uint8_t intr_flags_t;
+
+/** Lock interrupts, and return saved state.  Warning: this is not a memory
+ * barrier you still need to use volatile access where needed.
+ *
+ * Please try to find ways not to lock interrupts, this is dangerous! */
+extern inline intr_flags_t
+intr_lock (void)
+{
+    intr_flags_t flags = SREG;
+    cli ();
+    return flags;
+}
+
+/** Restore interrupts saved state. */
+extern inline void
+intr_restore (intr_flags_t flags)
+{
+    SREG = flags;
+}
+
 #else /* HOST */
 
 /* Same as on AVR. */
@@ -46,6 +68,14 @@
 /* No interrupt support on host. */
 #define sei()
 #define cli()
+
+typedef int intr_flags_t;
+
+extern inline intr_flags_t
+intr_lock (void) { return 0; }
+
+extern inline void
+intr_restore (intr_flags_t flags) { }
 
 #endif /* HOST */
 
