@@ -57,6 +57,9 @@
 /* Default TWCR value, activate TWI and TWI interrupts. */
 # define TWCR_DEFAULT (_BV (TWEN) | _BV (TWIE))
 
+/* Default TWCR value, plus clear TWINT. */
+# define TWCR_OK (_BV (TWINT) | TWCR_DEFAULT)
+
 /* TWBR register value for selected baud rate. */
 # define TWBR_VALUE ((AC_FREQ / AC_TWI_FREQ - 16) / 2)
 # if TWBR_VALUE > 255
@@ -159,7 +162,7 @@ twi_master_send (uint8_t addr, const uint8_t *buffer, uint8_t size)
     ctx.master_transfer_buffer_size = size;
     ctx.master_transfer_buffer = (uint8_t *) buffer;
     /* Send start condition. */
-    TWCR |= _BV (TWSTA) | _BV (TWINT);
+    TWCR = TWCR_OK | _BV (TWSTA);
 }
 
 void
@@ -173,7 +176,7 @@ twi_master_recv (uint8_t addr, uint8_t *buffer, uint8_t size)
     ctx.master_transfer_buffer_size = size;
     ctx.master_transfer_buffer = buffer;
     /* Send start condition. */
-    TWCR |= _BV (TWSTA) | _BV (TWINT);
+    TWCR = TWCR_OK | _BV (TWSTA);
 }
 
 uint8_t
@@ -221,16 +224,16 @@ SIGNAL (SIG_2WIRE_SERIAL)
 	/* Previous byte was acknowledged, send next. */
 	TWDR = slave_buffer[index++];
 	if (index == slave_buffer_size)
-	    TWCR &= ~_BV (TWEA);
-	TWCR |= _BV (TWINT);
+	    TWCR = TWCR_OK;
+	else
+	    TWCR = TWCR_OK | _BV (TWEA);
 	break;
       case TW_ST_DATA_NACK:
       case TW_ST_LAST_DATA:
 	/* Previous byte was not acknowledged
 	 * or previous byte was last byte.
 	 * Ready for next transfer. */
-	TWCR |= _BV (TWEA);
-	TWCR |= _BV (TWINT);
+	TWCR = TWCR_OK | _BV (TWEA);
 	break;
 	/*** Slave receiver mode. ***/
       case TW_SR_SLA_ACK:
@@ -242,8 +245,9 @@ SIGNAL (SIG_2WIRE_SERIAL)
 	 * Receive first byte. */
 	index = 0;
 	if (AC_TWI_SLAVE_RECV_BUFFER_SIZE == 1)
-	    TWCR &= ~_BV (TWEA);
-	TWCR |= _BV (TWINT);
+	    TWCR = TWCR_OK;
+	else
+	    TWCR = TWCR_OK | _BV (TWEA);
 	break;
       case TW_SR_DATA_ACK:
       case TW_SR_GCALL_DATA_ACK:
@@ -251,8 +255,9 @@ SIGNAL (SIG_2WIRE_SERIAL)
 	 * Data received and acknowledged, receive next byte. */
 	slave_buffer[index++] = TWDR;
 	if (index == AC_TWI_SLAVE_RECV_BUFFER_SIZE - 1)
-	    TWCR &= ~_BV (TWEA);
-	TWCR |= _BV (TWINT);
+	    TWCR = TWCR_OK;
+	else
+	    TWCR = TWCR_OK | _BV (TWEA);
 	break;
       case TW_SR_DATA_NACK:
       case TW_SR_GCALL_DATA_NACK:
@@ -262,8 +267,8 @@ SIGNAL (SIG_2WIRE_SERIAL)
 	/* no break; */
       case TW_SR_STOP:
 	/* STOP
-	 * Stop transfer. */
-	TWCR |= _BV (TWINT);
+	 * Stop transfer, ready for next one. */
+	TWCR = TWCR_OK | _BV (TWEA);
 	/* Call reception callback. */
 	AC_TWI_SLAVE_RECV (slave_buffer, index);
 	break;
@@ -273,10 +278,9 @@ SIGNAL (SIG_2WIRE_SERIAL)
       case TW_START:
       case TW_REP_START:
 	/* Start condition transmitted, send address. */
-	TWCR &= ~ (_BV (TWSTA) | _BV (TWSTO) | _BV (TWINT));
 	TWDR = ctx.master_transfer_address;
+	TWCR = TWCR_OK;
 	index = 0;
-	TWCR |= _BV (TWINT);
 	break;
       case TW_MT_ARB_LOST:
 	/* Arbitration lost, same as TW_MR_ARB_LOST. */
@@ -289,46 +293,43 @@ SIGNAL (SIG_2WIRE_SERIAL)
 	if (index < ctx.master_transfer_buffer_size)
 	  {
 	    TWDR = ctx.master_transfer_buffer[index++];
-	    TWCR |= _BV (TWINT);
+	    TWCR = TWCR_OK;
 	  }
 	else
 	  {
-	    TWCR |= _BV (TWSTO);
+	    TWCR = TWCR_OK | _BV (TWSTO);
 	    ctx.master_current_status = index;
-	    TWCR |= _BV (TWINT);
 	    /* Call master done callback. */
 	    TWI_MASTER_DONE ();
 	  }
 	break;
       case TW_MT_SLA_NACK:
 	/* Address not acknowledged, stop. */
-	TWCR |= _BV (TWSTO);
+	TWCR = TWCR_OK | _BV (TWSTO);
 	ctx.master_current_status = TWI_MASTER_ERROR;
-	TWCR |= _BV (TWINT);
 	/* Call master done callback. */
 	TWI_MASTER_DONE ();
 	break;
       case TW_MT_DATA_NACK:
 	/* Data not acknowledged, there is no more room in slave device,
 	 * stop. */
-	TWCR |= _BV (TWSTO);
+	TWCR = TWCR_OK | _BV (TWSTO);
 	ctx.master_current_status = index;
-	TWCR |= _BV (TWINT);
 	/* Call master done callback. */
 	TWI_MASTER_DONE ();
 	break;
 	/*** Master receiver mode. ***/
       case TW_MR_SLA_ACK:
 	/* Address acknowledged, receive first data. */
-	if (ctx.master_transfer_buffer_size > 1)
-	    TWCR |= _BV (TWEA);
-	TWCR |= _BV (TWINT);
+	if (ctx.master_transfer_buffer_size <= 1)
+	    TWCR = TWCR_OK;
+	else
+	    TWCR = TWCR_OK | _BV (TWEA);
 	break;
       case TW_MR_SLA_NACK:
 	/* Address not acknowledged, stop. */
-	TWCR |= _BV (TWSTO);
+	TWCR = TWCR_OK | _BV (TWSTO);
 	ctx.master_current_status = TWI_MASTER_ERROR;
-	TWCR |= _BV (TWINT);
 	/* Call master done callback. */
 	TWI_MASTER_DONE ();
 	break;
@@ -336,15 +337,15 @@ SIGNAL (SIG_2WIRE_SERIAL)
 	/* Data acknowledged, receive next data. */
 	ctx.master_transfer_buffer[index++] = TWDR;
 	if (index == ctx.master_transfer_buffer_size - 1)
-	    TWCR &= ~ _BV (TWEA);
-	TWCR |= _BV (TWINT);
+	    TWCR = TWCR_OK;
+	else
+	    TWCR = TWCR_OK | _BV (TWEA);
 	break;
       case TW_MR_DATA_NACK:
 	/* Data not acknowledged, last byte, stop transfer. */
 	ctx.master_transfer_buffer[index++] = TWDR;
+	TWCR = TWCR_OK | _BV (TWSTO);
 	ctx.master_current_status = index;
-	TWCR |= _BV (TWSTO);
-	TWCR |= _BV (TWINT);
 	/* Call master done callback. */
 	TWI_MASTER_DONE ();
 	break;
