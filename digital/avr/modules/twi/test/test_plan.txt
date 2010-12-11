@@ -1,0 +1,28 @@
+===============
+ TWI test plan
+===============
+
+Test slave will update its slave send buffer with received data from master.
+Read slave buffer after each transmission.
+
+ - master send 1 byte.
+ - master send n bytes, less than slave limit.
+ - master send n bytes, same as slave limit.
+ - master send n bytes, more than slave limit.
+   > should be interrupted at slave limit.
+ - master send 0 byte.
+   > master can send 0 byte, but test slave should not update slave send
+   > buffer as 0 is forbidden.
+
+ - master recv 0 byte.
+   > will receive a byte anyway.
+ - master recv 1 byte.
+ - with slave buffer size 1 and m:
+   - master recv n byte, less than slave limit.
+   - master recv n byte, same as slave limit.
+   - master recv n byte, more than slave limit.
+     > can not be interrupted, will read 0xff.
+
+ - master send to unknown slave.
+ - master recv to unknown slave.
+
