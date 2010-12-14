@@ -15,7 +15,7 @@ AVR_MCU = atmega128
 # -Os : size
 OPTIMIZE = -O2
 
+include $(BASE)/make/Makefile.gen
+
 events:
 	python $(TOOLS)/trace/trace.py -i $(TOOLS)/trace/example/trace.trc -t create -o
-
-include $(BASE)/make/Makefile.gen
