@@ -24,19 +24,16 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "preproc.h"
 
 /* This symbol should be 0 or 1. */
 #ifndef UART_N
 # error "uart: UART_N missing"
 #endif
 
-/* Utility macros. */
-#define PASTE4_SUB(a, b, c, d) a ## b ## c ## d
-#define PASTE4(a, b, c, d) PASTE4_SUB (a, b, c, d)
-
 /* Port selection macros. */
-#define AC_UART(x) PASTE4(AC_UART, UART_N, _, x)
-#define uart(x) PASTE4(uart, UART_N, _, x)
+#define AC_UART(x) PREPROC_PASTE(AC_UART, UART_N, _, x)
+#define uart(x) PREPROC_PASTE(uart, UART_N, _, x)
 
 /* Define uart symbols. */
 #define uart_error uart (error)
