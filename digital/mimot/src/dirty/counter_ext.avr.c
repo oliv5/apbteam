@@ -149,21 +149,23 @@ counter_update (void)
     /* Wants fresh data. */
     counter_update_step ();
     /* First auxiliary counter. */
-    uint16_t aux0 = counter_aux_new_step[0] >> COUNTER_AUX0_SHIFT;
+    uint16_t aux0 = counter_aux_new_step[0];
 #if !COUNTER_AUX0_REVERSE
     counter_aux_diff[0] = (int16_t) (aux0 - counter_aux_old[0]);
 #else
     counter_aux_diff[0] = (int16_t) (counter_aux_old[0] - aux0);
 #endif
+    counter_aux_diff[0] >>= COUNTER_AUX0_SHIFT;
     counter_aux_old[0] = aux0;
     counter_aux[0] += counter_aux_diff[0];
     /* Second auxiliary counter. */
-    uint16_t aux1 = counter_aux_new_step[1] >> COUNTER_AUX1_SHIFT;
+    uint16_t aux1 = counter_aux_new_step[1];
 #if !COUNTER_AUX1_REVERSE
     counter_aux_diff[1] = (int16_t) (aux1 - counter_aux_old[1]);
 #else
     counter_aux_diff[1] = (int16_t) (counter_aux_old[1] - aux1);
 #endif
+    counter_aux_diff[1] >>= COUNTER_AUX1_SHIFT;
     counter_aux_old[1] = aux1;
     counter_aux[1] += counter_aux_diff[1];
 }

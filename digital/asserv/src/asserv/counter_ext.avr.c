@@ -177,21 +177,23 @@ counter_update (void)
     /* Wants fresh data. */
     counter_update_step ();
     /* Left counter. */
-    uint16_t left = counter_left_new_step >> COUNTER_LEFT_SHIFT;
+    uint16_t left = counter_left_new_step;
 #if !COUNTER_LEFT_REVERSE
     counter_left_diff = (int16_t) (left - counter_left_old);
 #else
     counter_left_diff = (int16_t) (counter_left_old - left);
 #endif
+    counter_left_diff >>= COUNTER_LEFT_SHIFT;
     counter_left_old = left;
     counter_left += counter_left_diff;
     /* Right counter. */
-    uint16_t right = counter_right_new_step >> COUNTER_RIGHT_SHIFT;
+    uint16_t right = counter_right_new_step;
 #if !COUNTER_RIGHT_REVERSE
     counter_right_diff = (int16_t) (right - counter_right_old);
 #else
     counter_right_diff = (int16_t) (counter_right_old - right);
 #endif
+    counter_right_diff >>= COUNTER_RIGHT_SHIFT;
     counter_right_old = right;
     /* Fix right counter. */
     counter_right_raw += counter_right_diff;
@@ -200,21 +202,23 @@ counter_update (void)
     counter_right_diff = (int16_t) (right_new - counter_right);
     counter_right = right_new;
     /* First auxiliary counter. */
-    uint16_t aux0 = counter_aux_new_step[0] >> COUNTER_AUX0_SHIFT;
+    uint16_t aux0 = counter_aux_new_step[0];
 #if !COUNTER_AUX0_REVERSE
     counter_aux_diff[0] = (int16_t) (aux0 - counter_aux_old[0]);
 #else
     counter_aux_diff[0] = (int16_t) (counter_aux_old[0] - aux0);
 #endif
+    counter_aux_diff[0] >>= COUNTER_AUX0_SHIFT;
     counter_aux_old[0] = aux0;
     counter_aux[0] += counter_aux_diff[0];
     /* Second auxiliary counter. */
-    uint16_t aux1 = counter_aux_new_step[1] >> COUNTER_AUX1_SHIFT;
+    uint16_t aux1 = counter_aux_new_step[1];
 #if !COUNTER_AUX1_REVERSE
     counter_aux_diff[1] = (int16_t) (aux1 - counter_aux_old[1]);
 #else
     counter_aux_diff[1] = (int16_t) (counter_aux_old[1] - aux1);
 #endif
+    counter_aux_diff[1] >>= COUNTER_AUX1_SHIFT;
     counter_aux_old[1] = aux1;
     counter_aux[1] += counter_aux_diff[1];
 }
