@@ -301,8 +301,8 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	/* Set all acknoledge.
 	 * - b: first auxiliary ack sequence number.
 	 * - b: second auxiliary ack sequence number. */
-	state_acknowledge (&state_aux[0], args[1]);
-	state_acknowledge (&state_aux[1], args[2]);
+	state_acknowledge (&state_aux[0], args[0]);
+	state_acknowledge (&state_aux[1], args[1]);
 	break;
     /* Stats.
      * - b: interval between stats. */
