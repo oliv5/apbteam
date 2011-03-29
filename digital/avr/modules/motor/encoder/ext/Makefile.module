@@ -1,0 +1,1 @@
+motor_encoder_ext_SOURCES = encoder_ext.avr.c

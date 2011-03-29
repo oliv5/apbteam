@@ -1,0 +1,59 @@
+======================
+ motor/encoder module
+======================
+:Author: Nicolas Schodet
+
+Introduction
+============
+
+The encoder module interfaces with hardware counters to feed back the motor
+control system with the current state of the motors.  These counters are
+usually connected to an optical or magnetic encoder connected to the motor
+shaft.
+
+Encoder reading
+===============
+
+In the `encoder_t` structure, the encoder module provides:
+
+ - overall counter value since initialization (field `cur`),
+ - difference since last update (field `diff`).
+
+The `cur` field will roll over on overflow.
+
+Care should be taken about value amplitude in order not to overflow later
+computations.
+
+Each hardware counter is assigned an index from the compile time
+configuration.  Code is responsible to call `encoder_init` to initialize
+hardware and associate an `encoder_t` structure with each index.
+
+Then, `encoder_update` should be called to query hardware counter and update
+the structure.
+
+If motor is running too fast for the hardware to avoid counter overflow,
+`encoder_update_step` should be called at short interval so that no overflow
+occurs.
+
+You should not write to the `encoder_t` structure.
+
+Encoder correction
+==================
+
+When two parallel wheels are used with encoders, it is almost impossible that
+both wheels have exactly the same radius.  To handle the problem, the encoder
+module provides a corrector which should be used with one of the wheels.
+
+It should be initialized using `encoder_corrector_init` and an
+`encoder_corrector_t` structure.  This structure does not contain any user
+usable field but is used by the corrector to store internal state.  Instead,
+call `encoder_corrector_update` after each encoder update.  This function will
+modify the `encoder_t` structure to reflect the radius difference.
+
+Correction factor should be set using `encoder_corrector_set_correction` with
+a fixed point f8.24 format.
+
+API
+===
+
+.. include:: encoder.exd
