@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
 
@@ -499,6 +500,42 @@ mex_node_register (u8 mtype, mex_handler_t *handler, void *user)
     assert (mex_node_global.handlers[mtype] == NULL);
     mex_node_global.handlers[mtype] = handler;
     mex_node_global.handlers_user[mtype] = user;
+}
+
+/** Request a message type reservation. */
+u8
+mex_node_reserve (const char *mtype_str)
+{
+    /* Send request. */
+    mex_msg_t *m = mex_msg_new (MEX_MTYPE_RES);
+    mex_msg_push_buffer (m, mtype_str, strlen (mtype_str));
+    mex_node_send (m);
+    /* Wait for response. */
+    mex_msg_t *rsp;
+    rsp = mex_node_recv ();
+    while (rsp->mtype != MEX_MTYPE_RES)
+      {
+	mex_node_dispatch (rsp);
+	mex_msg_delete (rsp);
+	rsp = mex_node_recv ();
+      }
+    /* Return allocated message type. */
+    u8 mtype;
+    mex_msg_pop (rsp, "B", &mtype);
+    return mtype;
+}
+
+/** Request a message type reservation, using formated string. */
+u8
+mex_node_reservef (const char *mtype_fmt, ...)
+{
+    va_list ap;
+    char mtype_str[MEX_MSG_NEW_PAYLOAD_SIZE + 1];
+    va_start (ap, mtype_fmt);
+    int r = vsnprintf (mtype_str, sizeof (mtype_str), mtype_fmt, ap);
+    assert (r < (int) sizeof (mtype_str));
+    va_end (ap);
+    return mex_node_reserve (mtype_str);
 }
 
 /** Receive one message. */

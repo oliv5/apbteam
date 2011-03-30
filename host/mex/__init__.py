@@ -40,6 +40,10 @@ RSP = 3
 """RSP (response) message, response to a REQ message, only sent to the
 requesting node."""
 
+RES = 4
+"""RES (reserve) message, sent to the hub to request a message type, sent to a
+node with the allocated message type."""
+
 DEFAULT_ADDR = ('localhost', 2442)
 
 HEADER_FMT = '!HB'

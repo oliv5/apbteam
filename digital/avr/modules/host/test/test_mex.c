@@ -28,8 +28,10 @@
 
 #include <stdio.h>
 
+u8 mtype_coucou1, mtype_coucou2, mtype_oucouc;
+
 void
-a82 (void *user, mex_msg_t *msg)
+handle_oucouc (void *user, mex_msg_t *msg)
 {
     printf ("oucouc\n");
     u8 nb;
@@ -41,14 +43,14 @@ a82 (void *user, mex_msg_t *msg)
 }
 
 void
-a801 (void *user, mex_msg_t *msg)
+handle_coucou (void *user, mex_msg_t *msg)
 {
     printf ("coucou\n");
     u8 b;
     u16 h;
     u32 l;
     mex_msg_pop (msg, "BHL", &b, &h, &l);
-    if (mex_msg_mtype (msg) == 0x80)
+    if (mex_msg_mtype (msg) == mtype_coucou1)
 	assert (b == 1 && h == 2 && l == 3);
     else
 	assert (b == 4 && h == 5 && l == 6);
@@ -66,22 +68,27 @@ main (int argc, char **argv)
 	fprintf (stderr, "%s 1|2\n", argv[0]);
 	return 1;
       }
+    mex_node_connect ();
+    mtype_coucou1 = mex_node_reservef ("%s%d", "coucou", 1);
+    mtype_coucou2 = mex_node_reservef ("%s%d", "coucou", 2);
+    mtype_oucouc = mex_node_reserve ("oucouc");
     if (argv[1][0] == '1')
       {
-	mex_node_register (0x82, a82, NULL);
-	mex_node_connect ();
+	mex_node_register (mtype_oucouc, handle_oucouc, NULL);
 	i = host_fetch_integer ("reseted");
 	if (i == -1)
 	  {
-	    mex_msg_t *m = mex_msg_new (0x80);
+	    mex_node_wait_date (1);
+	    mex_msg_t *m = mex_msg_new (mtype_coucou1);
 	    mex_msg_push (m, "BHL", 1, 2, 3);
 	    mex_node_send (m);
 	    host_register_integer ("reseted", 1);
+	    mex_node_wait_date (2);
 	    host_reset ();
 	  }
 	else
 	  {
-	    mex_msg_t *m = mex_msg_new (0x81);
+	    mex_msg_t *m = mex_msg_new (mtype_coucou2);
 	    mex_msg_push (m, "BHL", 4, 5, 6);
 	    mex_node_send (m);
 	    mex_node_wait ();
@@ -89,13 +96,13 @@ main (int argc, char **argv)
       }
     else
       {
-	mex_node_register (0x80, a801, NULL);
-	mex_node_register (0x81, a801, NULL);
-	mex_node_connect ();
-	mex_msg_t *m = mex_msg_new (0x82);
+	mex_node_register (mtype_coucou1, handle_coucou, NULL);
+	mex_node_register (mtype_coucou2, handle_coucou, NULL);
+	mex_node_wait_date (1);
+	mex_msg_t *m = mex_msg_new (mtype_oucouc);
 	mex_msg_push (m, "B", 42);
 	mex_msg_t *r = mex_node_request (m);
-	assert (mex_msg_mtype (r) == 0x82);
+	assert (mex_msg_mtype (r) == mtype_oucouc);
 	u8 rb;
 	mex_msg_pop (r, "B", &rb);
 	assert (rb == 43);

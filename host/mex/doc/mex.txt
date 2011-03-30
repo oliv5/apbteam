@@ -37,9 +37,8 @@ been handled (or discarded).
 
 The minimum required information in a message is the message type.  This is a
 single byte (with some reserved values) which should be sufficient to decode
-the rest of the message.  There is for the moment no central message type
-identifier repository, the developer is responsible to ensure no collision
-occurs.
+the rest of the message.  Message types should be reserved by requesting them
+from the hub.
 
 When the message is sent to another process, it is prepended with its size and
 sequence number (which are not part of the message, neither its size).  The
@@ -166,6 +165,22 @@ RSP
 
   The receiving node will decapsulate the message and will use it as a
   response to its request.
+
+RES
+  This is a message type reservation request.
+
+  When sent to the hub, it contains a reservation string which identify the
+  message type.
+
+  +------------+--------------------+
+  | RES (B: 4) | reservation string |
+  +------------+--------------------+
+
+  When sent to the node, it contains the allocated message type.
+
+  +------------+-----------------+
+  | RES (B: 4) | allocated mtype |
+  +------------+-----------------+
 
 Programmer interface
 ====================

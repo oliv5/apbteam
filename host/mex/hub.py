@@ -36,6 +36,7 @@ class Hub:
         self.log = log
         self.clients = { }
         self.next_client_id = 1
+        self.reserved_mtype = { }
         self.date = 0
         self.socket = socket.socket ()
         self.socket.setsockopt (socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -109,6 +110,18 @@ class Hub:
             if c is not exclude:
                 c.send (msg)
 
+    def reserve (self, mtype_str):
+        """Reserve a message type."""
+        if mtype_str in self.reserved_mtype:
+            mtype = self.reserved_mtype[mtype_str]
+        else:
+            mtype = 0x20 + len (self.reserved_mtype)
+            self.reserved_mtype[mtype_str] = mtype
+            if self.log:
+                self.log ('[%d] reserve "%s" as %02x' % (self.date,
+                    mtype_str, mtype))
+        return mtype
+
     class Client:
 
         def __init__ (self, hub, socket, id):
@@ -159,6 +172,11 @@ class Hub:
                 mr.push ('B', 0)
                 mr.push (m.pop ())
                 self.hub.clients[to].send (mr)
+            elif m.mtype == mex.RES:
+                mtype_str = m.pop ()
+                mr = Msg (mex.RES)
+                mr.push ('B', self.hub.reserve (mtype_str))
+                self.send (mr)
             else:
                 self.hub.broadcast (m, self)
 

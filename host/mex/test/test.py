@@ -35,6 +35,8 @@ h = Hub (min_clients = 2, log = log)
 
 def c1 ():
     n = Node ()
+    mtype_oucouc = n.reserve ('oucouc')
+    mtype_coucou = n.reserve ('coucou')
     def a (msg):
         print 'oucouc'
         nb, = msg.pop ('B')
@@ -42,7 +44,7 @@ def c1 ():
         m = Msg (msg.mtype)
         m.push ('B', nb)
         n.response (m)
-    n.register (0x82, a)
+    n.register (mtype_oucouc, a)
     def b ():
         assert False
     eb = n.schedule (31, b)
@@ -50,7 +52,7 @@ def c1 ():
         print 'hello'
         n.cancel (eb)
     n.schedule (28, c)
-    m = Msg (0x81)
+    m = Msg (mtype_coucou)
     n.send (m)
     n.wait ()
 
@@ -58,13 +60,15 @@ f1 = Forked (c1)
 
 def c2 ():
     n = Node ()
+    mtype_oucouc = n.reserve ('oucouc')
+    mtype_coucou = n.reserve ('coucou')
     def a (msg):
         print 'coucou'
-    n.register (0x81, a)
-    m = Msg (0x82)
+    n.register (mtype_coucou, a)
+    m = Msg (mtype_oucouc)
     m.push ('B', 42)
     r = n.request (m)
-    assert r.mtype == 0x82
+    assert r.mtype == mtype_oucouc
     assert r.pop ('B') == (43,)
     n.wait_async (42)
     while not n.sync ():

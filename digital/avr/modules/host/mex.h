@@ -35,6 +35,7 @@ enum mex_mtype_t
     MEX_MTYPE_DATE = 1,
     MEX_MTYPE_REQ = 2,
     MEX_MTYPE_RSP = 3,
+    MEX_MTYPE_RES = 4,
 };
 
 /** Message structure opaque definition. */
@@ -120,5 +121,14 @@ mex_node_response (mex_msg_t *msg);
 /** Register a handler for the given message type. */
 void
 mex_node_register (u8 mtype, mex_handler_t *handler, void *user);
+
+/** Request a message type reservation. */
+u8
+mex_node_reserve (const char *mtype_str);
+
+/** Request a message type reservation, using formated string. */
+u8
+mex_node_reservef (const char *mtype_fmt, ...)
+    __attribute__ ((format (printf, 1, 2)));
 
 #endif /* mex_h */

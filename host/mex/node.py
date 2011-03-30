@@ -122,6 +122,21 @@ class Node:
         assert mtype not in self.__handlers
         self.__handlers[mtype] = handler
 
+    def reserve (self, mtype_str):
+        """Request a message type reservation."""
+        # Send request.
+        res = Msg (mex.RES)
+        res.push (mtype_str)
+        self.send (res)
+        # Wait for response.
+        rsp = self.__recv ()
+        while rsp.mtype != mex.RES:
+            self.__dispatch (rsp)
+            rsp = self.__recv ()
+        # Return allocated message type.
+        mtype, = rsp.pop ('B')
+        return mtype
+
     def schedule (self, date, action):
         """Schedule an action for the given date, return the event identifier."""
         assert date > self.date
