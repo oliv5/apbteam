@@ -35,7 +35,6 @@ h = Hub (min_clients = 2, log = log)
 
 def c1 ():
     n = Node ()
-    mtype_oucouc = n.reserve ('oucouc')
     mtype_coucou = n.reserve ('coucou')
     def a (msg):
         print 'oucouc'
@@ -44,7 +43,7 @@ def c1 ():
         m = Msg (msg.mtype)
         m.push ('B', nb)
         n.response (m)
-    n.register (mtype_oucouc, a)
+    n.register ('oucouc', a)
     def b ():
         assert False
     eb = n.schedule (31, b)

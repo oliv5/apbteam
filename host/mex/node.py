@@ -119,6 +119,8 @@ class Node:
 
     def register (self, mtype, handler):
         """Register an handler for the given message type."""
+        if isinstance (mtype, basestring):
+            mtype = self.reserve (mtype)
         assert mtype not in self.__handlers
         self.__handlers[mtype] = handler
 
