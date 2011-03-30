@@ -35,18 +35,6 @@
 #include "modules/path/path.h"
 #include "io.h"
 
-enum
-{
-    MSG_SIMU_IO_JACK = 0xb0,
-    MSG_SIMU_IO_COLOR = 0xb1,
-    MSG_SIMU_IO_SERVO = 0xb2,
-    MSG_SIMU_IO_ADC = 0xb3,
-    MSG_SIMU_IO_PATH = 0xb4,
-    MSG_SIMU_IO_PWM = 0xb5,
-    MSG_SIMU_IO_CONTACT = 0xb6,
-    MSG_SIMU_IO_POS_REPORT = 0xb7,
-};
-
 /** Requested servo position. */
 uint8_t servo_high_time_[SERVO_NUMBER];
 
@@ -76,6 +64,16 @@ uint8_t PORTC, PINC;
 /** Unused AVR registers. */
 uint8_t PORTD, PORTG, DDRC, DDRD, DDRG;
 
+/** Message types. */
+uint8_t simu_mex_jack;
+uint8_t simu_mex_color;
+uint8_t simu_mex_servo;
+uint8_t simu_mex_adc;
+uint8_t simu_mex_path;
+uint8_t simu_mex_pwm;
+uint8_t simu_mex_contact;
+uint8_t simu_mex_pos_report;
+
 void
 handle_contact (void *user, mex_msg_t *msg)
 {
@@ -86,8 +84,18 @@ handle_contact (void *user, mex_msg_t *msg)
 void
 simu_init (void)
 {
+    const char *mex_instance;
     mex_node_connect ();
-    mex_node_register (MSG_SIMU_IO_CONTACT, handle_contact, 0);
+    mex_instance = host_get_instance ("io0", 0);
+    simu_mex_jack = mex_node_reservef ("%s:jack", mex_instance);
+    simu_mex_color = mex_node_reservef ("%s:color", mex_instance);
+    simu_mex_servo = mex_node_reservef ("%s:servo", mex_instance);
+    simu_mex_adc = mex_node_reservef ("%s:adc", mex_instance);
+    simu_mex_path = mex_node_reservef ("%s:path", mex_instance);
+    simu_mex_pwm = mex_node_reservef ("%s:pwm", mex_instance);
+    simu_mex_contact = mex_node_reservef ("%s:contact", mex_instance);
+    simu_mex_pos_report = mex_node_reservef ("%s:pos-report", mex_instance);
+    mex_node_register (simu_mex_contact, handle_contact, 0);
     PINC = 0x3f;
     simu_servo_update_cpt = 1;
     simu_switch_update_cpt = 1;
@@ -116,7 +124,7 @@ simu_step (void)
     if (simu_servo_update && !--simu_servo_update_cpt)
       {
 	simu_servo_update_cpt = simu_servo_update;
-	m = mex_msg_new (MSG_SIMU_IO_SERVO);
+	m = mex_msg_new (simu_mex_servo);
 	for (i = 0; i < SERVO_NUMBER; i++)
 	    mex_msg_push (m, "B", servo_high_time_current_[i]);
 	mex_node_send (m);
@@ -128,14 +136,14 @@ simu_step (void)
 	uint8_t r;
 	simu_switches = 0;
 	/* Get color switch. */
-	m = mex_msg_new (MSG_SIMU_IO_COLOR);
+	m = mex_msg_new (simu_mex_color);
 	m = mex_node_request (m);
 	mex_msg_pop (m, "B", &r);
 	mex_msg_delete (m);
 	if (!r)
 	    simu_switches |= 1;
 	/* Get jack. */
-	m = mex_msg_new (MSG_SIMU_IO_JACK);
+	m = mex_msg_new (simu_mex_jack);
 	m = mex_node_request (m);
 	mex_msg_pop (m, "B", &r);
 	mex_msg_delete (m);
@@ -146,7 +154,7 @@ simu_step (void)
     if (simu_adc_update && !--simu_adc_update_cpt)
       {
 	simu_adc_update_cpt = simu_adc_update;
-	m = mex_msg_new (MSG_SIMU_IO_ADC);
+	m = mex_msg_new (simu_mex_adc);
 	m = mex_node_request (m);
 	uint8_t i, n;
 	n = mex_msg_len (m) / 2;
@@ -159,7 +167,7 @@ simu_step (void)
     if (simu_pwm_update && !--simu_pwm_update_cpt)
       {
 	simu_pwm_update_cpt = simu_pwm_update;
-	m = mex_msg_new (MSG_SIMU_IO_PWM);
+	m = mex_msg_new (simu_mex_pwm);
 	mex_msg_push (m, "h", (IO_PORT (PWM_DIR_IO) & IO_BV (PWM_DIR_IO))
 		      ? PWM_OCR : -PWM_OCR);
 	mex_node_send (m);
@@ -241,7 +249,7 @@ simu_send_path (vect_t *points, uint8_t len,
 {
     int i;
     mex_msg_t *m;
-    m = mex_msg_new (MSG_SIMU_IO_PATH);
+    m = mex_msg_new (simu_mex_path);
     for (i = 0; i < len; i++)
 	mex_msg_push (m, "hh", points[i].x, points[i].y);
     mex_node_send (m);
@@ -251,7 +259,7 @@ void
 simu_send_pos_report (vect_t *pos, uint8_t pos_nb, uint8_t id)
 {
     mex_msg_t *m;
-    m = mex_msg_new (MSG_SIMU_IO_POS_REPORT);
+    m = mex_msg_new (simu_mex_pos_report);
     mex_msg_push (m, "b", id);
     for (; pos_nb; pos++, pos_nb--)
 	mex_msg_push (m, "hh", pos->x, pos->y);

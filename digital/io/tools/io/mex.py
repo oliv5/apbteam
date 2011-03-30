@@ -26,15 +26,6 @@
 from utils.observable import Observable
 import simu.mex.msg
 
-ID_JACK = 0xb0
-ID_COLOR = 0xb1
-ID_SERVO = 0xb2
-ID_ADC = 0xb3
-ID_PATH = 0xb4
-ID_PWM = 0xb5
-ID_CONTACT = 0xb6
-ID_POS_REPORT = 0xb7
-
 SERVO_NB = 6
 SERVO_VALUE_MAX = 255
 
@@ -56,11 +47,11 @@ class Mex:
 
         """
 
-        def __init__ (self, node, id):
+        def __init__ (self, node, mtype):
             Observable.__init__ (self)
             self.__node = node
             self.state = None
-            node.register (id, self.__handle)
+            node.register (mtype, self.__handle)
 
         def __handle (self, msg):
             assert self.state is not None
@@ -82,9 +73,9 @@ class Mex:
         class Pack:
             """Handle reception of several Servo for one message."""
 
-            def __init__ (self, node, list):
+            def __init__ (self, node, instance, list):
                 self.__list = list
-                node.register (ID_SERVO, self.__handle)
+                node.register (instance + ':servo', self.__handle)
 
             def __handle (self, msg):
                 values = msg.pop ('%dB' % len (self.__list))
@@ -106,10 +97,10 @@ class Mex:
         class Pack:
             """Handle transmission of several ADC for one message."""
 
-            def __init__ (self, node, list):
+            def __init__ (self, node, instance, list):
                 self.__node = node
                 self.__list = list
-                node.register (ID_ADC, self.__handle)
+                node.register (instance + ':adc', self.__handle)
 
             def __handle (self, msg):
                 m = msg
@@ -128,10 +119,10 @@ class Mex:
 
         """
 
-        def __init__ (self, node):
+        def __init__ (self, node, instance):
             Observable.__init__ (self)
             self.path = [ ]
-            node.register (ID_PATH, self.__handle)
+            node.register (instance + ':path', self.__handle)
 
         def __handle (self, msg):
             self.path = [ ]
@@ -153,9 +144,9 @@ class Mex:
         class Pack:
             """Handle reception of several PWM for one message."""
 
-            def __init__ (self, node, list):
+            def __init__ (self, node, instance, list):
                 self.__list = list
-                node.register (ID_PWM, self.__handle)
+                node.register (instance + ':pwm', self.__handle)
 
             def __handle (self, msg):
                 values = msg.pop ('%dh' % len (self.__list))
@@ -183,9 +174,10 @@ class Mex:
         class Pack:
             """Handle emission of several contacts for one message."""
 
-            def __init__ (self, node):
+            def __init__ (self, node, instance):
                 self.node = node
                 self.contacts = CONTACT_INIT
+                self.mtype = node.reserve (instance + ':contact')
 
             def set (self, index, state):
                 if state is None or state:
@@ -195,7 +187,7 @@ class Mex:
                 self.__send ()
 
             def __send (self):
-                m = simu.mex.msg.Msg (ID_CONTACT)
+                m = simu.mex.msg.Msg (self.mtype)
                 m.push ('B', self.contacts)
                 self.node.send (m)
 
@@ -207,10 +199,10 @@ class Mex:
 
         """
 
-        def __init__ (self, node):
+        def __init__ (self, node, instance):
             Observable.__init__ (self)
             self.pos = { }
-            node.register (ID_POS_REPORT, self.__handle)
+            node.register (instance + ':pos-report', self.__handle)
 
         def __handle (self, msg):
             p = [ ]
@@ -220,18 +212,18 @@ class Mex:
             self.pos[id] = p
             self.notify ()
 
-    def __init__ (self, node):
-        self.jack = self.Switch (node, ID_JACK)
-        self.color_switch = self.Switch (node, ID_COLOR)
+    def __init__ (self, node, instance = 'io0'):
+        self.jack = self.Switch (node, instance + ':jack')
+        self.color_switch = self.Switch (node, instance + ':color')
         self.servo = tuple (self.Servo () for i in range (0, SERVO_NB))
-        self.__servo_pack = self.Servo.Pack (node, self.servo)
+        self.__servo_pack = self.Servo.Pack (node, instance, self.servo)
         self.adc = tuple (self.ADC () for i in range (0, ADC_NB))
-        self.__adc_pack = self.ADC.Pack (node, self.adc)
-        self.path = self.Path (node)
+        self.__adc_pack = self.ADC.Pack (node, instance, self.adc)
+        self.path = self.Path (node, instance)
         self.pwm = tuple (self.PWM () for i in range (0, PWM_NB))
-        self.__adc_pwm = self.PWM.Pack (node, self.pwm)
-        self.__contact_pack = self.Contact.Pack (node)
+        self.__adc_pwm = self.PWM.Pack (node, instance, self.pwm)
+        self.__contact_pack = self.Contact.Pack (node, instance)
         self.contact = tuple (self.Contact (self.__contact_pack, i)
                 for i in range (CONTACT_NB))
-        self.pos_report = self.PosReport (node)
+        self.pos_report = self.PosReport (node, instance)
 
