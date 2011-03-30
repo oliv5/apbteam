@@ -39,6 +39,11 @@ host_init (int argc, char **argv);
 void
 host_get_program_arguments (int *argc, char ***argv);
 
+/** Retrieve instance given on command line, or use default.  Strip tail
+ * components if requested.  Buffer is valid until next call. */
+const char *
+host_get_instance (const char *def, int strip);
+
 /** Host variables are usefull on reset.  They are passed in the environment.
  * This is not optimised for performance. */
 

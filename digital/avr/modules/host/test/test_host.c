@@ -51,8 +51,12 @@ main (int argc, char **argv)
     else
       {
 	printf ("set\n");
-	assert_print (argc == 2 && strcmp (argv[1], "ni") == 0,
+	host_get_program_arguments (&ac, &av);
+	assert_print (ac == 1 && strcmp (av[0], "ni") == 0,
 		      "please provide \"ni\" as the first argument");
+	printf ("instance %s\n", host_get_instance ("none", 0));
+	printf ("instance -1 %s\n", host_get_instance ("none", 1));
+	printf ("instance -2 %s\n", host_get_instance ("none", 2));
 	host_register_integer ("avr_integer", 42);
 	host_register_string ("avr_string", "Ni!");
 	host_reset ();

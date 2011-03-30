@@ -30,11 +30,19 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 /* Saved arguments.  Uninitialised global variables are set to 0 by the
  * compiler. */
 static int host_saved_argc;
 static char **host_saved_argv;
+
+/* User arguments not used by this module. */
+static int host_user_argc;
+static char **host_user_argv;
+
+/* Instance string, from program arguments. */
+static char *host_instance;
 
 /** Initialise host module. */
 void
@@ -42,6 +50,18 @@ host_init (int argc, char **argv)
 {
     host_saved_argc = argc;
     host_saved_argv = argv;
+    /* Get instance argument. */
+    argv++;
+    argc--;
+    if (argc && strncmp (argv[0], "-i", 2) == 0)
+      {
+	host_instance = argv[0] + 2;
+	argv++;
+	argc--;
+      }
+    /* Save other arguments. */
+    host_user_argc = argc;
+    host_user_argv = argv;
 }
 
 /** Retrieve saved program arguments.  Program name and used parameters are
@@ -50,8 +70,34 @@ void
 host_get_program_arguments (int *argc, char ***argv)
 {
     assert (host_saved_argc);
-    *argc = host_saved_argc - 1;
-    *argv = host_saved_argv + 1;
+    *argc = host_user_argc;
+    *argv = host_user_argv;
+}
+
+/** Retrieve instance given on command line, or use default.  Strip tail
+ * components if requested.  Buffer is valid until next call. */
+const char *
+host_get_instance (const char *def, int strip)
+{
+    if (!host_instance)
+	return def;
+    else if (strip == 0)
+	return host_instance;
+    else
+      {
+	static char stripped[256];
+	assert (strlen (host_instance) < sizeof (stripped));
+	strcpy (stripped, host_instance);
+	while (strip--)
+	  {
+	    char *p = strrchr (stripped, ':');
+	    if (!p)
+		return "";
+	    else
+		*p = '\0';
+	  }
+	return stripped;
+      }
 }
 
 /** Register a host integer. */
