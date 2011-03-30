@@ -74,6 +74,10 @@ uint32_t simu_counter_aux[AC_ASSERV_AUX_NB];
 /** Use mex. */
 int simu_mex;
 
+/** Mex message types. */
+uint8_t simu_mex_aux;
+uint8_t simu_mex_limits;
+
 /** Counter to limit the interval between information is sent. */
 int simu_send_cpt;
 
@@ -114,15 +118,19 @@ simu_init (void)
 {
     int argc;
     char **argv;
+    const char *mex_instance;
     host_get_program_arguments (&argc, &argv);
     if (argc == 2 && strncmp (argv[0], "-m", 2) == 0)
       {
 	simu_mex = atoi (argv[0] + 2);
+	argc--; argv++;
 	if (!simu_mex) simu_mex = 1;
 	simu_send_cpt = simu_mex;
 	mex_node_connect ();
-	mex_node_register (0xcc, simu_handle_limits, 0);
-	argc--; argv++;
+	mex_instance = host_get_instance ("mimot0", 0);
+	simu_mex_aux = mex_node_reservef ("%s:aux", mex_instance);
+	simu_mex_limits = mex_node_reservef ("%s:limits", mex_instance);
+	mex_node_register (simu_mex_limits, simu_handle_limits, 0);
       }
     if (argc != 1)
       {
@@ -204,7 +212,7 @@ simu_send (void)
       }
     if (first || simu_aux_model_changed)
       {
-	m = mex_msg_new (0xc8);
+	m = mex_msg_new (simu_mex_aux);
 	for (i = 0; i < AC_ASSERV_AUX_NB; i++)
 	  {
 	    if (simu_robot->aux_motor[i])

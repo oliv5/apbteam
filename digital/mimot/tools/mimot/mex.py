@@ -26,9 +26,6 @@
 from utils.observable import Observable
 import simu.mex.msg
 
-ID_AUX = 0xc8
-ID_LIMITS = 0xcc
-
 class Mex:
     """Handle communications with simulated mimot."""
 
@@ -46,9 +43,9 @@ class Mex:
         class Pack:
             """Handle reception of several Aux for one message."""
 
-            def __init__ (self, node, list):
+            def __init__ (self, node, instance, list):
                 self.__list = list
-                node.register (ID_AUX, self.__handle)
+                node.register (instance + ':aux', self.__handle)
 
             def __handle (self, msg):
                 angles = msg.pop ('%dl' % len (self.__list))
@@ -77,8 +74,9 @@ class Mex:
         class Pack:
             """Handle emission of several limits for one message."""
 
-            def __init__ (self, node):
+            def __init__ (self, node, instance):
                 self.node = node
+                self.mtype = node.reserve (instance + ':limits')
                 self.limits = [ None, None, None, None ]
 
             def set (self, index, min, max):
@@ -87,7 +85,7 @@ class Mex:
                 self.__send ()
 
             def __send (self):
-                m = simu.mex.msg.Msg (ID_LIMITS)
+                m = simu.mex.msg.Msg (self.mtype)
                 for l in self.limits:
                     if l is None:
                         li = -1
@@ -96,10 +94,10 @@ class Mex:
                     m.push ('l', li)
                 self.node.send (m)
 
-    def __init__ (self, node):
+    def __init__ (self, node, instance = 'mimot0'):
         self.aux = (self.Aux (), self.Aux ())
-        self.__aux_pack = self.Aux.Pack (node, self.aux)
-        self.__limits_pack = self.Limits.Pack (node)
+        self.__aux_pack = self.Aux.Pack (node, instance, self.aux)
+        self.__limits_pack = self.Limits.Pack (node, instance)
         for index, aux in enumerate (self.aux):
             aux.limits = self.Limits (self.__limits_pack, index)
 
