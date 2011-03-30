@@ -87,6 +87,11 @@ double simu_counter_left_th, simu_counter_right_th;
 /** Use mex. */
 int simu_mex;
 
+/** Mex message types. */
+uint8_t simu_mex_position;
+uint8_t simu_mex_pwm;
+uint8_t simu_mex_aux;
+
 /** Counter to limit the interval between information is sent. */
 int simu_send_cpt;
 
@@ -96,14 +101,19 @@ simu_init (void)
 {
     int argc;
     char **argv;
+    const char *mex_instance;
     host_get_program_arguments (&argc, &argv);
     if (argc == 2 && strncmp (argv[0], "-m", 2) == 0)
       {
 	simu_mex = atoi (argv[0] + 2);
+	argc--; argv++;
 	if (!simu_mex) simu_mex = 1;
 	simu_send_cpt = simu_mex;
 	mex_node_connect ();
-	argc--; argv++;
+	mex_instance = host_get_instance ("asserv0", 0);
+	simu_mex_position = mex_node_reservef ("%s:position", mex_instance);
+	simu_mex_pwm = mex_node_reservef ("%s:pwm", mex_instance);
+	simu_mex_aux = mex_node_reservef ("%s:aux", mex_instance);
       }
     if (argc != 1)
       {
@@ -383,7 +393,7 @@ simu_send (void)
 	|| simu_pos_y_to_send != simu_pos_y_sent
 	|| simu_pos_a_to_send != simu_pos_a_sent)
       {
-	m = mex_msg_new (0xa0);
+	m = mex_msg_new (simu_mex_position);
 	mex_msg_push (m, "hhl", simu_pos_x_to_send, simu_pos_y_to_send,
 		      simu_pos_a_to_send);
 	mex_node_send (m);
@@ -397,7 +407,7 @@ simu_send (void)
 	|| pwm_left_sent == pwm_left.cur
 	|| pwm_right_sent == pwm_right.cur)
       {
-	m = mex_msg_new (0xa1);
+	m = mex_msg_new (simu_mex_pwm);
 	mex_msg_push (m, "hh", pwm_left.cur, pwm_right.cur);
 	for (i = 0; i < AC_ASSERV_AUX_NB; i++)
 	    mex_msg_push (m, "h", pwm_aux[i].cur);
@@ -418,7 +428,7 @@ simu_send (void)
       }
     if (first || simu_aux_model_changed)
       {
-	m = mex_msg_new (0xa8);
+	m = mex_msg_new (simu_mex_aux);
 	for (i = 0; i < AC_ASSERV_AUX_NB; i++)
 	  {
 	    if (simu_robot->aux_motor[i])

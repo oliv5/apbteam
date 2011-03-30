@@ -25,10 +25,6 @@
 
 from utils.observable import Observable
 
-ID_POSITION = 0xa0
-ID_PWM = 0xa1
-ID_AUX = 0xa8
-
 class Mex:
     """Handle communications with simulated asserv."""
 
@@ -40,11 +36,11 @@ class Mex:
 
         """
 
-        def __init__ (self, node):
+        def __init__ (self, node, instance):
             Observable.__init__ (self)
             self.pos = None
             self.angle = None
-            node.register (ID_POSITION, self.__handle)
+            node.register (instance + ':position', self.__handle)
 
         def __handle (self, msg):
             x, y, a = msg.pop ('hhl')
@@ -59,10 +55,10 @@ class Mex:
 
         """
 
-        def __init__ (self, node):
+        def __init__ (self, node, instance):
             Observable.__init__ (self)
             self.pwm = None
-            node.register (ID_PWM, self.__handle)
+            node.register (instance + ':pwm', self.__handle)
 
         def __handle (self, msg):
             self.pwm = msg.pop ('hhhh')
@@ -82,9 +78,9 @@ class Mex:
         class Pack:
             """Handle reception of several Aux for one message."""
 
-            def __init__ (self, node, list):
+            def __init__ (self, node, instance, list):
                 self.__list = list
-                node.register (ID_AUX, self.__handle)
+                node.register (instance + ':aux', self.__handle)
 
             def __handle (self, msg):
                 angles = msg.pop ('%dl' % len (self.__list))
@@ -92,9 +88,9 @@ class Mex:
                     aux.angle = float (angle) / 1024
                     aux.notify ()
 
-    def __init__ (self, node):
-        self.position = self.Position (node)
-        self.pwm = self.PWM (node)
+    def __init__ (self, node, instance = 'asserv0'):
+        self.position = self.Position (node, instance)
+        self.pwm = self.PWM (node, instance)
         self.aux = (self.Aux (), self.Aux ())
-        self.__aux_pack = self.Aux.Pack (node, self.aux)
+        self.__aux_pack = self.Aux.Pack (node, instance, self.aux)
 
