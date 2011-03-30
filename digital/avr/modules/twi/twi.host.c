@@ -26,16 +26,16 @@
 #include "twi.h"
 
 #include "modules/utils/utils.h"
+#include "modules/host/host.h"
 #include "modules/host/mex.h"
 #include <string.h>
 
 /** Read messages are sent as request.
  * In request, first byte is address, second byte is length.
  * In response, whole payload is data. */
-#define TWI_READ 0x90
+
 /** Write messages are sent directly.
  * First byte is address, rest of payload is data. */
-#define TWI_WRITE 0x91
 
 /** Module context. */
 struct twi_host_t
@@ -52,6 +52,10 @@ struct twi_host_t
     /** Current master status. */
     uint8_t master_current_status;
 #endif /* AC_TWI_MASTER_ENABLE */
+    /** Mex read message types. */
+    uint8_t mex_read;
+    /** Mex write message types. */
+    uint8_t mex_write;
 };
 
 /** Global context. */
@@ -73,13 +77,17 @@ twi_handle_WRITE (void *user, mex_msg_t *msg);
 void
 twi_init (uint8_t addr)
 {
+    const char *mex_instance;
     assert ((addr & 1) == 0);
     ctx.address = addr;
+    mex_instance = host_get_instance ("global", 1);
+    ctx.mex_read = mex_node_reservef ("%s:read", mex_instance);
+    ctx.mex_write = mex_node_reservef ("%s:write", mex_instance);
 #if AC_TWI_SLAVE_ENABLE
     ctx.slave_send_buffer_size = 1;
     ctx.slave_send_buffer[0] = 0;
-    mex_node_register (TWI_READ, twi_handle_READ, NULL);
-    mex_node_register (TWI_WRITE, twi_handle_WRITE, NULL);
+    mex_node_register (ctx.mex_read, twi_handle_READ, NULL);
+    mex_node_register (ctx.mex_write, twi_handle_WRITE, NULL);
 #endif /* AC_TWI_SLAVE_ENABLE */
 #if AC_TWI_MASTER_ENABLE
     ctx.master_current_status = TWI_MASTER_ERROR;
@@ -112,7 +120,7 @@ twi_handle_READ (void *user, mex_msg_t *msg)
     if (addr == ctx.address)
       {
 	assert (size <= AC_TWI_SLAVE_SEND_BUFFER_SIZE);
-	mex_msg_t *m = mex_msg_new (TWI_READ);
+	mex_msg_t *m = mex_msg_new (ctx.mex_read);
 	mex_msg_push_buffer (m, ctx.slave_send_buffer,
 			     UTILS_MIN (size, ctx.slave_send_buffer_size));
 	mex_node_response (m);
@@ -141,7 +149,7 @@ void
 twi_master_send (uint8_t addr, const uint8_t *buffer, uint8_t size)
 {
     /* Send message. */
-    mex_msg_t *m = mex_msg_new (TWI_WRITE);
+    mex_msg_t *m = mex_msg_new (ctx.mex_write);
     mex_msg_push (m, "B", addr);
     mex_msg_push_buffer (m, buffer, size);
     mex_node_send (m);
@@ -157,7 +165,7 @@ void
 twi_master_recv (uint8_t addr, uint8_t *buffer, uint8_t size)
 {
     /* Send request and wait for response. */
-    mex_msg_t *m = mex_msg_new (TWI_READ);
+    mex_msg_t *m = mex_msg_new (ctx.mex_read);
     mex_msg_push (m, "BB", addr, size);
     m = mex_node_request (m);
     int recv = mex_msg_len (m);
