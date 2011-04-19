@@ -68,7 +68,9 @@ main (int argc, char **argv)
 	fprintf (stderr, "%s 1|2\n", argv[0]);
 	return 1;
       }
+    assert (!mex_node_connected ());
     mex_node_connect ();
+    assert (mex_node_connected ());
     mtype_coucou1 = mex_node_reservef ("%s%d", "coucou", 1);
     mtype_coucou2 = mex_node_reservef ("%s%d", "coucou", 2);
     mtype_oucouc = mex_node_reserve ("oucouc");

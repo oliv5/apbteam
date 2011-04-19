@@ -395,6 +395,13 @@ mex_node_connect (void)
       }
 }
 
+/** Query connection status, returns 0 if not connected. */
+int
+mex_node_connected (void)
+{
+    return mex_node_global.socket != -1;
+}
+
 /** Close connection. */
 void
 mex_node_close (void)
