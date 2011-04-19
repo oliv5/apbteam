@@ -80,14 +80,20 @@ twi_init (uint8_t addr)
     const char *mex_instance;
     assert ((addr & 1) == 0);
     ctx.address = addr;
-    mex_instance = host_get_instance ("global", 1);
-    ctx.mex_read = mex_node_reservef ("%s:read", mex_instance);
-    ctx.mex_write = mex_node_reservef ("%s:write", mex_instance);
+    if (mex_node_connected ())
+      {
+	mex_instance = host_get_instance ("global", 1);
+	ctx.mex_read = mex_node_reservef ("%s:read", mex_instance);
+	ctx.mex_write = mex_node_reservef ("%s:write", mex_instance);
+      }
 #if AC_TWI_SLAVE_ENABLE
     ctx.slave_send_buffer_size = 1;
     ctx.slave_send_buffer[0] = 0;
-    mex_node_register (ctx.mex_read, twi_handle_READ, NULL);
-    mex_node_register (ctx.mex_write, twi_handle_WRITE, NULL);
+    if (mex_node_connected ())
+      {
+	mex_node_register (ctx.mex_read, twi_handle_READ, NULL);
+	mex_node_register (ctx.mex_write, twi_handle_WRITE, NULL);
+      }
 #endif /* AC_TWI_SLAVE_ENABLE */
 #if AC_TWI_MASTER_ENABLE
     ctx.master_current_status = TWI_MASTER_ERROR;
@@ -149,6 +155,7 @@ void
 twi_master_send (uint8_t addr, const uint8_t *buffer, uint8_t size)
 {
     /* Send message. */
+    assert (ctx.mex_write);
     mex_msg_t *m = mex_msg_new (ctx.mex_write);
     mex_msg_push (m, "B", addr);
     mex_msg_push_buffer (m, buffer, size);
@@ -165,6 +172,7 @@ void
 twi_master_recv (uint8_t addr, uint8_t *buffer, uint8_t size)
 {
     /* Send request and wait for response. */
+    assert (ctx.mex_read);
     mex_msg_t *m = mex_msg_new (ctx.mex_read);
     mex_msg_push (m, "BB", addr, size);
     m = mex_node_request (m);
