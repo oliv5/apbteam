@@ -23,7 +23,6 @@
 # }}}
 """Eurobot 2011 table."""
 from simu.inter.drawable import Drawable
-from simu.utils.trans_matrix import TransMatrix
 from math import pi
 
 RED = '#d42626'
