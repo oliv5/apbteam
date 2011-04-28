@@ -26,9 +26,9 @@ from simu.inter.drawable import Drawable
 from simu.utils.trans_matrix import TransMatrix
 from math import pi
 
-RED = '#cc0000'
-BLUE = '#0000cc'
-GREEN = '#006b00'
+RED = '#d42626'
+BLUE = '#2626d4'
+GREEN = '#268126'
 BLACK = '#181818'
 YELLOW = '#cccc00'
 
