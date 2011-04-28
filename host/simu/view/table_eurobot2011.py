@@ -32,6 +32,18 @@ GREEN = '#268126'
 BLACK = '#181818'
 YELLOW = '#cccc00'
 
+def draw_pawn (d, radius, kind):
+    d.draw_circle ((0, 0), radius, fill = YELLOW)
+    if kind == 'king':
+        a = 0.1 * radius
+        b = 0.5 * radius
+        d.draw_line ((a, b), (a, a), (b, a), (b, -a), (a, -a), (a, -b),
+                (-a, -b), (-a, -a), (-b, -a), (-b, a), (-a, a), (-a, b),
+                (a, b))
+    elif kind == 'queen':
+        d.draw_circle ((0, 0), 0.5 * radius)
+        d.draw_circle ((0, 0), 0.4 * radius)
+
 class Pawn (Drawable):
 
     def __init__ (self, onto, model):
@@ -48,17 +60,7 @@ class Pawn (Drawable):
         self.reset ()
         if self.pos:
             self.trans_translate (self.pos)
-            r = self.model.radius
-            self.draw_circle ((0, 0), r, fill = YELLOW)
-            if self.model.kind == 'king':
-                a = 0.1 * r
-                b = 0.5 * r
-                self.draw_line ((a, b), (a, a), (b, a), (b, -a), (a, -a),
-                        (a, -b), (-a, -b), (-a, -a), (-b, -a), (-b, a),
-                        (-a, a), (-a, b), (a, b))
-            elif self.model.kind == 'queen':
-                self.draw_circle ((0, 0), 0.5 * r)
-                self.draw_circle ((0, 0), 0.4 * r)
+            draw_pawn (self, self.model.radius, self.model.kind)
             Drawable.draw (self)
 
 class Table (Drawable):
