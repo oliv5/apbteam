@@ -47,6 +47,7 @@ class TransMatrix:
             self.matrix = m
         else:
             self.matrix = self.IDENTITY
+        self.stack = [ ]
 
     def identity (self):
         """Set to identity.
@@ -162,6 +163,25 @@ class TransMatrix:
         v = (m[0] - o[0], m[1] - o[1])
         vl = sqrt (v[0] ** 2 + v[1] ** 2)
         return vl
+
+    def push (self):
+        """Save the current value to be poped later.
+
+        >>> a = TransMatrix ()
+        >>> a.translate ((2, 3)); a
+        ((1, 0), (0, 1), (2, 3))
+        >>> a.push ()
+        >>> a.scale (2); a
+        ((2, 0), (0, 2), (4, 6))
+        >>> a.pop ()
+        >>> a
+        ((1, 0), (0, 1), (2, 3))
+        """
+        self.stack.append (self.matrix)
+
+    def pop (self):
+        """Restore saved value, see push."""
+        self.matrix = self.stack.pop ()
 
     def __repr__ (self):
         return self.matrix.__repr__ ()

@@ -43,6 +43,8 @@ class Drawable:
         self.trans_translate = self.__trans_matrix.translate
         self.trans_scale = self.__trans_matrix.scale
         self.trans_identity = self.__trans_matrix.identity
+        self.trans_push = self.__trans_matrix.push
+        self.trans_pop = self.__trans_matrix.pop
         self.__children = [ ]
         self.children = self.__children
         self.__onto.__children.append (self)
