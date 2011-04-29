@@ -46,8 +46,8 @@ class DistanceSensor:
             if i.pos is None:
                 self.distance = None
                 return
-            m.rotate (i.angle)
             m.translate (i.pos)
+            m.rotate (i.angle)
         pos, target = m.apply (pos, target)
         # Find intersection.
         i = self.table.intersect (pos, target, level = self.level,

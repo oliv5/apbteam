@@ -49,9 +49,9 @@ class App (DrawableCanvas):
         # Real user should reset at each redraw.
         self.after (500, self.animate)
         self.test.draw ()
-        self.test.trans_rotate (-pi/12)
-        self.test.trans_translate ((10, 10))
         self.test.trans_scale (1.05)
+        self.test.trans_translate ((10, 10))
+        self.test.trans_rotate (-pi/12)
         self.i += 1
         if self.i == 10:
             self.test.reset ()

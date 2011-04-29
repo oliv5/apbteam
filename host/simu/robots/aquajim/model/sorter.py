@@ -58,8 +58,8 @@ class Sorter (Observable):
         for i in self.into:
             if i.pos is None:
                 return None
-            m.rotate (i.angle)
             m.translate (i.pos)
+            m.rotate (i.angle)
         return m.apply (pos)
 
     def __arm_motor_notified (self):

@@ -67,8 +67,8 @@ class Loader (Drawable):
                         (300, 25 + 25 * i + (150 - 20 * i) * ratio))
         if self.model.elevator_height is not None:
             self.trans_identity ()
-            self.trans_rotate (-self.model.elevator_angle)
             self.trans_translate ((-100, -100 + self.model.elevator_height))
+            self.trans_rotate (-self.model.elevator_angle)
             # Draw clamp load.
             if self.model.clamp_load:
                 elements = self.model.clamp_load

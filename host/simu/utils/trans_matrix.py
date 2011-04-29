@@ -27,8 +27,13 @@ from math import sin, cos, sqrt, atan2
 class TransMatrix:
     """Define a matrix to be used for transformations on the plane.
 
-    This is a "special" kind of matrix, because the last column is omitted as
-    it is always (0, 0, 1)."""
+    This is a "special" kind of matrix, because the last line is omitted as
+    it is always (0, 0, 1).
+
+    First index is column, last index is line.
+
+    Transformations are done from the last added to the first added, so that
+    it can be incrementally constructed for objects contained in others."""
 
     IDENTITY = ((1, 0), (0, 1), (0, 0))
 
@@ -65,7 +70,7 @@ class TransMatrix:
         >>> from math import pi
         >>> a = TransMatrix ()
         >>> a.rotate (pi / 3); a         # doctest: +ELLIPSIS
-        ((0.5..., 0.866...), (-0.866..., 0.5...), (0.0, 0.0))
+        ((0.5..., 0.866...), (-0.866..., 0.5...), (0, 0))
         """
         s = sin (angle)
         c = cos (angle)
@@ -98,17 +103,17 @@ class TransMatrix:
         >>> a = TransMatrix ((1, 0), (0, 1), (1, 0))
         >>> b = TransMatrix ((0, 1), (1, 0), (0, 1))
         >>> a *= b; a
-        ((0, 1), (1, 0), (0, 2))
+        ((0, 1), (1, 0), (1, 1))
         """
         s = self.matrix
         o = other.matrix
         self.matrix = (
-                (s[0][0] * o[0][0] + s[0][1] * o[1][0],
-                    s[0][0] * o[0][1] + s[0][1] * o[1][1]),
-                (s[1][0] * o[0][0] + s[1][1] * o[1][0],
-                    s[1][0] * o[0][1] + s[1][1] * o[1][1]),
-                (s[2][0] * o[0][0] + s[2][1] * o[1][0] + o[2][0],
-                    s[2][0] * o[0][1] + s[2][1] * o[1][1] + o[2][1]))
+                (s[0][0] * o[0][0] + s[1][0] * o[0][1],
+                    s[0][1] * o[0][0] + s[1][1] * o[0][1]),
+                (s[0][0] * o[1][0] + s[1][0] * o[1][1],
+                    s[0][1] * o[1][0] + s[1][1] * o[1][1]),
+                (s[0][0] * o[2][0] + s[1][0] * o[2][1] + s[2][0],
+                    s[0][1] * o[2][0] + s[1][1] * o[2][1] + s[2][1]))
         return self
 
     def apply (self, *args):
@@ -121,9 +126,9 @@ class TransMatrix:
         ((20, 40), (21, 42))
         """
         r = tuple (
-            (i[0] * self.matrix[0][0] + i[1] * self.matrix[1][0]
+            (self.matrix[0][0] * i[0] + self.matrix[1][0] * i[1]
                 + self.matrix[2][0],
-                i[0] * self.matrix[0][1] + i[1] * self.matrix[1][1]
+                self.matrix[0][1] * i[0] + self.matrix[1][1] * i[1]
                 + self.matrix[2][1])
             for i in args)
         if len (args) == 1:
@@ -172,7 +177,7 @@ class TransMatrix:
         ((1, 0), (0, 1), (2, 3))
         >>> a.push ()
         >>> a.scale (2); a
-        ((2, 0), (0, 2), (4, 6))
+        ((2, 0), (0, 2), (2, 3))
         >>> a.pop ()
         >>> a
         ((1, 0), (0, 1), (2, 3))

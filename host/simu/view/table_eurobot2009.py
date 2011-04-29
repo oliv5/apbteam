@@ -113,8 +113,8 @@ class Table (Drawable):
                 ((3000 - 40, 1050 + ds), pi, GREEN),
                 ):
             dtm = TransMatrix ()
-            dtm.rotate (dangle)
             dtm.translate (dpos)
+            dtm.rotate (dangle)
             if dpos[1] == 40:
                 a = 55
             else:

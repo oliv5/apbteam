@@ -52,8 +52,8 @@ class Robot (simu.inter.drawable.Drawable):
         """Draw the robot."""
         self.reset ()
         if self.pos is not None:
-            self.trans_rotate (self.angle)
             self.trans_translate (self.pos)
+            self.trans_rotate (self.angle)
             # Draw robot body.
             self.draw_polygon ((120, 155), (-95, 155), (-160, 90),
                     (-160, -90), (-95, -155), (120, -155))

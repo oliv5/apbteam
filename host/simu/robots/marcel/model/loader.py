@@ -159,8 +159,8 @@ class Loader (Observable):
             # If gate is high, drop elements.
             if self.load and self.gate_angle > self.GATE_STROKE / 2:
                 m = TransMatrix ()
-                m.rotate (self.robot_position.angle)
                 m.translate (self.robot_position.pos)
+                m.rotate (self.robot_position.angle)
                 pos = m.apply ((-250, 0))
                 for e in self.load:
                     e.pos = pos
@@ -177,9 +177,9 @@ class Loader (Observable):
             return elements
         # Matrix to transform an obstacle position into robot coordinates.
         m = TransMatrix ()
+        m.rotate (-self.robot_position.angle)
         m.translate ((-self.robot_position.pos[0],
             -self.robot_position.pos[1]))
-        m.rotate (-self.robot_position.angle)
         # Look up elements.
         # This could be used if clamp blocking is handled or elements are
         # pushed:

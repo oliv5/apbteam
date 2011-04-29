@@ -58,8 +58,8 @@ class ActuatorView (DrawableCanvas):
         self.resize (1, self.size, 0, self.size / 2)
         self.configure (width = self.UNIT, height = self.UNIT * self.size)
         d = Drawable (self)
-        d.trans_scale (1.0 / width)
         d.trans_translate ((0, - self.size + ratio / 2))
+        d.trans_scale (1.0 / width)
         return d
 
 class Inter (Frame):
