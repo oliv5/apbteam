@@ -21,15 +21,15 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 # }}}
-from test_simu import TestSimu
+from test_simu import TestSimu, run
 from Tkinter import *
 import math
 
 class TestSimuControl (TestSimu):
     """Interface with extra control."""
 
-    def __init__ (self, asserv_cmd, mimot_cmd, io_cmd):
-        TestSimu.__init__ (self, asserv_cmd, mimot_cmd, io_cmd)
+    def __init__ (self, robot_class):
+        TestSimu.__init__ (self, robot_class)
 
     def create_widgets (self):
         TestSimu.create_widgets (self)
@@ -105,9 +105,4 @@ class TestSimuControl (TestSimu):
         pass
 
 if __name__ == '__main__':
-    app = TestSimuControl (('../../asserv/src/asserv/asserv.host', '-m9',
-        'marcel'),
-        ('../../mimot/src/dirty/dirty.host', '-m9', 'marcel'),
-        ('../src/io.host'))
-    app.mainloop ()
-    app.close ()
+    run ('marcel', TestSimuControl)

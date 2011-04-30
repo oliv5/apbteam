@@ -21,28 +21,11 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 # }}}
-import math
-
 import mex.hub
 import utils.forked
 
-import asserv
-import asserv.init
-import mimot
-import mimot.init
-import io
-import io.init
-from proto.popen_io import PopenIO
-
-import simu.model.table_eurobot2010 as table_model
-import simu.view.table_eurobot2010 as table
-
 import simu.model.round_obstacle as obstacle_model
 import simu.view.round_obstacle as obstacle_view
-
-import simu.robots.marcel.link.bag as robot_link
-import simu.robots.marcel.model.bag as robot_model
-import simu.robots.marcel.view.bag as robot_view
 
 from simu.inter.inter_node import InterNode
 from Tkinter import *
@@ -66,36 +49,32 @@ class ObstacleWithBeacon (obstacle_view.RoundObstacle):
 class TestSimu (InterNode):
     """Interface, with simulated programs."""
 
-    robot_start_pos = {
-            False: (300, 2100 - 305, math.radians (-270)),
-            True: (3000 - 300, 2100 - 305, math.radians (-270))
-            }
-
-    def __init__ (self, asserv_cmd, mimot_cmd, io_cmd):
+    def __init__ (self, robot_class):
         # Hub.
-        self.hub = mex.hub.Hub (min_clients = 2)
+        self.hub = mex.hub.Hub (min_clients = 4)
         self.forked_hub = utils.forked.Forked (self.hub.wait)
         # InterNode.
         InterNode.__init__ (self)
-        def time ():
+        def proto_time ():
             return self.node.date / self.node.tick
+        # Robot parameters.
+        robot = robot_class (proto_time)
+        self.robot = robot
         # Asserv.
-        self.asserv = asserv.Proto (PopenIO (asserv_cmd), time,
-                **asserv.init.host)
+        self.asserv = robot.asserv
         self.asserv.async = True
         self.tk.createfilehandler (self.asserv, READABLE, self.asserv_read)
         # Mimot.
-        self.mimot = mimot.Proto (PopenIO (mimot_cmd), time,
-                **mimot.init.host)
+        self.mimot = robot.mimot
         self.mimot.async = True
         self.tk.createfilehandler (self.mimot, READABLE, self.mimot_read)
         # Io.
-        self.io = io.Proto (PopenIO (io_cmd), time, **io.init.host)
+        self.io = robot.io
         self.io.async = True
         self.tk.createfilehandler (self.io, READABLE, self.io_read)
         # Add table.
-        self.table_model = table_model.Table ()
-        self.table = table.Table (self.table_view, self.table_model)
+        self.table_model = robot.table_model.Table ()
+        self.table = robot.table_view.Table (self.table_view, self.table_model)
         self.obstacle = obstacle_model.RoundObstacle (150)
         self.table_model.obstacles.append (self.obstacle)
         self.obstacle_beacon = obstacle_model.RoundObstacle (40, 2)
@@ -104,11 +83,11 @@ class TestSimu (InterNode):
                 self.obstacle_beacon)
         self.table_view.bind ('<2>', self.place_obstacle)
         # Add robot.
-        self.robot_link = robot_link.Bag (self.node)
-        self.robot_model = robot_model.Bag (self.node, self.table_model,
+        self.robot_link = robot.robot_link.Bag (self.node)
+        self.robot_model = robot.robot_model.Bag (self.node, self.table_model,
                 self.robot_link)
-        self.robot_view = robot_view.Bag (self.table, self.actuator_view,
-                self.sensor_frame, self.robot_model)
+        self.robot_view = robot.robot_view.Bag (self.table,
+                self.actuator_view, self.sensor_frame, self.robot_model)
         # Color switch.
         self.robot_model.color_switch.register (self.change_color)
 
@@ -139,7 +118,7 @@ class TestSimu (InterNode):
 
     def change_color (self, *dummy):
         i = self.robot_model.color_switch.state
-        self.asserv.set_simu_pos (*self.robot_start_pos[i]);
+        self.asserv.set_simu_pos (*self.robot.robot_start_pos[i]);
 
     def place_obstacle (self, ev):
         pos = self.table_view.screen_coord ((ev.x, ev.y))
@@ -148,9 +127,22 @@ class TestSimu (InterNode):
         self.obstacle.notify ()
         self.obstacle_beacon.notify ()
 
-if __name__ == '__main__':
-    app = TestSimu (('../../asserv/src/asserv/asserv.host', '-m9', 'marcel'),
-            ('../../mimot/src/dirty/dirty.host', '-m9', 'marcel'),
-            ('../src/io.host'))
+def run (default_robot, test_class = TestSimu):
+    import optparse
+    parser = optparse.OptionParser ()
+    parser.add_option ('-r', '--robot', help = "use specified robot",
+            metavar = 'NAME', default = default_robot)
+    (options, args) = parser.parse_args ()
+    if args:
+        parser.error ("too many arguments")
+    if options.robot == 'marcel':
+        import marcel
+        robot = marcel.Robot
+    else:
+        parser.error ("unknown robot")
+    app = test_class (robot)
     app.mainloop ()
     app.close ()
+
+if __name__ == '__main__':
+    run ('marcel')
