@@ -53,7 +53,7 @@ class Proto:
         self.proto.send ('s', 'BB', servo, high_time)
 
     def pwm_set (self, value, timer):
-        self.proto.send ('w', 'Hh', value, timer)
+        self.proto.send ('w', 'hH', value, timer)
 
     def loader (self, command):
         self.proto.send ('c', 'c', command)
