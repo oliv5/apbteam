@@ -24,7 +24,7 @@
  * }}} */
 #include "common.h"
 #include "usdist.h"
-#include "main_timer.h"
+#include "timer.h"
 
 #include "modules/adc/adc.h"
 #include "modules/utils/utils.h"

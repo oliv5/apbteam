@@ -1,7 +1,7 @@
 #ifndef chrono_h
 #define chrono_h
 /* chrono.h */
-/* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
+/* ai - Robot Artificial Intelligence. {{{
  *
  * Copyright (C) 2008 Dufour Jérémy
  *
@@ -28,16 +28,18 @@
 /**
  * @file Module to manage the chrono responsible to stop the bot after 90s.
  *
- * It is based on the main timer (time/counter 0) to know when to stop the
- * bot.
+ * It is based on the main timer to know when to stop the bot.
  *
  * The main loop should never last more than the 4.44ms defined, otherwise,
  * this module will not be precise at all!
  */
 
+/** Duration of a match in milliseconds, with margin. */
+#define CHRONO_MATCH_DURATION_MS (90000 - 2500)
+
 /**
  * Initialize the chrono module.
- * It setups it for a duration of MATCH_DURATION_MS.
+ * It setups it for a duration of CHRONO_MATCH_DURATION_MS.
  */
 void
 chrono_init (void);

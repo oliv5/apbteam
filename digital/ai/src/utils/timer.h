@@ -1,7 +1,7 @@
-#ifndef main_timer_h
-#define main_timer_h
-/* main_timer.h */
-/* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
+#ifndef timer_h
+#define timer_h
+/* timer.h */
+/* ai - Robot Artificial Intelligence. {{{
  *
  * Copyright (C) 2009 Dufour Jérémy
  *
@@ -26,14 +26,7 @@
  * }}} */
 
 /**
- * @file Main timer.
- * The main timer is responsible for making the main loop executed regularly
- * to a specific time (at least).
- *
- * Sometimes, the main loop can be executed less frequently that we want
- * because it takes too much time! This is bad and should be avoided.
- *
- * The main timer used the timer/counter 0 of the AVR.
+ * Tick timer, used to slow down the main loop to a given rate.
  */
 
 /**
@@ -41,28 +34,25 @@
  * If you want to change this value, you also need to change the TCCR0
  * register.
  */
-#define MT_TC0_PRESCALER 256L
+#define TIMER_TC0_PRESCALER 256L
+
 /**
  * Top configured for timer/counter 0.
  * If you want to change this value, you also need to change the TCCR0
  * register.
  */
-#define MT_TC0_TOP 255
-/**
- * Period of timer/counter 0 (in millisecond).
- */
-#define MT_TC0_PERIOD \
-    (1000.0 / (AC_FREQ / (MT_TC0_PRESCALER * (MT_TC0_TOP + 1))))
+#define TIMER_TC0_TOP 255
 
-/**
- * Initialize the main timer to 4.444 ms.
- * This function setup the timer/counter 0 configuration register.
- */
+/** Period of timer, ms. */
+#define TIMER_PERIOD_MS \
+    (1000.0 / (AC_FREQ / (TIMER_TC0_PRESCALER * (TIMER_TC0_TOP + 1))))
+
+/** Initialise timer. */
 void
-main_timer_init (void);
+timer_init (void);
 
 /**
- * Wait until the main timer overflows.
+ * Wait until the timer overflows.
  * @return
  *  - 0 if we are on time (we have not reached overflow before calling this
  *  function).
@@ -73,6 +63,6 @@ main_timer_init (void);
  * correctly!
  */
 uint8_t
-main_timer_wait (void);
+timer_wait (void);
 
-#endif /* main_timer_h */
+#endif /* timer_h */

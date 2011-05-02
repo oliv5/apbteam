@@ -1,4 +1,4 @@
-EVENT main_timer__late "MainTimer: we are late."
+EVENT timer__late "Timer: we are late."
 EVENT fsm__handle_event from 1 event 1 to 1 "FSM: %i =%i=> %i."
 EVENT move__go_to xd 2 yd 2 "Move: (%d, %d)."
 EVENT food__best food 1 "Food best: %d."

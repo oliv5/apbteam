@@ -4,7 +4,7 @@ BASE = ../../avr
 PROGS = io
 # Sources to compile.
 io_SOURCES = main.c servo.avr.c eeprom.avr.c pwm.c \
-	     switch.avr.c chrono.c main_timer.avr.c servo_pos.c \
+	     switch.avr.c chrono.c timer.avr.c servo_pos.c \
 	     twi_master.c asserv.c mimot.c \
 	     simu.host.c contact.c usdist.c radar.c \
 	     path.c food.c events.host.c \
@@ -12,7 +12,7 @@ io_SOURCES = main.c servo.avr.c eeprom.avr.c pwm.c \
 # Modules needed for IO.
 MODULES = proto uart twi utils adc math/fixed math/geometry path/astar \
 	  trace flash spi
-AI_MODULES = twi_master common
+AI_MODULES = twi_master common utils
 # Configuration file.
 CONFIGFILE = avrconfig.h
 # IO board use an ATMega128.

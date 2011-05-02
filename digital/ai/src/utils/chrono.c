@@ -1,5 +1,5 @@
 /* chrono.c */
-/* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
+/* ai - Robot Artificial Intelligence. {{{
  *
  * Copyright (C) 2008 Dufour Jérémy
  *
@@ -22,11 +22,9 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
-
 #include "common.h"
 
-#include "bot.h"
-#include "main_timer.h"
+#include "timer.h"
 #include "asserv.h"
 #include "twi_master.h"
 
@@ -43,13 +41,9 @@
  * match is over (chrono_is_match_over, chrono_end_match).
  */
 
-/**
- * Number of overflows of the timer/counter 0 to wait before the match is
- * over.
- * Basically, it is match_duration / timer_counter_0_overflow_duration.
- * Minus one is here for safety reason (because rounding is done at plus one).
- */
-#define CHRONO_MATCH_OVERFLOW_COUNT (MATCH_DURATION_MS / MT_TC0_PERIOD - 1)
+/** Number of overflows of the timer to wait before the match is over. */
+#define CHRONO_MATCH_OVERFLOW_COUNT \
+    (CHRONO_MATCH_DURATION_MS / TIMER_PERIOD_MS)
 
 /**
  * Duration of a loop to emulate from the original behaviour, in ms.
@@ -121,7 +115,7 @@ chrono_enabled (void)
 uint32_t
 chrono_remaining_time (void)
 {
-    return chrono_ov_count_ * MT_TC0_PERIOD;
+    return chrono_ov_count_ * TIMER_PERIOD_MS;
 }
 
 void

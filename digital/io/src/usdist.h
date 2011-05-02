@@ -42,7 +42,7 @@
 #define USDIST_MM_TOO_FAR 650
 
 /** Measuring period in cycles. */
-#define USDIST_PERIOD_CYCLE (uint8_t) (8.0 / MT_TC0_PERIOD)
+#define USDIST_PERIOD_CYCLE (uint8_t) (8.0 / TIMER_PERIOD_MS)
 
 /** Array containing the last measures in millimeters. */
 extern uint16_t usdist_mm[USDIST_NB];

@@ -39,7 +39,7 @@
 #include <string.h>
 #endif /* HOST */
 
-#include "main_timer.h"
+#include "timer.h"
 #include "simu.host.h"
 
 #include "asserv.h"
@@ -261,7 +261,7 @@ main_init (void)
     /* Enable interrupts */
     sei ();
     /* Main timer */
-    main_timer_init ();
+    timer_init ();
     /* Load parameters */
     eeprom_load_param ();
     /* Dirty fix */
@@ -305,14 +305,14 @@ main_loop (void)
       {
 	/* Wait for an overflow of the main timer (4.444ms) */
 	  {
-	    uint8_t timer_count = main_timer_wait ();
+	    uint8_t timer_count = timer_wait ();
 	    if (main_stats_timer_)
 		proto_send1b('M', timer_count);
 	    if (timer_count == 1)
 	      {
 		/* Main timer has reached overflow earlier!
 		   We are late and this is really bad. */
-		TRACE (TRACE_MAIN_TIMER__LATE);
+		TRACE (TRACE_TIMER__LATE);
 	      }
 	  }
 

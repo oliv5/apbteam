@@ -30,11 +30,6 @@
  */
 
 /**
- * Duration of a match in milliseconds, with margin.
- */
-#define MATCH_DURATION_MS (90000 - 2500)
-
-/**
  * The scaling factor, millimeter per step.
  */
 #ifdef HOST

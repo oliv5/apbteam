@@ -1,5 +1,5 @@
-/* main_timer.avr.c */
-/* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
+/* timer.avr.c */
+/* ai - Robot Artificial Intelligence. {{{
  *
  * Copyright (C) 2009 Dufour Jérémy
  *
@@ -22,30 +22,29 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
-
 #include "common.h"
 
-#include "main_timer.h"
+#include "timer.h"
 
 #include "modules/utils/utils.h"
 #include "io.h"
 
 void
-main_timer_init (void)
+timer_init (void)
 {
     /* Configuration of the timer/counter 0:
      *  - top = 0xff,
      *  - prescaler = 256,
      *  -> Fov = F_io / (prescaler * (TOP + 1))
-     *  -> Tov = 1 / Fov = 4.444 ms.
+     *  -> Tov = 1 / Fov
      * Note: if you change the TCCR0 register value, please also update
-     * MT_TC0_PRESCALER and MT_TC0_TOP. */
+     * TIMER_TC0_PRESCALER and TIMER_TC0_TOP. */
     TCCR0 = regv (FOC0, WGM00, COM01, COM0, WGM01, CS02, CS01, CS00,
                      0,     0,     0,    0,     0,    1,    1,    0);
 }
 
 uint8_t
-main_timer_wait (void)
+timer_wait (void)
 {
     /* Let's pretend we have reached overflow before calling this function. */
     uint8_t count_before_ov = 1;
@@ -55,6 +54,6 @@ main_timer_wait (void)
 	count_before_ov = 0;
     /* Write 1 to clear overflow. */
     TIFR = _BV (TOV0);
-
     return count_before_ov;
 }
+
