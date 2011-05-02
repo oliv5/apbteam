@@ -7,7 +7,8 @@ io_SOURCES = main.c servo.avr.c eeprom.avr.c pwm.c \
 	     switch.avr.c chrono.c main_timer.avr.c servo_pos.c \
 	     twi_master.c asserv.c mimot.c \
 	     simu.host.c contact.c usdist.c radar.c \
-	     path.c food.c events.host.c
+	     path.c food.c events.host.c \
+	     fsm.host.c init.c move.c top.c hola.c loader.c fsm_AI_gen.avr.c
 # Modules needed for IO.
 MODULES = proto uart twi utils adc math/fixed math/geometry path/astar \
 	  trace flash spi
@@ -24,11 +25,13 @@ vpath %.c $(AI_MODULES:%=../../ai/src/%)
 vpath %.h $(AI_MODULES:%=../../ai/src/%)
 INCLUDES += -I. $(AI_MODULES:%=-I../../ai/src/%)
 
-# FSM.
-FSM = ai
-FSM_SOURCES := top init move loader hola
-# Include FSM makefile.
-include $(BASE)/make/Makefile.fsm
+include $(BASE)/make/Makefile.gen
+
+#FSM generation
+obj/main.avr.o: fsm_AI_gen.h
+fsm_AI_gen.avr.c fsm_AI_gen.h: host
+	./io.host --gen
+	mv fsm_AI_gen.c fsm_AI_gen.avr.c
 
 events.h events.host.c: trace.trc
 	PYTHONPATH=$(BASE)/../../host python $(BASE)/../../tools/trace/trace.py -t create -i $< -o

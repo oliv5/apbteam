@@ -35,6 +35,8 @@
 /* AVR include, non HOST */
 #ifndef HOST
 # include "switch.h"	/* Manage switches (jack, color selector) */
+#else
+#include <string.h>
 #endif /* HOST */
 
 #include "main_timer.h"
@@ -44,7 +46,8 @@
 #include "mimot.h"
 #include "twi_master.h"
 #include "eeprom.h"	/* Parameters loaded/stored in the EEPROM */
-#include "fsm.h"	/* fsm_* */
+#define FSM_NAME AI
+#include "fsm.h"
 #include "bot.h"
 #include "servo_pos.h"
 #include "usdist.h"
@@ -144,16 +147,18 @@ main_event_to_fsm (void)
 {
     /* If an event is handled, stop generating any other event, because a
      * transition may have invalidated the current robot state. */
-#define FSM_HANDLE_EVENT(fsm, event) \
-    do { if (fsm_handle_event ((fsm), (event))) return; } while (0)
-#define FSM_HANDLE_TIMEOUT(fsm) \
-    do { if (fsm_handle_timeout (fsm)) return; } while (0)
+#define FSM_HANDLE_E(fsm, event) \
+    do { if (FSM_HANDLE (fsm, event)) return; } while (0)
+#define FSM_HANDLE_VAR_E(fsm, event) \
+    do { if (FSM_HANDLE_VAR (fsm, event)) return; } while (0)
+#define FSM_HANDLE_TIMEOUT_E(fsm) \
+    do { if (FSM_HANDLE_TIMEOUT (fsm)) return; } while (0)
     /* Update FSM timeouts. */
-    FSM_HANDLE_TIMEOUT (&ai_fsm);
+    FSM_HANDLE_TIMEOUT_E (AI);
 
     /* If we have entering this function, last command of the asserv board has
      * been aquited. */
-    FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_asserv_last_cmd_ack);
+    FSM_HANDLE_E (AI, asserv_last_cmd_ack);
 
     asserv_status_e
 	move_status = none,
@@ -171,50 +176,50 @@ main_event_to_fsm (void)
 
     /* Check commands move status. */
     if (move_status == success)
-	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_bot_move_succeed);
+	FSM_HANDLE_E (AI, bot_move_succeed);
     else if (move_status == failure)
-	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_bot_move_failed);
+	FSM_HANDLE_E (AI, bot_move_failed);
 
     if (motor0_status == success)
-	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_elevator_succeed);
+	FSM_HANDLE_E (AI, elevator_succeed);
     else if (motor0_status == failure)
-	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_elevator_failed);
+	FSM_HANDLE_E (AI, elevator_failed);
 
     if (motor1_status == success)
-	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_gate_succeed);
+	FSM_HANDLE_E (AI, gate_succeed);
     else if (motor1_status == failure)
-	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_gate_failed);
+	FSM_HANDLE_E (AI, gate_failed);
 
     if (motorm0_status == success && motorm1_status == success)
-	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_clamp_succeed);
+	FSM_HANDLE_E (AI, clamp_succeed);
     else if (motorm0_status == failure || motorm1_status == failure)
-	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_clamp_failed);
+	FSM_HANDLE_E (AI, clamp_failed);
 
     /* Check positions. */
     if (asserv_get_motor0_position () > BOT_ELEVATOR_UNLOAD_STEP)
-	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_elevator_unload_position);
+	FSM_HANDLE_E (AI, elevator_unload_position);
 
     /* Contacts. */
     if (asserv_get_motor0_position () < BOT_ELEVATOR_REST_STEP
 	&& (!IO_GET (CONTACT_BUMPER0) || !IO_GET (CONTACT_BUMPER1)))
-	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_loader_element);
+	FSM_HANDLE_E (AI, loader_element);
     if (!IO_GET (CONTACT_STRATEGY))
       {
 	if (switch_get_color ())
 	    loader_down ();
 	else
-	    FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_hola_start);
+	    FSM_HANDLE_E (AI, hola_start);
       }
 
     /* Jack */
     if (switch_get_jack ())
-	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_jack_removed_from_bot);
+	FSM_HANDLE_E (AI, jack_removed_from_bot);
     else
-	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_jack_inserted_into_bot);
+	FSM_HANDLE_E (AI, jack_inserted_into_bot);
 
     if (init_match_is_started)
       {
-	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_init_match_is_started);
+	FSM_HANDLE_E (AI, init_match_is_started);
 
 	/* This must be done in the last part of this block. */
 	init_match_is_started = 0;
@@ -229,7 +234,7 @@ main_event_to_fsm (void)
 	/* We need to save the event before reseting it */
 	uint8_t save_event = main_pop_event ();
 	/* Post the event */
-	FSM_HANDLE_EVENT (&ai_fsm, save_event);
+	FSM_HANDLE_VAR_E (AI, save_event);
       }
 
     /* Check obstacles. */
@@ -240,7 +245,7 @@ main_event_to_fsm (void)
     position_t robot_pos;
     asserv_get_position (&robot_pos);
     if (robot_pos.v.y < PG_FIELD_Y_MAX)
-	FSM_HANDLE_EVENT (&ai_fsm, AI_EVENT_in_field);
+	FSM_HANDLE_E (AI, in_field);
 
     /* TODO: Check other sensors */
 }
@@ -276,10 +281,8 @@ main_init (void)
     usdist_init ();
     /* Top. */
     top_init ();
-    /* Init FSM. */
-    fsm_init (&ai_fsm);
     /* Start FSM. */
-    fsm_handle_event (&ai_fsm, AI_EVENT_start);
+    FSM_HANDLE (AI, start);
     /* PWM module */
     pwm_init ();
     /* Servo pos init. */
@@ -305,12 +308,12 @@ main_loop (void)
 	    uint8_t timer_count = main_timer_wait ();
 	    if (main_stats_timer_)
 		proto_send1b('M', timer_count);
-            if (timer_count == 1)
-            {
-                /* Main timer has reached overflow earlier!
-                   We are late and this is really bad. */
-                TRACE (TRACE_MAIN_TIMER__LATE);
-            }
+	    if (timer_count == 1)
+	      {
+		/* Main timer has reached overflow earlier!
+		   We are late and this is really bad. */
+		TRACE (TRACE_MAIN_TIMER__LATE);
+	      }
 	  }
 
 	/* Update chrono. */
@@ -706,6 +709,18 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 int
 main (int argc, char **argv)
 {
+    /* produce AVR's FSM headers. */
+#ifdef HOST
+    int i;
+    if (argc > 1)
+	for (i = 1; i < argc; i++)
+	    if (strcmp (argv[i], "--gen") == 0)
+	    {
+		FSM_GENERATE (AVR, 0);
+		return 0;
+	    }
+#endif
+
     avr_init (argc, argv);
 
     /* Initialize the main and its subsystems */
