@@ -29,7 +29,7 @@
 #include "modules/math/fixed/fixed.h"
 
 int16_t
-distance_point_point (vect_t *a, vect_t *b)
+distance_point_point (const vect_t *a, const vect_t *b)
 {
     int32_t dx = b->x - a->x;
     int32_t dy = b->y - a->y;
@@ -37,7 +37,7 @@ distance_point_point (vect_t *a, vect_t *b)
 }
 
 int16_t
-distance_segment_point (vect_t *a, vect_t *b, vect_t *p)
+distance_segment_point (const vect_t *a, const vect_t *b, const vect_t *p)
 {
     int16_t proj;
     /* The space is split in three regions delimited by the two parallel lines

@@ -29,13 +29,13 @@
 /** Compute distance between two points.
  * - a, b: points. */
 int16_t
-distance_point_point (vect_t *a, vect_t *b);
+distance_point_point (const vect_t *a, const vect_t *b);
 
 /** Compute distance between a segment and a point.
  * - a: segment first vertice.
  * - b: segment second vertice.
  * - p: point. */
 int16_t
-distance_segment_point (vect_t *a, vect_t *b, vect_t *p);
+distance_segment_point (const vect_t *a, const vect_t *b, const vect_t *p);
 
 #endif /* distance_h */
