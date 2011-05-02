@@ -25,12 +25,15 @@ vpath %.c $(AI_MODULES:%=../../ai/src/%)
 vpath %.h $(AI_MODULES:%=../../ai/src/%)
 INCLUDES += -I. $(AI_MODULES:%=-I../../ai/src/%)
 
+EXTRA_CLEAN_FILES = fsm_AI_gen.h fsm_AI_gen.avr.c
+
 include $(BASE)/make/Makefile.gen
 
-#FSM generation
+# FSM generation.
 obj/main.avr.o: fsm_AI_gen.h
-fsm_AI_gen.avr.c fsm_AI_gen.h: host
-	./io.host --gen
+fsm_AI_gen.avr.c: fsm_AI_gen.h
+fsm_AI_gen.h: io.host
+	./$< --gen
 	mv fsm_AI_gen.c fsm_AI_gen.avr.c
 
 events.h events.host.c: trace.trc
