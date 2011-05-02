@@ -54,7 +54,7 @@
 #include "radar.h"
 #include "chrono.h"	/* chrono_end_match */
 #include "pwm.h"
-#include "playground.h"
+#include "playground_2010.h"
 #include "contact.h"
 #include "init.h"
 #include "move.h"
@@ -76,7 +76,7 @@ static void main_loop (void);
 /**
  * Our color.
  */
-enum team_color_e bot_color;
+enum team_color_e team_color;
 
 /** Maximum number of events in post queue. */
 #define MAIN_POST_EVENT_QUEUE_SIZE 8

@@ -1,6 +1,6 @@
-#ifndef debug_host_h
-#define debug_host_h
-/* debug.host.h */
+#ifndef playground_2010_h
+#define playground_2010_h
+/* playground_2010.h */
 /* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
  *
  * Copyright (C) 2008 Dufour Jérémy
@@ -24,19 +24,23 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "playground.h"
 
 /**
- * @file Debug printf functions.
- * This module include a macro to add some debug functions to printf a message
- * under host target. It does nothing under avr target.
+ * Eurobot 2010 specific defines.
  */
 
-#ifdef HOST
-#include <stdio.h>
-#define DPRINTF(format, args...) \
-    do { fprintf (stderr, (format), ## args); } while (0)
-#else /* HOST */
-#define DPRINTF(format, args...)
-#endif /* HOST */
+/**
+ * Start zone.
+ */
+#define PG_START_ZONE_LENGTH 500
+#define PG_START_ZONE_WIDTH 500
 
-#endif /* debug_host_h */
+/** Size of the unclimbable slope zone. */
+#define PG_SLOPE_WIDTH (500 + 519 + 500)
+#define PG_SLOPE_LENGTH (500 + 22)
+
+/** Start of field zone. */
+#define PG_FIELD_Y_MAX 1128
+
+#endif /* playground_2010_h */

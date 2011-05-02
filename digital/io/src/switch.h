@@ -29,8 +29,7 @@
  * @file Module to manage 'switchs'. For example, colors selector and jack.
  */
 
-#include "bot.h"
-#include "common.h"
+#include "defs.h"
 
 /**
  * Initialize the switch module.

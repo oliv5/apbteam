@@ -128,18 +128,4 @@
 /** Gate stroke in steps. */
 #define BOT_GATE_STROKE_STEP -0x203e
 
-/**
- * Definition of the colors.
- */
-enum team_color_e
-{
-    RED_TEAM = 0,
-    BLUE_TEAM = 1
-};
-
-/**
- * Our color.
- */
-extern enum team_color_e bot_color;
-
 #endif /* bot_h */

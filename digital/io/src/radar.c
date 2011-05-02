@@ -25,7 +25,8 @@
 #include "common.h"
 #include "radar.h"
 
-#include "playground.h"
+#include "playground_2010.h"
+#include "bot.h"
 #include "usdist.h"
 
 #include "modules/math/geometry/geometry.h"

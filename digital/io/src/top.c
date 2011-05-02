@@ -35,6 +35,7 @@
 #include "move.h"
 #include "chrono.h"
 #include "playground.h"
+#include "bot.h"
 
 #include "modules/utils/utils.h"
 

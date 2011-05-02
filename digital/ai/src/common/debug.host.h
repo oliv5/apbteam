@@ -1,9 +1,9 @@
-#ifndef defs_h
-#define defs_h
-/* defs.h */
-/* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
+#ifndef debug_host_h
+#define debug_host_h
+/* debug.host.h */
+/* ai - Robot Artificial Intelligence. {{{
  *
- * Copyright (C) 2010 Nicolas Schodet
+ * Copyright (C) 2008 Dufour Jérémy
  *
  * APBTeam:
  *        Web: http://apbteam.org/
@@ -24,23 +24,19 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
-#include "modules/math/geometry/geometry.h"
-#include "modules/math/geometry/vect.h"
 
-/** General purpose defines. */
+/**
+ * Debug printf functions.
+ * This module include a macro to add some debug functions to printf a message
+ * under host target. It does nothing under avr target.
+ */
 
-/** Structure defining a position with an angle. */
-struct position_t
-{
-    /** Cartesian position in millimeters, (0, 0) is at bottom left. */
-    vect_t v;
-    /** Angle, counter-clockwise, [0, 1), f0.16.
-     * For example, 0x8000 means 0.5, which means 180 degrees. */
-    uint16_t a;
-};
-typedef struct position_t position_t;
+#ifdef HOST
+# include <stdio.h>
+# define DPRINTF(format, args...) \
+    do { fprintf (stderr, (format), ## args); } while (0)
+#else /* HOST */
+# define DPRINTF(format, args...)
+#endif /* HOST */
 
-/** Convert degrees to an angle usable in position_t. */
-#define POSITION_A_DEG(a) G_ANGLE_UF016_DEG (a)
-
-#endif /* defs_h */
+#endif /* debug_host_h */

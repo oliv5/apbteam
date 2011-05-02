@@ -12,7 +12,7 @@ io_SOURCES = main.c servo.avr.c eeprom.avr.c pwm.c \
 # Modules needed for IO.
 MODULES = proto uart twi utils adc math/fixed math/geometry path/astar \
 	  trace flash spi
-AI_MODULES = twi_master
+AI_MODULES = twi_master common
 # Configuration file.
 CONFIGFILE = avrconfig.h
 # IO board use an ATMega128.

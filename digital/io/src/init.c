@@ -28,7 +28,7 @@
 #include "fsm.h"
 #include "asserv.h"
 #include "init.h"
-#include "playground.h"
+#include "playground_2010.h"
 #include "main.h"
 #include "bot.h"
 #include "switch.h"
@@ -107,7 +107,7 @@ FSM_TRANS (INIT_WAIT_FIRST_JACK_OUT,
     /* Initialize trace module (erase the flash). */
     trace_init ();
     /* Get the color. */
-    bot_color = switch_get_color ();
+    team_color = switch_get_color ();
     return FSM_NEXT (INIT_WAIT_FIRST_JACK_OUT, jack_removed_from_bot);
 }
 
