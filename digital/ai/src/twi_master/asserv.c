@@ -1,5 +1,5 @@
 /* asserv.c */
-/* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
+/* ai - Robot Artificial Intelligence. {{{
  *
  * Copyright (C) 2008 Dufour Jérémy
  *
@@ -27,16 +27,10 @@
 
 #include "twi_master.h"
 
-#include "modules/utils/byte.h"	/* v*_to_v* */
+#include "modules/utils/byte.h"
 #include "modules/math/fixed/fixed.h"
 #include "bot.h"
 #include "io.h"
-
-/**
- * @defgroup AsservPrivate Asserv module private variables and functions
- * declarations and definitions
- * @{
- */
 
 /**
  * Flag bit position value for the status byte of the asserv.
@@ -105,6 +99,16 @@ typedef struct asserv_struct_s
  * Status variable.
  */
 asserv_struct_s asserv_status;
+
+/** Set scale.
+ * @param scale number of millimeter per step (f8.24).
+ */
+static void
+asserv_set_scale (uint32_t scale)
+{
+    asserv_scale = scale;
+    asserv_scale_inv = fixed_div_f824 (1L << 24, scale);
+}
 
 void
 asserv_init (void)
@@ -405,13 +409,6 @@ asserv_goto (uint32_t x, uint32_t y, uint8_t backward)
     buffer[6] = v32_to_v8 (y, 0);
     buffer[7] = backward;
     twi_master_send_buffer (8);
-}
-
-void
-asserv_set_scale (uint32_t scale)
-{
-    asserv_scale = scale;
-    asserv_scale_inv = fixed_div_f824 (1L << 24, scale);
 }
 
 void

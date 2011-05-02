@@ -1,5 +1,5 @@
 /* twi_master.c */
-/* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
+/* ai - Robot Artificial Intelligence. {{{
  *
  * Copyright (C) 2010 Nicolas Schodet
  *

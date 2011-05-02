@@ -11,6 +11,7 @@ io_SOURCES = main.c servo.avr.c eeprom.avr.c pwm.c \
 # Modules needed for IO.
 MODULES = proto uart twi utils adc math/fixed math/geometry path/astar \
 	  trace flash spi
+AI_MODULES = twi_master
 # Configuration file.
 CONFIGFILE = avrconfig.h
 # IO board use an ATMega128.
@@ -18,6 +19,10 @@ AVR_MCU = atmega128
 # Optimize for speed.
 OPTIMIZE = -O2
 HOST_LIBS = -lm
+
+vpath %.c $(AI_MODULES:%=../../ai/src/%)
+vpath %.h $(AI_MODULES:%=../../ai/src/%)
+INCLUDES += -I. $(AI_MODULES:%=-I../../ai/src/%)
 
 # FSM.
 FSM = ai

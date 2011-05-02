@@ -1,7 +1,7 @@
 #ifndef asserv_h
 #define asserv_h
 /* asserv.h */
-/* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
+/* ai - Robot Artificial Intelligence. {{{
  *
  * Copyright (C) 2008 Dufour Jérémy
  *
@@ -27,10 +27,9 @@
 #include "defs.h"
 
 /**
- * @file Control the asserv board from io using the TWI protocol.
+ * @file Control the asserv board using the TWI protocol.
  * This files contains the 'public' functions to send commands to the asserv
  * board using a protocol over TWI communication.
- * @see trunk/digital/io/doc/proto_asserv.txt
  */
 
 /** Slave number in twi_master list. */
@@ -67,7 +66,7 @@ typedef enum asserv_status_e
     none,
     /** The command has succeed. */
     success,
-    /** The command has failed. The bot or the motor0 is blocked */
+    /** The command has failed. The bot or the motor is blocked */
     failure
 } asserv_status_e;
 
@@ -176,7 +175,7 @@ asserv_move_angularly (int16_t angle);
 /**
  * Make the bot turn of an absolute angle.
  * The angle is absolute and not a difference with the current one.
- * @param a the absolute angle in degrees
+ * @param a the absolute angle
  */
 void
 asserv_goto_angle (int16_t angle);
@@ -278,12 +277,6 @@ asserv_set_position (int32_t x, int32_t y, int16_t angle);
  */
 void
 asserv_goto (uint32_t x, uint32_t y, uint8_t backward);
-
-/** Set scale.
- * @param scale number of millimeter per step (f8.24).
- */
-void
-asserv_set_scale (uint32_t scale);
 
 /** Reset the motor0 to the zero position. */
 void

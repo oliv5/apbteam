@@ -1,7 +1,7 @@
 #ifndef twi_master_h
 #define twi_master_h
 /* twi_master.h */
-/* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
+/* ai - Robot Artificial Intelligence. {{{
  *
  * Copyright (C) 2010 Nicolas Schodet
  *
