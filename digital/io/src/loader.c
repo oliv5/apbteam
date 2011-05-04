@@ -30,7 +30,7 @@
 #include "asserv.h"
 #include "mimot.h"
 #include "bot.h"
-#include "main.h"
+#include "fsm_queue.h"
 #include "food.h"
 
 uint8_t loader_elements;
@@ -279,7 +279,7 @@ FSM_TRANS (LOADER_UPING,
 	   elevator_succeed,
 	   LOADER_UP)
 {
-    main_post_event (FSM_EVENT (AI,loader_uped));
+    fsm_queue_post_event (FSM_EVENT (AI,loader_uped));
     return FSM_NEXT (LOADER_UPING, elevator_succeed);
 }
 
@@ -290,7 +290,7 @@ FSM_TRANS (LOADER_UPING,
 	   elevator_failed,
 	   LOADER_ERROR)
 {
-    main_post_event (FSM_EVENT (AI, loader_errored));
+    fsm_queue_post_event (FSM_EVENT (AI, loader_errored));
     return FSM_NEXT (LOADER_UPING, elevator_failed);
 }
 
@@ -314,7 +314,7 @@ FSM_TRANS (LOADER_DOWNING,
 	   LOADER_DOWN)
 {
     asserv_motor0_free ();
-    main_post_event (FSM_EVENT (AI, loader_downed));
+    fsm_queue_post_event (FSM_EVENT (AI, loader_downed));
     return FSM_NEXT (LOADER_DOWNING, elevator_succeed);
 }
 
@@ -325,7 +325,7 @@ FSM_TRANS (LOADER_DOWNING,
 	   elevator_failed,
 	   LOADER_ERROR)
 {
-    main_post_event (FSM_EVENT (AI, loader_errored));
+    fsm_queue_post_event (FSM_EVENT (AI, loader_errored));
     return FSM_NEXT (LOADER_DOWNING, elevator_failed);
 }
 
@@ -338,7 +338,7 @@ FSM_TRANS (LOADER_DOWNING,
 	   LOADER_ERROR)
 {
     asserv_motor0_free ();
-    main_post_event (FSM_EVENT (AI, loader_errored));
+    fsm_queue_post_event (FSM_EVENT (AI, loader_errored));
     return FSM_NEXT (LOADER_DOWNING, loader_element);
 }
 
@@ -396,7 +396,7 @@ FSM_TRANS (LOADER_ERROR_DOWNING,
 	   elevator_failed,
 	   LOADER_ERROR)
 {
-    main_post_event (FSM_EVENT (AI, loader_errored));
+    fsm_queue_post_event (FSM_EVENT (AI, loader_errored));
     return FSM_NEXT (LOADER_ERROR_DOWNING, elevator_failed);
 }
 
@@ -406,7 +406,7 @@ FSM_TRANS (LOADER_ERROR_DOWNING,
 FSM_TRANS_TIMEOUT (LOADER_ERROR_DOWNING, 225,
 		   LOADER_ERROR)
 {
-    main_post_event (FSM_EVENT (AI, loader_errored));
+    fsm_queue_post_event (FSM_EVENT (AI, loader_errored));
     return FSM_NEXT_TIMEOUT (LOADER_ERROR_DOWNING);
 }
 
@@ -417,7 +417,7 @@ FSM_TRANS (LOADER_ERROR_DOWNING_OPEN,
 	   clamp_succeed,
 	   LOADER_DOWN)
 {
-    main_post_event (FSM_EVENT (AI, loader_downed));
+    fsm_queue_post_event (FSM_EVENT (AI, loader_downed));
     return FSM_NEXT (LOADER_ERROR_DOWNING_OPEN, clamp_succeed);
 }
 
@@ -428,7 +428,7 @@ FSM_TRANS (LOADER_ERROR_DOWNING_OPEN,
 	   clamp_failed,
 	   LOADER_ERROR)
 {
-    main_post_event (FSM_EVENT (AI, loader_errored));
+    fsm_queue_post_event (FSM_EVENT (AI, loader_errored));
     return FSM_NEXT (LOADER_ERROR_DOWNING_OPEN, clamp_failed);
 }
 
@@ -438,7 +438,7 @@ FSM_TRANS (LOADER_ERROR_DOWNING_OPEN,
 FSM_TRANS_TIMEOUT (LOADER_ERROR_DOWNING_OPEN, 225,
 		   LOADER_ERROR)
 {
-    main_post_event (FSM_EVENT (AI, loader_errored));
+    fsm_queue_post_event (FSM_EVENT (AI, loader_errored));
     return FSM_NEXT_TIMEOUT (LOADER_ERROR_DOWNING_OPEN);
 }
 
@@ -461,7 +461,7 @@ FSM_TRANS (LOADER_ERROR_UPING,
 	   elevator_failed,
 	   LOADER_ERROR)
 {
-    main_post_event (FSM_EVENT (AI, loader_errored));
+    fsm_queue_post_event (FSM_EVENT (AI, loader_errored));
     return FSM_NEXT (LOADER_ERROR_UPING, elevator_failed);
 }
 
@@ -471,7 +471,7 @@ FSM_TRANS (LOADER_ERROR_UPING,
 FSM_TRANS_TIMEOUT (LOADER_ERROR_UPING, 225,
 		   LOADER_ERROR)
 {
-    main_post_event (FSM_EVENT (AI, loader_errored));
+    fsm_queue_post_event (FSM_EVENT (AI, loader_errored));
     return FSM_NEXT_TIMEOUT (LOADER_ERROR_UPING);
 }
 
@@ -482,7 +482,7 @@ FSM_TRANS (LOADER_ERROR_UPING_OPEN,
 	   clamp_succeed,
 	   LOADER_UP)
 {
-    main_post_event (FSM_EVENT (AI, loader_uped));
+    fsm_queue_post_event (FSM_EVENT (AI, loader_uped));
     return FSM_NEXT (LOADER_ERROR_UPING_OPEN, clamp_succeed);
 }
 
@@ -493,7 +493,7 @@ FSM_TRANS (LOADER_ERROR_UPING_OPEN,
 	   clamp_failed,
 	   LOADER_ERROR)
 {
-    main_post_event (FSM_EVENT (AI, loader_errored));
+    fsm_queue_post_event (FSM_EVENT (AI, loader_errored));
     return FSM_NEXT (LOADER_ERROR_UPING_OPEN, clamp_failed);
 }
 
@@ -503,7 +503,7 @@ FSM_TRANS (LOADER_ERROR_UPING_OPEN,
 FSM_TRANS_TIMEOUT (LOADER_ERROR_UPING_OPEN, 225,
 		   LOADER_ERROR)
 {
-    main_post_event (FSM_EVENT (AI, loader_errored));
+    fsm_queue_post_event (FSM_EVENT (AI, loader_errored));
     return FSM_NEXT_TIMEOUT (LOADER_ERROR_UPING_OPEN);
 }
 
@@ -561,10 +561,10 @@ FSM_TRANS (LOADER_LOAD_UPING,
       {
 	if (loader_elements)
 	    loader_elements--;
-	main_post_event (FSM_EVENT (AI, loader_black));
+	fsm_queue_post_event (FSM_EVENT (AI, loader_black));
       }
     else
-	main_post_event (FSM_EVENT (AI, loader_errored));
+	fsm_queue_post_event (FSM_EVENT (AI, loader_errored));
     mimot_move_motor0_absolute (BOT_CLAMP_OPEN_STEP, BOT_CLAMP_SPEED);
     mimot_move_motor1_absolute (BOT_CLAMP_OPEN_STEP, BOT_CLAMP_SPEED);
     return FSM_NEXT (LOADER_LOAD_UPING, elevator_failed);
@@ -585,7 +585,7 @@ FSM_TRANS (LOADER_LOAD_UNLOADING,
 	   elevator_failed,
 	   LOADER_ERROR)
 {
-    main_post_event (FSM_EVENT (AI, loader_errored));
+    fsm_queue_post_event (FSM_EVENT (AI, loader_errored));
     mimot_move_motor0_absolute (BOT_CLAMP_OPEN_STEP, BOT_CLAMP_SPEED);
     mimot_move_motor1_absolute (BOT_CLAMP_OPEN_STEP, BOT_CLAMP_SPEED);
     return FSM_NEXT (LOADER_LOAD_UNLOADING, elevator_failed);
@@ -618,7 +618,7 @@ FSM_TRANS (LOADER_LOAD_UNLOADING_OPEN,
 	   clamp_failed,
 	   LOADER_ERROR)
 {
-    main_post_event (FSM_EVENT (AI, loader_errored));
+    fsm_queue_post_event (FSM_EVENT (AI, loader_errored));
     return FSM_NEXT (LOADER_LOAD_UNLOADING_OPEN, clamp_failed);
 }
 
@@ -636,7 +636,7 @@ FSM_TRANS (LOADER_LOAD_EMPTY_OPEN, clamp_succeed,
       }
     else
       {
-	main_post_event (FSM_EVENT (AI, loader_downed));
+	fsm_queue_post_event (FSM_EVENT (AI, loader_downed));
 	return FSM_NEXT (LOADER_LOAD_EMPTY_OPEN, clamp_succeed, down);
       }
 }
@@ -648,6 +648,6 @@ FSM_TRANS (LOADER_LOAD_EMPTY_OPEN,
 	   clamp_failed,
 	   LOADER_ERROR)
 {
-    main_post_event (FSM_EVENT (AI, loader_errored));
+    fsm_queue_post_event (FSM_EVENT (AI, loader_errored));
     return FSM_NEXT (LOADER_LOAD_EMPTY_OPEN, clamp_failed);
 }

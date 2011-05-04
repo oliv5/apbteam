@@ -1,9 +1,9 @@
-#ifndef main_h
-#define main_h
-/* main.h */
-/* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
+#ifndef fsm_queue_h
+#define fsm_queue_h
+/* fsm_queue.h */
+/* ai - Robot Artificial Intelligence. {{{
  *
- * Copyright (C) 2008 Dufour Jérémy
+ * Copyright (C) 2011 Nicolas Schodet
  *
  * APBTeam:
  *        Web: http://apbteam.org/
@@ -25,8 +25,17 @@
  *
  * }}} */
 
-extern vect_t main_obstacles_pos[2];
+/** Post an event to be processed in the next main loop. */
+void
+fsm_queue_post_event (uint8_t event);
 
-extern uint8_t main_obstacles_nb;
+/** Poll for event in the event queue (return non zero if there is an event
+ * pending). */
+uint8_t
+fsm_queue_poll (void);
 
-#endif /* main_h */
+/** Pop one event from the event queue. */
+uint8_t
+fsm_queue_pop_event (void);
+
+#endif /* fsm_queue_h */

@@ -48,6 +48,7 @@
 #include "eeprom.h"	/* Parameters loaded/stored in the EEPROM */
 #define FSM_NAME AI
 #include "fsm.h"
+#include "fsm_queue.h"
 #include "bot.h"
 #include "servo_pos.h"
 #include "usdist.h"
@@ -78,18 +79,6 @@ static void main_loop (void);
  */
 enum team_color_e team_color;
 
-/** Maximum number of events in post queue. */
-#define MAIN_POST_EVENT_QUEUE_SIZE 8
-
-/** Events to post to the FSM in next iteration. */
-uint8_t main_post_event_queue[MAIN_POST_EVENT_QUEUE_SIZE];
-
-/** Number of events in the post queue. */
-uint8_t main_post_event_queue_nb;
-
-/** First event in the post queue. */
-uint8_t main_post_event_queue_head;
-
 /** Obstacles positions, updated using radar module. */
 vect_t main_obstacles_pos[2];
 
@@ -113,29 +102,6 @@ static uint8_t main_stats_asserv_, main_stats_asserv_cpt_;
  * Main timer stats.
  */
 static uint8_t main_stats_timer_;
-
-void
-main_post_event (uint8_t event)
-{
-    assert (main_post_event_queue_nb < MAIN_POST_EVENT_QUEUE_SIZE);
-    uint8_t tail = (main_post_event_queue_head + main_post_event_queue_nb)
-	% MAIN_POST_EVENT_QUEUE_SIZE;
-    main_post_event_queue[tail] = event;
-    main_post_event_queue_nb++;
-}
-
-/** Pop one event from the event queue. */
-static uint8_t
-main_pop_event (void)
-{
-    uint8_t e;
-    assert (main_post_event_queue_nb > 0);
-    e = main_post_event_queue[main_post_event_queue_head];
-    main_post_event_queue_nb--;
-    main_post_event_queue_head = (main_post_event_queue_head + 1)
-	% MAIN_POST_EVENT_QUEUE_SIZE;
-    return e;
-}
 
 /**
  * Main events management.
@@ -226,13 +192,13 @@ main_event_to_fsm (void)
       }
 
     /* Event generated at the end of the sub FSM to post to the top FSM */
-    if (main_post_event_queue_nb)
+    if (fsm_queue_poll ())
       {
 	/* We must post the event at the end of this block because it
 	 * will issue a continue and every instruction after will
 	 * never be executed. */
 	/* We need to save the event before reseting it */
-	uint8_t save_event = main_pop_event ();
+	uint8_t save_event = fsm_queue_pop_event ();
 	/* Post the event */
 	FSM_HANDLE_VAR_E (AI, save_event);
       }

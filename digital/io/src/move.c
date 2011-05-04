@@ -37,7 +37,7 @@
 #include "loader.h"
 #include "modules/path/path.h"
 #include "modules/utils/utils.h"
-#include "main.h"      /* main_post_event_for_top_fsm */
+#include "fsm_queue.h"
 #include "modules/math/fixed/fixed.h"	/* fixed_* */
 #include "modules/trace/trace.h"
 #include "debug.host.h"
@@ -305,7 +305,7 @@ FSM_TRANS (MOVE_IDLE, move_start,
       }
     else
       {
-	main_post_event (FSM_EVENT (AI, move_fsm_failed));
+	fsm_queue_post_event (FSM_EVENT (AI, move_fsm_failed));
 	return FSM_NEXT (MOVE_IDLE, move_start, no_path_found);
       }
 }
@@ -370,7 +370,7 @@ FSM_TRANS (MOVE_MOVING, bot_move_succeed,
 {
     if (move_data.final_move)
       {
-	main_post_event (FSM_EVENT (AI, move_fsm_succeed));
+	fsm_queue_post_event (FSM_EVENT (AI, move_fsm_succeed));
 	return FSM_NEXT (MOVE_MOVING, bot_move_succeed, done);
       }
     else
@@ -440,7 +440,7 @@ FSM_TRANS (MOVE_MOVING, obstacle_in_front,
     asserv_stop_motor ();
     if (--move_data.try_again_counter == 0)
       {
-	main_post_event (FSM_EVENT (AI, move_fsm_failed));
+	fsm_queue_post_event (FSM_EVENT (AI, move_fsm_failed));
 	return FSM_NEXT (MOVE_MOVING, obstacle_in_front, tryout);
       }
     else
@@ -472,7 +472,7 @@ FSM_TRANS (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_succeed,
 {
     if (--move_data.try_again_counter == 0)
       {
-	main_post_event (FSM_EVENT (AI, move_fsm_failed));
+	fsm_queue_post_event (FSM_EVENT (AI, move_fsm_failed));
 	return FSM_NEXT (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_succeed, tryout);
       }
     else
@@ -487,7 +487,7 @@ FSM_TRANS (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_succeed,
 	  }
 	else
 	  {
-	    main_post_event (FSM_EVENT (AI, move_fsm_failed));
+	    fsm_queue_post_event (FSM_EVENT (AI, move_fsm_failed));
 	    return FSM_NEXT (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_succeed, no_path_found);
 	  }
       }
@@ -507,7 +507,7 @@ FSM_TRANS (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed,
 {
     if (--move_data.try_again_counter == 0)
       {
-	main_post_event (FSM_EVENT (AI, move_fsm_failed));
+	fsm_queue_post_event (FSM_EVENT (AI, move_fsm_failed));
 	return FSM_NEXT (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed, tryout);
       }
     else
@@ -524,7 +524,7 @@ FSM_TRANS (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed,
 	  {
 	    if (--move_data.try_again_counter == 0)
 	      {
-		main_post_event (FSM_EVENT (AI, move_fsm_failed));
+		fsm_queue_post_event (FSM_EVENT (AI, move_fsm_failed));
 		return FSM_NEXT (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed, no_path_found_tryout);
 	      }
 	    else
@@ -557,7 +557,7 @@ FSM_TRANS_TIMEOUT (MOVE_WAIT_FOR_CLEAR_PATH, 255,
 	/* Error, no new position, should we try again? */
 	if (--move_data.try_again_counter == 0)
 	  {
-	    main_post_event (FSM_EVENT (AI, move_fsm_failed));
+	    fsm_queue_post_event (FSM_EVENT (AI, move_fsm_failed));
 	    return FSM_NEXT_TIMEOUT (MOVE_WAIT_FOR_CLEAR_PATH, no_path_found_tryout);
 	  }
 	else
@@ -610,7 +610,7 @@ FSM_TRANS (MOVE_LOADER_UNBLOCKING_DOWNING, loader_downed,
       }
     else
       {
-	main_post_event (FSM_EVENT (AI, move_fsm_failed));
+	fsm_queue_post_event (FSM_EVENT (AI, move_fsm_failed));
 	return FSM_NEXT (MOVE_LOADER_UNBLOCKING_DOWNING, loader_downed, no_path_found);
       }
 }
@@ -645,7 +645,7 @@ FSM_TRANS (MOVE_LOADER_UNBLOCKING_DOWNING, loader_errored,
 	  }
 	else
 	  {
-	    main_post_event (FSM_EVENT (AI, move_fsm_failed));
+	    fsm_queue_post_event (FSM_EVENT (AI, move_fsm_failed));
 	    return FSM_NEXT (MOVE_LOADER_UNBLOCKING_DOWNING, loader_errored, tryout_no_path_found);
 	  }
       }
@@ -681,7 +681,7 @@ FSM_TRANS_TIMEOUT (MOVE_LOADER_UNBLOCKING_DOWNING, 450,
 	  }
 	else
 	  {
-	    main_post_event (FSM_EVENT (AI, move_fsm_failed));
+	    fsm_queue_post_event (FSM_EVENT (AI, move_fsm_failed));
 	    return FSM_NEXT_TIMEOUT (MOVE_LOADER_UNBLOCKING_DOWNING, tryout_no_path_found);
 	  }
       }
