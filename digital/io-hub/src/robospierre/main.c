@@ -36,6 +36,8 @@
 #include "mimot.h"
 #include "twi_master.h"
 
+#include "pwm.h"
+
 #include "io.h"
 
 /** Our color. */
@@ -58,6 +60,8 @@ main_init (void)
     asserv_init ();
     mimot_init ();
     twi_master_init ();
+    /* IO modules. */
+    pwm_init ();
     /* Initialization done. */
     proto_send0 ('z');
 }
@@ -88,6 +92,8 @@ main_loop (void)
 	/* Handle commands from UART. */
 	while (uart0_poll ())
 	    proto_accept (uart0_getc ());
+	/* Update IO modules. */
+	pwm_update ();
 	/* Only manage events if slaves are synchronised. */
 	if (twi_master_sync ())
 	    main_event_to_fsm ();
@@ -115,6 +121,21 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
       case c ('z', 0):
 	/* Reset */
 	utils_reset ();
+	break;
+      case c ('w', 4):
+	/* Set PWM.
+	 * - 1w: index.
+	 * - 1w: value. */
+	pwm_set (v8_to_v16 (args[0], args[1]), v8_to_v16 (args[2], args[3]));
+	break;
+      case c ('w', 8):
+	/* Set timed PWM.
+	 * - 1w: index.
+	 * - 1w: value.
+	 * - 1w: time.
+	 * - 1w: rest value. */
+	pwm_set_timed (v8_to_v16 (args[0], args[1]), v8_to_v16 (args[2], args[3]),
+		       v8_to_v16 (args[4], args[5]), v8_to_v16 (args[6], args[7]));
 	break;
 	/* Stats commands.
 	 * - b: interval between stats. */

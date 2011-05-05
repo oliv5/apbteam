@@ -103,5 +103,13 @@
 /* io-hub - io/ai board. */
 /** TWI address of the io board. */
 #define AC_IO_TWI_ADDRESS 10
+/** PWM setting. */
+#define AC_IOHUB_PWM \
+    PWM (1, A, B, 5, D, 4) \
+    PWM (1, B, B, 6, D, 5) \
+    PWM (1, C, B, 7, D, 6) \
+    PWM (3, A, C, 6, C, 7) \
+    PWM (3, B, C, 5, C, 3) \
+    PWM (3, C, C, 4, C, 2)
 
 #endif /* avrconfig_h */
