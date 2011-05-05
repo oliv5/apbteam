@@ -153,12 +153,18 @@
 /* Baud rate error check. */
 #define UBRR_VAL (AC_FREQ / 16 / AC_UART (BAUDRATE) - 1)
 #define BAUDRATE_VAL (AC_FREQ / 16 / (UBRR_VAL + 1))
+#define BAUDRATE_ERROR (BAUDRATE_VAL - AC_UART (BAUDRATE))
+#define BAUDRATE_ERROR_PCT (BAUDRATE_ERROR * 100 / AC_UART (BAUDRATE))
 
-#if BAUDRATE_VAL - AC_UART (BAUDRATE) > 2
+#if BAUDRATE_ERROR_PCT >= 2
+#warning "uart: baud rate error > 2 %"
+#elif BAUDRATE_ERROR_PCT >= 1
+#warning "uart: baud rate error > 1 %"
+#elif BAUDRATE_ERROR > 2
 #warning "uart: baud rate error > 2"
-#elif BAUDRATE_VAL - AC_UART (BAUDRATE) > 1
+#elif BAUDRATE_ERROR > 1
 #warning "uart: baud rate error > 1"
-#elif BAUDRATE_VAL - AC_UART (BAUDRATE) > 0
+#elif BAUDRATE_ERROR > 0
 #warning "uart: baud rate error > 0"
 #endif
 
