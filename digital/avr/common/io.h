@@ -36,6 +36,10 @@
    /* SIGNAL is now ISR. */
 #  define ISR SIGNAL
 #endif
+/* Some AVR includes define HOST! */
+#ifdef HOST
+# undef HOST
+#endif
 
 /** Saved interrupts state. */
 typedef uint8_t intr_flags_t;

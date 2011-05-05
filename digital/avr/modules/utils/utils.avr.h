@@ -25,6 +25,7 @@
  *
  * }}} */
 
+#include "io.h"
 #include <avr/wdt.h>
 
 /** Helper macro to build register value.  Call it like this::
