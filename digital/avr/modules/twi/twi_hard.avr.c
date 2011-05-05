@@ -56,6 +56,10 @@
 # if defined (__AVR_ATmega32__)
 # elif defined (__AVR_ATmega64__)
 # elif defined (__AVR_ATmega128__)
+# elif defined (__AVR_AT90USB646__)
+# elif defined (__AVR_AT90USB647__)
+# elif defined (__AVR_AT90USB1286__)
+# elif defined (__AVR_AT90USB1287__)
 # else
 #  error "twi: not tested on this chip"
 # endif
@@ -201,7 +205,7 @@ twi_master_wait (void)
 
 # endif /* AC_TWI_MASTER_ENABLE */
 
-SIGNAL (SIG_2WIRE_SERIAL)
+SIGNAL (TWI_vect)
 {
 # if AC_TWI_SLAVE_ENABLE
     /** Slave work buffer. */

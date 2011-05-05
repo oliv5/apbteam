@@ -39,6 +39,10 @@
 #elif defined (__AVR_ATmega64__)
 #elif defined (__AVR_ATmega128__)
 #elif defined (__AVR_AT90USB162__)
+#elif defined (__AVR_AT90USB646__)
+#elif defined (__AVR_AT90USB647__)
+#elif defined (__AVR_AT90USB1286__)
+#elif defined (__AVR_AT90USB1287__)
 #else
 # warning "uart: not tested on this chip"
 #endif
