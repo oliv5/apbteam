@@ -1,9 +1,9 @@
-import simu.model.table_eurobot2010
-import simu.view.table_eurobot2010
+import simu.model.table_eurobot2011
+import simu.view.table_eurobot2011
 
-import simu.robots.marcel.link.bag
-import simu.robots.marcel.model.bag
-import simu.robots.marcel.view.bag
+import simu.robots.robospierre.link.bag
+import simu.robots.robospierre.model.bag
+import simu.robots.robospierre.view.bag
 
 import asserv
 import asserv.init
@@ -18,14 +18,14 @@ import math
 class Robot:
 
     def __init__ (self, proto_time):
-        self.table_model = simu.model.table_eurobot2010
-        self.table_view = simu.view.table_eurobot2010
-        self.robot_link = simu.robots.marcel.link.bag
-        self.robot_model = simu.robots.marcel.model.bag
-        self.robot_view = simu.robots.marcel.view.bag
+        self.table_model = simu.model.table_eurobot2011
+        self.table_view = simu.view.table_eurobot2011
+        self.robot_link = simu.robots.robospierre.link.bag
+        self.robot_model = simu.robots.robospierre.model.bag
+        self.robot_view = simu.robots.robospierre.view.bag
         asserv_cmd = ('../../asserv/src/asserv/asserv.host', '-m9', 'marcel')
         mimot_cmd = ('../../mimot/src/dirty/dirty.host', '-m9', 'marcel')
-        io_cmd = ('../src/io.host')
+        io_cmd = ('../../io/src/io.host')
         self.asserv = asserv.Proto (PopenIO (asserv_cmd), proto_time,
                 **asserv.init.host)
         self.mimot = mimot.Proto (PopenIO (mimot_cmd), proto_time,
@@ -33,7 +33,7 @@ class Robot:
         self.io = io.Proto (PopenIO (io_cmd), proto_time,
                 **io.init.host)
         self.robot_start_pos = {
-                False: (300, 2100 - 305, math.radians (-270)),
-                True: (3000 - 300, 2100 - 305, math.radians (-270))
+                False: (700, 2100 - 250, math.radians (-270)),
+                True: (3000 - 700, 2100 - 250, math.radians (-270))
                 }
 
