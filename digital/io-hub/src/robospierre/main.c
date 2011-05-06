@@ -122,20 +122,21 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	/* Reset */
 	utils_reset ();
 	break;
-      case c ('w', 4):
+      case c ('w', 3):
 	/* Set PWM.
-	 * - 1w: index.
+	 * - 1b: index.
 	 * - 1w: value. */
-	pwm_set (v8_to_v16 (args[0], args[1]), v8_to_v16 (args[2], args[3]));
+	pwm_set (args[0], v8_to_v16 (args[1], args[2]));
 	break;
-      case c ('w', 8):
+      case c ('w', 7):
 	/* Set timed PWM.
-	 * - 1w: index.
+	 * - 1b: index.
 	 * - 1w: value.
 	 * - 1w: time.
 	 * - 1w: rest value. */
-	pwm_set_timed (v8_to_v16 (args[0], args[1]), v8_to_v16 (args[2], args[3]),
-		       v8_to_v16 (args[4], args[5]), v8_to_v16 (args[6], args[7]));
+	pwm_set_timed (args[0], v8_to_v16 (args[1], args[2]),
+		       v8_to_v16 (args[3], args[4]),
+		       v8_to_v16 (args[5], args[6]));
 	break;
 	/* Stats commands.
 	 * - b: interval between stats. */
