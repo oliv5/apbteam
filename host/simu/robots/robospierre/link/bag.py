@@ -22,7 +22,7 @@
 #
 # }}}
 """Robospierre bag of links."""
-import io.mex
+import io_hub.mex
 import asserv.mex
 import mimot.mex
 
@@ -30,6 +30,6 @@ class Bag:
 
     def __init__ (self, node):
         self.asserv = asserv.mex.Mex (node)
-        self.io = io.mex.Mex (node)
+        self.io_hub = io_hub.mex.Mex (node)
         self.mimot = mimot.mex.Mex (node)
 

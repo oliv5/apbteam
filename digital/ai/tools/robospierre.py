@@ -9,8 +9,8 @@ import asserv
 import asserv.init
 import mimot
 import mimot.init
-import io
-import io.init
+import io_hub
+import io_hub.init
 
 from proto.popen_io import PopenIO
 import math
@@ -25,13 +25,13 @@ class Robot:
         self.robot_view = simu.robots.robospierre.view.bag
         asserv_cmd = ('../../asserv/src/asserv/asserv.host', '-m9', 'marcel')
         mimot_cmd = ('../../mimot/src/dirty/dirty.host', '-m9', 'marcel')
-        io_cmd = ('../../io/src/io.host')
+        io_hub_cmd = ('../../io-hub/src/robospierre/io_hub.host')
         self.asserv = asserv.Proto (PopenIO (asserv_cmd), proto_time,
                 **asserv.init.host)
         self.mimot = mimot.Proto (PopenIO (mimot_cmd), proto_time,
                 **mimot.init.host)
-        self.io = io.Proto (PopenIO (io_cmd), proto_time,
-                **io.init.host)
+        self.io = io_hub.Proto (PopenIO (io_hub_cmd), proto_time,
+                **io_hub.init.host)
         self.robot_start_pos = {
                 False: (700, 2100 - 250, math.radians (-270)),
                 True: (3000 - 700, 2100 - 250, math.radians (-270))

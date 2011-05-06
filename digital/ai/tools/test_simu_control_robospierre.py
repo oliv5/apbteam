@@ -78,9 +78,9 @@ class TestSimuControl (TestSimu):
 
     def clamp_command (self):
         if self.clamp_var.get ():
-            self.io.pwm_set (-0x7fff, 255)
+            self.io.pwm_set_timed (0, -0x3ff, 255, 0)
         else:
-            self.io.pwm_set (0x7fff, 255)
+            self.io.pwm_set_timed (0, 0x3ff, 255, 0)
 
     def elevation_up_command (self):
         self.mimot.speed_pos ('a0', self.ELEVATION_STROKE / 2)

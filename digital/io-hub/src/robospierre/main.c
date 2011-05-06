@@ -60,6 +60,7 @@ main_init (void)
     sei ();
     /* Main timer */
     timer_init ();
+    timer_wait ();
     /* TWI communications */
     asserv_init ();
     mimot_init ();
