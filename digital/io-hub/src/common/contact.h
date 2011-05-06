@@ -1,6 +1,6 @@
-#ifndef simu_host_h
-#define simu_host_h
-/* simu.host.h - Host simulation. */
+#ifndef contact_h
+#define contact_h
+/* contact.h */
 /* robospierre - Eurobot 2011 AI. {{{
  *
  * Copyright (C) 2011 Nicolas Schodet
@@ -24,13 +24,32 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "simu.host.h"
+#include "defs.h"
+#include "io.h"
 
-#ifdef HOST
+#include "contact_defs.h"
 
-extern uint8_t PINE;
+/** To get a state of a generic contact, use: IO_GET (CONTACT_EXAMPLE). */
 
-#else /* !defined (HOST) */
+/** Initialize contact module. */
+void
+contact_init (void);
 
-#endif /* !defined (HOST) */
+/** Update contact module.  This handle debouncing. */
+void
+contact_update (void);
 
-#endif /* simu_host_h */
+/** Get color switch state, unfiltered. */
+enum team_color_e
+contact_get_color (void);
+
+/** Get filtered jack state. */
+uint8_t
+contact_get_jack (void);
+
+/** Return state of all contact, unfiltered. */
+uint32_t
+contact_all (void);
+
+#endif /* contact_h */

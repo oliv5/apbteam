@@ -37,6 +37,7 @@
 #include "twi_master.h"
 
 #include "pwm.h"
+#include "contact.h"
 
 #include "io.h"
 
@@ -45,6 +46,9 @@ enum team_color_e team_color;
 
 /** Asserv stats counters. */
 static uint8_t main_stats_asserv_, main_stats_asserv_cpt_;
+
+/** Contact stats counters. */
+static uint8_t main_stats_contact_, main_stats_contact_cpt_;
 
 /** Main initialisation. */
 static void
@@ -62,6 +66,7 @@ main_init (void)
     twi_master_init ();
     /* IO modules. */
     pwm_init ();
+    contact_init ();
     /* Initialization done. */
     proto_send0 ('z');
 }
@@ -94,6 +99,7 @@ main_loop (void)
 	    proto_accept (uart0_getc ());
 	/* Update IO modules. */
 	pwm_update ();
+	contact_update ();
 	/* Only manage events if slaves are synchronised. */
 	if (twi_master_sync ())
 	    main_event_to_fsm ();
@@ -107,6 +113,11 @@ main_loop (void)
 	    proto_send3w ('A', cur_pos.v.x, cur_pos.v.y, cur_pos.a);
 	    /* Reset stats counter */
 	    main_stats_asserv_cpt_ = main_stats_asserv_;
+	  }
+	if (main_stats_contact_ && !--main_stats_contact_cpt_)
+	  {
+	    proto_send1d ('P', contact_all ());
+	    main_stats_contact_cpt_ = main_stats_contact_;
 	  }
       }
 }
@@ -143,6 +154,10 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
       case c ('A', 1):
 	/* Position stats. */
 	main_stats_asserv_ = main_stats_asserv_cpt_ = args[0];
+	break;
+      case c ('P', 1):
+	/* Contact stats. */
+	main_stats_contact_ = main_stats_contact_cpt_ = args[0];
 	break;
       default:
 	/* Unknown commands */

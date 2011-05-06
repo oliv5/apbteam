@@ -5,6 +5,7 @@ PROGS = io_hub
 # Sources to compile.
 io_hub_SOURCES = main.c \
 		 pwm.avr.c pwm.host.c \
+		 contact.avr.c contact.host.c \
 		 twi_master.c asserv.c mimot.c \
 		 chrono.c timer.avr.c simu.host.c
 # Modules needed for IO.

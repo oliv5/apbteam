@@ -30,6 +30,9 @@
 #include "modules/host/mex.h"
 #include "io.h"
 
+/** AVR registers. */
+uint8_t PINE;
+
 /** Initialise simulation. */
 void
 simu_init (void)

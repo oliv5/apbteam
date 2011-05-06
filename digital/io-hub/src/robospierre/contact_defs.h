@@ -1,6 +1,6 @@
-#ifndef simu_host_h
-#define simu_host_h
-/* simu.host.h - Host simulation. */
+#ifndef contact_defs_h
+#define contact_defs_h
+/* contact_defs.h */
 /* robospierre - Eurobot 2011 AI. {{{
  *
  * Copyright (C) 2011 Nicolas Schodet
@@ -25,12 +25,13 @@
  *
  * }}} */
 
-#ifdef HOST
+#define CONTACT_COLOR A, 7
+#define CONTACT_JACK F, 7
+#define CONTACT_EX1 E, 0
+#define CONTACT_EX2 E, 1
 
-extern uint8_t PINE;
+#define CONTACT_LIST \
+    CONTACT (CONTACT_EX1) \
+    CONTACT (CONTACT_EX2)
 
-#else /* !defined (HOST) */
-
-#endif /* !defined (HOST) */
-
-#endif /* simu_host_h */
+#endif /* contact_defs_h */
