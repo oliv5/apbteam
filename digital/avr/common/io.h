@@ -110,10 +110,15 @@ intr_restore (intr_flags_t flags) { }
 #define IO_N(io) IO_N_ (io)
 #define IO_N_(p, n) (n)
 
-#define IO_GET(io) (IO_PIN_ (io) & IO_BV_ (io))
-#define IO_SET(io) IO_PORT_ (io) |= IO_BV_ (io)
-#define IO_CLR(io) IO_PORT_ (io) &= ~IO_BV_ (io)
-#define IO_OUTPUT(io) IO_DDR_ (io) |= IO_BV_ (io)
-#define IO_INPUT(io) IO_DDR_ (io) &= ~IO_BV_ (io)
+#define IO_GET(io) IO_GET_ (io)
+#define IO_GET_(p, n) (IO_PIN_ (p, n) & IO_BV_ (p, n))
+#define IO_SET(io) IO_SET_ (io)
+#define IO_SET_(p, n) IO_PORT_ (p, n) |= IO_BV_ (p, n)
+#define IO_CLR(io) IO_CLR_ (io)
+#define IO_CLR_(p, n) IO_PORT_ (p, n) &= ~IO_BV_ (p, n)
+#define IO_OUTPUT(io) IO_OUTPUT_ (io)
+#define IO_OUTPUT_(p, n) IO_DDR_ (p, n) |= IO_BV_ (p, n)
+#define IO_INPUT(io) IO_INPUT_ (io)
+#define IO_INPUT_(p, n) IO_DDR_ (p, n) &= ~IO_BV_ (p, n)
 
 #endif /* io_h */
