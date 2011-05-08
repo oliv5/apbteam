@@ -1,4 +1,6 @@
 """Default parameters for io-hub."""
-host = dict (
-        )
+host = {
+        'robospierre': dict (
+            ),
+        }
 target = host

@@ -1,16 +1,7 @@
-import sys
-
 import mimot
 import mimot.init
-import proto.popen_io
-import serial
+from utils.init_proto import init_proto
 
-if sys.argv[1] == '!':
-    io = proto.popen_io.PopenIO (sys.argv[2:])
-    init = mimot.init.host
-else:
-    io = serial.Serial (sys.argv[1])
-    init = mimot.init.target
-a = mimot.Proto (io, **init)
-a.write_eeprom ()
-a.close ()
+m = init_proto (None, mimot.Proto, mimot.init)
+m.write_eeprom ()
+m.close ()

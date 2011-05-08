@@ -1,5 +1,5 @@
 """Default parameters for asserv."""
-host = dict (
+host_marcel = dict (
         scale = 0.0395840674352314, f = 0xdd1,
         tkp = 1, tkd = 16,
         ta = 0.75, tsm = 0x20, tss = 0x10,
@@ -12,7 +12,12 @@ host = dict (
         E = 0x3ff, D = 0x1ff,
         l = 0x1000,
         )
-target = dict (
+host = {
+        'giboulee': host_marcel,
+        'marcel': host_marcel,
+        'robospierre': host_marcel,
+        }
+target_marcel = dict (
         scale = 0.0415178942124, f = 0xcef,
         c = float (0x00ffbabf) / (1 << 24),
         tkp = 1, tkd = 16,
@@ -29,3 +34,8 @@ target = dict (
         l = 0x1000,
         w = 0x09,
         )
+target = {
+        'giboulee': target_marcel,
+        'marcel': target_marcel,
+        'robospierre': target_marcel,
+        }

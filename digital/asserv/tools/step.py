@@ -1,19 +1,12 @@
-import sys
-
 import Gnuplot
 
 import asserv
-import proto.popen_io
-import serial
+from utils.init_proto import init_proto
 
 def step (name, offset, kp, ki, kd, plots, **param):
-    if sys.argv[1] == '!':
-        io = proto.popen_io.PopenIO (sys.argv[2:])
-    else:
-        io = serial.Serial (sys.argv[1])
     p = { name + 'kp': kp, name + 'ki': ki, name + 'kd': kd}
     p.update (param)
-    a = asserv.Proto (io, **p)
+    a = init_proto (None, asserv.Proto, init = p)
     a.stats (*plots)
     a.consign (name, offset)
     #a.speed (name, 16)

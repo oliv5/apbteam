@@ -27,11 +27,11 @@ class Robot:
         mimot_cmd = ('../../mimot/src/dirty/dirty.host', '-m9', 'marcel')
         io_cmd = ('../../io/src/io.host')
         self.asserv = asserv.Proto (PopenIO (asserv_cmd), proto_time,
-                **asserv.init.host)
+                **asserv.init.host['marcel'])
         self.mimot = mimot.Proto (PopenIO (mimot_cmd), proto_time,
-                **mimot.init.host)
+                **mimot.init.host['marcel'])
         self.io = io.Proto (PopenIO (io_cmd), proto_time,
-                **io.init.host)
+                **io.init.host['marcel'])
         self.robot_start_pos = {
                 False: (300, 2100 - 305, math.radians (-270)),
                 True: (3000 - 300, 2100 - 305, math.radians (-270))

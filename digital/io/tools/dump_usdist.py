@@ -1,11 +1,8 @@
-import sys
-
 import io
 import io.init
-import serial
+from utils.init_proto import init_proto
 
-fd = serial.Serial (sys.argv[1])
-p = io.Proto (fd, **io.init.target)
+p = init_proto ('marcel', io.Proto, io.init)
 def cb (*val):
     l = [ ]
     for v in val:

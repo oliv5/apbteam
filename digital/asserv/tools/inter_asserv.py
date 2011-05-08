@@ -26,8 +26,7 @@ import math
 
 import asserv
 import asserv.init
-import proto.popen_io
-import serial
+from utils.init_proto import init_proto
 
 from inter.inter import Inter
 from Tkinter import *
@@ -35,15 +34,9 @@ from Tkinter import *
 class InterAsserv (Inter):
     """Inter, communicating with the asserv board."""
 
-    def __init__ (self, argv):
+    def __init__ (self):
         # Asserv.
-        if argv[0] == '!':
-            io = proto.popen_io.PopenIO (argv[1:])
-            i = asserv.init.host
-        else:
-            io = serial.Serial (argv[0])
-            i = asserv.init.target
-        self.a = asserv.Proto (io, **i)
+        self.a = init_proto ('giboulee', asserv.Proto, asserv.init)
         self.a.async = True
         # Inter.
         Inter.__init__ (self)
@@ -128,8 +121,7 @@ class InterAsserv (Inter):
         self.a.ftw (self.backwardVar.get ())
 
 if __name__ == '__main__':
-    import sys
-    app = InterAsserv (sys.argv[1:])
+    app = InterAsserv ()
     try:
         app.mainloop ()
     finally:
