@@ -178,6 +178,7 @@ counter_update (void)
     counter_update_step ();
     /* Left counter. */
     uint16_t left = counter_left_new_step;
+    left &= 0xffff << COUNTER_LEFT_SHIFT; /* Reset unused bits. */
 #if !COUNTER_LEFT_REVERSE
     counter_left_diff = (int16_t) (left - counter_left_old);
 #else
@@ -188,6 +189,7 @@ counter_update (void)
     counter_left += counter_left_diff;
     /* Right counter. */
     uint16_t right = counter_right_new_step;
+    right &= 0xffff << COUNTER_RIGHT_SHIFT; /* Reset unused bits. */
 #if !COUNTER_RIGHT_REVERSE
     counter_right_diff = (int16_t) (right - counter_right_old);
 #else
@@ -203,6 +205,7 @@ counter_update (void)
     counter_right = right_new;
     /* First auxiliary counter. */
     uint16_t aux0 = counter_aux_new_step[0];
+    aux0 &= 0xffff << COUNTER_AUX0_SHIFT; /* Reset unused bits. */
 #if !COUNTER_AUX0_REVERSE
     counter_aux_diff[0] = (int16_t) (aux0 - counter_aux_old[0]);
 #else
@@ -213,6 +216,7 @@ counter_update (void)
     counter_aux[0] += counter_aux_diff[0];
     /* Second auxiliary counter. */
     uint16_t aux1 = counter_aux_new_step[1];
+    aux1 &= 0xffff << COUNTER_AUX1_SHIFT; /* Reset unused bits. */
 #if !COUNTER_AUX1_REVERSE
     counter_aux_diff[1] = (int16_t) (aux1 - counter_aux_old[1]);
 #else
