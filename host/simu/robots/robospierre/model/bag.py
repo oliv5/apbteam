@@ -43,13 +43,13 @@ class Bag:
                 link_bag.mimot.aux[1], self.clamping_motor)
         self.distance_sensor = [
                 DistanceSensorSensopart (link_bag.io_hub.adc[0], scheduler, table,
-                    (20, -20), -pi * 10 / 180, (self.position, ), 2),
-                DistanceSensorSensopart (link_bag.io_hub.adc[1], scheduler, table,
                     (20, 20), pi * 10 / 180, (self.position, ), 2),
+                DistanceSensorSensopart (link_bag.io_hub.adc[1], scheduler, table,
+                    (20, -20), -pi * 10 / 180, (self.position, ), 2),
                 DistanceSensorSensopart (link_bag.io_hub.adc[2], scheduler, table,
-                    (-20, 20), pi - pi * 10 / 180, (self.position, ), 2),
-                DistanceSensorSensopart (link_bag.io_hub.adc[3], scheduler, table,
                     (-20, -20), pi + pi * 10 / 180, (self.position, ), 2),
+                DistanceSensorSensopart (link_bag.io_hub.adc[3], scheduler, table,
+                    (-20, 20), pi - pi * 10 / 180, (self.position, ), 2),
                 ]
         for adc in link_bag.io_hub.adc[4:]:
             adc.value = 0
