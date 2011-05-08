@@ -39,6 +39,14 @@
 #include "pwm.h"
 #include "contact.h"
 
+#define FSM_NAME AI
+#include "fsm.h"
+#ifdef HOST
+# include <string.h>
+#endif
+
+#include "clamp.h"
+
 #include "io.h"
 
 /** Our color. */
@@ -76,6 +84,27 @@ main_init (void)
 void
 main_event_to_fsm (void)
 {
+    /* If an event is handled, stop generating any other event, because a
+     * transition may have invalidated the current robot state. */
+#define FSM_HANDLE_E(fsm, event) \
+    do { if (FSM_HANDLE (fsm, event)) return; } while (0)
+#define FSM_HANDLE_VAR_E(fsm, event) \
+    do { if (FSM_HANDLE_VAR (fsm, event)) return; } while (0)
+#define FSM_HANDLE_TIMEOUT_E(fsm) \
+    do { if (FSM_HANDLE_TIMEOUT (fsm)) return; } while (0)
+    /* Update FSM timeouts. */
+    //FSM_HANDLE_TIMEOUT_E (AI);
+    /* Motor status. */
+    asserv_status_e mimot_motor0_status, mimot_motor1_status;
+    mimot_motor0_status = mimot_motor0_cmd_status ();
+    mimot_motor1_status = mimot_motor1_cmd_status ();
+    if (mimot_motor0_status == success
+	&& mimot_motor1_status == success)
+	FSM_HANDLE_E (AI, clamp_elevation_rotation_success);
+    else if (mimot_motor0_status == failure)
+	FSM_HANDLE_E (AI, clamp_elevation_failure);
+    else if (mimot_motor1_status == failure)
+	FSM_HANDLE_E (AI, clamp_rotation_failure);
 }
 
 /** Main (and infinite) loop. */
@@ -150,6 +179,11 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		       v8_to_v16 (args[3], args[4]),
 		       v8_to_v16 (args[5], args[6]));
 	break;
+      case c ('c', 1):
+	/* Move clamp.
+	 * - 1b: position. */
+	clamp_move (args[0]);
+	break;
 	/* Stats commands.
 	 * - b: interval between stats. */
       case c ('A', 1):
@@ -173,6 +207,17 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 int
 main (int argc, char **argv)
 {
+#ifdef HOST
+    /* Produce AVR's FSM headers. */
+    int i;
+    if (argc > 1)
+	for (i = 1; i < argc; i++)
+	    if (strcmp (argv[i], "--gen") == 0)
+	      {
+		FSM_GENERATE (AVR, 0);
+		return 0;
+	      }
+#endif
     avr_init (argc, argv);
     main_init ();
     main_loop ();

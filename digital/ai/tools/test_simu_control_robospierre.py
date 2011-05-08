@@ -62,6 +62,13 @@ class TestSimuControl (TestSimu):
                 text = 'Rotation ccw', padx = 0, pady = 0,
                 command = self.rotation_ccw_command)
         self.rotation_ccw_button.pack ()
+        self.clamp_pos_scale = Scale (self.control_frame, orient = HORIZONTAL,
+                from_ = 0, to = 6)
+        self.clamp_pos_scale.pack ()
+        self.clamp_move_button = Button (self.control_frame,
+                text = 'Move clamp', padx = 0, pady = 0,
+                command = self.clamp_move_command)
+        self.clamp_move_button.pack ()
         self.table_view.bind ('<1>', self.move)
         self.table_view.bind ('<3>', self.orient)
 
@@ -93,6 +100,9 @@ class TestSimuControl (TestSimu):
 
     def rotation_ccw_command (self):
         self.mimot.speed_pos ('a1', -self.ROTATION_STROKE / 2)
+
+    def clamp_move_command (self):
+        self.io.clamp_move (self.clamp_pos_scale.get ())
 
     def change_color (self, *dummy):
         pass
