@@ -397,7 +397,7 @@ move_MOVE_MOVING_bot_move_failed_MOVE_MOVING_BACKWARD_TO_TURN_FREELY ()
     position_t robot_pos;
     asserv_get_position (&robot_pos);
     vect_t obstacle_pos;
-    int16_t dist = asserv_get_last_moving_direction () == 1
+    int16_t dist = asserv_get_last_moving_direction () == DIRECTION_FORWARD
 	? BOT_SIZE_FRONT + MOVE_REAL_OBSTACLE_RADIUS
 	: -(BOT_SIZE_BACK + MOVE_REAL_OBSTACLE_RADIUS);
     vect_from_polar_uf016 (&obstacle_pos, dist, robot_pos.a);
@@ -405,8 +405,8 @@ move_MOVE_MOVING_bot_move_failed_MOVE_MOVING_BACKWARD_TO_TURN_FREELY ()
     path_obstacle (0, obstacle_pos, MOVE_OBSTACLE_RADIUS, 0,
 		   MOVE_OBSTACLE_VALIDITY);
     /* Move backward to turn freely. */
-    asserv_move_linearly (asserv_get_last_moving_direction () == 1 ?
-			  - 300 : 300);
+    asserv_move_linearly (asserv_get_last_moving_direction ()
+			  == DIRECTION_FORWARD ? -300 : 300);
 }
 
 FSM_TRANS (MOVE_MOVING,

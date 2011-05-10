@@ -43,6 +43,13 @@ typedef struct position_t position_t;
 /** Convert degrees to an angle usable in position_t. */
 #define POSITION_A_DEG(a) G_ANGLE_UF016_DEG (a)
 
+/** No particular direction. */
+#define DIRECTION_NONE 0
+/** Forward direction, along the robot X axis. */
+#define DIRECTION_FORWARD 1
+/** Backward, opposite the robot X axis. */
+#define DIRECTION_BACKWARD 2
+
 /** Team color, determine the start zone side. */
 enum team_color_e
 {

@@ -202,12 +202,12 @@ asserv_get_moving_direction (void)
 {
     /* Foward move? */
     if (asserv_status.status & _BV (asserv_status_flag_move_forward))
-	return 1;
+	return DIRECTION_FORWARD;
     /* Backward move? */
     if (asserv_status.status & _BV (asserv_status_flag_move_backward))
-	return 2;
+	return DIRECTION_BACKWARD;
     /* Not moving */
-    return 0;
+    return DIRECTION_NONE;
 }
 
 uint8_t

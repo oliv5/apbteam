@@ -121,16 +121,16 @@ asserv_get_motor1_position (void);
 /**
  * Are we moving forward/backward?
  * @return
- *   - 0 we are not moving;
- *   - 1 we are moving forward;
- *   - 2 we are moving backward.
+ *   - DIRECTION_NONE we are not moving;
+ *   - DIRECTION_FORWARD we are moving forward;
+ *   - DIRECTION_BACKWARD we are moving backward.
  */
 uint8_t
 asserv_get_moving_direction (void);
 
 /**
  * Get the last moving direction of the bot.
- * @return 1 is forward, 2 is backward.
+ * @return DIRECTION_FORWARD or DIRECTION_BACKWARD.
  */
 uint8_t
 asserv_get_last_moving_direction (void);
