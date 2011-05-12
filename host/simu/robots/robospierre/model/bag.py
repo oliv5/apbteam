@@ -37,10 +37,12 @@ class Bag:
         self.contact = [ Switch (contact)
                 for contact in link_bag.io_hub.contact[2:] ]
         self.position = Position (link_bag.asserv.position)
-        self.clamping_motor = MotorBasic (link_bag.io_hub.pwm[0], scheduler,
+        self.clamping_motor = MotorBasic (link_bag.io_hub.pwm[2], scheduler,
                 2 * pi, 0, pi)
+        self.door_motors = [ MotorBasic (link_bag.io_hub.pwm[i], scheduler,
+            2 * pi, 0, 0.5 * pi) for i in (0, 1, 3, 4) ]
         self.clamp = Clamp (table, self.position, link_bag.mimot.aux[0],
-                link_bag.mimot.aux[1], self.clamping_motor)
+                link_bag.mimot.aux[1], self.clamping_motor, self.door_motors)
         self.distance_sensor = [
                 DistanceSensorSensopart (link_bag.io_hub.adc[0], scheduler, table,
                     (20, 20), pi * 10 / 180, (self.position, ), 2),

@@ -47,6 +47,9 @@ class Proto:
     def clamp_move (self, pos):
         self.proto.send ('c', 'B', pos)
 
+    def clamp_move_element (self, from_, to):
+        self.proto.send ('c', 'BB', from_, to)
+
     def close (self):
         self.reset ()
         self.proto.wait (lambda: True)

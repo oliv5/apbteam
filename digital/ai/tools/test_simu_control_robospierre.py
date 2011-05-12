@@ -46,6 +46,12 @@ class TestSimuControl (TestSimu):
                 indicatoron = False,
                 variable = self.clamp_var, command = self.clamp_command)
         self.clamp_button.pack ()
+        self.doors_var = IntVar ()
+        self.doors_var.set (1)
+        self.doors_button = Checkbutton (self.control_frame, text = 'Doors',
+                indicatoron = False,
+                variable = self.doors_var, command = self.doors_command)
+        self.doors_button.pack ()
         self.elevation_up_button = Button (self.control_frame,
                 text = 'Elevation up', padx = 0, pady = 0,
                 command = self.elevation_up_command)
@@ -69,6 +75,13 @@ class TestSimuControl (TestSimu):
                 text = 'Move clamp', padx = 0, pady = 0,
                 command = self.clamp_move_command)
         self.clamp_move_button.pack ()
+        self.clamp_to_scale = Scale (self.control_frame, orient = HORIZONTAL,
+                from_ = 0, to = 6)
+        self.clamp_to_scale.pack ()
+        self.clamp_element_move_button = Button (self.control_frame,
+                text = 'Move element', padx = 0, pady = 0,
+                command = self.clamp_move_element_command)
+        self.clamp_element_move_button.pack ()
         self.table_view.bind ('<1>', self.move)
         self.table_view.bind ('<3>', self.orient)
 
@@ -85,9 +98,9 @@ class TestSimuControl (TestSimu):
 
     def clamp_command (self):
         if self.clamp_var.get ():
-            self.io.pwm_set_timed (0, -0x3ff, 255, 0)
+            self.io.pwm_set_timed (2, -0x3ff, 255, 0)
         else:
-            self.io.pwm_set_timed (0, 0x3ff, 255, 0)
+            self.io.pwm_set_timed (2, 0x3ff, 255, 0)
 
     def elevation_up_command (self):
         self.mimot.speed_pos ('a0', self.ELEVATION_STROKE / 2)
@@ -103,6 +116,18 @@ class TestSimuControl (TestSimu):
 
     def clamp_move_command (self):
         self.io.clamp_move (self.clamp_pos_scale.get ())
+
+    def clamp_move_element_command (self):
+        self.io.clamp_move_element (self.clamp_pos_scale.get (),
+                self.clamp_to_scale.get ())
+
+    def doors_command (self):
+        if self.doors_var.get ():
+            pwm = -0x3ff
+        else:
+            pwm = 0x3ff
+        for i in (0, 1, 3, 4):
+            self.io.pwm_set_timed (i, pwm, 255, 0)
 
     def change_color (self, *dummy):
         pass

@@ -133,6 +133,7 @@ class ClampSide (Drawable):
                 self.draw_pawn ((-slot.x, slot.z), slot.pawn)
         # Draw clamp.
         if self.model.rotation is not None:
+            self.trans_push ()
             self.trans_translate ((0, self.model.elevation))
             m = TransMatrix ()
             m.rotate (pi + self.model.rotation)
@@ -169,4 +170,13 @@ class ClampSide (Drawable):
                     self.draw_pawn ((lcenter, 0), self.model.load)
                     self.draw_rectangle ((lbase, 10), (lcenter - 103, 40), **attr)
                     self.draw_rectangle ((rbase, 10), (rtip, 40), **attr)
+            self.trans_pop ()
+        # Draw doors.
+        for slot in self.model.slots:
+            if slot.door_motor is not None:
+                self.trans_push ()
+                self.trans_translate ((-slot.x, slot.z + 50))
+                self.trans_rotate (-0.5 * pi + slot.door_motor.angle)
+                self.draw_line ((0, 0), (40, 0))
+                self.trans_pop ()
 

@@ -29,12 +29,13 @@ from math import pi, cos, sin
 class Slot:
     """Slot which can contain a pawn."""
 
-    def __init__ (self, x, y, z, side):
+    def __init__ (self, x, y, z, side, door_motor):
         self.x = x
         self.y = y
         self.z = z
         self.side = side
         self.pawn = None
+        self.door_motor = door_motor
 
 class Clamp (Observable):
 
@@ -59,21 +60,30 @@ class Clamp (Observable):
     SLOT_SIDE = 6
 
     def __init__ (self, table, robot_position, elevation_motor,
-            rotation_motor, clamping_motor):
+            rotation_motor, clamping_motor, door_motors):
         Observable.__init__ (self)
         self.table = table
         self.robot_position = robot_position
         self.elevation_motor = elevation_motor
         self.rotation_motor = rotation_motor
         self.clamping_motor = clamping_motor
+        self.door_motors = (door_motors[0], None, door_motors[1],
+                door_motors[2], None, door_motors[3], None)
         self.slots = (
-                Slot (self.BAY_OFFSET, 0, 0 * self.BAY_ZOFFSET, 0),
-                Slot (self.BAY_OFFSET, 0, 1 * self.BAY_ZOFFSET, 0),
-                Slot (self.BAY_OFFSET, 0, 2 * self.BAY_ZOFFSET, 0),
-                Slot (-self.BAY_OFFSET, 0, 0 * self.BAY_ZOFFSET, 1),
-                Slot (-self.BAY_OFFSET, 0, 1 * self.BAY_ZOFFSET, 1),
-                Slot (-self.BAY_OFFSET, 0, 2 * self.BAY_ZOFFSET, 1),
-                Slot (0, self.BAY_OFFSET, 2 * self.BAY_ZOFFSET, None))
+                Slot (self.BAY_OFFSET, 0, 0 * self.BAY_ZOFFSET, 0,
+                    door_motors[0]),
+                Slot (self.BAY_OFFSET, 0, 1 * self.BAY_ZOFFSET, 0,
+                    None),
+                Slot (self.BAY_OFFSET, 0, 2 * self.BAY_ZOFFSET, 0,
+                    door_motors[1]),
+                Slot (-self.BAY_OFFSET, 0, 0 * self.BAY_ZOFFSET, 1,
+                    door_motors[2]),
+                Slot (-self.BAY_OFFSET, 0, 1 * self.BAY_ZOFFSET, 1,
+                    None),
+                Slot (-self.BAY_OFFSET, 0, 2 * self.BAY_ZOFFSET, 1,
+                    door_motors[3]),
+                Slot (0, self.BAY_OFFSET, 2 * self.BAY_ZOFFSET, None,
+                    None))
         self.load = None
         self.robot_position.register (self.__robot_position_notified)
         self.elevation_motor.register (self.__elevation_notified)

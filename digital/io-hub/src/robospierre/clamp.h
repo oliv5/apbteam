@@ -40,6 +40,10 @@ enum {
     CLAMP_BAY_BACK_LEAVE,
     /* Enter the side bay.  Position on the side, above wheels. */
     CLAMP_BAY_SIDE_ENTER_LEAVE,
+    /** Total number of position, including intermediary positions. */
+    CLAMP_POS_NB,
+    /** Number of slots. */
+    CLAMP_SLOT_NB = CLAMP_SLOT_SIDE + 1,
 };
 
 /** Is slot in front bay? */
@@ -53,5 +57,9 @@ enum {
 /** Move clamp to given position. */
 void
 clamp_move (uint8_t pos);
+
+/** Move element using clamp. */
+void
+clamp_move_element (uint8_t from, uint8_t to);
 
 #endif /* clamp_h */

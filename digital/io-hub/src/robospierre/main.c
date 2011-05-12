@@ -47,6 +47,8 @@
 
 #include "clamp.h"
 
+#include "bot.h"
+
 #include "io.h"
 
 /** Our color. */
@@ -93,7 +95,7 @@ main_event_to_fsm (void)
 #define FSM_HANDLE_TIMEOUT_E(fsm) \
     do { if (FSM_HANDLE_TIMEOUT (fsm)) return; } while (0)
     /* Update FSM timeouts. */
-    //FSM_HANDLE_TIMEOUT_E (AI);
+    FSM_HANDLE_TIMEOUT_E (AI);
     /* Motor status. */
     asserv_status_e mimot_motor0_status, mimot_motor1_status;
     mimot_motor0_status = mimot_motor0_cmd_status ();
@@ -183,6 +185,19 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	/* Move clamp.
 	 * - 1b: position. */
 	clamp_move (args[0]);
+	break;
+      case c ('c', 2):
+	/* Move element using clamp.
+	 * - 1b: source.
+	 * - 1b: destination. */
+	clamp_move_element (args[0], args[1]);
+	break;
+      case c ('d', 0):
+	/* Open all doors. */
+	pwm_set_timed (BOT_PWM_DOOR_FRONT_BOTTOM, BOT_PWM_DOOR_OPEN);
+	pwm_set_timed (BOT_PWM_DOOR_FRONT_TOP, BOT_PWM_DOOR_OPEN);
+	pwm_set_timed (BOT_PWM_DOOR_BACK_BOTTOM, BOT_PWM_DOOR_OPEN);
+	pwm_set_timed (BOT_PWM_DOOR_BACK_TOP, BOT_PWM_DOOR_OPEN);
 	break;
 	/* Stats commands.
 	 * - b: interval between stats. */
