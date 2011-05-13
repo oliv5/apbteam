@@ -26,13 +26,17 @@ from utils.observable import Observable
 
 class Switch (Observable):
 
-    def __init__ (self, link):
+    def __init__ (self, link, invert = False):
         Observable.__init__ (self)
         self.link = link
         self.state = None
+        self.invert = invert
         self.register (self.__update)
 
     def __update (self):
-        self.link.state = self.state
+        if not self.invert:
+            self.link.state = self.state
+        else:
+            self.link.state = not self.state
         self.link.notify ()
 

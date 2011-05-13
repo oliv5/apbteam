@@ -27,7 +27,7 @@
 
 #ifdef HOST
 
-extern uint8_t PINE;
+extern uint8_t PINA, PINE, PINF;
 
 #else /* !defined (HOST) */
 

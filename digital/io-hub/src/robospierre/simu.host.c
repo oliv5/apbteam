@@ -31,7 +31,7 @@
 #include "io.h"
 
 /** AVR registers. */
-uint8_t PINE;
+uint8_t PINA, PINE, PINF;
 
 /** Initialise simulation. */
 void

@@ -32,8 +32,8 @@ from math import pi
 class Bag:
 
     def __init__ (self, scheduler, table, link_bag):
-        self.color_switch = Switch (link_bag.io_hub.contact[0])
-        self.jack = Switch (link_bag.io_hub.contact[1])
+        self.color_switch = Switch (link_bag.io_hub.contact[0], invert = True)
+        self.jack = Switch (link_bag.io_hub.contact[1], invert = True)
         self.contact = [ Switch (contact)
                 for contact in link_bag.io_hub.contact[2:] ]
         self.position = Position (link_bag.asserv.position)
@@ -42,7 +42,8 @@ class Bag:
         self.door_motors = [ MotorBasic (link_bag.io_hub.pwm[i], scheduler,
             2 * pi, 0, 0.5 * pi) for i in (0, 1, 3, 4) ]
         self.clamp = Clamp (table, self.position, link_bag.mimot.aux[0],
-                link_bag.mimot.aux[1], self.clamping_motor, self.door_motors)
+                link_bag.mimot.aux[1], self.clamping_motor, self.door_motors,
+                self.contact[0:7])
         self.distance_sensor = [
                 DistanceSensorSensopart (link_bag.io_hub.adc[0], scheduler, table,
                     (20, 20), pi * 10 / 180, (self.position, ), 2),
