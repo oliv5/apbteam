@@ -25,16 +25,42 @@
 #include "common.h"
 #include "clamp.h"
 
-#define FSM_NAME AI
-#include "fsm.h"
-
 #include "mimot.h"
 #include "pwm.h"
+#include "contact.h"
 #include "bot.h"
+#include "element.h"
+
+#define FSM_NAME AI
+#include "fsm.h"
+#include "fsm_queue.h"
+
+#include "logistic.h"
+
+/*
+ * There is two FSM in this file.
+ *
+ * The clamp FSM handles high level clamp behaviour, new elements, drop, and
+ * gives orders to the clamp move FSM.
+ *
+ * The clamp move FSM only handle moving the clamp without load or moving an
+ * element from a slot to another one.
+ */
 
 FSM_INIT
 
 FSM_STATES (
+	    /* Initial state, to be complete with full initialisation. */
+	    CLAMP_START,
+	    /* Returning to idle position. */
+	    CLAMP_GOING_IDLE,
+	    /* Waiting external events, clamp at middle level. */
+	    CLAMP_IDLE,
+	    /* Taking an element at bottom slots. */
+	    CLAMP_TAKING_DOOR_CLOSING,
+	    /* Moving elements around. */
+	    CLAMP_MOVING_ELEMENT,
+
 	    /* Waiting movement order. */
 	    CLAMP_MOVE_IDLE,
 	    /* Moving to a final or intermediary position. */
@@ -53,8 +79,14 @@ FSM_STATES (
 	    CLAMP_MOVE_DST_CLAMP_OPENING)
 
 FSM_EVENTS (
+	    /* Here for the moment, to be moved later. */
+	    start,
+	    /* New element inside bottom slot. */
+	    clamp_new_element,
 	    /* Order to move the clamp. */
 	    clamp_move,
+	    /* Clamp movement success. */
+	    clamp_move_success,
 	    /* Elevation and elevation motor success. */
 	    clamp_elevation_rotation_success,
 	    /* Elevation motor failure. */
@@ -62,6 +94,7 @@ FSM_EVENTS (
 	    /* Rotation motor failure. */
 	    clamp_rotation_failure)
 
+FSM_START_WITH (CLAMP_START)
 FSM_START_WITH (CLAMP_MOVE_IDLE)
 
 /** Clamp context. */
@@ -73,6 +106,10 @@ struct clamp_t
     uint8_t pos_request;
     /** Element moving destination. */
     uint8_t moving_to;
+    /** Position of a new element. */
+    uint8_t pos_new;
+    /** New element kind. */
+    uint8_t new_element;
 };
 
 /** Global context. */
@@ -123,14 +160,49 @@ clamp_move (uint8_t pos)
 	ctx.moving_to = CLAMP_POS_NB;
 	FSM_HANDLE (AI, clamp_move);
       }
+    else
+	fsm_queue_post_event (FSM_EVENT (AI, clamp_move_success));
 }
 
 void
 clamp_move_element (uint8_t from, uint8_t to)
 {
+    assert (from != to);
     ctx.pos_request = from;
     ctx.moving_to = to;
     FSM_HANDLE (AI, clamp_move);
+}
+
+void
+clamp_new_element (uint8_t pos, uint8_t element)
+{
+    assert (pos == CLAMP_SLOT_FRONT_BOTTOM || pos == CLAMP_SLOT_BACK_BOTTOM);
+    ctx.pos_new = pos;
+    ctx.new_element = element;
+    FSM_HANDLE (AI, clamp_new_element);
+}
+
+uint8_t
+clamp_handle_event (void)
+{
+    if (FSM_CAN_HANDLE (AI, clamp_new_element))
+      {
+	/* XXX: temporary hack. */
+	uint8_t element = contact_get_color () ? ELEMENT_PAWN : ELEMENT_KING;
+	if (!IO_GET (CONTACT_FRONT_BOTTOM)
+	    && !logistic_global.slots[CLAMP_SLOT_FRONT_BOTTOM])
+	  {
+	    clamp_new_element (CLAMP_SLOT_FRONT_BOTTOM, element);
+	    return 1;
+	  }
+	if (!IO_GET (CONTACT_BACK_BOTTOM)
+	    && !logistic_global.slots[CLAMP_SLOT_BACK_BOTTOM])
+	  {
+	    clamp_new_element (CLAMP_SLOT_BACK_BOTTOM, element);
+	    return 1;
+	  }
+      }
+    return 0;
 }
 
 /** Find next position and start motors. */
@@ -192,6 +264,72 @@ clamp_route (void)
     ctx.pos_current = pos_new;
 }
 
+/* CLAMP FSM */
+
+FSM_TRANS (CLAMP_START, start, CLAMP_GOING_IDLE)
+{
+    clamp_move (CLAMP_SLOT_FRONT_MIDDLE);
+    return FSM_NEXT (CLAMP_START, start);
+}
+
+FSM_TRANS (CLAMP_GOING_IDLE, clamp_move_success, CLAMP_IDLE)
+{
+    return FSM_NEXT (CLAMP_GOING_IDLE, clamp_move_success);
+}
+
+FSM_TRANS (CLAMP_IDLE, clamp_new_element, CLAMP_TAKING_DOOR_CLOSING)
+{
+    pwm_set_timed (clamp_slot_door[ctx.pos_new], BOT_PWM_DOOR_CLOSE);
+    return FSM_NEXT (CLAMP_IDLE, clamp_new_element);
+}
+
+FSM_TRANS_TIMEOUT (CLAMP_TAKING_DOOR_CLOSING, BOT_PWM_DOOR_CLOSE_TIME,
+		   move_element, CLAMP_MOVING_ELEMENT,
+		   move_to_idle, CLAMP_GOING_IDLE,
+		   done, CLAMP_IDLE)
+{
+    logistic_element_new (ctx.pos_new, ctx.new_element);
+    if (logistic_global.moving_from != CLAMP_SLOT_NB)
+      {
+	clamp_move_element (logistic_global.moving_from,
+			    logistic_global.moving_to);
+	return FSM_NEXT_TIMEOUT (CLAMP_TAKING_DOOR_CLOSING, move_element);
+      }
+    else if (logistic_global.clamp_pos_idle != ctx.pos_current)
+      {
+	clamp_move (logistic_global.clamp_pos_idle);
+	return FSM_NEXT_TIMEOUT (CLAMP_TAKING_DOOR_CLOSING, move_to_idle);
+      }
+    else
+	return FSM_NEXT_TIMEOUT (CLAMP_TAKING_DOOR_CLOSING, done);
+}
+
+FSM_TRANS (CLAMP_MOVING_ELEMENT, clamp_move_success,
+	   move_element, CLAMP_MOVING_ELEMENT,
+	   move_to_idle, CLAMP_GOING_IDLE,
+	   done, CLAMP_IDLE)
+{
+    logistic_element_move_done ();
+    if (logistic_global.moving_from != CLAMP_SLOT_NB)
+      {
+	clamp_move_element (logistic_global.moving_from,
+			    logistic_global.moving_to);
+	return FSM_NEXT (CLAMP_MOVING_ELEMENT, clamp_move_success,
+			 move_element);
+      }
+    else if (logistic_global.clamp_pos_idle != ctx.pos_current)
+      {
+	clamp_move (logistic_global.clamp_pos_idle);
+	return FSM_NEXT (CLAMP_MOVING_ELEMENT, clamp_move_success,
+			 move_to_idle);
+      }
+    else
+	return FSM_NEXT (CLAMP_MOVING_ELEMENT, clamp_move_success,
+			 done);
+}
+
+/* CLAMP_MOVE FSM */
+
 FSM_TRANS (CLAMP_MOVE_IDLE, clamp_move,
 	   move, CLAMP_MOVE_ROUTING,
 	   move_element, CLAMP_MOVE_SRC_ROUTING,
@@ -223,6 +361,7 @@ FSM_TRANS (CLAMP_MOVE_ROUTING, clamp_elevation_rotation_success,
 {
     if (ctx.pos_current == ctx.pos_request)
       {
+	fsm_queue_post_event (FSM_EVENT (AI, clamp_move_success));
 	return FSM_NEXT (CLAMP_MOVE_ROUTING, clamp_elevation_rotation_success,
 			 done);
       }
@@ -318,6 +457,7 @@ FSM_TRANS_TIMEOUT (CLAMP_MOVE_DST_DOOR_CLOSING, BOT_PWM_DOOR_CLOSE_TIME,
 FSM_TRANS_TIMEOUT (CLAMP_MOVE_DST_CLAMP_OPENING, BOT_PWM_CLAMP_OPEN_TIME,
 		   CLAMP_MOVE_IDLE)
 {
+    fsm_queue_post_event (FSM_EVENT (AI, clamp_move_success));
     return FSM_NEXT_TIMEOUT (CLAMP_MOVE_DST_CLAMP_OPENING);
 }
 

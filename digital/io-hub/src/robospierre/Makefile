@@ -4,8 +4,8 @@ BASE = ../../../avr
 PROGS = io_hub
 # Sources to compile.
 io_hub_SOURCES = main.c \
-		 clamp.c \
-		 fsm.host.c fsm_AI_gen.avr.c \
+		 clamp.c logistic.c \
+		 fsm.host.c fsm_AI_gen.avr.c fsm_queue.c \
 		 pwm.avr.c pwm.host.c \
 		 contact.avr.c contact.host.c \
 		 twi_master.c asserv.c mimot.c \

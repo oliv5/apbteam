@@ -62,4 +62,9 @@ clamp_move (uint8_t pos);
 void
 clamp_move_element (uint8_t from, uint8_t to);
 
+/** Examine sensors to generate new events, return non zero if an event was
+ * generated. */
+uint8_t
+clamp_handle_event (void);
+
 #endif /* clamp_h */

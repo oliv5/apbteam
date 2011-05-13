@@ -44,8 +44,10 @@
 #ifdef HOST
 # include <string.h>
 #endif
+#include "fsm_queue.h"
 
 #include "clamp.h"
+#include "logistic.h"
 
 #include "bot.h"
 
@@ -78,6 +80,8 @@ main_init (void)
     /* IO modules. */
     pwm_init ();
     contact_init ();
+    /* AI modules. */
+    logistic_init ();
     /* Initialization done. */
     proto_send0 ('z');
 }
@@ -107,6 +111,23 @@ main_event_to_fsm (void)
 	FSM_HANDLE_E (AI, clamp_elevation_failure);
     else if (mimot_motor1_status == failure)
 	FSM_HANDLE_E (AI, clamp_rotation_failure);
+    /* Clamp specific events. */
+    if (clamp_handle_event ())
+	return;
+    /* Jack, XXX to be changed! */
+    if (!contact_get_jack ())
+	FSM_HANDLE_E (AI, start);
+    /* Events from the event queue. */
+    if (fsm_queue_poll ())
+      {
+	/* We must post the event at the end of this block because if it is
+	 * handled, the function will return and every instruction after will
+	 * never be executed. */
+	uint8_t save_event = fsm_queue_pop_event ();
+	/* Post the event */
+	FSM_HANDLE_VAR_E (AI, save_event);
+      }
+
 }
 
 /** Main (and infinite) loop. */
@@ -132,6 +153,8 @@ main_loop (void)
 	/* Update IO modules. */
 	pwm_update ();
 	contact_update ();
+	/* Update AI modules. */
+	logistic_update ();
 	/* Only manage events if slaves are synchronised. */
 	if (twi_master_sync ())
 	    main_event_to_fsm ();
