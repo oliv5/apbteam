@@ -134,8 +134,12 @@ static const uint16_t clamp_pos[][2] = {
 	BOT_CLAMP_BAY_SIDE_ROTATION_STEP },
       { BOT_CLAMP_BAY_FRONT_LEAVE_ELEVATION_STEP,
 	BOT_CLAMP_BAY_FRONT_ROTATION_STEP },
+      { BOT_CLAMP_BAY_FRONT_LEAVE_ELEVATION_STEP,
+	BOT_CLAMP_BAY_SIDE_ROTATION_STEP },
       { BOT_CLAMP_BAY_BACK_LEAVE_ELEVATION_STEP,
 	BOT_CLAMP_BAY_BACK_ROTATION_STEP },
+      { BOT_CLAMP_BAY_BACK_LEAVE_ELEVATION_STEP,
+	BOT_CLAMP_BAY_SIDE_ROTATION_STEP },
       { BOT_CLAMP_BAY_SIDE_ENTER_LEAVE_ELEVATION_STEP,
 	BOT_CLAMP_BAY_SIDE_ROTATION_STEP },
 };
@@ -150,6 +154,9 @@ static const uint8_t clamp_slot_door[] = {
     BOT_PWM_DOOR_BACK_TOP,
     0xff
 };
+
+static void
+clamp_route (void);
 
 void
 clamp_move (uint8_t pos)
@@ -202,6 +209,18 @@ clamp_handle_event (void)
 	    return 1;
 	  }
       }
+    /* Handle special hardware offset. */
+    uint16_t rotation_position = mimot_get_motor1_position ();
+    if ((ctx.pos_current == CLAMP_BAY_FRONT_LEAVING
+	 && rotation_position > (BOT_CLAMP_BAY_SIDE_ROTATION_STEP -
+				 BOT_CLAMP_BAY_FRONT_ROTATION_STEP) / 2)
+	|| (ctx.pos_current == CLAMP_BAY_BACK_LEAVING
+	    && rotation_position < (BOT_CLAMP_BAY_BACK_ROTATION_STEP -
+				    BOT_CLAMP_BAY_SIDE_ROTATION_STEP) / 2))
+      {
+	/* Go directly to next point. */
+	clamp_route ();
+      }
     return 0;
 }
 
@@ -233,12 +252,20 @@ clamp_route (void)
       }
     else if (pos_current == CLAMP_BAY_FRONT_LEAVE)
       {
+	pos_new = CLAMP_BAY_FRONT_LEAVING;
+      }
+    else if (pos_current == CLAMP_BAY_BACK_LEAVE)
+      {
+	pos_new = CLAMP_BAY_BACK_LEAVING;
+      }
+    else if (pos_current == CLAMP_BAY_FRONT_LEAVING)
+      {
 	if (pos_request == CLAMP_SLOT_SIDE)
 	    pos_new = CLAMP_BAY_SIDE_ENTER_LEAVE;
 	else
 	    pos_new = CLAMP_SLOT_BACK_MIDDLE;
       }
-    else if (pos_current == CLAMP_BAY_BACK_LEAVE)
+    else if (pos_current == CLAMP_BAY_BACK_LEAVING)
       {
 	if (pos_request == CLAMP_SLOT_SIDE)
 	    pos_new = CLAMP_BAY_SIDE_ENTER_LEAVE;

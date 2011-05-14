@@ -36,9 +36,15 @@ enum {
     CLAMP_SLOT_SIDE,
     /** Leave the front bay, ready to enter side tunnel. */
     CLAMP_BAY_FRONT_LEAVE,
+    /** Leaving the front bay, entered the side tunnel.  When at midway point,
+     * go directly to the next position. */
+    CLAMP_BAY_FRONT_LEAVING,
     /** Leave the back bay, ready to enter side tunnel. */
     CLAMP_BAY_BACK_LEAVE,
-    /* Enter the side bay.  Position on the side, above wheels. */
+    /** Leaving the back bay, entered the side tunnel.  When at midway point,
+     * go directly to the next position. */
+    CLAMP_BAY_BACK_LEAVING,
+    /** Enter the side bay.  Position on the side, above wheels. */
     CLAMP_BAY_SIDE_ENTER_LEAVE,
     /** Total number of position, including intermediary positions. */
     CLAMP_POS_NB,
