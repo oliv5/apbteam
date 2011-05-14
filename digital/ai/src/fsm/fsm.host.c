@@ -1056,11 +1056,18 @@ fsm_build_gen_avr_h (fsm_build_t *fsm, uint embedded_strings)
     /* Gen function table. */
     fprintf (f, "typedef fsm_%s_branch_t (*fsm_%s_func_t)(void);\n", fsm->name,
 	     fsm->name);
-    fprintf (f, "extern const fsm_%s_func_t PROGMEM fsm_%s_trans_table[%u][%u];\n\n",
+    fprintf (f, "extern const fsm_%s_func_t PROGMEM fsm_%s_trans_table[%u][%u];\n",
 	     fsm->name,
 	     fsm->name,
 	     fsm->event_nb,
 	     fsm->state_nb);
+    /* Gen read function for trans table. */
+    fprintf (f, "fsm_%s_func_t fsm_%s_read_trans (fsm_%s_event_t event, "
+             "fsm_%s_state_t state);\n\n",
+             fsm->name,
+             fsm->name,
+             fsm->name,
+             fsm->name);
 
     /* Gen active states array. */
     fprintf (f, "extern fsm_%s_state_t fsm_%s_active_states[%u];\n\n",
@@ -1280,6 +1287,19 @@ fsm_build_gen_avr_c (fsm_build_t *fsm, uint embedded_strings)
       }
     fprintf (f, "};\n\n");
 
+    /* Gen read function for trans table. */
+    fprintf (f, "fsm_%s_func_t fsm_%s_read_trans (fsm_%s_event_t event, "
+             "fsm_%s_state_t state)\n{\n",
+             fsm->name,
+             fsm->name,
+             fsm->name,
+             fsm->name);
+    fprintf (f, "\treturn (fsm_%s_func_t) pgm_read_word "
+             "(&fsm_%s_trans_table[event][state]);\n",
+             fsm->name,
+             fsm->name);
+    fprintf (f, "}\n\n");
+
     /* Gen active states array. */
     fprintf (f, "fsm_%s_state_t fsm_%s_active_states[%u];\n\n",
 	     fsm->name,
@@ -1324,15 +1344,15 @@ fsm_build_gen_avr_c (fsm_build_t *fsm, uint embedded_strings)
     fprintf (f, "\tint handled = 0;\n");
     fprintf (f, "\tfor (i = 0; i < fsm_%s_max_active_states; i++)\n\t{\n",
 	     fsm->name);
-    fprintf (f, "\t\tif (fsm_%s_trans_table[e][fsm_%s_active_states[i]])\n",
+    fprintf (f, "\t\tif (fsm_%s_read_trans (e, fsm_%s_active_states[i]))\n",
 	     fsm->name,
 	     fsm->name);
     fprintf (f, "\t\t{\n");
-    fprintf (f, "\t\t\tfsm_%s_active_states[i] = \
-	     fsm_%s_trans_table[e][fsm_%s_active_states[i]]();\n",
-	     fsm->name,
-	     fsm->name,
-	     fsm->name);
+    fprintf (f, "\t\t\tfsm_%s_active_states[i] = fsm_%s_read_trans (e, "
+             "fsm_%s_active_states[i])();\n",
+             fsm->name,
+             fsm->name,
+             fsm->name);
     fprintf (f, "\t\t\thandled = 1;\n");
     if (fsm->timeouts != NULL)
       {
@@ -1352,9 +1372,9 @@ fsm_build_gen_avr_c (fsm_build_t *fsm, uint embedded_strings)
     fprintf (f, "\tuint16_t i;\n");
     fprintf (f, "\tfor (i = 0; i < fsm_%s_max_active_states; i++)\n",
 	     fsm->name);
-    fprintf (f, "\t\tif (fsm_%s_trans_table[e][fsm_%s_active_states[i]])\n",
-	     fsm->name,
-	     fsm->name);
+    fprintf (f, "\t\tif (fsm_%s_read_trans (e, fsm_%s_active_states[i]))\n",
+             fsm->name,
+             fsm->name);
     fprintf (f, "\t\t\treturn 1;\n");
     fprintf (f, "\treturn 0;\n");
     fprintf (f, "}\n\n");
