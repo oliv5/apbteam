@@ -19,36 +19,44 @@ m16     0xff  0xc1    --
 m32     0xff  0xc1    --
 m64     0xff  0xc1  0xff
 m128    0xff  0xc1  0xff
+usb128  0xff  0xd1  0xf3
 ====== ===== ===== =====
 
 This correspond to ('!' means unprogrammed, i.e. '1'):
 
-=== === === === ==== =======
-m8  m16 m32 m64 m128 Meaning
-=== === === === ==== =======
-l7  l7  l7  l7  l7   !BODLEVEL (BOD trigger level)
-l6  l6  l6  l6  l6   !BODEN (BOD enabled)
-l5  l5  l5  l5  l5   !SUT1 (start up time)
-l4  l4  l4  l4  l4   !SUT0 (start up time)
-l3  l3  l3  l3  l3   !CKSEL3 (clock source select)
-l2  l2  l2  l2  l2   !CKSEL2 (clock source select)
-l1  l1  l1  l1  l1   !CKSEL1 (clock source select)
-l0  l0  l0  l0  l0   !CKSEL0 (clock source select)
---- --- --- --- ---- -------
-h7  ..  ..  ..  ..   !RSTDISBL (no reset pin disabled)
-..  h7  h7  h7  h7   !OCDEN (OCD enabled)
-h6  ..  ..  ..  ..   !WDTON (no watchdog always on)
-..  h6  h6  h6  h6   !JTAGEN (JTAG enabled)
-h5  h5  h5  h5  h5    SPIEN (spi programming enabled)
-h4  h4  h4  h4  h4    CKOPT (clock option)
-h3  h3  h3  h3  h3    EESAVE (eeprom preserved on chip erase)
-h2  h2  h2  h2  h2    BOOTSZ1 (boot size)
-h1  h1  h1  h1  h1    BOOTSZ0 (boot size)
-h0  h0  h0  h0  h0   !BOOTRST (use boot reset vector)
---- --- --- --- ---- -------
-..  ..  ..  e1  e1   !M103C (ATmega103 compatibility)
-..  ..  ..  e0  e0   !WDTON (watchdog always on)
-=== === === === ==== =======
+=== === === === ==== ====== =======
+m8  m16 m32 m64 m128 usb128 Meaning
+=== === === === ==== ====== =======
+l7  l7  l7  l7  l7   ..     !BODLEVEL (BOD trigger level)
+l6  l6  l6  l6  l6   ..     !BODEN (BOD enabled)
+..  ..  ..  ..  ..   l7     !CKDIV8 (divide clock by 8)
+..  ..  ..  ..  ..   l6     !CKOUT (clock output)
+l5  l5  l5  l5  l5   l5     !SUT1 (start up time)
+l4  l4  l4  l4  l4   l4     !SUT0 (start up time)
+l3  l3  l3  l3  l3   l3     !CKSEL3 (clock source select)
+l2  l2  l2  l2  l2   l2     !CKSEL2 (clock source select)
+l1  l1  l1  l1  l1   l1     !CKSEL1 (clock source select)
+l0  l0  l0  l0  l0   l0     !CKSEL0 (clock source select)
+--- --- --- --- ---- ------ -------
+h7  ..  ..  ..  ..   ..     !RSTDISBL (no reset pin disabled)
+..  h7  h7  h7  h7   h7     !OCDEN (OCD enabled)
+h6  ..  ..  ..  ..   ..     !WDTON (no watchdog always on)
+..  h6  h6  h6  h6   h6     !JTAGEN (JTAG enabled)
+h5  h5  h5  h5  h5   h5      SPIEN (spi programming enabled)
+h4  h4  h4  h4  h4   ..      CKOPT (clock option)
+..  ..  ..  ..  ..   h4     !WDTON (watchdog always on)
+h3  h3  h3  h3  h3   h3      EESAVE (eeprom preserved on chip erase)
+h2  h2  h2  h2  h2   h2      BOOTSZ1 (boot size)
+h1  h1  h1  h1  h1   h1      BOOTSZ0 (boot size)
+h0  h0  h0  h0  h0   h0     !BOOTRST (use boot reset vector)
+--- --- --- --- ---- ------ -------
+..  ..  ..  e1  e1          !M103C (ATmega103 compatibility)
+..  ..  ..  e0  e0          !WDTON (watchdog always on)
+..  ..  ..  ..  ..   e3      HWBE (hardware boot enable)
+..  ..  ..  ..  ..   e2      BODLEVEL2 (brown-out detector select)
+..  ..  ..  ..  ..   e1     !BODLEVEL1 (brown-out detector select)
+..  ..  ..  ..  ..   e0     !BODLEVEL0 (brown-out detector select)
+=== === === === ==== ====== =======
 
 - CKSEL321 = 111, CKOPT = 0 corresponds to external crystal, more than 1 MHz.
 - CKSEL0 = 1, SUT10 = 11 corresponds to crystal, slowly rising power, this is
