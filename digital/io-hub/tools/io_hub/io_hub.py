@@ -50,6 +50,16 @@ class Proto:
     def clamp_move_element (self, from_, to):
         self.proto.send ('c', 'BB', from_, to)
 
+    def drop (self, order):
+        if order == 'drop_clear':
+            self.proto.send ('d', 'B', 0x00)
+        elif order == 'drop_forward':
+            self.proto.send ('d', 'B', 0x01)
+        elif order == 'drop_backward':
+            self.proto.send ('d', 'B', 0x02)
+        else:
+            raise ValueError
+
     def close (self):
         self.reset ()
         self.proto.wait (lambda: True)

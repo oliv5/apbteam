@@ -68,6 +68,15 @@ clamp_move (uint8_t pos);
 void
 clamp_move_element (uint8_t from, uint8_t to);
 
+/** Drop an element tower.  Return 0 if not currently possible.  If
+ * drop_direction is forward, drop at the back. */
+uint8_t
+clamp_drop (uint8_t drop_direction);
+
+/** Signal robot advanced, and drop is finished. */
+void
+clamp_drop_clear (void);
+
 /** Examine sensors to generate new events, return non zero if an event was
  * generated. */
 uint8_t

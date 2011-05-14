@@ -65,4 +65,9 @@ logistic_element_new (uint8_t pos, uint8_t element);
 void
 logistic_element_move_done (void);
 
+/** To be called when elements have been dropped on the opposite side of
+ * direction. */
+void
+logistic_drop (uint8_t direction);
+
 #endif /* logistic_h */

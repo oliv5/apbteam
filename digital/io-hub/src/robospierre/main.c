@@ -222,6 +222,14 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	pwm_set_timed (BOT_PWM_DOOR_BACK_BOTTOM, BOT_PWM_DOOR_OPEN);
 	pwm_set_timed (BOT_PWM_DOOR_BACK_TOP, BOT_PWM_DOOR_OPEN);
 	break;
+      case c ('d', 1):
+	/* Drop elements.
+	 * - 1b: 00: drop clear, 01: drop forward, 02: drop backward. */
+	if (args[0] == 0x00)
+	    clamp_drop_clear ();
+	else
+	    clamp_drop (args[0]);
+	break;
 	/* Stats commands.
 	 * - b: interval between stats. */
       case c ('A', 1):

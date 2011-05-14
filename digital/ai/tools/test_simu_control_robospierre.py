@@ -82,12 +82,21 @@ class TestSimuControl (TestSimu):
                 text = 'Move element', padx = 0, pady = 0,
                 command = self.clamp_move_element_command)
         self.clamp_element_move_button.pack ()
+        self.drop_var = IntVar ()
+        self.drop_button = Checkbutton (self.control_frame, text = 'Drop',
+                indicatoron = False,
+                variable = self.drop_var, command = self.drop_command)
+        self.drop_button.pack ()
+        self.backward_var = IntVar ()
+        self.backward_button = Checkbutton (self.control_frame,
+                text = 'Backward', variable = self.backward_var)
+        self.backward_button.pack ()
         self.table_view.bind ('<1>', self.move)
         self.table_view.bind ('<3>', self.orient)
 
     def move (self, ev):
         pos = self.table_view.screen_coord ((ev.x, ev.y))
-        self.asserv.goto (pos[0], pos[1])
+        self.asserv.goto (pos[0], pos[1], self.backward_var.get ())
 
     def orient (self, ev):
         x, y = self.table_view.screen_coord ((ev.x, ev.y))
@@ -128,6 +137,16 @@ class TestSimuControl (TestSimu):
             pwm = 0x3ff
         for i in (0, 1, 3, 4):
             self.io.pwm_set_timed (i, pwm, 255, 0)
+
+    def drop_command (self):
+        if self.drop_var.get ():
+            if self.backward_var.get ():
+                order = 'drop_backward'
+            else:
+                order = 'drop_forward'
+        else:
+            order = 'drop_clear'
+        self.io.drop (order)
 
     def change_color (self, *dummy):
         pass

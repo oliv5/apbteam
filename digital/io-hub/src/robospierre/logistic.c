@@ -210,3 +210,14 @@ logistic_element_move_done (void)
     logistic_decision ();
 }
 
+void
+logistic_drop (uint8_t direction)
+{
+    uint8_t bay = direction == DIRECTION_FORWARD
+	? CLAMP_SLOT_BACK_BOTTOM : CLAMP_SLOT_FRONT_BOTTOM;
+    uint8_t i;
+    for (i = bay; i < bay + 3; i++)
+	ctx.slots[i] = 0;
+    logistic_decision ();
+}
+
