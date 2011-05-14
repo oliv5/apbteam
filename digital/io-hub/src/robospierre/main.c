@@ -215,6 +215,9 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	 * - 1b: destination. */
 	clamp_move_element (args[0], args[1]);
 	break;
+      case c ('n', 2):
+	clamp_new_element (args[0], args[1]);
+	break;
       case c ('d', 0):
 	/* Open all doors. */
 	pwm_set_timed (BOT_PWM_DOOR_FRONT_BOTTOM, BOT_PWM_DOOR_OPEN);
