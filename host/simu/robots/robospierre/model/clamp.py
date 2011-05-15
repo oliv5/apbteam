@@ -24,6 +24,7 @@
 """Robospierre clamp."""
 from utils.observable import Observable
 from simu.utils.trans_matrix import TransMatrix
+from simu.model.round_obstacle import RoundObstacle
 from math import pi, cos, sin
 
 class Slot:
@@ -36,12 +37,7 @@ class Slot:
         self.side = side
         self.door_motor = door_motor
         self.contact = contact
-        self.set_pawn (None)
-
-    def set_pawn (self, pawn):
-        self.pawn = pawn
-        self.contact.state = pawn is None
-        self.contact.notify ()
+        self.pawn = None
 
 class Clamp (Observable):
 
@@ -90,6 +86,14 @@ class Clamp (Observable):
                     door_motors[3], slot_contacts[5]),
                 Slot (0, self.BAY_OFFSET, 2 * self.BAY_ZOFFSET, None,
                     None, slot_contacts[6]))
+        self.front_slots = (
+                self.slots[self.SLOT_FRONT_BOTTOM],
+                self.slots[self.SLOT_FRONT_MIDDLE],
+                self.slots[self.SLOT_FRONT_TOP])
+        self.back_slots = (
+                self.slots[self.SLOT_BACK_BOTTOM],
+                self.slots[self.SLOT_BACK_MIDDLE],
+                self.slots[self.SLOT_BACK_TOP])
         self.load = None
         self.robot_position.register (self.__robot_position_notified)
         self.elevation_motor.register (self.__elevation_notified)
@@ -104,11 +108,12 @@ class Clamp (Observable):
             if slot.pawn is None:
                 p = self.__get_floor_elements (slot.side)
                 if p is not None:
-                    slot.set_pawn (p)
+                    slot.pawn = p
                     p.pos = None
                     p.notify ()
                     changed = True
         if changed:
+            self.update_contacts ()
             self.notify ()
 
     def __elevation_notified (self):
@@ -141,15 +146,52 @@ class Clamp (Observable):
                 slot = self.__get_clamp_slot ()
                 if slot and slot.pawn is not None:
                     self.load = slot.pawn
-                    slot.set_pawn (None)
+                    slot.pawn = None
             elif self.clamping == self.CLAMPING_STROKE \
                     and self.load is not None:
                 # Unload an element.
                 slot = self.__get_clamp_slot ()
                 if slot and slot.pawn is None:
-                    slot.set_pawn (self.load)
+                    slot.pawn = self.load
                     self.load = None
+            # Little resources saving hack: done here, all motors are notified
+            # at the same time.
+            self.check_tower ()
+            self.update_contacts ()
         self.notify ()
+
+    def check_tower (self):
+        """Check whether several elements can make a tower."""
+        for slots in (self.front_slots, self.back_slots):
+            if slots[0].pawn is not None and slots[1].pawn is not None:
+                assert slots[0].pawn.kind != 'tower'
+                tower = RoundObstacle (100, 1)
+                tower.kind = 'tower'
+                tower.tower = [ slots[0].pawn, slots[1].pawn ]
+                slots[0].pawn, slots[1].pawn = tower, None
+            if slots[0].pawn is not None and slots[0].pawn.kind == 'tower' \
+                    and slots[2].pawn and slots[2].door_motor.angle:
+                slots[0].pawn.tower.append (slots[2].pawn)
+                slots[2].pawn = None
+
+    def update_contacts (self):
+        """Update pawn contacts."""
+        for slots in (self.front_slots, self.back_slots):
+            slots[0].contact.state = not (slots[0].pawn is not None)
+            # A tower at level 0 is seen at level 1.
+            slots[1].contact.state = not (
+                    slots[1].pawn is not None
+                    or (slots[0].pawn is not None
+                        and slots[0].pawn.kind == 'tower'))
+            # This one is really high.
+            slots[2].contact.state = not (slots[2].pawn is not None)
+        slot_side = self.slots[self.SLOT_SIDE]
+        slot_side.contact.state = slot_side.pawn is None
+        clamp_slot = self.__get_clamp_slot ()
+        if clamp_slot is not None:
+            clamp_slot.contact.state = False
+        for slot in self.slots:
+            slot.contact.notify ()
 
     def __get_floor_elements (self, side):
         """Return an elements in front (side = 0) or in back (side = 1) of the

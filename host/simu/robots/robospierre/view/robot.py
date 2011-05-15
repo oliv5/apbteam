@@ -63,7 +63,7 @@ class Robot (simu.inter.drawable.Drawable):
                     self.trans_push ()
                     self.trans_scale (1 - slot.z / 1000.0)
                     self.trans_translate ((slot.x, slot.y))
-                    draw_pawn (self, slot.pawn.radius, slot.pawn.kind)
+                    draw_pawn (self, slot.pawn)
                     self.trans_pop ()
             # Draw clamp.
             if self.clamp_model.rotation is not None:
@@ -77,7 +77,7 @@ class Robot (simu.inter.drawable.Drawable):
                 if load:
                     self.trans_push ()
                     self.trans_translate ((150, 0))
-                    draw_pawn (self, load.radius, load.kind)
+                    draw_pawn (self, load)
                     self.trans_pop ()
                 # Mobile side.
                 self.trans_rotate (- self.clamp_model.clamping / 47)

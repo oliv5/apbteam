@@ -31,17 +31,25 @@ GREEN = '#268126'
 BLACK = '#181818'
 YELLOW = '#cccc00'
 
-def draw_pawn (d, radius, kind):
-    d.draw_circle ((0, 0), radius, fill = YELLOW)
-    if kind == 'king':
-        a = 0.1 * radius
-        b = 0.5 * radius
-        d.draw_line ((a, b), (a, a), (b, a), (b, -a), (a, -a), (a, -b),
-                (-a, -b), (-a, -a), (-b, -a), (-b, a), (-a, a), (-a, b),
-                (a, b))
-    elif kind == 'queen':
-        d.draw_circle ((0, 0), 0.5 * radius)
-        d.draw_circle ((0, 0), 0.4 * radius)
+def draw_pawn (d, pawn):
+    d.trans_push ()
+    if pawn.kind == 'tower':
+        pawns = pawn.tower
+    else:
+        pawns = (pawn, )
+    for p in pawns:
+        d.draw_circle ((0, 0), p.radius, fill = YELLOW)
+        if p.kind == 'king':
+            a = 0.1 * p.radius
+            b = 0.5 * p.radius
+            d.draw_line ((a, b), (a, a), (b, a), (b, -a), (a, -a), (a, -b),
+                    (-a, -b), (-a, -a), (-b, -a), (-b, a), (-a, a), (-a, b),
+                    (a, b))
+        elif p.kind == 'queen':
+            d.draw_circle ((0, 0), 0.5 * p.radius)
+            d.draw_circle ((0, 0), 0.4 * p.radius)
+        d.trans_scale (0.95)
+    d.trans_pop ()
 
 class Pawn (Drawable):
 
@@ -59,7 +67,7 @@ class Pawn (Drawable):
         self.reset ()
         if self.pos:
             self.trans_translate (self.pos)
-            draw_pawn (self, self.model.radius, self.model.kind)
+            draw_pawn (self, self.model)
             Drawable.draw (self)
 
 class Table (Drawable):

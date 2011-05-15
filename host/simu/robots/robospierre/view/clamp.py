@@ -68,7 +68,7 @@ class ClampTop (Drawable):
                 self.trans_push ()
                 self.trans_scale (1 - slot.z / 1000.0)
                 self.trans_translate ((slot.x, slot.y))
-                draw_pawn (self, slot.pawn.radius, slot.pawn.kind)
+                draw_pawn (self, slot.pawn)
                 self.trans_pop ()
         # Draw clamp.
         if self.model.rotation is not None:
@@ -82,7 +82,7 @@ class ClampTop (Drawable):
             if load is not None:
                 self.trans_push ()
                 self.trans_translate ((150, 0))
-                draw_pawn (self, load.radius, load.kind)
+                draw_pawn (self, load)
                 self.trans_pop ()
             # Mobile side.
             self.trans_rotate (-self.model.clamping / 43)
@@ -107,16 +107,23 @@ class ClampSide (Drawable):
         if pawn is not None:
             self.trans_push ()
             self.trans_translate (pos)
-            self.draw_rectangle ((-100, 0), (100, 50), fill = YELLOW)
-            if pawn.kind == 'king':
-                self.draw_polygon ((-50, 50), (-10, 170), (-50, 170), (-50, 190),
-                        (-10, 190), (-10, 230), (10, 230), (10, 190), (50, 190),
-                        (50, 170), (5, 170), (50, 50), fill = YELLOW,
-                        outline = BLACK)
-            elif pawn.kind == 'queen':
-                self.draw_polygon ((-50, 50), (-10, 180), (10, 180), (50, 50),
-                        fill = YELLOW, outline = BLACK)
-                self.draw_circle ((0, 180), 50, fill = YELLOW)
+            if pawn.kind == 'tower':
+                pawns = pawn.tower
+            else:
+                pawns = (pawn, )
+            for p in pawns:
+                self.draw_rectangle ((-100, 0), (100, 50), fill = YELLOW)
+                if p.kind == 'king':
+                    self.draw_polygon ((-50, 50), (-10, 170), (-50, 170),
+                            (-50, 190), (-10, 190), (-10, 230), (10, 230),
+                            (10, 190), (50, 190), (50, 170), (5, 170),
+                            (50, 50), fill = YELLOW,
+                            outline = BLACK)
+                elif p.kind == 'queen':
+                    self.draw_polygon ((-50, 50), (-10, 180), (10, 180),
+                            (50, 50), fill = YELLOW, outline = BLACK)
+                    self.draw_circle ((0, 180), 50, fill = YELLOW)
+                self.trans_translate ((0, 50))
             self.trans_pop ()
 
     def draw (self):
