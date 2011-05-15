@@ -53,6 +53,10 @@
 
 #include "io.h"
 
+#ifndef HOST
+# include <avr/wdt.h>
+#endif
+
 /** Our color. */
 enum team_color_e team_color;
 
@@ -66,6 +70,11 @@ static uint8_t main_stats_contact_, main_stats_contact_cpt_;
 static void
 main_init (void)
 {
+#ifndef HOST
+    /* Disable watchdog (enabled in bootloader). */
+    MCUSR &= ~(1 << WDRF);
+    wdt_disable ();
+#endif
     /* Serial port */
     uart0_init ();
     /* Enable interrupts */
