@@ -34,8 +34,19 @@ target_marcel = dict (
         l = 0x1000,
         w = 0x09,
         )
+target_robospierre = dict (
+        scale = 0.031748977927129413, f = 0x1370,
+        c = float (0x01000000) / (1 << 24),
+        tkp = 1, tkd = 16,
+        ta = 0.75, tsm = 0x60, tss = 0x10,
+        akp = 2, akd = 16,
+        aa = 0.5, asm = 0x60, ass = 0x10,
+        E = 0x3ff, D = 0x1ff,
+        l = 0x1000,
+        w = 0x00,
+        )
 target = {
         'giboulee': target_marcel,
         'marcel': target_marcel,
-        'robospierre': target_marcel,
+        'robospierre': target_robospierre,
         }
