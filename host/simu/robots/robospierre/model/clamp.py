@@ -101,16 +101,31 @@ class Clamp (Observable):
         self.clamping_motor.register (self.__clamping_notified)
 
     def __robot_position_notified (self):
+        # Compute robot direction.
+        direction = self.__get_robot_direction ()
         # Update bottom slots.
         changed = False
         for sloti in (self.SLOT_FRONT_BOTTOM, self.SLOT_BACK_BOTTOM):
             slot = self.slots[sloti]
-            if slot.pawn is None:
-                p = self.__get_floor_elements (slot.side)
-                if p is not None:
-                    slot.pawn = p
-                    p.pos = None
-                    p.notify ()
+            if direction == slot.side or direction is None:
+                # If pushing, can take new elements.
+                if slot.pawn is None:
+                    p = self.__get_floor_elements (slot.side)
+                    if p is not None:
+                        slot.pawn = p
+                        p.pos = None
+                        p.notify ()
+                        changed = True
+            else:
+                # Else, can drop elements.
+                if slot.pawn is not None and slot.door_motor.angle:
+                    m = TransMatrix ()
+                    m.translate (self.robot_position.pos)
+                    m.rotate (self.robot_position.angle)
+                    xoffset = (self.BAY_OFFSET, -self.BAY_OFFSET)[slot.side]
+                    slot.pawn.pos = m.apply ((xoffset, 0))
+                    slot.pawn.notify ()
+                    slot.pawn = None
                     changed = True
         if changed:
             self.update_contacts ()
@@ -169,6 +184,7 @@ class Clamp (Observable):
                 tower.kind = 'tower'
                 tower.tower = [ slots[0].pawn, slots[1].pawn ]
                 slots[0].pawn, slots[1].pawn = tower, None
+                self.table.add_pawn (tower)
             if slots[0].pawn is not None and slots[0].pawn.kind == 'tower' \
                     and slots[2].pawn and slots[2].door_motor.angle:
                 slots[0].pawn.tower.append (slots[2].pawn)
@@ -199,10 +215,7 @@ class Clamp (Observable):
         if self.robot_position.pos is None:
             return None
         # Matrix to transform an obstacle position into robot coordinates.
-        m = TransMatrix ()
-        m.rotate (-self.robot_position.angle)
-        m.translate ((-self.robot_position.pos[0],
-            -self.robot_position.pos[1]))
+        m = self.__get_robot_matrix ()
         # Look up elements.
         xoffset = (self.BAY_OFFSET, -self.BAY_OFFSET)[side]
         xmargin = 20
@@ -230,3 +243,34 @@ class Clamp (Observable):
                 return slot
         return None
 
+    def __get_robot_direction (self):
+        """Is robot going forward (0), backward (1), or something else
+        (None)?"""
+        if self.robot_position.pos is None:
+            return None
+        filt = 5
+        if hasattr (self, 'old_robot_position'):
+            m = self.__get_robot_matrix ()
+            oldrel = m.apply (self.old_robot_position)
+            if oldrel[0] < 0 and self.direction_counter < filt:
+                self.direction_counter += 1
+            elif oldrel[0] > 0 and self.direction_counter > -filt:
+                self.direction_counter -= 1
+        else:
+            self.direction_counter = 0
+        self.old_robot_position = self.robot_position.pos
+        # Filter oscillations.
+        if self.direction_counter > 0:
+            return 0
+        elif self.direction_counter < 0:
+            return 1
+        else:
+            return None
+
+    def __get_robot_matrix (self):
+        """Return robot transformation matrix."""
+        m = TransMatrix ()
+        m.rotate (-self.robot_position.angle)
+        m.translate ((-self.robot_position.pos[0],
+            -self.robot_position.pos[1]))
+        return m

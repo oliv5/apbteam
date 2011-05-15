@@ -81,3 +81,9 @@ class Table (simu.model.table.Table):
         self.pawns.append (pawn)
         # Add everything to obstacles.
         self.obstacles += self.pawns
+
+    def add_pawn (self, pawn):
+        self.pawns.append (pawn)
+        self.obstacles.append (pawn)
+        self.notify ()
+

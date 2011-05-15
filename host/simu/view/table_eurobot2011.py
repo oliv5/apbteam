@@ -76,8 +76,13 @@ class Table (Drawable):
     def __init__ (self, onto, model):
         Drawable.__init__ (self, onto)
         self.model = model
-        for e in model.pawns:
-            Pawn (self, e)
+        self.model.register (self.__notified)
+        self.__notified ()
+
+    def __notified (self):
+        for e in self.model.pawns:
+            if e not in self.children:
+                Pawn (self, e)
 
     def draw_both (self, primitive, *args, **kargs):
         """Draw a primitive on both sides."""

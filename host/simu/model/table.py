@@ -22,6 +22,7 @@
 #
 # }}}
 """Table model."""
+from utils.observable import Observable
 
 class Intersect:
 
@@ -29,9 +30,10 @@ class Intersect:
         self.obstacle = obstacle
         self.distance = distance
 
-class Table:
+class Table (Observable):
 
     def __init__ (self):
+        Observable.__init__ (self)
         self.obstacles = [ ]
 
     def intersect (self, a, b, level = None, comp = None):
