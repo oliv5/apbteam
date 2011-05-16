@@ -47,4 +47,7 @@ simu_sensor_update_aquajim (void);
 void
 simu_sensor_update_marcel (void);
 
+int
+simu_table_test_robospierre (double p_x, double p_y);
+
 #endif /* simu_host_h */

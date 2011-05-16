@@ -154,6 +154,16 @@ simu_pos_update (double dl, double dr, double footing)
     simu_pos_a = na;
 }
 
+/** Compute a robot point absolute position. */
+static void
+simu_compute_absolute_position (double p_x, double p_y, double *x, double *y)
+{
+    double c = cos (simu_pos_a);
+    double s = sin (simu_pos_a);
+    *x = simu_pos_x + c * p_x - s * p_y;
+    *y = simu_pos_y + s * p_x + c * p_y;
+}
+
 /** Update sensors for Giboulee. */
 void
 simu_sensor_update_giboulee (void)
@@ -175,10 +185,7 @@ simu_sensor_update_giboulee (void)
     for (i = 0; i < UTILS_COUNT (sensors); i++)
       {
 	/* Compute absolute position. */
-	x = simu_pos_x + cos (simu_pos_a) * sensors[i][0]
-	    - sin (simu_pos_a) * sensors[i][1];
-	y = simu_pos_y + sin (simu_pos_a) * sensors[i][0]
-	    + cos (simu_pos_a) * sensors[i][1];
+	simu_compute_absolute_position (sensors[i][0], sensors[i][1], &x, &y);
 	if (x >= 0.0 && x < table_width && y >= 0.0 && y < table_height)
 	    PINC |= sensors_bit[i];
       }
@@ -217,10 +224,7 @@ simu_sensor_update_aquajim (void)
     for (i = 0; i < UTILS_COUNT (sensors); i++)
       {
 	/* Compute absolute position. */
-	x = simu_pos_x + cos (simu_pos_a) * sensors[i][0]
-	    - sin (simu_pos_a) * sensors[i][1];
-	y = simu_pos_y + sin (simu_pos_a) * sensors[i][0]
-	    + cos (simu_pos_a) * sensors[i][1];
+	simu_compute_absolute_position (sensors[i][0], sensors[i][1], &x, &y);
 	cx = table_width / 2 - x;
 	cy = table_height / 2 - y;
 	ds = cx * cx + cy * cy;
@@ -268,10 +272,7 @@ simu_sensor_update_marcel (void)
     for (i = 0; i < UTILS_COUNT (sensors); i++)
       {
 	/* Compute absolute position. */
-	x = simu_pos_x + cos (simu_pos_a) * sensors[i][0]
-	    - sin (simu_pos_a) * sensors[i][1];
-	y = simu_pos_y + sin (simu_pos_a) * sensors[i][0]
-	    + cos (simu_pos_a) * sensors[i][1];
+	simu_compute_absolute_position (sensors[i][0], sensors[i][1], &x, &y);
 	if (x >= 0.0 && x < table_width && y >= 0.0 && y < table_height
 	    && (x < stand_x_min || x >= stand_x_max || y < stand_y))
 	    PINC |= sensors_bit[i];
@@ -279,6 +280,18 @@ simu_sensor_update_marcel (void)
     /** Top zero sensors. */
     if (simu_aux_model[1].th < 0)
 	PINC |= IO_BV (CONTACT_AUX1_ZERO_IO);
+}
+
+/* Table test for Robospierre. */
+int
+simu_table_test_robospierre (double p_x, double p_y)
+{
+    static const double table_width = 3000.0, table_height = 2100.0;
+    double x, y;
+    simu_compute_absolute_position (p_x, p_y, &x, &y);
+    if (x < 0 || y < 0 || x >= table_width || y >= table_height)
+	return 0;
+    return 1;
 }
 
 /** Do a simulation step. */
@@ -305,6 +318,39 @@ simu_step (void)
 	old_aux_th[i] = simu_aux_model[i].th;
 	if (simu_robot->aux_motor[i])
 	    motor_model_step (&simu_aux_model[i]);
+      }
+    /* Update position. */
+    double old_pos_x = simu_pos_x, old_pos_y = simu_pos_y,
+	   old_pos_a = simu_pos_a;
+    simu_pos_update ((simu_left_model.th - old_left_th)
+		     / simu_left_model.m.i_G * simu_robot->wheel_r * 1000,
+		     (simu_right_model.th - old_right_th)
+		     / simu_right_model.m.i_G * simu_robot->wheel_r * 1000,
+		     simu_robot->footing * 1000);
+    /* Check robot is still on the table. */
+    if (simu_robot->table_test)
+      {
+	static int old_out = 1;
+	int out = 0;
+	for (i = 0; i < CORNERS_NB; i++)
+	  {
+	    if (!simu_robot->table_test (simu_robot->corners[i][0],
+					 simu_robot->corners[i][1]))
+		out = 1;
+	  }
+	/* If out, cancel movement. */
+	if (out && !old_out)
+	  {
+	    simu_pos_x = old_pos_x;
+	    simu_pos_y = old_pos_y;
+	    simu_pos_a = old_pos_a;
+	    simu_left_model.th = old_left_th;
+	    simu_right_model.th = old_right_th;
+	  }
+	else
+	  {
+	    old_out = out;
+	  }
       }
     /* Modify counters. */
     uint32_t counter_left_new;
@@ -364,12 +410,6 @@ simu_step (void)
 	    simu_counter_aux[i] = 0;
 	  }
       }
-    /* Update position. */
-    simu_pos_update ((simu_left_model.th - old_left_th)
-		     / simu_left_model.m.i_G * simu_robot->wheel_r * 1000,
-		     (simu_right_model.th - old_right_th)
-		     / simu_right_model.m.i_G * simu_robot->wheel_r * 1000,
-		     simu_robot->footing * 1000);
     /* Update sensors. */
     if (simu_robot->sensor_update)
 	simu_robot->sensor_update ();

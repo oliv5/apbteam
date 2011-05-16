@@ -27,6 +27,8 @@
 
 #define ECHANT_PERIOD (1.0 / (14745600.0 / 256 / 256))
 
+#define CORNERS_NB 4
+
 /** Define a robot and its peripherals.
  * Encoder characteristics are defined at gearbox output. */
 struct robot_t
@@ -55,6 +57,11 @@ struct robot_t
     int aux_encoder_steps[AC_ASSERV_AUX_NB];
     /** Sensor update function. */
     void (*sensor_update) (void);
+    /** Table test function, return false if given robot point is not in
+     * table. */
+    int (*table_test) (double p_x, double p_y);
+    /** Robot corners, from front left, then clockwise. */
+    double corners[CORNERS_NB][2];
 };
 
 /** Get a pointer to a model by name, or return 0. */

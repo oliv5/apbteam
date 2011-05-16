@@ -32,6 +32,8 @@
 #include <math.h>
 #include <string.h>
 
+#define NO_CORNER { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 } }
+
 /* RE25CLL with 1:10 gearbox model. */
 static const struct motor_def_t re25cll_model =
 {
@@ -89,6 +91,25 @@ static const struct motor_def_t amax32ghp_model =
     -INFINITY, +INFINITY,
 };
 
+/* Faulhaber 2657 and a 1:9.7 ratio gearbox. */
+static const struct motor_def_t faulhaber_2657_model =
+{
+    /* Motor characteristics. */
+    274 * (2*M_PI) / 60,/* Speed constant ((rad/s)/V). */
+    34.8 / 1000,	/* Torque constant (N.m/A). */
+    0,			/* Bearing friction (N.m/(rad/s)). */
+    2.84,		/* Terminal resistance (Ohm). */
+    0.380 / 1000,	/* Terminal inductance (H). */
+    24.0,		/* Maximum voltage (V). */
+    /* Gearbox characteristics. */
+    9.7,		/* Gearbox ratio. */
+    0.80,		/* Gearbox efficiency. */
+    /* Load characteristics. */
+    0.0,		/* Load (kg.m^2). */
+    /* Hardware limits. */
+    0.0, +INFINITY,
+};
+
 /* Gloubi, Efrei 2006. */
 static const struct robot_t gloubi_robot =
 {
@@ -106,7 +127,7 @@ static const struct robot_t gloubi_robot =
     13.0, // approx
     /* Whether the encoder is mounted on the main motor (false) or not (true). */
     0,
-    0.0, 0.0, { NULL, NULL }, { 0, 0 }, NULL
+    0.0, 0.0, { NULL, NULL }, { 0, 0 }, NULL, NULL, NO_CORNER
 };
 
 /* Taz, APBTeam/Efrei 2005. */
@@ -126,7 +147,7 @@ static const struct robot_t taz_robot =
     0.0,
     /* Whether the encoder is mounted on the main motor (false) or not (true). */
     0,
-    0.0, 0.0, { NULL, NULL }, { 0, 0 }, NULL
+    0.0, 0.0, { NULL, NULL }, { 0, 0 }, NULL, NULL, NO_CORNER
 };
 
 /* TazG, Taz with RE25G motors. */
@@ -146,7 +167,7 @@ static const struct robot_t tazg_robot =
     0.0,
     /* Whether the encoder is mounted on the main motor (false) or not (true). */
     0,
-    0.0, 0.0, { NULL, NULL }, { 0, 0 }, NULL
+    0.0, 0.0, { NULL, NULL }, { 0, 0 }, NULL, NULL, NO_CORNER
 };
 
 /* Giboulée arm model, with a RE25CLL and a 1:10 ratio gearbox. */
@@ -197,6 +218,7 @@ static const struct robot_t giboulee_robot =
     { 500, 0 },
     /** Sensor update function. */
     simu_sensor_update_giboulee,
+    NULL, NO_CORNER,
 };
 
 /* AquaJim arm model, with a RE40G and a 1:4 + 15:80 ratio gearbox. */
@@ -267,6 +289,7 @@ static const struct robot_t aquajim_robot =
     { 250, 250 },
     /** Sensor update function. */
     simu_sensor_update_aquajim,
+    NULL, NO_CORNER,
 };
 
 /* Marcel elevator model, with a Faulhaber 2657 and a 1:9.7 ratio gearbox. */
@@ -338,6 +361,41 @@ static const struct robot_t marcel_robot =
     { 256, 250 },
     /** Sensor update function. */
     simu_sensor_update_marcel,
+    NULL, NO_CORNER,
+};
+
+/* Robospierre, APBTeam 2011. */
+static const struct robot_t robospierre_robot =
+{
+    /* Main motors. */
+    &faulhaber_2657_model,
+    /* Number of steps on the main motors encoders. */
+    2500,
+    /* Wheel radius (m). */
+    0.065 / 2,
+    /* Distance between the wheels (m). */
+    0.16,
+    /* Weight of the robot (kg). */
+    10.0,
+    /* Distance of the gravity center from the center of motors axis (m). */
+    0.0,
+    /* Whether the encoder is mounted on the main motor (false) or not (true). */
+    1,
+    /** Encoder wheel radius (m). */
+    0.063 / 2,
+    /** Distance between the encoders wheels (m). */
+    0.28,
+    /** Auxiliary motors, NULL if not present. */
+    { NULL, NULL },
+    /** Number of steps for each auxiliary motor encoder. */
+    { 0, 0 },
+    /** Sensor update function. */
+    NULL,
+    /** Table test function, return false if given robot point is not in
+     * table. */
+    simu_table_test_robospierre,
+    /** Robot corners, from front left, then clockwise. */
+    { { 150, 50 }, { 150, -50 }, { -150, -50 }, { -150, 50 } },
 };
 
 /* Table of models. */
@@ -352,6 +410,7 @@ static const struct
       { "giboulee", &giboulee_robot },
       { "aquajim", &aquajim_robot },
       { "marcel", &marcel_robot },
+      { "robospierre", &robospierre_robot },
       { 0, 0 }
 };
 

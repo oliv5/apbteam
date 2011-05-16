@@ -23,7 +23,8 @@ class Robot:
         self.robot_link = simu.robots.robospierre.link.bag
         self.robot_model = simu.robots.robospierre.model.bag
         self.robot_view = simu.robots.robospierre.view.bag
-        asserv_cmd = ('../../asserv/src/asserv/asserv.host', '-m9', 'marcel')
+        asserv_cmd = ('../../asserv/src/asserv/asserv.host', '-m9',
+                'robospierre')
         mimot_cmd = ('../../mimot/src/dirty/dirty.host', '-m9', 'marcel')
         io_hub_cmd = ('../../io-hub/src/robospierre/io_hub.host')
         self.asserv = asserv.Proto (PopenIO (asserv_cmd), proto_time,
