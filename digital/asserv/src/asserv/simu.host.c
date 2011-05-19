@@ -36,6 +36,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
+#include <sys/time.h>
 
 #include "pwm.h"
 #include "aux.h"
@@ -87,6 +89,9 @@ double simu_counter_left_th, simu_counter_right_th;
 /** Use mex. */
 int simu_mex;
 
+/** Do not sleep. */
+int simu_fast;
+
 /** Mex message types. */
 uint8_t simu_mex_position;
 uint8_t simu_mex_pwm;
@@ -115,6 +120,7 @@ simu_init (void)
 	simu_mex_pwm = mex_node_reservef ("%s:pwm", mex_instance);
 	simu_mex_aux = mex_node_reservef ("%s:aux", mex_instance);
       }
+    simu_fast = simu_mex;
     if (argc != 1)
       {
 	fprintf (stderr, "Syntax: asserv.host [-m[interval]] model\n");
@@ -490,12 +496,37 @@ timer_init (void)
     simu_init ();
 }
 
+/** Slow down program execution. */
+void
+simu_wait (int freq)
+{
+#define ONE_SEC_NS 1000000000ll
+    struct timeval tv;
+    static long long int last_ns = 0;
+    long long int now_ns;
+    gettimeofday (&tv, NULL);
+    now_ns = tv.tv_sec * ONE_SEC_NS + tv.tv_usec * 1000;
+    if (last_ns == 0 || now_ns - last_ns > ONE_SEC_NS)
+	last_ns = now_ns;
+    last_ns = last_ns + ONE_SEC_NS / freq;
+    long long int diff_ns = last_ns - now_ns;
+    if (diff_ns > 0)
+      {
+	struct timespec ts;
+	ts.tv_sec = diff_ns / ONE_SEC_NS;
+	ts.tv_nsec = diff_ns % ONE_SEC_NS;
+	nanosleep (&ts, &ts);
+      }
+}
+
 /** Wait for timer overflow. */
 void
 timer_wait (void)
 {
     if (simu_mex)
 	mex_node_wait_date (mex_node_date () + 4);
+    if (!simu_fast)
+	simu_wait (225);
     simu_step ();
     if (simu_mex && !--simu_send_cpt)
       {

@@ -43,7 +43,7 @@ class InterAsserv (Inter):
         self.tk.createfilehandler (self.a, READABLE, self.read)
         self.timeout ()
         # Query position.
-        self.a.register_pos ()
+        self.a.register_pos (interval = 225 / 20)
         self.a.position.register (self.pos)
 
     def createWidgets (self):
