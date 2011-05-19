@@ -168,6 +168,24 @@ twi_proto_callback (u8 *buf, u8 size)
 	 * - b: 0: forward, 1: backward. */
 	traj_ftw_start (buf[2], 0);
 	break;
+      case c ('G', 9):
+	/* Push the wall.
+	 * - b: 0: forward, 1: backward.
+	 * - 3b: init_x.
+	 * - 3b: init_y.
+	 * - w: init_a. */
+	  {
+	    int32_t angle;
+	    if (buf[9] == 0xff && buf[10] == 0xff)
+		angle = -1;
+	    else
+		angle = v8_to_v32 (0, buf[9], buf[10], 0);
+	    traj_ptw_start (buf[2],
+			    v8_to_v32 (buf[3], buf[4], buf[5], 0xff),
+			    v8_to_v32 (buf[6], buf[7], buf[8], 0xff),
+			    angle, 0);
+	  }
+	break;
       case c ('g', 2):
 	/* Go to the wall using center sensor with delay.
 	 * - b: 0: forward, 1: backward.

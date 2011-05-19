@@ -37,6 +37,7 @@
 #include "pos.h"
 #include "speed.h"
 #include "postrack.h"
+#include "pwm.h"
 
 #include "contacts.h"
 
@@ -59,6 +60,8 @@ enum
     TRAJ_FTW,
     /* Go to the dispenser. */
     TRAJ_GTD,
+    /* Push the wall. */
+    TRAJ_PTW,
     /* Go to position. */
     TRAJ_GOTO,
     /* Go to angle. */
@@ -98,6 +101,9 @@ static uint8_t traj_use_center;
 
 /** Center sensor delay. */
 static uint8_t traj_center_delay;
+
+/** Initial values for x, y and angle, or -1. */
+static int32_t traj_init_x, traj_init_y, traj_init_a;
 
 /** Initialise computed factors. */
 void
@@ -208,6 +214,54 @@ traj_ftw_start_center (uint8_t backward, uint8_t center_delay, uint8_t seq)
     traj_use_center = 1;
     traj_center_delay = center_delay;
     state_start (&state_main, MODE_TRAJ, seq);
+}
+
+/** Push the wall mode. */
+static void
+traj_ptw (void)
+{
+    /* If blocking, the wall was found. */
+    if (pos_theta.blocked_counter >= pos_theta.blocked_counter_limit)
+      {
+	/* Initialise position. */
+	if (traj_init_x != -1)
+	    postrack_x = traj_init_x;
+	if (traj_init_y != -1)
+	    postrack_y = traj_init_y;
+	if (traj_init_a != -1)
+	    postrack_a = traj_init_a;
+	/* Stop motor control. */
+	pos_reset (&pos_theta);
+	pos_reset (&pos_alpha);
+	state_main.variant = 0;
+	state_main.mode = MODE_PWM;
+	pwm_set (&pwm_left, 0);
+	pwm_set (&pwm_right, 0);
+	state_finish (&state_main);
+	traj_mode = TRAJ_DONE;
+      }
+}
+
+/** Start push the wall mode.  Position is initialised unless -1. */
+void
+traj_ptw_start (uint8_t backward, int32_t init_x, int32_t init_y,
+		int32_t init_a, uint8_t seq)
+{
+    int16_t speed;
+    traj_mode = TRAJ_PTW;
+    traj_init_x = init_x;
+    traj_init_y = init_y;
+    traj_init_a = init_a;
+    state_start (&state_main, MODE_TRAJ, seq);
+    /* Use slow speed, without alpha control. */
+    speed = speed_theta.slow;
+    speed *= 256;
+    if (backward)
+	speed = -speed;
+    speed_theta.use_pos = speed_alpha.use_pos = 0;
+    speed_theta.cons = speed;
+    speed_alpha.cons = 0;
+    state_main.variant = 2;
 }
 
 /** Go to the dispenser mode. */
@@ -391,6 +445,9 @@ traj_update (void)
       {
       case TRAJ_FTW:
 	traj_ftw ();
+	break;
+      case TRAJ_PTW:
+	traj_ptw ();
 	break;
       case TRAJ_GTD:
 	traj_gtd ();

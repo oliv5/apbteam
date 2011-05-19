@@ -269,6 +269,15 @@ class Proto:
         self.proto.send ('f', 'BB', backward and 1 or 0, self.mseq)
         self.wait (self.finished, auto = True)
 
+    def ptw (self, backward = True, init_x = None, init_y = None,
+            init_a = None):
+        """Push the wall."""
+        self.mseq += 1
+        self.proto.send ('f', 'BllHB', backward and 1 or 0,
+                self._dist_f248 (init_x), self._dist_f248 (init_y),
+                self._angle_f16 (init_a), self.mseq)
+        self.wait (self.finished, auto = True)
+
     def set_simu_pos (self, x, y, a):
         """Set simulated position."""
         self.proto.send ('h', 'chhh', 'X', int (round (x)), int (round (y)),
@@ -381,10 +390,16 @@ class Proto:
         return int (round (d / self.param['scale']))
 
     def _dist_f248 (self, d):
-        return int (round ((1 << 8) * d / self.param['scale']))
+        if d is None:
+            return -1
+        else:
+            return int (round ((1 << 8) * d / self.param['scale']))
 
     def _angle_f16 (self, a):
-        return int (round ((1 << 16) * a / (2 * math.pi))) & 0xffff
+        if a is None:
+            return 0xffff
+        else:
+            return int (round ((1 << 16) * a / (2 * math.pi))) & 0xffff
 
     def _angle_f824 (self, a):
         return int (round ((1 << 24) * a / (2 * math.pi)))

@@ -400,6 +400,27 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	    break;
 	traj_ftw_start_center (args[0], args[1], args[2]);
 	break;
+      case c ('f', 12):
+	/* Push the wall.
+	 * - b: 0: forward, 1: backward.
+	 * - d: init_x, f24.8.
+	 * - d: init_y, f24.8.
+	 * - w: init_a, f0.16.
+	 * - b: sequence number. */
+	  {
+	    if (args[11] == state_main.sequence)
+		break;
+	    int32_t angle;
+	    if (args[9] == 0xff && args[10] == 0xff)
+		angle = -1;
+	    else
+		angle = v8_to_v32 (0, args[9], args[10], 0);
+	    traj_ptw_start (args[0],
+			    v8_to_v32 (args[1], args[2], args[3], args[4]),
+			    v8_to_v32 (args[5], args[6], args[7], args[8]),
+			    angle, args[11]);
+	  }
+	break;
       case c ('F', 1):
 	/* Go to the dispenser.
 	 * - b: sequence number. */

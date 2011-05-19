@@ -301,6 +301,28 @@ asserv_go_to_the_wall (uint8_t backward)
 }
 
 void
+asserv_push_the_wall (uint8_t backward, uint32_t init_x, uint32_t init_y,
+		      uint16_t init_a)
+{
+    if (init_x != (uint32_t) -1)
+	init_x = fixed_mul_f824 (init_x, asserv_scale_inv);
+    if (init_y != (uint32_t) -1)
+	init_y = fixed_mul_f824 (init_y, asserv_scale_inv);
+    uint8_t *buffer = twi_master_get_buffer (ASSERV_SLAVE);
+    buffer[0] = 'G';
+    buffer[1] = backward;
+    buffer[2] = v32_to_v8 (init_x, 2);
+    buffer[3] = v32_to_v8 (init_x, 1);
+    buffer[4] = v32_to_v8 (init_x, 0);
+    buffer[5] = v32_to_v8 (init_y, 2);
+    buffer[6] = v32_to_v8 (init_y, 1);
+    buffer[7] = v32_to_v8 (init_y, 0);
+    buffer[8] = v16_to_v8 (init_a, 1);
+    buffer[9] = v16_to_v8 (init_a, 0);
+    twi_master_send_buffer (10);
+}
+
+void
 asserv_move_motor0_absolute (uint16_t position, uint8_t speed)
 {
     uint8_t *buffer = twi_master_get_buffer (ASSERV_SLAVE);

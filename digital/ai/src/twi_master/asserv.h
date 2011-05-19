@@ -198,6 +198,12 @@ asserv_goto_xya (uint32_t x, uint32_t y, int16_t a, uint8_t backward);
 void
 asserv_go_to_the_wall (uint8_t backward);
 
+/** Push the wall and initialise position. Use -1 for coordinates to keep
+ * unchanged. */
+void
+asserv_push_the_wall (uint8_t backward, uint32_t init_x, uint32_t init_y,
+		      uint16_t init_a);
+
 /**
  * Move the motor0.
  * Motor0 class command.
