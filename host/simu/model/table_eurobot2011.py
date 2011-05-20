@@ -31,8 +31,11 @@ class Table (simu.model.table.Table):
     def __init__ (self, cards = None):
         simu.model.table.Table.__init__ (self)
         # Draw cards.
-        if cards is None:
-            cards = [ randrange (20) for i in xrange (3) ]
+        cards = [ ]
+        while len (cards) != 3:
+            card = randrange (20)
+            if card not in cards:
+                cards.append (card)
         self.cards = cards
         def pos (card):
             king_pos = card // 4
