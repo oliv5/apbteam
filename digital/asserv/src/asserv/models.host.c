@@ -107,7 +107,7 @@ static const struct motor_def_t faulhaber_2657_model =
     /* Load characteristics. */
     0.0,		/* Load (kg.m^2). */
     /* Hardware limits. */
-    0.0, +INFINITY,
+    -INFINITY, +INFINITY,
 };
 
 /* Gloubi, Efrei 2006. */
@@ -395,7 +395,7 @@ static const struct robot_t robospierre_robot =
      * table. */
     simu_table_test_robospierre,
     /** Robot corners, from front left, then clockwise. */
-    { { 150, 50 }, { 150, -50 }, { -150, -50 }, { -150, 50 } },
+    { { 150, 110 }, { 150, -110 }, { -150, -110 }, { -150, 110 } },
 };
 
 /* Table of models. */
