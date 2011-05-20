@@ -34,6 +34,16 @@
 # define BOT_SCALE 0.0415178942124
 #endif
 
+/** Distance between the front contact point and the robot center. */
+#define BOT_FRONT_CONTACT_DIST_MM 150
+/** Angle error at the front contact point. */
+#define BOT_FRONT_CONTACT_ANGLE_ERROR_DEG 0
+
+/** Speed used for initialisation. */
+#define BOT_SPEED_INIT 0x10, 0x10, 0x10, 0x10
+/** Normal cruise speed. */
+#define BOT_SPEED_NORMAL 0x40, 0x40, 0x20, 0x20
+
 #ifdef HOST
 
 # define BOT_CLAMP_SLOT_FRONT_BOTTOM_ELEVATION_STEP 0

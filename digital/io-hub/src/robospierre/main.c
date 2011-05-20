@@ -110,9 +110,15 @@ main_event_to_fsm (void)
     /* Update FSM timeouts. */
     FSM_HANDLE_TIMEOUT_E (AI);
     /* Motor status. */
-    asserv_status_e mimot_motor0_status, mimot_motor1_status;
+    asserv_status_e robot_move_status, mimot_motor0_status,
+		    mimot_motor1_status;
+    robot_move_status = asserv_move_cmd_status ();
     mimot_motor0_status = mimot_motor0_cmd_status ();
     mimot_motor1_status = mimot_motor1_cmd_status ();
+    if (robot_move_status == success)
+	FSM_HANDLE_E (AI, robot_move_success);
+    else if (robot_move_status == failure)
+	FSM_HANDLE_E (AI, robot_move_failure);
     if (mimot_motor0_status == success
 	&& mimot_motor1_status == success)
 	FSM_HANDLE_E (AI, clamp_elevation_rotation_success);
@@ -123,9 +129,11 @@ main_event_to_fsm (void)
     /* Clamp specific events. */
     if (clamp_handle_event ())
 	return;
-    /* Jack, XXX to be changed! */
+    /* Jack. */
     if (!contact_get_jack ())
-	FSM_HANDLE_E (AI, start);
+	FSM_HANDLE_E (AI, jack_inserted);
+    else
+	FSM_HANDLE_E (AI, jack_removed);
     /* Events from the event queue. */
     if (fsm_queue_poll ())
       {

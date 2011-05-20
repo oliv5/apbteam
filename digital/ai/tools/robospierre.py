@@ -34,7 +34,8 @@ class Robot:
         self.io = io_hub.Proto (PopenIO (io_hub_cmd), proto_time,
                 **io_hub.init.host['robospierre'])
         self.robot_start_pos = {
-                False: (700, 2100 - 250, math.radians (-270)),
-                True: (3000 - 700, 2100 - 250, math.radians (-270))
+                # In real life, better place the robot in green zone.
+                False: (300, 2100 - 200, math.radians (180)),
+                True: (3000 - 300, 2100 - 200, math.radians (0))
                 }
 

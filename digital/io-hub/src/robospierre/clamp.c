@@ -83,8 +83,6 @@ FSM_STATES (
 	    CLAMP_MOVE_DST_CLAMP_OPENING)
 
 FSM_EVENTS (
-	    /* Here for the moment, to be moved later. */
-	    start,
 	    /* New element inside bottom slot. */
 	    clamp_new_element,
 	    /* Order to drop elements. */
@@ -325,10 +323,10 @@ clamp_route (void)
 
 /* CLAMP FSM */
 
-FSM_TRANS (CLAMP_START, start, CLAMP_GOING_IDLE)
+FSM_TRANS (CLAMP_START, init_actuators, CLAMP_GOING_IDLE)
 {
     clamp_move (CLAMP_SLOT_FRONT_MIDDLE);
-    return FSM_NEXT (CLAMP_START, start);
+    return FSM_NEXT (CLAMP_START, init_actuators);
 }
 
 FSM_TRANS (CLAMP_GOING_IDLE, clamp_move_success, CLAMP_IDLE)
