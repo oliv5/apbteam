@@ -148,3 +148,10 @@ chrono_end_match (uint8_t block)
 	    ;
 #endif
 }
+
+void
+chrono_set_timer (uint32_t elapsed_time)
+{
+    if (chrono_enabled_)
+        chrono_ov_count_ = elapsed_time / TIMER_PERIOD_MS;
+}

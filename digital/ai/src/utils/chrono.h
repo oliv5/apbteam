@@ -96,4 +96,12 @@ chrono_remaining_time (void);
 void
 chrono_end_match (uint8_t block);
 
+/**
+ * Set timer at desired value.
+ * This function should be used for tests purpose only.
+ * @param elapsed_time elapsed time since beginning.
+ */
+void
+chrono_set_timer (uint32_t elapsed_time);
+
 #endif /* chrono_h */
