@@ -1451,18 +1451,19 @@ fsm_build_gen_avr_c (fsm_build_t *fsm, uint embedded_strings)
 	fprintf (f, "\tint out = 0;\n");
 	fprintf (f, "\tfor (i = 0; i < fsm_%s_max_active_states; i++)\n\t{\n",
 		 fsm->name);
-	fprintf (f, "\t\tif (fsm_%s_timeout_counters[i] > 0)\n",
+	fprintf (f, "\t\tif (fsm_%s_timeout_counters[i] > 0)\n\t\t{\n",
 		 fsm->name);
 	fprintf (f, "\t\t\tfsm_%s_timeout_counters[i]--;\n",
 		 fsm->name);
-	fprintf (f, "\t\tif (fsm_%s_timeout_counters[i] == 0)\n\t\t{\n",
+	fprintf (f, "\t\t\tif (fsm_%s_timeout_counters[i] == 0)\n\t\t\t{\n",
 		 fsm->name);
-	fprintf (f, "\t\t\tfsm_%s_handle (fsm_%s_timeout_events[fsm_%s_active_states[i]]);\n",
+	fprintf (f, "\t\t\t\tfsm_%s_handle (fsm_%s_timeout_events[fsm_%s_active_states[i]]);\n",
 		 fsm->name,
 		 fsm->name,
 		 fsm->name);
-	fprintf (f, "\t\t\tout = 1;\n");
-	fprintf (f, "\t\t}\n\n");
+	fprintf (f, "\t\t\t\tout = 1;\n");
+	fprintf (f, "\t\t\t}\n");
+	fprintf (f, "\t\t}\n");
 	fprintf (f, "\t}\n");
 	fprintf (f, "\treturn out;\n");
 	fprintf (f, "}\n\n");
