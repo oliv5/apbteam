@@ -233,6 +233,9 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	clamp_move_element (args[0], args[1]);
 	break;
       case c ('n', 2):
+	/* Simulate the presence of a new element.
+	 * - 1b: position.
+	 * - 1b: type. */
 	clamp_new_element (args[0], args[1]);
 	break;
       case c ('d', 0):
