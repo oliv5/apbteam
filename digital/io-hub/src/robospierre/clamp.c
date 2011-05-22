@@ -130,17 +130,17 @@ struct clamp_t clamp_global;
 /** Clamp positions. */
 static const uint16_t clamp_pos[][2] = {
       { BOT_CLAMP_SLOT_FRONT_BOTTOM_ELEVATION_STEP,
-	BOT_CLAMP_BAY_FRONT_ROTATION_STEP },
+	BOT_CLAMP_SLOT_FRONT_BOTTOM_ROTATION_STEP },
       { BOT_CLAMP_SLOT_FRONT_MIDDLE_ELEVATION_STEP,
-	BOT_CLAMP_BAY_FRONT_ROTATION_STEP },
+	BOT_CLAMP_SLOT_FRONT_MIDDLE_ROTATION_STEP },
       { BOT_CLAMP_SLOT_FRONT_TOP_ELEVATION_STEP,
-	BOT_CLAMP_BAY_FRONT_ROTATION_STEP },
+	BOT_CLAMP_SLOT_FRONT_TOP_ROTATION_STEP },
       { BOT_CLAMP_SLOT_BACK_BOTTOM_ELEVATION_STEP,
-	BOT_CLAMP_BAY_BACK_ROTATION_STEP },
+	BOT_CLAMP_SLOT_BACK_BOTTOM_ROTATION_STEP },
       { BOT_CLAMP_SLOT_BACK_MIDDLE_ELEVATION_STEP,
-	BOT_CLAMP_BAY_BACK_ROTATION_STEP },
+	BOT_CLAMP_SLOT_BACK_MIDDLE_ROTATION_STEP },
       { BOT_CLAMP_SLOT_BACK_TOP_ELEVATION_STEP,
-	BOT_CLAMP_BAY_BACK_ROTATION_STEP },
+	BOT_CLAMP_SLOT_BACK_TOP_ROTATION_STEP },
       { BOT_CLAMP_SLOT_SIDE_ELEVATION_STEP,
 	BOT_CLAMP_BAY_SIDE_ROTATION_STEP },
       { BOT_CLAMP_BAY_FRONT_LEAVE_ELEVATION_STEP,
@@ -336,7 +336,8 @@ FSM_TRANS (CLAMP_GOING_IDLE, clamp_move_success, CLAMP_IDLE)
 
 FSM_TRANS (CLAMP_IDLE, clamp_new_element, CLAMP_TAKING_DOOR_CLOSING)
 {
-    pwm_set_timed (clamp_slot_door[ctx.pos_new], BOT_PWM_DOOR_CLOSE);
+    pwm_set_timed (clamp_slot_door[ctx.pos_new],
+		   BOT_PWM_DOOR_CLOSE (ctx.pos_new));
     return FSM_NEXT (CLAMP_IDLE, clamp_new_element);
 }
 
@@ -524,7 +525,7 @@ FSM_TRANS (CLAMP_MOVE_DST_ROUTING, clamp_elevation_rotation_success,
 	if (clamp_slot_door[ctx.pos_current] != 0xff)
 	  {
 	    pwm_set_timed (clamp_slot_door[ctx.pos_current],
-			   BOT_PWM_DOOR_CLOSE);
+			   BOT_PWM_DOOR_CLOSE (ctx.pos_current));
 	    return FSM_NEXT (CLAMP_MOVE_DST_ROUTING,
 			     clamp_elevation_rotation_success,
 			     done_close_door);
