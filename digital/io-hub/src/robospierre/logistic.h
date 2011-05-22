@@ -59,7 +59,7 @@ logistic_update (void);
 
 /** To be called when a new element is entering the robot. */
 void
-logistic_element_new (uint8_t pos, uint8_t element);
+logistic_element_new (uint8_t pos, uint8_t element_type);
 
 /** To be called when a element movement is done. */
 void

@@ -117,8 +117,8 @@ struct clamp_t
     uint8_t moving_to;
     /** Position of a new element. */
     uint8_t pos_new;
-    /** New element kind. */
-    uint8_t new_element;
+    /** New element type. */
+    uint8_t new_element_type;
     /** Drop direction, drop on the other side. */
     uint8_t drop_direction;
 };
@@ -192,11 +192,11 @@ clamp_move_element (uint8_t from, uint8_t to)
 }
 
 void
-clamp_new_element (uint8_t pos, uint8_t element)
+clamp_new_element (uint8_t pos, uint8_t element_type)
 {
     assert (pos == CLAMP_SLOT_FRONT_BOTTOM || pos == CLAMP_SLOT_BACK_BOTTOM);
     ctx.pos_new = pos;
-    ctx.new_element = element;
+    ctx.new_element_type = element_type;
     FSM_HANDLE (AI, clamp_new_element);
 }
 
@@ -225,17 +225,17 @@ clamp_handle_event (void)
     if (FSM_CAN_HANDLE (AI, clamp_new_element))
       {
 	/* XXX: temporary hack. */
-	uint8_t element = contact_get_color () ? ELEMENT_PAWN : ELEMENT_KING;
+	uint8_t element_type = contact_get_color () ? ELEMENT_PAWN : ELEMENT_KING;
 	if (!IO_GET (CONTACT_FRONT_BOTTOM)
 	    && !logistic_global.slots[CLAMP_SLOT_FRONT_BOTTOM])
 	  {
-	    clamp_new_element (CLAMP_SLOT_FRONT_BOTTOM, element);
+	    clamp_new_element (CLAMP_SLOT_FRONT_BOTTOM, element_type);
 	    return 1;
 	  }
 	if (!IO_GET (CONTACT_BACK_BOTTOM)
 	    && !logistic_global.slots[CLAMP_SLOT_BACK_BOTTOM])
 	  {
-	    clamp_new_element (CLAMP_SLOT_BACK_BOTTOM, element);
+	    clamp_new_element (CLAMP_SLOT_BACK_BOTTOM, element_type);
 	    return 1;
 	  }
       }
@@ -356,7 +356,7 @@ FSM_TRANS_TIMEOUT (CLAMP_TAKING_DOOR_CLOSING, BOT_PWM_DOOR_CLOSE_TIME,
 		   move_to_idle, CLAMP_GOING_IDLE,
 		   done, CLAMP_IDLE)
 {
-    logistic_element_new (ctx.pos_new, ctx.new_element);
+    logistic_element_new (ctx.pos_new, ctx.new_element_type);
     if (logistic_global.moving_from != CLAMP_SLOT_NB)
       {
 	clamp_move_element (logistic_global.moving_from,

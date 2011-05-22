@@ -192,11 +192,11 @@ logistic_update (void)
 }
 
 void
-logistic_element_new (uint8_t pos, uint8_t element)
+logistic_element_new (uint8_t pos, uint8_t element_type)
 {
     assert (pos < CLAMP_SLOT_NB);
     assert (!ctx.slots[pos]);
-    ctx.slots[pos] = element;
+    ctx.slots[pos] = element_type;
     logistic_decision ();
 }
 
