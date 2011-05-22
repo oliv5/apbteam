@@ -221,3 +221,21 @@ logistic_drop (uint8_t direction)
     logistic_decision ();
 }
 
+static uint8_t
+logistic_slot_clear (uint8_t slot)
+{
+    if (CLAMP_IS_SLOT_IN_FRONT_BAY (slot)
+	&& ctx.slots[CLAMP_SLOT_FRONT_MIDDLE])
+	return 0;
+    if (CLAMP_IS_SLOT_IN_BACK_BAY (slot)
+	&& ctx.slots[CLAMP_SLOT_BACK_MIDDLE])
+	return 0;
+    return 1;
+}
+
+uint8_t
+logistic_path_clear (uint8_t slot1, uint8_t slot2)
+{
+    return logistic_slot_clear (slot1) && logistic_slot_clear (slot2);
+}
+

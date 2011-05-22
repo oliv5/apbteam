@@ -64,6 +64,8 @@ FSM_STATES (
 	    CLAMP_DROPING_DOOR_OPENING,
 	    /* Droping a tower, waiting for robot to advance. */
 	    CLAMP_DROPING_WAITING_ROBOT,
+	    /* Clamp locked in a bay. */
+	    CLAMP_LOCKED,
 
 	    /* Waiting movement order. */
 	    CLAMP_MOVE_IDLE,
@@ -354,6 +356,7 @@ FSM_TRANS (CLAMP_IDLE, clamp_drop, CLAMP_DROPING_DOOR_OPENING)
 FSM_TRANS_TIMEOUT (CLAMP_TAKING_DOOR_CLOSING, BOT_PWM_DOOR_CLOSE_TIME,
 		   move_element, CLAMP_MOVING_ELEMENT,
 		   move_to_idle, CLAMP_GOING_IDLE,
+		   clamp_locked, CLAMP_LOCKED,
 		   done, CLAMP_IDLE)
 {
     logistic_element_new (ctx.pos_new, ctx.new_element_type);
@@ -365,8 +368,14 @@ FSM_TRANS_TIMEOUT (CLAMP_TAKING_DOOR_CLOSING, BOT_PWM_DOOR_CLOSE_TIME,
       }
     else if (logistic_global.clamp_pos_idle != ctx.pos_current)
       {
-	clamp_move (logistic_global.clamp_pos_idle);
-	return FSM_NEXT_TIMEOUT (CLAMP_TAKING_DOOR_CLOSING, move_to_idle);
+	if (logistic_path_clear (ctx.pos_current,
+				 logistic_global.clamp_pos_idle))
+	  {
+	    clamp_move (logistic_global.clamp_pos_idle);
+	    return FSM_NEXT_TIMEOUT (CLAMP_TAKING_DOOR_CLOSING, move_to_idle);
+	  }
+	else
+	    return FSM_NEXT_TIMEOUT (CLAMP_TAKING_DOOR_CLOSING, clamp_locked);
       }
     else
 	return FSM_NEXT_TIMEOUT (CLAMP_TAKING_DOOR_CLOSING, done);
@@ -375,6 +384,7 @@ FSM_TRANS_TIMEOUT (CLAMP_TAKING_DOOR_CLOSING, BOT_PWM_DOOR_CLOSE_TIME,
 FSM_TRANS (CLAMP_MOVING_ELEMENT, clamp_move_success,
 	   move_element, CLAMP_MOVING_ELEMENT,
 	   move_to_idle, CLAMP_GOING_IDLE,
+	   clamp_locked, CLAMP_LOCKED,
 	   done, CLAMP_IDLE)
 {
     logistic_element_move_done ();
@@ -387,9 +397,16 @@ FSM_TRANS (CLAMP_MOVING_ELEMENT, clamp_move_success,
       }
     else if (logistic_global.clamp_pos_idle != ctx.pos_current)
       {
-	clamp_move (logistic_global.clamp_pos_idle);
-	return FSM_NEXT (CLAMP_MOVING_ELEMENT, clamp_move_success,
-			 move_to_idle);
+	if (logistic_path_clear (ctx.pos_current,
+				 logistic_global.clamp_pos_idle))
+	  {
+	    clamp_move (logistic_global.clamp_pos_idle);
+	    return FSM_NEXT (CLAMP_MOVING_ELEMENT, clamp_move_success,
+			     move_to_idle);
+	  }
+	else
+	    return FSM_NEXT (CLAMP_MOVING_ELEMENT, clamp_move_success,
+			     clamp_locked);
       }
     else
 	return FSM_NEXT (CLAMP_MOVING_ELEMENT, clamp_move_success,
@@ -406,6 +423,7 @@ FSM_TRANS_TIMEOUT (CLAMP_DROPING_DOOR_OPENING, BOT_PWM_CLAMP_OPEN_TIME,
 FSM_TRANS (CLAMP_DROPING_WAITING_ROBOT, clamp_drop_clear,
 	   move_element, CLAMP_MOVING_ELEMENT,
 	   move_to_idle, CLAMP_GOING_IDLE,
+	   clamp_locked, CLAMP_LOCKED,
 	   done, CLAMP_IDLE)
 {
     logistic_drop (ctx.drop_direction);
@@ -418,13 +436,30 @@ FSM_TRANS (CLAMP_DROPING_WAITING_ROBOT, clamp_drop_clear,
       }
     else if (logistic_global.clamp_pos_idle != ctx.pos_current)
       {
-	clamp_move (logistic_global.clamp_pos_idle);
-	return FSM_NEXT (CLAMP_DROPING_WAITING_ROBOT, clamp_drop_clear,
-			 move_to_idle);
+	if (logistic_path_clear (ctx.pos_current,
+				 logistic_global.clamp_pos_idle))
+	  {
+	    clamp_move (logistic_global.clamp_pos_idle);
+	    return FSM_NEXT (CLAMP_DROPING_WAITING_ROBOT, clamp_drop_clear,
+			     move_to_idle);
+	  }
+	else
+	    return FSM_NEXT (CLAMP_DROPING_WAITING_ROBOT, clamp_drop_clear,
+			     clamp_locked);
       }
     else
 	return FSM_NEXT (CLAMP_DROPING_WAITING_ROBOT, clamp_drop_clear,
 			 done);
+}
+
+FSM_TRANS (CLAMP_LOCKED, clamp_drop, CLAMP_DROPING_DOOR_OPENING)
+{
+    /* If going forward, drop at back. */
+    uint8_t bay = ctx.drop_direction == DIRECTION_FORWARD
+	? CLAMP_SLOT_BACK_BOTTOM : CLAMP_SLOT_FRONT_BOTTOM;
+    pwm_set_timed (clamp_slot_door[bay + 0], BOT_PWM_DOOR_OPEN);
+    pwm_set_timed (clamp_slot_door[bay + 2], BOT_PWM_DOOR_OPEN);
+    return FSM_NEXT (CLAMP_LOCKED, clamp_drop);
 }
 
 /* CLAMP_MOVE FSM */
