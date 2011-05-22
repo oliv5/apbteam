@@ -221,6 +221,25 @@ clamp_drop_clear (void)
     FSM_HANDLE (AI, clamp_drop_clear);
 }
 
+void
+clamp_door (uint8_t pos, uint8_t open)
+{
+    if (pos == 0xff)
+      {
+	if (open)
+	    pwm_set_timed (BOT_PWM_CLAMP, BOT_PWM_CLAMP_OPEN);
+	else
+	    pwm_set_timed (BOT_PWM_CLAMP, BOT_PWM_CLAMP_CLOSE);
+      }
+    else if (clamp_slot_door[pos] != 0xff)
+      {
+	if (open)
+	    pwm_set_timed (clamp_slot_door[pos], BOT_PWM_DOOR_OPEN);
+	else
+	    pwm_set_timed (clamp_slot_door[pos], BOT_PWM_DOOR_CLOSE (pos));
+      }
+}
+
 uint8_t
 clamp_handle_event (void)
 {

@@ -81,6 +81,10 @@ clamp_drop (uint8_t drop_direction);
 void
 clamp_drop_clear (void);
 
+/** Open/close door (pos = slot) or clamp (pos = 0xff). */
+void
+clamp_door (uint8_t pos, uint8_t open);
+
 /** Examine sensors to generate new events, return non zero if an event was
  * generated. */
 uint8_t

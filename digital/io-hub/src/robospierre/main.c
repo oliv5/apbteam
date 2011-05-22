@@ -253,6 +253,12 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	else
 	    clamp_drop (args[0]);
 	break;
+      case c ('d', 2):
+	/* Open or close door or clamp.
+	 * - 1b: pos, or 0xff for clamp.
+	 * - 1b: non zero to open. */
+	clamp_door (args[0], args[1]);
+	break;
 	/* Stats commands.
 	 * - b: interval between stats. */
       case c ('A', 1):
