@@ -25,8 +25,11 @@
  *
  * }}} */
 
+/** Offset to compensate for H-bridge dead zone at low PWM values. */
+#define PWM_OFFSET 0x40
+
 /** Define the absolute maximum PWM value. */
-#define PWM_MAX 0x3ff
+#define PWM_MAX (0x3ff - PWM_OFFSET)
 
 /** PWM control state. */
 struct pwm_t

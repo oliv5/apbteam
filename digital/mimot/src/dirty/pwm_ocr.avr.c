@@ -94,12 +94,12 @@ pwm_ocr_update (void)
 	IO_SET (PWM1_BRK_IO);
 	if (PWM_VALUE (PWM1) < 0)
 	  {
-	    pwm1 = -PWM_VALUE (PWM1);
+	    pwm1 = -PWM_VALUE (PWM1) + PWM_OFFSET;
 	  }
 	else
 	  {
 	    dir_d |= _BV (PWM1_DIR);
-	    pwm1 = PWM_VALUE (PWM1);
+	    pwm1 = PWM_VALUE (PWM1) + PWM_OFFSET;
 	  }
       }
 # endif /* PWM1 */
@@ -115,12 +115,12 @@ pwm_ocr_update (void)
 	IO_SET (PWM2_BRK_IO);
 	if (PWM_VALUE (PWM2) < 0)
 	  {
-	    pwm2 = -PWM_VALUE (PWM2);
+	    pwm2 = -PWM_VALUE (PWM2) + PWM_OFFSET;
 	  }
 	else
 	  {
 	    dir_d |= _BV (PWM2_DIR);
-	    pwm2 = PWM_VALUE (PWM2);
+	    pwm2 = PWM_VALUE (PWM2) + PWM_OFFSET;
 	  }
       }
 # endif /* PWM2 */
