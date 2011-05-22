@@ -1,9 +1,7 @@
-#ifndef simu_host_h
-#define simu_host_h
-/* simu.host.h - Host simulation. */
-/* robospierre - Eurobot 2011 AI. {{{
+/* radar_defs.c */
+/* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
  *
- * Copyright (C) 2011 Nicolas Schodet
+ * Copyright (C) 2010 Nicolas Schodet
  *
  * APBTeam:
  *        Web: http://apbteam.org/
@@ -24,23 +22,25 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
-#include "defs.h"
+#include "common.h"
+#include "radar.h"
 
-#ifdef HOST
+#include "modules/devices/usdist/usdist.h"
+#include "playground.h"
 
-extern uint8_t PORTA, DDRA, PINA, PINE, PINF;
+/** Define radar configuration. */
+struct radar_sensor_t radar_sensors[RADAR_SENSOR_NB] = {
+      { &usdist_mm[0], { 20, 20 }, G_ANGLE_UF016_DEG (10) },
+      { &usdist_mm[1], { 20, -20 }, G_ANGLE_UF016_DEG (-10) },
+      { &usdist_mm[2], { -20, -20 }, G_ANGLE_UF016_DEG (180 + 10) },
+      { &usdist_mm[3], { -20, 20 }, G_ANGLE_UF016_DEG (180 - 10) },
+};
 
-/** Send general purpose positions to indicate computation results.
- * - pos: array of positions to report.
- * - pos_nb: number of elements in the array.
- * - id: identifier so that several unrelated positions could be reported. */
-void
-simu_send_pos_report (vect_t *pos, uint8_t pos_nb, uint8_t id);
+/** Define exclusion area (considered as invalid point). */
+uint8_t
+radar_valid (vect_t p)
+{
+    return p.x >= RADAR_MARGIN_MM && p.x < PG_WIDTH - RADAR_MARGIN_MM
+	&& p.y >= RADAR_MARGIN_MM && p.y < PG_LENGTH - RADAR_MARGIN_MM;
+}
 
-#else /* !defined (HOST) */
-
-#define simu_send_pos_report(pos, pos_nb, id) ((void) 0)
-
-#endif /* !defined (HOST) */
-
-#endif /* simu_host_h */

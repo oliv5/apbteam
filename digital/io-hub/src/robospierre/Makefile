@@ -5,6 +5,7 @@ PROGS = io_hub
 # Sources to compile.
 io_hub_SOURCES = main.c \
 		 clamp.c logistic.c \
+		 radar_defs.c radar.c \
 		 init.c fsm.host.c fsm_AI_gen.avr.c fsm_queue.c \
 		 pwm.avr.c pwm.host.c \
 		 contact.avr.c contact.host.c \
@@ -14,7 +15,7 @@ io_hub_SOURCES = main.c \
 MODULES = proto uart twi utils \
 	  adc devices/usdist \
 	  math/fixed math/geometry
-AI_MODULES = twi_master common utils fsm
+AI_MODULES = twi_master common utils fsm move
 # Configuration file.
 CONFIGFILE = avrconfig.h
 AVR_MCU = at90usb1287

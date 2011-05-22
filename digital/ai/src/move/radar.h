@@ -37,15 +37,15 @@
 
 /** Estimated obstacle edge radius.  As the sensors detect obstacle edge, this is
  * added to position obstacle center. */
-#define RADAR_OBSTACLE_EDGE_RADIUS_MM 40
+#undef RADAR_OBSTACLE_EDGE_RADIUS_MM
 
 /** Estimated obstacle radius.  The obstacle may be larger than at the
  * detected edge. */
-#define RADAR_OBSTACLE_RADIUS_MM 150
+#undef RADAR_OBSTACLE_RADIUS_MM
 
 /** Stop distance. Distance under which an obstacle is considered harmful when
  * moving. */
-#define RADAR_STOP_MM 350
+#undef RADAR_STOP_MM
 
 /** Clearance distance.  Distance over which an obstacle should be to the side
  * when moving.
@@ -59,10 +59,28 @@
  * this reduce the rectangle length.
  *
  * If the destination is really near (< RADAR_EPSILON_MM), ignore all this. */
-#define RADAR_CLEARANCE_MM 100
+#undef RADAR_CLEARANCE_MM
 
 /** Destination distance near enough so that obstacles could be ignored. */
-#define RADAR_EPSILON_MM 70
+#undef RADAR_EPSILON_MM
+
+/* All this in another file. */
+#include "radar_defs.h"
+
+/** Margin to be considered inside the playground.  An obstacle can not be
+ * exactly at the playground edge. */
+#define RADAR_MARGIN_MM 150
+
+/** Describe a radar sensor. */
+struct radar_sensor_t
+{
+    /** Distance updated by another module. */
+    uint16_t *dist_mm;
+    /** Position relative to the robot center. */
+    vect_t pos;
+    /** Angle relative to the robot X axis. */
+    uint16_t a;
+};
 
 /** Update radar view.  Return the number of obstacles found.  Obstacles
  * positions are returned in obs_pos. */

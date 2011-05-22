@@ -34,6 +34,9 @@
 # define BOT_SCALE 0.0415178942124
 #endif
 
+/** Distance from the robot axis to the side. */
+#define BOT_SIZE_SIDE 190
+
 /** Distance between the front contact point and the robot center. */
 #define BOT_FRONT_CONTACT_DIST_MM 150
 /** Angle error at the front contact point. */

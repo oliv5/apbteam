@@ -43,4 +43,5 @@ class Bag:
                     ClampSide.height), model_bag.clamp))
         self.distance_sensor = [DistanceSensorUS (self.robot, ds)
                 for ds in model_bag.distance_sensor]
+        self.pos_report = PosReport (table, model_bag.pos_report)
 

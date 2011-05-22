@@ -25,55 +25,47 @@
 #include "common.h"
 #include "radar.h"
 
-#include "playground_2010.h"
 #include "bot.h"
 
-#include "modules/devices/usdist/usdist.h"
 #include "modules/math/geometry/geometry.h"
 #include "modules/math/geometry/distance.h"
 #include "modules/utils/utils.h"
-
-/** Margin to be considered inside the playground.  An obstacle can not be
- * exactly at the playground edge. */
-#define RADAR_MARGIN_MM 150
 
 /** Maximum distance for a sensor reading to be ignored if another sensor is
  * nearer. */
 #define RADAR_FAR_MM 250
 
-/** Describe a radar sensor. */
-struct radar_sensor_t
-{
-    /** Distance updated by another module. */
-    uint16_t *dist_mm;
-    /** Position relative to the robot center. */
-    vect_t pos;
-    /** Angle relative to the robot X axis. */
-    uint16_t a;
-};
-
 /** Define radar configuration. */
-struct radar_sensor_t radar_sensors[] = {
-#define RADAR_SENSOR_FRONT 0
-      { &usdist_mm[0], { 30 - 20, 0 }, G_ANGLE_UF016_DEG (0) },
-#define RADAR_SENSOR_LEFT 1
-      { &usdist_mm[1], { 20 - 20, 20 }, G_ANGLE_UF016_DEG (30) },
-#define RADAR_SENSOR_RIGHT 2
-      { &usdist_mm[2], { 20 - 20, -20 }, G_ANGLE_UF016_DEG (-30) },
-#define RADAR_SENSOR_BACK 3
-      { &usdist_mm[3], { -30 - 20, 0 }, G_ANGLE_UF016_DEG (180) },
-};
+extern struct radar_sensor_t radar_sensors[RADAR_SENSOR_NB];
 
-/** Define exclusion area (considered as invalid point). */
+uint8_t
+radar_valid (vect_t p);
+
+/** Compute the center position from several radars sensors, return 1 if
+ * any. */
 static uint8_t
-radar_valid (vect_t p)
+radar_hit_center (uint8_t valid[], vect_t hit[], uint8_t sensor_nb,
+		  vect_t *obs_pos)
 {
-    return p.x >= RADAR_MARGIN_MM && p.x < PG_WIDTH - RADAR_MARGIN_MM
-	&& p.y >= RADAR_MARGIN_MM && p.y < PG_LENGTH - RADAR_MARGIN_MM
-	/* Ignore points on slope, no margin for the slope start. */
-	&& (p.x < PG_WIDTH / 2 - PG_SLOPE_WIDTH / 2
-	    || p.x >= PG_WIDTH / 2 + PG_SLOPE_WIDTH / 2
-	    || p.y < PG_LENGTH - PG_SLOPE_LENGTH - RADAR_MARGIN_MM / 2);
+    uint8_t i, hit_nb = 0;
+    vect_t hit_center = { 0, 0 };
+    for (i = 0; i < sensor_nb; i++)
+      {
+	if (valid[i])
+	  {
+	    vect_add (&hit_center, &hit[i]);
+	    hit_nb++;
+	  }
+      }
+    if (hit_nb > 1)
+	vect_scale_f824 (&hit_center, 0x1000000l / hit_nb);
+    if (hit_nb)
+      {
+	*obs_pos = hit_center;
+	return 1;
+      }
+    else
+	return 0;
 }
 
 uint8_t
@@ -82,8 +74,6 @@ radar_update (const position_t *robot_pos, vect_t *obs_pos)
     uint8_t i, j;
     vect_t ray;
     uint8_t obs_nb = 0;
-    uint8_t front_nb;
-    vect_t front_center;
     /* Compute hit points for each sensor and eliminate invalid ones. */
     vect_t hit[UTILS_COUNT (radar_sensors)];
     uint8_t valid[UTILS_COUNT (radar_sensors)];
@@ -122,23 +112,12 @@ radar_update (const position_t *robot_pos, vect_t *obs_pos)
 	  }
       }
     /* Specific treatment about sensor topology. */
-    if (valid[RADAR_SENSOR_BACK])
-	obs_pos[obs_nb++] = hit[RADAR_SENSOR_BACK];
-    front_nb = 0;
-    front_center.x = 0; front_center.y = 0;
-    for (i = RADAR_SENSOR_FRONT; i < RADAR_SENSOR_BACK; i++)
-      {
-	if (valid[i])
-	  {
-	    vect_add (&front_center, &hit[i]);
-	    front_nb++;
-	  }
-      }
-    if (front_nb)
-      {
-	vect_scale_f824 (&front_center, 0x1000000l / front_nb);
-	obs_pos[obs_nb++] = front_center;
-      }
+    obs_nb += radar_hit_center (valid + RADAR_SENSOR_FRONT_FIRST,
+				hit + RADAR_SENSOR_FRONT_FIRST,
+				RADAR_SENSOR_FRONT_NB, &obs_pos[obs_nb]);
+    obs_nb += radar_hit_center (valid + RADAR_SENSOR_BACK_FIRST,
+				hit + RADAR_SENSOR_BACK_FIRST,
+				RADAR_SENSOR_BACK_NB, &obs_pos[obs_nb]);
     /* Done. */
     return obs_nb;
 }

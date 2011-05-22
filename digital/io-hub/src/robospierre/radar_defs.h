@@ -1,9 +1,9 @@
-#ifndef simu_host_h
-#define simu_host_h
-/* simu.host.h - Host simulation. */
-/* robospierre - Eurobot 2011 AI. {{{
+#ifndef radar_defs_h
+#define radar_defs_h
+/* radar_defs.h */
+/* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
  *
- * Copyright (C) 2011 Nicolas Schodet
+ * Copyright (C) 2010 Nicolas Schodet
  *
  * APBTeam:
  *        Web: http://apbteam.org/
@@ -24,23 +24,18 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
-#include "defs.h"
 
-#ifdef HOST
+#define RADAR_OBSTACLE_EDGE_RADIUS_MM 40
+#define RADAR_OBSTACLE_RADIUS_MM 150
+#define RADAR_STOP_MM 350
+#define RADAR_CLEARANCE_MM 100
+#define RADAR_EPSILON_MM 70
 
-extern uint8_t PORTA, DDRA, PINA, PINE, PINF;
+#define RADAR_SENSOR_NB 4
 
-/** Send general purpose positions to indicate computation results.
- * - pos: array of positions to report.
- * - pos_nb: number of elements in the array.
- * - id: identifier so that several unrelated positions could be reported. */
-void
-simu_send_pos_report (vect_t *pos, uint8_t pos_nb, uint8_t id);
+#define RADAR_SENSOR_FRONT_FIRST 0
+#define RADAR_SENSOR_FRONT_NB 2
+#define RADAR_SENSOR_BACK_FIRST 2
+#define RADAR_SENSOR_BACK_NB 2
 
-#else /* !defined (HOST) */
-
-#define simu_send_pos_report(pos, pos_nb, id) ((void) 0)
-
-#endif /* !defined (HOST) */
-
-#endif /* simu_host_h */
+#endif /* radar_defs_h */

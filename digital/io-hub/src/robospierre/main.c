@@ -40,6 +40,7 @@
 
 #include "pwm.h"
 #include "contact.h"
+#include "radar.h"
 
 #define FSM_NAME AI
 #include "fsm.h"
@@ -61,6 +62,12 @@
 
 /** Our color. */
 enum team_color_e team_color;
+
+/** Obstacles positions, updated using radar module. */
+vect_t main_obstacles_pos[2];
+
+/** Number of obstacles in main_obstacles_pos. */
+uint8_t main_obstacles_nb;
 
 /** Asserv stats counters. */
 static uint8_t main_stats_asserv_, main_stats_asserv_cpt_;
@@ -178,7 +185,11 @@ main_loop (void)
 	contact_update ();
 	if (usdist_update ())
 	  {
-	    /* TODO: update radar. */
+	    position_t robot_pos;
+	    asserv_get_position (&robot_pos);
+	    main_obstacles_nb = radar_update (&robot_pos, main_obstacles_pos);
+	    //move_obstacles_update ();
+	    simu_send_pos_report (main_obstacles_pos, main_obstacles_nb, 0);
 	  }
 	/* Update AI modules. */
 	logistic_update ();

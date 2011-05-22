@@ -54,4 +54,5 @@ class Bag:
                 DistanceSensorSensopart (link_bag.io_hub.adc[3], scheduler, table,
                     (-20, 20), pi - pi * 10 / 180, (self.position, ), 2),
                 ]
+        self.pos_report = link_bag.io_hub.pos_report
 
