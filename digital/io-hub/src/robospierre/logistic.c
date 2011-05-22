@@ -66,9 +66,6 @@ static void
 logistic_decision (void)
 {
     uint8_t i;
-    /* If currently moving, do not take decision. */
-    if (ctx.moving_from != CLAMP_SLOT_NB)
-	return;
     /* Determine collect_direction. */
     uint8_t front_head = 0, back_head = 0,
 	    front_element = 0, back_element = 0;

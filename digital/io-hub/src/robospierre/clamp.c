@@ -452,6 +452,14 @@ FSM_TRANS (CLAMP_DROPING_WAITING_ROBOT, clamp_drop_clear,
 			 done);
 }
 
+FSM_TRANS (CLAMP_LOCKED, clamp_new_element, CLAMP_LOCKED)
+{
+    pwm_set_timed (clamp_slot_door[ctx.pos_new],
+		   BOT_PWM_DOOR_CLOSE (ctx.pos_new));
+    logistic_element_new (ctx.pos_new, ctx.new_element_type);
+    return FSM_NEXT (CLAMP_LOCKED, clamp_new_element);
+}
+
 FSM_TRANS (CLAMP_LOCKED, clamp_drop, CLAMP_DROPING_DOOR_OPENING)
 {
     /* If going forward, drop at back. */
