@@ -1,9 +1,9 @@
 #ifndef usdist_h
 #define usdist_h
 /* usdist.h */
-/* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
+/* usdist - Analog US distance sensor support. {{{
  *
- * Copyright (C) 2010 Nicolas Schodet
+ * Copyright (C) 2011 Nicolas Schodet
  *
  * APBTeam:
  *        Web: http://apbteam.org/
@@ -27,10 +27,12 @@
 
 /*
  * Manage ultrasonic distance sensors using analog to digital converter.
+ *
+ * AC_USDIST_SENSORS should be set to a list of space separated USDIST_SENSOR
+ * macro calls:
+ *
+ * USDIST_SENSOR (adc_number, synchro_io_port, synchro_io_n)
  */
-
-/** Number of sensors. */
-#define USDIST_NB 4
 
 /** Minimal calibrated distance. */
 #define USDIST_MM_MIN 100
@@ -41,11 +43,8 @@
 /** Distance considered as too far to be true. */
 #define USDIST_MM_TOO_FAR 650
 
-/** Measuring period in cycles. */
-#define USDIST_PERIOD_CYCLE (uint8_t) (8.0 / TIMER_PERIOD_MS)
-
 /** Array containing the last measures in millimeters. */
-extern uint16_t usdist_mm[USDIST_NB];
+extern uint16_t usdist_mm[AC_USDIST_NB];
 
 /** Initialise module. */
 void

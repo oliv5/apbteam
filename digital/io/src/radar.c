@@ -27,8 +27,8 @@
 
 #include "playground_2010.h"
 #include "bot.h"
-#include "usdist.h"
 
+#include "modules/devices/usdist/usdist.h"
 #include "modules/math/geometry/geometry.h"
 #include "modules/math/geometry/distance.h"
 #include "modules/utils/utils.h"

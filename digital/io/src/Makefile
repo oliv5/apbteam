@@ -6,11 +6,12 @@ PROGS = io
 io_SOURCES = main.c fsm_queue.c servo.avr.c eeprom.avr.c pwm.c \
 	     switch.avr.c chrono.c timer.avr.c servo_pos.c \
 	     twi_master.c asserv.c mimot.c \
-	     simu.host.c contact.c usdist.c radar.c \
+	     simu.host.c contact.c radar.c \
 	     path.c food.c events.host.c \
 	     fsm.host.c init.c move.c top.c hola.c loader.c fsm_AI_gen.avr.c
 # Modules needed for IO.
 MODULES = proto uart twi utils adc math/fixed math/geometry path/astar \
+	  devices/usdist \
 	  trace flash spi
 AI_MODULES = twi_master common utils fsm
 # Configuration file.

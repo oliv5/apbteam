@@ -117,6 +117,18 @@
 /** Heuristic callback. */
 #define AC_ASTAR_HEURISTIC_CALLBACK path_astar_heuristic_callback
 
+/* usdist - Analog US distance sensor. */
+/** Number of sensors. */
+#define AC_USDIST_NB 4
+/** Measuring period, in number of update call. */
+#define AC_USDIST_PERIOD 1
+/** List of space separated sensor definition, see usdist.h. */
+#define AC_USDIST_SENSORS \
+    USDIST_SENSOR (0, G, 3) \
+    USDIST_SENSOR (1, G, 1) \
+    USDIST_SENSOR (2, C, 7) \
+    USDIST_SENSOR (3, D, 4)
+
 /* io - io/ai board. */
 /** TWI address of the io board. */
 #define AC_IO_TWI_ADDRESS 2

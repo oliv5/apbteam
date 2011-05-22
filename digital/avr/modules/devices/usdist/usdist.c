@@ -24,15 +24,15 @@
  * }}} */
 #include "common.h"
 #include "usdist.h"
-#include "timer.h"
 
 #include "modules/adc/adc.h"
 #include "modules/utils/utils.h"
 #include "io.h"
 
+/* This include is to be defined by user program. */
 #include "simu.host.h"
 
-uint16_t usdist_mm[USDIST_NB];
+uint16_t usdist_mm[AC_USDIST_NB];
 
 /** Describe a sensor. */
 struct usdist_sensor_t
@@ -49,12 +49,9 @@ struct usdist_sensor_t
 
 /** Define sensors configuration. */
 #define USDIST_SENSOR(adc, p, n) \
-    { adc, &IO_PORT_ (p, n), &IO_DDR_ (p, n), IO_BV_ (p, n) }
-struct usdist_sensor_t usdist_sensors[USDIST_NB] = {
-    USDIST_SENSOR (0, G, 3),
-    USDIST_SENSOR (1, G, 1),
-    USDIST_SENSOR (2, C, 7),
-    USDIST_SENSOR (3, D, 4),
+    { adc, &IO_PORT_ (p, n), &IO_DDR_ (p, n), IO_BV_ (p, n) },
+struct usdist_sensor_t usdist_sensors[AC_USDIST_NB] = {
+    AC_USDIST_SENSORS
 };
 
 void
@@ -62,7 +59,7 @@ usdist_init (void)
 {
     uint8_t i;
     adc_init ();
-    for (i = 0; i < USDIST_NB; i++)
+    for (i = 0; i < AC_USDIST_NB; i++)
       {
 	usdist_mm[i] = 0xffff;
 	*usdist_sensors[i].sync_port &= ~usdist_sensors[i].sync_bv;
@@ -106,13 +103,13 @@ usdist_update (void)
 	    if (usdist_mm[current] >= USDIST_MM_TOO_FAR)
 		usdist_mm[current] = 0xffff;
 	    /* Next. */
-	    current = (current + 1) % USDIST_NB;
+	    current = (current + 1) % AC_USDIST_NB;
 	  }
 	init = 1;
 	/* Prepare next measure. */
 	*usdist_sensors[current].sync_port |=
 	    usdist_sensors[current].sync_bv;
-	wait = USDIST_PERIOD_CYCLE;
+	wait = AC_USDIST_PERIOD;
 	/* New mesure done. */
 	return 1;
       }

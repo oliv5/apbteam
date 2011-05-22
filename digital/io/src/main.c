@@ -28,6 +28,7 @@
 #include "modules/proto/proto.h"
 #include "modules/utils/utils.h"
 #include "modules/path/path.h"
+#include "modules/devices/usdist/usdist.h"
 #include "modules/flash/flash.h"
 #include "modules/trace/trace.h"
 #include "events.h"
@@ -51,7 +52,6 @@
 #include "fsm_queue.h"
 #include "bot.h"
 #include "servo_pos.h"
-#include "usdist.h"
 #include "radar.h"
 #include "chrono.h"	/* chrono_end_match */
 #include "pwm.h"
