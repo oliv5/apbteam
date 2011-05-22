@@ -59,8 +59,8 @@ class DistanceSensorSensopart (Observable):
         self.link = link
         self.scheduler = scheduler
         self.value = None
-        self.register (self.__update)
         self.evaluate ()
+        self.register (self.__update)
 
     def evaluate (self):
         # Compute real distance.

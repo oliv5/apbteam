@@ -44,9 +44,21 @@ class Mex:
 
         """
 
-        def __init__ (self):
+        def __init__ (self, node, instance, index):
             Observable.__init__ (self)
-            self.value = None
+            self.value = 0
+            self.__node = node
+            self.__mtype = node.reserve (instance + ':adc')
+            self.__index = index
+            self.register (self.__notified)
+
+        def __notified (self):
+            m = simu.mex.msg.Msg (self.__mtype)
+            v = int (1024 * self.value / 5)
+            v = min (v, 1023)
+            v = max (0, v)
+            m.push ('BH', self.__index, v)
+            self.__node.send (m)
 
     class PWM (Observable):
         """PWM output.
@@ -110,9 +122,9 @@ class Mex:
                 self.node.send (m)
 
     def __init__ (self, node, instance = 'io-hub0'):
-        self.adc = tuple (self.ADC () for i in range (0, ADC_NB))
+        self.adc = tuple (self.ADC (node, instance, i) for i in range (0, ADC_NB))
         self.pwm = tuple (self.PWM () for i in range (0, PWM_NB))
-        self.__adc_pwm = self.PWM.Pack (node, instance, self.pwm)
+        self.__pwm_pack = self.PWM.Pack (node, instance, self.pwm)
         self.__contact_pack = self.Contact.Pack (node, instance)
         self.contact = tuple (self.Contact (self.__contact_pack, i)
                 for i in range (CONTACT_NB))

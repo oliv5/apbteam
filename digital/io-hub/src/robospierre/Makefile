@@ -12,6 +12,7 @@ io_hub_SOURCES = main.c \
 		 chrono.c timer.avr.c simu.host.c
 # Modules needed for IO.
 MODULES = proto uart twi utils \
+	  adc devices/usdist \
 	  math/fixed math/geometry
 AI_MODULES = twi_master common utils fsm
 # Configuration file.

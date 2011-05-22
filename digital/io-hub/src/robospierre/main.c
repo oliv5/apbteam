@@ -28,6 +28,8 @@
 #include "modules/uart/uart.h"
 #include "modules/proto/proto.h"
 
+#include "modules/devices/usdist/usdist.h"
+
 #include "timer.h"
 #include "chrono.h"
 #include "simu.host.h"
@@ -66,6 +68,9 @@ static uint8_t main_stats_asserv_, main_stats_asserv_cpt_;
 /** Contact stats counters. */
 static uint8_t main_stats_contact_, main_stats_contact_cpt_;
 
+/** US sensors stats counters. */
+static uint8_t main_stats_usdist_, main_stats_usdist_cpt_;
+
 /** Main initialisation. */
 static void
 main_init (void)
@@ -89,6 +94,7 @@ main_init (void)
     /* IO modules. */
     pwm_init ();
     contact_init ();
+    usdist_init ();
     /* AI modules. */
     logistic_init ();
     /* Initialization done. */
@@ -170,6 +176,10 @@ main_loop (void)
 	/* Update IO modules. */
 	pwm_update ();
 	contact_update ();
+	if (usdist_update ())
+	  {
+	    /* TODO: update radar. */
+	  }
 	/* Update AI modules. */
 	logistic_update ();
 	/* Only manage events if slaves are synchronised. */
@@ -190,6 +200,12 @@ main_loop (void)
 	  {
 	    proto_send1d ('P', contact_all ());
 	    main_stats_contact_cpt_ = main_stats_contact_;
+	  }
+	if (main_stats_usdist_ && !--main_stats_usdist_cpt_)
+	  {
+	    proto_send4w ('U', usdist_mm[0], usdist_mm[1], usdist_mm[2],
+			  usdist_mm[3]);
+	    main_stats_usdist_cpt_ = main_stats_usdist_;
 	  }
       }
 }
@@ -268,6 +284,10 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
       case c ('P', 1):
 	/* Contact stats. */
 	main_stats_contact_ = main_stats_contact_cpt_ = args[0];
+	break;
+      case c ('U', 1):
+	/* US sensors stats. */
+	main_stats_usdist_ = main_stats_usdist_cpt_ = args[0];
 	break;
       default:
 	/* Unknown commands */

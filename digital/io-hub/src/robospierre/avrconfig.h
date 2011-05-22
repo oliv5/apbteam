@@ -100,6 +100,18 @@
 /** Use internal pull up. */
 #define AC_TWI_PULL_UP 0
 
+/* usdist - Analog US distance sensor. */
+/** Number of sensors. */
+#define AC_USDIST_NB 4
+/** Measuring period, in number of update call. */
+#define AC_USDIST_PERIOD 1
+/** List of space separated sensor definition, see usdist.h. */
+#define AC_USDIST_SENSORS \
+    USDIST_SENSOR (0, A, 0) \
+    USDIST_SENSOR (1, A, 1) \
+    USDIST_SENSOR (2, A, 2) \
+    USDIST_SENSOR (3, A, 3)
+
 /* io-hub - io/ai board. */
 /** TWI address of the io board. */
 #define AC_IO_TWI_ADDRESS 10

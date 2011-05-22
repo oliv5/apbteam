@@ -28,10 +28,20 @@
 #include "modules/utils/utils.h"
 #include "modules/host/host.h"
 #include "modules/host/mex.h"
+#include "modules/adc/adc.h"
 #include "io.h"
 
 /** AVR registers. */
-uint8_t PINA, PINE, PINF;
+uint8_t PORTA, DDRA, PINA, PINE, PINF;
+
+static void
+simu_adc_handle (void *user, mex_msg_t *msg)
+{
+    uint8_t index;
+    uint16_t value;
+    mex_msg_pop (msg, "BH", &index, &value);
+    adc_values[index] = value;
+}
 
 /** Initialise simulation. */
 void
@@ -40,6 +50,8 @@ simu_init (void)
     const char *mex_instance;
     mex_node_connect ();
     mex_instance = host_get_instance ("io-hub0", 0);
+    uint8_t mtype = mex_node_reservef ("%s:adc", mex_instance);
+    mex_node_register (mtype, simu_adc_handle, 0);
 }
 
 /** Make a simulation step. */
