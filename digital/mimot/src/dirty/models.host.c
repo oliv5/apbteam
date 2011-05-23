@@ -49,7 +49,7 @@ static const struct motor_def_t marcel_clamp_f2342_model =
     0.100 * 0.005 * 0.005,/* Load (kg.m^2). */
     /* This is a pifometric estimation. */
     /* Hardware limits. */
-    0.0, +INFINITY,
+    -INFINITY, +INFINITY,
 };
 
 /* Marcel, APBTeam 2010. */

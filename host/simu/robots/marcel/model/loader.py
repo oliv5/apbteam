@@ -91,6 +91,7 @@ class Loader (Observable):
             limit = (((self.CLAMP_WIDTH - tickness) * 0.5 + 5)
                     / self.CLAMP_PULLEY_RADIUS)
             for l in self.clamp_link:
+                l.limits.min = 0
                 l.limits.max = limit
                 l.limits.notify ()
             self.tickness = tickness
