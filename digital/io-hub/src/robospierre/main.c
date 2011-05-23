@@ -103,6 +103,7 @@ main_init (void)
     contact_init ();
     usdist_init ();
     /* AI modules. */
+    clamp_init ();
     logistic_init ();
     /* Initialization done. */
     proto_send0 ('z');

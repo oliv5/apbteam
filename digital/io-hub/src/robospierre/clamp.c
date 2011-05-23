@@ -123,6 +123,10 @@ struct clamp_t
     uint8_t new_element_type;
     /** Drop direction, drop on the other side. */
     uint8_t drop_direction;
+    /** True if clamp is open. */
+    uint8_t open;
+    /** True if clamp position is controled. */
+    uint8_t controled;
 };
 
 /** Global context. */
@@ -169,7 +173,16 @@ static const uint8_t clamp_slot_door[] = {
 };
 
 static void
+clamp_openclose (uint8_t open);
+
+static void
 clamp_route (void);
+
+void
+clamp_init (void)
+{
+    ctx.open = 1;
+}
 
 void
 clamp_move (uint8_t pos)
@@ -225,12 +238,7 @@ void
 clamp_door (uint8_t pos, uint8_t open)
 {
     if (pos == 0xff)
-      {
-	if (open)
-	    pwm_set_timed (BOT_PWM_CLAMP, BOT_PWM_CLAMP_OPEN);
-	else
-	    pwm_set_timed (BOT_PWM_CLAMP, BOT_PWM_CLAMP_CLOSE);
-      }
+	clamp_openclose (open);
     else if (clamp_slot_door[pos] != 0xff)
       {
 	if (open)
@@ -273,6 +281,23 @@ clamp_handle_event (void)
 	clamp_route ();
       }
     return 0;
+}
+
+/** Open or close clamp and adjust rotation. */
+static void
+clamp_openclose (uint8_t open)
+{
+    if (open)
+	pwm_set_timed (BOT_PWM_CLAMP, BOT_PWM_CLAMP_OPEN);
+    else
+	pwm_set_timed (BOT_PWM_CLAMP, BOT_PWM_CLAMP_CLOSE);
+    if (ctx.controled && CLAMP_IS_SLOT_IN_FRONT_BAY (ctx.pos_current))
+      {
+	int16_t offset = open ? 0 : BOT_CLAMP_CLOSED_ROTATION_OFFSET;
+	mimot_move_motor1_absolute (clamp_pos[ctx.pos_current][1] + offset,
+				    BOT_CLAMP_ROTATION_OFFSET_SPEED);
+      }
+    ctx.open = open;
 }
 
 /** Find next position and start motors. */
@@ -336,8 +361,11 @@ clamp_route (void)
     /* Run motors. */
     mimot_move_motor0_absolute (clamp_pos[pos_new][0],
 				BOT_CLAMP_ELEVATION_SPEED);
-    mimot_move_motor1_absolute (clamp_pos[pos_new][1],
+    int16_t offset = !ctx.open && CLAMP_IS_SLOT_IN_FRONT_BAY (pos_new)
+	? BOT_CLAMP_CLOSED_ROTATION_OFFSET : 0;
+    mimot_move_motor1_absolute (clamp_pos[pos_new][1] + offset,
 				BOT_CLAMP_ROTATION_SPEED);
+    ctx.controled = 1;
     /* Remember new position. */
     ctx.pos_current = pos_new;
 }
@@ -510,7 +538,7 @@ FSM_TRANS (CLAMP_MOVE_IDLE, clamp_move,
 	  }
 	else
 	  {
-	    pwm_set_timed (BOT_PWM_CLAMP, BOT_PWM_CLAMP_CLOSE);
+	    clamp_openclose (0);
 	    return FSM_NEXT (CLAMP_MOVE_IDLE, clamp_move, move_element_here);
 	  }
       }
@@ -540,7 +568,7 @@ FSM_TRANS (CLAMP_MOVE_SRC_ROUTING, clamp_elevation_rotation_success,
 {
     if (ctx.pos_current == ctx.pos_request)
       {
-	pwm_set_timed (BOT_PWM_CLAMP, BOT_PWM_CLAMP_CLOSE);
+	clamp_openclose (0);
 	return FSM_NEXT (CLAMP_MOVE_SRC_ROUTING,
 			 clamp_elevation_rotation_success, done);
       }
@@ -594,7 +622,7 @@ FSM_TRANS (CLAMP_MOVE_DST_ROUTING, clamp_elevation_rotation_success,
 	  }
 	else
 	  {
-	    pwm_set_timed (BOT_PWM_CLAMP, BOT_PWM_CLAMP_OPEN);
+	    clamp_openclose (1);
 	    return FSM_NEXT (CLAMP_MOVE_DST_ROUTING,
 			     clamp_elevation_rotation_success,
 			     done_open_clamp);
@@ -611,7 +639,7 @@ FSM_TRANS (CLAMP_MOVE_DST_ROUTING, clamp_elevation_rotation_success,
 FSM_TRANS_TIMEOUT (CLAMP_MOVE_DST_DOOR_CLOSING, BOT_PWM_DOOR_CLOSE_TIME,
 		   CLAMP_MOVE_DST_CLAMP_OPENING)
 {
-    pwm_set_timed (BOT_PWM_CLAMP, BOT_PWM_CLAMP_OPEN);
+    clamp_openclose (1);
     return FSM_NEXT_TIMEOUT (CLAMP_MOVE_DST_DOOR_CLOSING);
 }
 

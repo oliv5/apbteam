@@ -60,6 +60,10 @@ enum {
 #define CLAMP_IS_SLOT_IN_BACK_BAY(slot) \
     ((slot) >= CLAMP_SLOT_BACK_BOTTOM && (slot) <= CLAMP_SLOT_BACK_TOP)
 
+/** Initialise clamp module. */
+void
+clamp_init (void);
+
 /** Move clamp to given position. */
 void
 clamp_move (uint8_t pos);
