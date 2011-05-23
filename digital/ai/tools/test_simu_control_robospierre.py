@@ -106,10 +106,7 @@ class TestSimuControl (TestSimu):
             self.asserv.goto_angle (a)
 
     def clamp_command (self):
-        if self.clamp_var.get ():
-            self.io.pwm_set_timed (2, -0x3ff, 255, 0)
-        else:
-            self.io.pwm_set_timed (2, 0x3ff, 255, 0)
+        self.io.clamp_openclose (not self.clamp_var.get ())
 
     def elevation_up_command (self):
         self.mimot.speed_pos ('a0', self.ELEVATION_STROKE / 2)
@@ -131,12 +128,8 @@ class TestSimuControl (TestSimu):
                 self.clamp_to_scale.get ())
 
     def doors_command (self):
-        if self.doors_var.get ():
-            pwm = -0x3ff
-        else:
-            pwm = 0x3ff
-        for i in (0, 1, 3, 4):
-            self.io.pwm_set_timed (i, pwm, 255, 0)
+        for i in (0, 2, 3, 5):
+            self.io.door (i, not self.doors_var.get ())
 
     def drop_command (self):
         if self.drop_var.get ():

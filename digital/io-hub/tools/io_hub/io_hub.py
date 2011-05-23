@@ -60,6 +60,12 @@ class Proto:
         else:
             raise ValueError
 
+    def door (self, pos, open_):
+        self.proto.send ('d', 'BB', pos, (0, 1)[open_])
+
+    def clamp_openclose (self, open_):
+        self.proto.send ('d', 'BB', 0xff, (0, 1)[open_])
+
     def close (self):
         self.reset ()
         self.proto.wait (lambda: True)
