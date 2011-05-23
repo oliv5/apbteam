@@ -5,7 +5,7 @@ PROGS = io_hub
 # Sources to compile.
 io_hub_SOURCES = main.c \
 		 clamp.c logistic.c \
-		 radar_defs.c radar.c path.c \
+		 radar_defs.c radar.c path.c move.c \
 		 init.c fsm.host.c fsm_AI_gen.avr.c fsm_queue.c \
 		 pwm.avr.c pwm.host.c \
 		 contact.avr.c contact.host.c \

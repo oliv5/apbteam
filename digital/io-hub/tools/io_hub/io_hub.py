@@ -44,6 +44,9 @@ class Proto:
     def pwm_set_timed (self, index, value, time, rest_value):
         self.proto.send ('w', 'BhHh', index, value, time, rest_value)
 
+    def goto (self, x, y, backward):
+        self.proto.send ('m', 'hhB', x, y, backward)
+
     def clamp_move (self, pos):
         self.proto.send ('c', 'B', pos)
 

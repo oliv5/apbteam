@@ -52,6 +52,7 @@
 #include "clamp.h"
 #include "logistic.h"
 #include "path.h"
+#include "move.h"
 
 #include "bot.h"
 
@@ -160,7 +161,9 @@ main_event_to_fsm (void)
 	/* Post the event */
 	FSM_HANDLE_VAR_E (AI, save_event);
       }
-
+    /* Check obstables. */
+    if (move_check_obstacles ())
+	return;
 }
 
 /** Main (and infinite) loop. */
@@ -191,7 +194,7 @@ main_loop (void)
 	    position_t robot_pos;
 	    asserv_get_position (&robot_pos);
 	    main_obstacles_nb = radar_update (&robot_pos, main_obstacles_pos);
-	    //move_obstacles_update ();
+	    move_obstacles_update ();
 	    simu_send_pos_report (main_obstacles_pos, main_obstacles_nb, 0);
 	  }
 	/* Update AI modules. */
@@ -251,6 +254,16 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	pwm_set_timed (args[0], v8_to_v16 (args[1], args[2]),
 		       v8_to_v16 (args[3], args[4]),
 		       v8_to_v16 (args[5], args[6]));
+	break;
+      case c ('m', 5):
+	/* Go to position.
+	 * - 2w: x, y.
+	 * - 1b: backward. */
+	  {
+	    vect_t position = { v8_to_v16 (args[0], args[1]),
+		v8_to_v16 (args[2], args[3]) };
+	    move_start_noangle (position, args[4], 0);
+	  }
 	break;
       case c ('c', 1):
 	/* Move clamp.

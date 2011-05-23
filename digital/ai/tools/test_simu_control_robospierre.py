@@ -91,12 +91,19 @@ class TestSimuControl (TestSimu):
         self.backward_button = Checkbutton (self.control_frame,
                 text = 'Backward', variable = self.backward_var)
         self.backward_button.pack ()
+        self.goto_var = IntVar ()
+        self.goto_button = Checkbutton (self.control_frame,
+                text = 'Goto FSM', variable = self.goto_var)
+        self.goto_button.pack ()
         self.table_view.bind ('<1>', self.move)
         self.table_view.bind ('<3>', self.orient)
 
     def move (self, ev):
         pos = self.table_view.screen_coord ((ev.x, ev.y))
-        self.asserv.goto (pos[0], pos[1], self.backward_var.get ())
+        if self.goto_var.get ():
+            self.io.goto (pos[0], pos[1], self.backward_var.get ())
+        else:
+            self.asserv.goto (pos[0], pos[1], self.backward_var.get ())
 
     def orient (self, ev):
         x, y = self.table_view.screen_coord ((ev.x, ev.y))

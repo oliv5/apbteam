@@ -34,6 +34,10 @@
 # define BOT_SCALE 0.0415178942124
 #endif
 
+/** Distance from the robot axis to the front. */
+#define BOT_SIZE_FRONT 150
+/** Distance from the robot axis to the back. */
+#define BOT_SIZE_BACK 150
 /** Distance from the robot axis to the side. */
 #define BOT_SIZE_SIDE 190
 
