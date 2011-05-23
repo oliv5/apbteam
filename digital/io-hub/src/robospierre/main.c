@@ -51,6 +51,7 @@
 
 #include "clamp.h"
 #include "logistic.h"
+#include "path.h"
 
 #include "bot.h"
 
@@ -105,6 +106,7 @@ main_init (void)
     /* AI modules. */
     clamp_init ();
     logistic_init ();
+    path_init ();
     /* Initialization done. */
     proto_send0 ('z');
 }
@@ -194,6 +196,7 @@ main_loop (void)
 	  }
 	/* Update AI modules. */
 	logistic_update ();
+	path_decay ();
 	/* Only manage events if slaves are synchronised. */
 	if (twi_master_sync ())
 	    main_event_to_fsm ();
