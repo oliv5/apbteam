@@ -73,9 +73,6 @@ FSM_STATES (
 	    INIT_FINISHED)
 
 FSM_EVENTS (
-	    /* XXX: temporarily here. */
-	    robot_move_success,
-	    robot_move_failure,
 	    /* Jack is inserted. */
 	    jack_inserted,
 	    /* Jack is removed. */

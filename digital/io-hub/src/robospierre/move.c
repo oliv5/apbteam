@@ -137,6 +137,10 @@ FSM_STATES (
 	    MOVE_WAIT_FOR_CLEAR_PATH)
 
 FSM_EVENTS (
+	    /* Report from asserv after a successful move command. */
+	    robot_move_success,
+	    /* Report from asserv after a failed move command. */
+	    robot_move_failure,
 	    /* Initialize the FSM and start the movement directly. */
 	    move_start,
 	    /* Movement success. */
