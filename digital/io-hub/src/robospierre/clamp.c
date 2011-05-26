@@ -271,10 +271,10 @@ clamp_handle_event (void)
     /* Handle special hardware offset. */
     uint16_t rotation_position = mimot_get_motor1_position ();
     if ((ctx.pos_current == CLAMP_BAY_FRONT_LEAVING
-	 && rotation_position > (BOT_CLAMP_BAY_SIDE_ROTATION_STEP -
+	 && rotation_position > (BOT_CLAMP_BAY_SIDE_ROTATION_STEP +
 				 BOT_CLAMP_BAY_FRONT_ROTATION_STEP) / 2)
 	|| (ctx.pos_current == CLAMP_BAY_BACK_LEAVING
-	    && rotation_position < (BOT_CLAMP_BAY_BACK_ROTATION_STEP -
+	    && rotation_position < (BOT_CLAMP_BAY_BACK_ROTATION_STEP +
 				    BOT_CLAMP_BAY_SIDE_ROTATION_STEP) / 2))
       {
 	/* Go directly to next point. */
