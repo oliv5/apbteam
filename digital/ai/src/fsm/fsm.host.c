@@ -1356,7 +1356,9 @@ fsm_build_gen_avr_c (fsm_build_t *fsm, uint embedded_strings)
     fprintf (f, "\t\t\thandled = 1;\n");
     if (fsm->timeouts != NULL)
       {
-	fprintf (f, "\t\t\tfsm_%s_timeout_counters[i] = fsm_%s_timeout_values[e];\n",
+	fprintf (f, "\t\t\tfsm_%s_timeout_counters[i] = "
+		 "fsm_%s_timeout_values[fsm_%s_active_states[i]];\n",
+		 fsm->name,
 		 fsm->name,
 		 fsm->name);
       }
