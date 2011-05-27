@@ -17,7 +17,7 @@ target_robospierre = dict (
         a1a = 0.5, a1sm = 0x30, a1ss = 0x08,
         a1be = 256, a1bs = 0x18, a1bc = 5,
         E = 0x3ff, D = 0x1ff,
-        w = 0x01,
+        w = 0x03,
         )
 target = {
         'marcel': target_marcel,

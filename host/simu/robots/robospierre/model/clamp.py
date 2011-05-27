@@ -45,7 +45,7 @@ class Clamp (Observable):
     ELEVATION_MOTOR_STROKE = 120.0 * 5.0 / 6.0
 
     ROTATION_STROKE = pi
-    ROTATION_MOTOR_STROKE = pi * 115.0 / 12.0
+    ROTATION_MOTOR_STROKE = 2 * pi * 36.088 / 16
 
     CLAMPING_STROKE = 10
     CLAMPING_MOTOR_STROKE = pi

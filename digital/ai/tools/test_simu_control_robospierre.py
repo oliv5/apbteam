@@ -30,7 +30,7 @@ class TestSimuControl (TestSimu):
 
     ELEVATION_STROKE = 0x3b0b
 
-    ROTATION_STROKE = 0x11c6
+    ROTATION_STROKE = 0x233e
 
     def __init__ (self, robot_class):
         TestSimu.__init__ (self, robot_class)

@@ -52,6 +52,26 @@ static const struct motor_def_t marcel_clamp_f2342_model =
     -INFINITY, +INFINITY,
 };
 
+/* Robospierre rotation motor, AMAX32GHP with 1:16 gearbox model. */
+static const struct motor_def_t robospierre_rotation_amax32ghp_model =
+{
+    /* Motor characteristics. */
+    269 * (2*M_PI) / 60,/* Speed constant ((rad/s)/V). */
+    25.44 / 1000,	/* Torque constant (N.m/A). */
+    0,			/* Bearing friction (N.m/(rad/s)). */
+    3.99,		/* Terminal resistance (Ohm). */
+    0.24 / 1000,	/* Terminal inductance (H). */
+    24.0,		/* Maximum voltage (V). */
+    /* Gearbox characteristics. */
+    16,			/* Gearbox ratio. */
+    0.75,		/* Gearbox efficiency. */
+    /* Load characteristics. */
+    0.200 * 0.010 * 0.010, /* Load (kg.m^2). */
+    /* This is a pifometric estimation. */
+    /* Hardware limits. */
+    -INFINITY, +INFINITY,
+};
+
 /* Marcel, APBTeam 2010. */
 static const struct robot_t marcel_robot =
 {
@@ -63,6 +83,17 @@ static const struct robot_t marcel_robot =
     simu_sensor_update_marcel,
 };
 
+/* Robospierre, APBTeam 2011. */
+static const struct robot_t robospierre_robot =
+{
+    /** Auxiliary motors, NULL if not present. */
+    { &marcel_clamp_f2342_model, &robospierre_rotation_amax32ghp_model },
+    /** Number of steps for each auxiliary motor encoder. */
+    { 256, 250 },
+    /** Sensor update function. */
+    NULL,
+};
+
 /* Table of models. */
 static const struct
 {
@@ -70,6 +101,7 @@ static const struct
     const struct robot_t *robot;
 } models[] = {
       { "marcel", &marcel_robot },
+      { "robospierre", &robospierre_robot },
       { 0, 0 }
 };
 
