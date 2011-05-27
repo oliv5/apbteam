@@ -10,7 +10,7 @@ target_marcel = dict (
         w = 0x03,
         )
 target_robospierre = dict (
-        a0kp = 4,
+        a0kp = 8, a0kd = 1,
         a0a = 8, a0sm = 0x60, a0ss = 0x10,
         a0be = 256, a0bs = 0x18, a0bc = 5,
         a1kp = 4,
