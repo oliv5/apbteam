@@ -291,9 +291,11 @@ clamp_openclose (uint8_t open)
 	pwm_set_timed (BOT_PWM_CLAMP, BOT_PWM_CLAMP_OPEN);
     else
 	pwm_set_timed (BOT_PWM_CLAMP, BOT_PWM_CLAMP_CLOSE);
-    if (ctx.controled && CLAMP_IS_SLOT_IN_FRONT_BAY (ctx.pos_current))
+    if (ctx.controled && (CLAMP_IS_SLOT_IN_FRONT_BAY (ctx.pos_current)
+			  || CLAMP_IS_SLOT_IN_BACK_BAY (ctx.pos_current)))
       {
-	int16_t offset = open ? 0 : BOT_CLAMP_CLOSED_ROTATION_OFFSET;
+	int16_t offset = open ? 0
+	    : BOT_CLAMP_CLOSED_ROTATION_OFFSET (ctx.pos_current);
 	mimot_move_motor1_absolute (clamp_pos[ctx.pos_current][1] + offset,
 				    BOT_CLAMP_ROTATION_OFFSET_SPEED);
       }
@@ -361,8 +363,8 @@ clamp_route (void)
     /* Run motors. */
     mimot_move_motor0_absolute (clamp_pos[pos_new][0],
 				BOT_CLAMP_ELEVATION_SPEED);
-    int16_t offset = !ctx.open && CLAMP_IS_SLOT_IN_FRONT_BAY (pos_new)
-	? BOT_CLAMP_CLOSED_ROTATION_OFFSET : 0;
+    int16_t offset = ctx.open ? 0
+	: BOT_CLAMP_CLOSED_ROTATION_OFFSET (pos_new);
     mimot_move_motor1_absolute (clamp_pos[pos_new][1] + offset,
 				BOT_CLAMP_ROTATION_SPEED);
     ctx.controled = 1;
