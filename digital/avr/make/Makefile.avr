@@ -11,6 +11,7 @@ AVR_LDLIBS := $(LDLIBS) $(AVR_LIBS)
 AVR_CC := avr-gcc
 AVR_OBJCOPY := avr-objcopy
 AVR_OBJDUMP := avr-objdump
+AVR_SIZE := avr-size --mcu=$(AVR_MCU) -C
 AVR_COMPILE.c = $(AVR_CC) $(AVR_CFLAGS) $(AVR_CPPFLAGS) -c
 ifdef L
 AVR_COMPILE.c += -Wa,-adhlns=$(@:%.avr.o=%.c.avr.lst)
@@ -20,7 +21,7 @@ AVR_LINK.o := $(AVR_CC) $(AVR_CFLAGS) $(AVR_LDFLAGS)
 
 # Main rules.
 
-avr: elf lst hex
+avr: elf lst hex size
 
 simu: simuelf
 
@@ -90,6 +91,7 @@ text: hex
 hex: $(AVR_PROGS:%=%.hex)
 bin: $(AVR_PROGS:%=%.bin)
 srec: $(AVR_PROGS:%=%.srec)
+size: $(AVR_PROGS:%=%.size)
 
 %.hex: %.avr.elf
 	$(AVR_OBJCOPY) -j .text -j .data -O ihex $< $@
@@ -99,6 +101,9 @@ srec: $(AVR_PROGS:%=%.srec)
 
 %.bin: %.avr.elf
 	$(AVR_OBJCOPY) -j .text -j .data -O binary $< $@
+
+%.size: %.avr.elf
+	$(AVR_SIZE) $< | grep Full
 
 # Rules for building the .eeprom rom images.
 
