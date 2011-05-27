@@ -68,6 +68,14 @@ mimot_get_motor1_position (void);
 void
 mimot_reset (void);
 
+/** Set motor0 position in steps. */
+void
+mimot_set_motor0_position (uint16_t position);
+
+/** Set motor1 position in steps. */
+void
+mimot_set_motor1_position (uint16_t position);
+
 /** Move motor0 to absolute position in steps. */
 void
 mimot_move_motor0_absolute (uint16_t position, uint8_t speed);
@@ -91,5 +99,13 @@ mimot_motor0_clamp (int8_t speed, int16_t pwm);
 /** Clamp motor1. */
 void
 mimot_motor1_clamp (int8_t speed, int16_t pwm);
+
+/** Free motor0. */
+void
+mimot_motor0_free (void);
+
+/** Free motor1. */
+void
+mimot_motor1_free (void);
 
 #endif /* mimot_h */

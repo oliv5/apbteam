@@ -150,6 +150,18 @@ twi_proto_callback (u8 *buf, u8 size)
 	else
 	    buf[0] = 0;
 	break;
+      case c ('w', 1):
+	/* Free motor.
+	 * - b: aux index. */
+	if (buf[2] < AC_ASSERV_AUX_NB)
+	  {
+	    pos_reset (&pos_aux[buf[2]]);
+	    state_aux[buf[2]].mode = MODE_PWM;
+	    pwm_set (&pwm_aux[buf[2]], 0);
+	  }
+	else
+	    buf[0] = 0;
+	break;
       case c ('p', x):
 	/* Set parameters. */
 	if (twi_proto_params (&buf[2], size - 2) != 0)
@@ -173,6 +185,15 @@ twi_proto_params (u8 *buf, u8 size)
 	size--;
 	switch (*buf++)
 	  {
+	  case 'Y':
+	    /* Set current aux position.
+	     * - b: aux index.
+	     * - w: position. */
+	    if (buf[0] >= AC_ASSERV_AUX_NB || size < 3)
+		return 1;
+	    aux[buf[0]].pos = v8_to_v16 (buf[1], buf[2]);
+	    eat = 3;
+	    break;
 	  default:
 	    return 1;
 	  }

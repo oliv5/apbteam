@@ -69,6 +69,8 @@ class Clamp (Observable):
         self.elevation_motor = elevation_motor
         self.rotation_motor = rotation_motor
         self.clamping_motor = clamping_motor
+        self.rotation_motor.limits.min = 0
+        self.rotation_motor.limits.notify ()
         self.door_motors = (door_motors[0], None, door_motors[1],
                 door_motors[2], None, door_motors[3], None)
         self.slots = (

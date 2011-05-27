@@ -35,6 +35,8 @@
 #include "fsm.h"
 #include "fsm_queue.h"
 
+#include "modules/proto/proto.h"
+
 #include "logistic.h"
 
 /*
@@ -50,8 +52,18 @@
 FSM_INIT
 
 FSM_STATES (
-	    /* Initial state, to be complete with full initialisation. */
+	    /* Initial state. */
 	    CLAMP_START,
+	    /* Initialisation sequence: opening everything. */
+	    CLAMP_INIT_OPENING,
+	    /* Initialisation sequence: going up until a middle pawn sensor
+	     * see the clamp. */
+	    CLAMP_INIT_UPING_UNTIL_SEEN,
+	    /* Initialisation sequence: going to the middle level. */
+	    CLAMP_INIT_GOING_MIDDLE,
+	    /* Initialisation sequence: finding front right edge. */
+	    CLAMP_INIT_FINDING_EDGE,
+
 	    /* Returning to idle position. */
 	    CLAMP_GOING_IDLE,
 	    /* Waiting external events, clamp at middle level. */
@@ -85,6 +97,8 @@ FSM_STATES (
 	    CLAMP_MOVE_DST_CLAMP_OPENING)
 
 FSM_EVENTS (
+	    /* During initialisation sequence, clamp seen by a sensor. */
+	    clamp_init_seen,
 	    /* New element inside bottom slot. */
 	    clamp_new_element,
 	    /* Order to drop elements. */
@@ -100,8 +114,12 @@ FSM_EVENTS (
 	    clamp_move_success,
 	    /* Elevation and elevation motor success. */
 	    clamp_elevation_rotation_success,
+	    /* Elevation motor success. */
+	    clamp_elevation_success,
 	    /* Elevation motor failure. */
 	    clamp_elevation_failure,
+	    /* Rotation motor success. */
+	    clamp_rotation_success,
 	    /* Rotation motor failure. */
 	    clamp_rotation_failure)
 
@@ -127,6 +145,10 @@ struct clamp_t
     uint8_t open;
     /** True if clamp position is controled. */
     uint8_t controled;
+    /** Position of clamp when seen by sensor. */
+    uint16_t init_seen_step;
+    /** Position to initialise at seen position. */
+    uint16_t init_seen_init_step;
 };
 
 /** Global context. */
@@ -280,6 +302,24 @@ clamp_handle_event (void)
 	/* Go directly to next point. */
 	clamp_route ();
       }
+    /* Handle initialisation. */
+    if (FSM_CAN_HANDLE (AI, clamp_init_seen))
+      {
+	if (!IO_GET (CONTACT_FRONT_MIDDLE))
+	  {
+	    ctx.init_seen_step = mimot_get_motor0_position ();
+	    ctx.init_seen_init_step = BOT_CLAMP_INIT_FRONT_SEEN_ELEVATION_STEP;
+	    FSM_HANDLE (AI, clamp_init_seen);
+	    return 1;
+	  }
+	if (!IO_GET (CONTACT_BACK_MIDDLE))
+	  {
+	    ctx.init_seen_step = mimot_get_motor0_position ();
+	    ctx.init_seen_init_step = BOT_CLAMP_INIT_BACK_SEEN_ELEVATION_STEP;
+	    FSM_HANDLE (AI, clamp_init_seen);
+	    return 1;
+	  }
+      }
     return 0;
 }
 
@@ -374,10 +414,56 @@ clamp_route (void)
 
 /* CLAMP FSM */
 
-FSM_TRANS (CLAMP_START, init_actuators, CLAMP_GOING_IDLE)
+FSM_TRANS (CLAMP_START, init_actuators, CLAMP_INIT_OPENING)
+{
+    pwm_set_timed (BOT_PWM_DOOR_FRONT_BOTTOM, BOT_PWM_DOOR_INIT);
+    pwm_set_timed (BOT_PWM_DOOR_FRONT_TOP, BOT_PWM_DOOR_INIT);
+    pwm_set_timed (BOT_PWM_DOOR_BACK_BOTTOM, BOT_PWM_DOOR_INIT);
+    pwm_set_timed (BOT_PWM_DOOR_BACK_TOP, BOT_PWM_DOOR_INIT);
+    pwm_set_timed (BOT_PWM_CLAMP, BOT_PWM_CLAMP_INIT);
+    return FSM_NEXT (CLAMP_START, init_actuators);
+}
+
+FSM_TRANS_TIMEOUT (CLAMP_INIT_OPENING, BOT_PWM_CLAMP_DOOR_INIT,
+		   CLAMP_INIT_UPING_UNTIL_SEEN)
+{
+    mimot_move_motor0_absolute (mimot_get_motor0_position () +
+				BOT_CLAMP_INIT_ELEVATION_STEP,
+				BOT_CLAMP_INIT_ELEVATION_SPEED);
+    return FSM_NEXT_TIMEOUT (CLAMP_INIT_OPENING);
+}
+
+FSM_TRANS (CLAMP_INIT_UPING_UNTIL_SEEN, clamp_elevation_success, CLAMP_START)
+{
+    /* Dead end. */
+    mimot_motor0_free ();
+    return FSM_NEXT (CLAMP_INIT_UPING_UNTIL_SEEN, clamp_elevation_success);
+}
+
+FSM_TRANS (CLAMP_INIT_UPING_UNTIL_SEEN, clamp_init_seen,
+	   CLAMP_INIT_GOING_MIDDLE)
+{
+    mimot_motor0_free ();
+    mimot_set_motor0_position (ctx.init_seen_init_step
+			       + mimot_get_motor0_position ()
+			       - ctx.init_seen_step);
+    proto_send1w ('C', ctx.init_seen_step);
+    mimot_move_motor0_absolute (BOT_CLAMP_BAY_BACK_LEAVE_ELEVATION_STEP,
+				BOT_CLAMP_ELEVATION_SPEED);
+    return FSM_NEXT (CLAMP_INIT_UPING_UNTIL_SEEN, clamp_init_seen);
+}
+
+FSM_TRANS (CLAMP_INIT_GOING_MIDDLE, clamp_elevation_success,
+	   CLAMP_INIT_FINDING_EDGE)
+{
+    mimot_motor1_zero_position (BOT_CLAMP_INIT_ROTATION_SPEED);
+    return FSM_NEXT (CLAMP_INIT_GOING_MIDDLE, clamp_elevation_success);
+}
+
+FSM_TRANS (CLAMP_INIT_FINDING_EDGE, clamp_rotation_success, CLAMP_GOING_IDLE)
 {
     clamp_move (CLAMP_SLOT_FRONT_MIDDLE);
-    return FSM_NEXT (CLAMP_START, init_actuators);
+    return FSM_NEXT (CLAMP_INIT_FINDING_EDGE, clamp_rotation_success);
 }
 
 FSM_TRANS (CLAMP_GOING_IDLE, clamp_move_success, CLAMP_IDLE)
