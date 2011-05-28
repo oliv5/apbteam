@@ -662,11 +662,24 @@ element_down (uint8_t element_id, uint8_t element_type)
 }
 
 uint8_t
-element_give_position (position_t pos)
+element_nearest_element_id (position_t robot_pos)
 {
-    uint8_t e = 0xff;
-
-    return e;
+    uint8_t i;
+    uint8_t id = 0;
+    int32_t distance = 4242;
+    element_t e;
+    for (i = 0; i < UTILS_COUNT (element_table); i++)
+    {
+	e = element_get (i);
+        vect_t v = e.pos;
+	int32_t dr = distance_point_point (&v, &robot_pos.v);
+	if (dr < distance)
+	  {
+	    id = i;
+	    distance = dr;
+	  }
+    }
+    return id;
 }
 
 uint8_t

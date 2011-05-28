@@ -157,4 +157,7 @@ element_our_side (uint8_t element_id);
 inline void
 element_intersec_symetric (uint8_t element_id, uint8_t element_type);
 
+uint8_t
+element_nearest_element_id (position_t robot_pos);
+
 #endif /* element_h */
