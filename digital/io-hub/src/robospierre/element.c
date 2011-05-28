@@ -475,7 +475,7 @@ element_intersec_symetric (uint8_t element_id, uint8_t element_type)
 	uint8_t i;
 	uint8_t type = 0;
 
-	if (element_id % 4 == 0 || element_id % 4 == 1)
+	if (element_id % 4 <= 1)
 	    col = 0;
 	else
 	    col = 1;
@@ -487,9 +487,9 @@ element_intersec_symetric (uint8_t element_id, uint8_t element_type)
 	/* Count. */
 	for (i = 0; i < 5; i++)
 	  {
-	    if (element_columns[col][i] == ELEMENT_PAWN ||element_type == ELEMENT_PAWN)
+	    if (element_columns[col][i] == ELEMENT_PAWN || element_type == ELEMENT_PAWN)
 		cpt_pawn++;
-	    if (element_columns[col][i] == ELEMENT_NONE ||element_type == ELEMENT_NONE)
+	    if (element_columns[col][i] == ELEMENT_NONE || element_type == ELEMENT_NONE)
 		cpt_none++;
 	    if (element_columns[col][i] == (ELEMENT_NONE | ELEMENT_PAWN))
 	      {
@@ -501,33 +501,40 @@ element_intersec_symetric (uint8_t element_id, uint8_t element_type)
 	/* With which element are we going to fill the rest ? */
 	if (cpt_pawn == 2)
 	    type = ELEMENT_NONE;
-	if (cpt_none == 3)
+	else if (cpt_none == 3)
 	    type = ELEMENT_PAWN;
+	else
+	    return;
 
-	if (type)
-	    for (i = 0; i < 5; i++)
-		if (element_columns[col][i] == (ELEMENT_NONE | ELEMENT_PAWN))
-		    element_columns[col][i] = type;
+	for (i = 0; i < 5; i++)
+	    if (element_columns[col][i] == (ELEMENT_NONE | ELEMENT_PAWN))
+		element_columns[col][i] = type;
 
 	/* Complete if possible. */
-	if (type != 0)
-	    for (i = ELEMENT_INTERSEC_START; i < ELEMENT_INTERSEC_END; i++)
-		if (i % 4 == element_id % 4)
+	for (i = ELEMENT_INTERSEC_START; i < ELEMENT_INTERSEC_END; i++)
+	  {
+	    uint8_t col_i;
+	    if (i % 4 <= 1)
+		col_i = 0;
+	    else
+		col_i = 1;
+	    if (col_i == col)
+	      {
+		element_t el = element_get (i);
+		element_t sym = element_get (element_opposed (i));
+		if (el.type == (ELEMENT_NONE | ELEMENT_PAWN))
 		  {
-		    element_t el = element_get (i);
-		    element_t sym = element_get (element_opposed (i));
-		    if (el.type == (ELEMENT_NONE | ELEMENT_PAWN))
+		    el.type = type;
+		    element_set (i, el);
+		    /* Set opposed. */
+		    if (sym.type == (ELEMENT_NONE | ELEMENT_PAWN))
 		      {
-			el.type = type;
-			element_set (i, el);
-			/* Set opposed. */
-			if (sym.type == (ELEMENT_NONE | ELEMENT_PAWN))
-			  {
-			    sym.type = type;
-			    element_set (element_opposed (i), sym);
-			  }
+			sym.type = type;
+			element_set (element_opposed (i), sym);
 		      }
 		  }
+	      }
+	  }
       }
 }
 
@@ -669,16 +676,16 @@ element_nearest_element_id (position_t robot_pos)
     int32_t distance = 4242;
     element_t e;
     for (i = 0; i < UTILS_COUNT (element_table); i++)
-    {
+      {
 	e = element_get (i);
-        vect_t v = e.pos;
+	vect_t v = e.pos;
 	int32_t dr = distance_point_point (&v, &robot_pos.v);
 	if (dr < distance)
 	  {
 	    id = i;
 	    distance = dr;
 	  }
-    }
+      }
     return id;
 }
 
@@ -715,7 +722,7 @@ element_get_pos (uint8_t element_id)
       {
 	/* Set angle to 270° clockwise. */
 	pos.a = 0xc000;
-	 pos.v.x += 400;
+	pos.v.x += 400;
       }
     return pos;
 }
