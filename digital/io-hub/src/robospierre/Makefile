@@ -2,20 +2,23 @@
 BASE = ../../../avr
 # Name of the program to build.
 PROGS = io_hub
+HOST_PROGS = test_element
 # Sources to compile.
 io_hub_SOURCES = main.c \
-		 clamp.c logistic.c \
+		 clamp.c logistic.c element.c \
 		 radar_defs.c radar.c path.c move.c \
 		 init.c fsm.host.c fsm_AI_gen.avr.c fsm_queue.c \
 		 pwm.avr.c pwm.host.c \
 		 contact.avr.c contact.host.c \
 		 twi_master.c asserv.c mimot.c \
 		 chrono.c timer.avr.c simu.host.c
+test_element_SOURCES = test_element.c logistic.c element.c
 # Modules needed for IO.
 MODULES = proto uart twi utils \
 	  adc devices/usdist \
 	  math/fixed math/geometry
 AI_MODULES = twi_master common utils fsm move
+test_element_MODULES = host math/fixed math/geometry
 # Configuration file.
 CONFIGFILE = avrconfig.h
 AVR_MCU = at90usb1287
