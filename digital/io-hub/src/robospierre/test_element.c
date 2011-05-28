@@ -259,6 +259,7 @@ int main ()
 	printf ("i: pick up an element, ");
 	printf ("n: indicate there is no element, ");
 	printf ("m: id of nearest element, ");
+	printf ("g: get position and angle of desired element,");
 	printf ("q: quit\n");
 	printf ("your choice: ");
 	fflush (stdin);
@@ -323,6 +324,12 @@ int main ()
 	  case 'm':
 	    printf ("nearest element id from robot: %u\n",
 		    element_nearest_element_id (test_robot_pos_));
+	    break;
+	  case 'g':
+		printf ("element id: ");
+		scanf ("%i", &x);
+		position_t pos = element_get_pos (x);
+		printf ("x: %u y: %u a: %u\n", pos.v.x, pos.v.y, pos.a);
 	    break;
 	  case 'q':
 	    exit = 1;

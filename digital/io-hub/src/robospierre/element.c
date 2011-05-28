@@ -696,3 +696,26 @@ element_opposed (uint8_t element_id)
       }
     return op;
 }
+
+position_t
+element_get_pos (uint8_t element_id)
+{
+    element_t e = element_get (element_id);
+    position_t pos;
+    pos.v = e.pos;
+    pos.a = 0;
+    if (e.attr == (ELEMENT_GREEN |ELEMENT_RIGHT))
+      {
+	/* Set angle to 90° clockwise. */
+	pos.a = 0x4000;
+	/* Remove 400 mm. */
+	pos.v.x -= 400;
+      }
+    if (e.attr == (ELEMENT_GREEN |ELEMENT_LEFT))
+      {
+	/* Set angle to 270° clockwise. */
+	pos.a = 0xc000;
+	 pos.v.x += 400;
+      }
+    return pos;
+}
