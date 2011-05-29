@@ -35,8 +35,8 @@ target_marcel = dict (
         w = 0x09,
         )
 target_robospierre = dict (
-        scale = 0.031748977927129413, f = 0x1370,
-        c = float (0x01000000) / (1 << 24),
+        scale = 0.0317975134344, f = 0x134e,
+        c = float (0xffa897) / (1 << 24),
         tkp = 1, tkd = 16,
         ta = 0.75, tsm = 0x60, tss = 0x10,
         tbe = 256, tbs = 0x08, tbc = 40,
