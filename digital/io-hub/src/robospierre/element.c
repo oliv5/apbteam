@@ -31,6 +31,8 @@
 
 #include "chrono.h"
 #include "logistic.h"
+#include "bot.h"
+#include "playground.h"
 
 /** Elements on table. */
 struct element_t element_table[] =
@@ -710,19 +712,18 @@ element_get_pos (uint8_t element_id)
     element_t e = element_get (element_id);
     position_t pos;
     pos.v = e.pos;
-    pos.a = 0;
+    pos.a = 0xffff;
     if (e.attr == (ELEMENT_GREEN |ELEMENT_RIGHT))
       {
-	/* Set angle to 90° clockwise. */
-	pos.a = 0x4000;
-	/* Remove 400 mm. */
-	pos.v.x -= 400;
+	/* To the right. */
+	pos.a = 0x0000;
+	pos.v.x = PG_WIDTH - BOT_GREEN_ELEMENT_PLACE_DISTANCE_MM;
       }
     if (e.attr == (ELEMENT_GREEN |ELEMENT_LEFT))
       {
-	/* Set angle to 270° clockwise. */
-	pos.a = 0xc000;
-	pos.v.x += 400;
+	/* To the left. */
+	pos.a = 0x8000;
+	pos.v.x = BOT_GREEN_ELEMENT_PLACE_DISTANCE_MM;
       }
     return pos;
 }

@@ -41,6 +41,9 @@
 /** Distance from the robot axis to the side. */
 #define BOT_SIZE_SIDE 190
 
+/** Radius of an element. */
+#define BOT_ELEMENT_RADIUS 100
+
 /** Distance between the front contact point and the robot center. */
 #define BOT_FRONT_CONTACT_DIST_MM 150
 /** Angle error at the front contact point. */
@@ -52,6 +55,13 @@
 #define BOT_PAWN_BACK_DETECTION_THRESHOLD_MM -190
 /** Distance from robot center to an element near enough to be taken. */
 #define BOT_PAWN_TAKING_DISTANCE_MM 150
+
+/** Distance from border to position in front of a green element. */
+#define BOT_GREEN_ELEMENT_PLACE_DISTANCE_MM 600
+/** Distance to go to capture a green element. */
+#define BOT_GREEN_ELEMENT_MOVE_DISTANCE_MM \
+    (BOT_GREEN_ELEMENT_PLACE_DISTANCE_MM - BOT_ELEMENT_RADIUS \
+     - BOT_SIZE_FRONT - 20)
 
 /** Speed used for initialisation. */
 #ifdef HOST

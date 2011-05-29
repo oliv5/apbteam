@@ -163,7 +163,7 @@ element_nearest_element_id (position_t robot_pos);
 /**
    Give the position where the robot need to be placed to get an element.
    The position correspond to the emplacement of the element with an angle of
-   zero. If the element is in the green zone, the returned position include
+   0xffff. If the element is in the green zone, the returned position include
    the angle the robot need to set before moving to the element.
  */
 position_t
