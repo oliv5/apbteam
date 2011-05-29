@@ -25,7 +25,7 @@
 #include "common.h"
 #include "simu.host.h"
 
-#include "servo.h"
+#include "modules/devices/servo/servo.h"
 #include "pwm.h"
 
 #include "modules/utils/utils.h"
@@ -36,10 +36,10 @@
 #include "io.h"
 
 /** Requested servo position. */
-uint8_t servo_high_time_[SERVO_NUMBER];
+uint8_t servo_position_[SERVO_NUMBER];
 
 /** Current servo position. */
-uint8_t servo_high_time_current_[SERVO_NUMBER];
+uint8_t servo_position_current_[SERVO_NUMBER];
 
 /** Servo speed is about 120 ms for 60 degrees.  This means about 360 ms for
  * the full swing. */
@@ -112,13 +112,13 @@ simu_step (void)
     /* Update servos. */
     for (i = 0; i < SERVO_NUMBER; i++)
       {
-	if (UTILS_ABS (servo_high_time_current_[i] - servo_high_time_[i]) <
+	if (UTILS_ABS (servo_position_current_[i] - servo_position_[i]) <
 	    SERVO_SPEED)
-	    servo_high_time_current_[i] = servo_high_time_[i];
-	else if (servo_high_time_current_[i] < servo_high_time_[i])
-	    servo_high_time_current_[i] += SERVO_SPEED;
+	    servo_position_current_[i] = servo_position_[i];
+	else if (servo_position_current_[i] < servo_position_[i])
+	    servo_position_current_[i] += SERVO_SPEED;
 	else
-	    servo_high_time_current_[i] -= SERVO_SPEED;
+	    servo_position_current_[i] -= SERVO_SPEED;
       }
     /* Send servos. */
     if (simu_servo_update && !--simu_servo_update_cpt)
@@ -126,7 +126,7 @@ simu_step (void)
 	simu_servo_update_cpt = simu_servo_update;
 	m = mex_msg_new (simu_mex_servo);
 	for (i = 0; i < SERVO_NUMBER; i++)
-	    mex_msg_push (m, "B", servo_high_time_current_[i]);
+	    mex_msg_push (m, "B", servo_position_current_[i]);
 	mex_node_send (m);
       }
     /* Update switches. */
@@ -180,15 +180,15 @@ servo_init (void)
 }
 
 void
-servo_set_high_time (uint8_t servo, uint8_t high_time)
+servo_set_position (uint8_t servo, uint8_t position)
 {
-    servo_high_time_[servo] = high_time;
+    servo_position_[servo] = position;
 }
 
 uint8_t
-servo_get_high_time (uint8_t servo)
+servo_get_position (uint8_t servo)
 {
-    return servo_high_time_[servo];
+    return servo_position_[servo];
 }
 
 void

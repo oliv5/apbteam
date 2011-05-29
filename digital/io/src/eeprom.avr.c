@@ -26,8 +26,8 @@
 #include "common.h"
 #include "eeprom.h"
 
-#include "servo.h"		/* SERVO_NUMBER */
-#include "servo_pos.h"
+#include "modules/devices/servo/servo.h"
+#include "modules/devices/servo/servo_pos.h"
 
 #include <avr/eeprom.h>		/* eeprom_{read,write}_byte */
 

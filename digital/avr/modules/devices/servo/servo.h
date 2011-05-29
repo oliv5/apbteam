@@ -1,7 +1,7 @@
 #ifndef servo_h
 #define servo_h
 /* servo.h */
-/* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
+/* avr.devices.servo - Servo AVR module. {{{
  *
  * Copyright (C) 2008 Dufour Jérémy
  *
@@ -24,7 +24,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
-
 #include "common.h"	// uint8_t
 
 /**
@@ -48,7 +47,7 @@
  * set-up the timer to overflow a certain number of times to wait before
  * restarting the whole cycle.
  *
- * All servos are connected to the PORTA of the ATmega.
+ * All servos are connected to AC_SERVO_PORT defined in avrconfig.h
  */
 
 /**
@@ -76,21 +75,22 @@ void
 servo_init (void);
 
 /**
- * Set the high time of the input signal of a servo (and its position).
+ * Set the duration of the input signal of a servo at high state
+ * and thus its position.
  * @param servo the servo to change the position.
- * @param high_time the high time we want the input signal to spend at the
- * high state to set the servo motor to a position.  A zero will let the servo
- * floating.
+ * @param position the duration while the input signal will be at the
+ * high state. The servo will then move to a position.
+ * A zero will let the servo floating.
  */
 void
-servo_set_high_time (uint8_t servo, uint8_t high_time);
+servo_set_position (uint8_t servo, uint8_t position);
 
 /**
- * Get the high time of the servo.
+ * Get the duration of the servo's input signal at high state.
  * @param servo the servo to get the position of.
  * @return the current position of the servo.
  */
 uint8_t
-servo_get_high_time (uint8_t servo);
+servo_get_position (uint8_t servo);
 
 #endif /* servo_h */

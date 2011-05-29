@@ -1,5 +1,5 @@
 /* servo.avr.c */
-/* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
+/* avr.devices.servo - Servo AVR module. {{{
  *
  * Copyright (C) 2008 Dufour Jérémy
  *
@@ -22,7 +22,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
-
 #include "common.h"
 #include "servo.h"
 
@@ -34,12 +33,6 @@
  * @defgroup ServoConfig Servo module configuration variables and defines.
  * @{
  */
-
-/**
- * All servos are connected to the PORTA.
- */
-#define SERVO_PORT PORTA
-#define SERVO_DDR DDRA
 
 /**
  * TOP of the timer/counter.
@@ -76,7 +69,7 @@ volatile int8_t servo_updating_id_;
 /**
  * A table for the time spent by each servo in high state.
  */
-volatile uint8_t servo_high_time_[SERVO_NUMBER];
+volatile uint8_t servo_position_[SERVO_NUMBER];
 
 /**
  * Overflow of timer/counter 2 handler.
@@ -90,13 +83,13 @@ void
 servo_init (void)
 {
     /* Set-up all the pins of the servo to out direction */
-    SERVO_DDR = 0xff;
+    AC_SERVO_DDR = 0xff;
     /* All pins are at low state by default */
 
     /* Set-up the timer/counter 2:
        - prescaler 256 => 4.44 ms TOP */
     TCCR2 = regv (FOC2, WGM20, COM21, COM20, WGM21, CS22, CS21, CS20,
-		   0,    0,     0,     0,     0,    1,     0,    0);
+		     0,    0,     0,     0,     0,    1,     0,    0);
 
     /* The state machine start with the first servo */
     servo_updating_id_ = 0;
@@ -107,29 +100,29 @@ servo_init (void)
     /* By default, servo init disable all servo. */
     uint8_t i;
     for (i = 0; i < SERVO_NUMBER; i++)
-	servo_set_high_time (i, 0);
+	servo_set_position (i, 0);
 }
 
-/* Set the high time of the input signal of a servo (and its position). */
+/* Set the duration of the input signal at the high state of a servo. */
 void
-servo_set_high_time (uint8_t servo, uint8_t high_time)
+servo_set_position (uint8_t servo, uint8_t position)
 {
-    uint8_t filtered = high_time;
+    uint8_t filtered = position;
     if (filtered != 0)
 	UTILS_BOUND (filtered, SERVO_HIGH_TIME_MIN, SERVO_HIGH_TIME_MAX);
     /* Sanity check */
     if (servo < SERVO_NUMBER)
 	/* Set new desired position (high value time) */
-	servo_high_time_[servo] = filtered;
+	servo_position_[servo] = filtered;
 }
 
-/* Get the high time of the servo. */
+/* Get the duration of the servo's input signal at high state. */
 uint8_t
-servo_get_high_time (uint8_t servo)
+servo_get_position (uint8_t servo)
 {
     /* Sanity check */
     if (servo < SERVO_NUMBER)
-	return servo_high_time_[servo];
+	return servo_position_[servo];
     return 0;
 }
 
@@ -141,7 +134,7 @@ SIGNAL (SIG_OVERFLOW2)
        overflow */
     static int8_t servo_overflow_count = -1;
     /* Time spent by each servo motor at high state during a whole cycle */
-    static uint16_t servo_high_time_cycle = servo_tic_cycle_;
+    static uint16_t servo_position_cycle = servo_tic_cycle_;
 
     /* State machine actions */
     if (servo_updating_id_ >= 0)
@@ -151,16 +144,16 @@ SIGNAL (SIG_OVERFLOW2)
 	/* Set to low state the previous servo motor pin if needed (not for
 	 * the first one) */
 	if (servo_updating_id_ != 0)
-	    SERVO_PORT &= ~_BV (servo_updating_id_ - 1);
+	    AC_SERVO_PORT &= ~_BV (servo_updating_id_ - 1);
 	/* Set to high state the current servo motor pin, unless is zero */
-	if (servo_high_time_[servo_updating_id_])
-	    set_bit (SERVO_PORT, servo_updating_id_);
+	if (servo_position_[servo_updating_id_])
+	    set_bit (AC_SERVO_PORT, servo_updating_id_);
 	/* Plan next timer overflow to the TOP minus the current configuration
 	 * of the servo motor */
-	TCNT2 = SERVO_TCNT_TOP - servo_high_time_[servo_updating_id_];
+	TCNT2 = SERVO_TCNT_TOP - servo_position_[servo_updating_id_];
 	/* Update the time spent at high state by all servo motors for this
 	 * cycle */
-	servo_high_time_cycle += servo_high_time_[servo_updating_id_];
+	servo_position_cycle += servo_position_[servo_updating_id_];
 	/* Update the identifier of the current servo motor (and manage when
 	 * we are at the last one) */
 	if (++servo_updating_id_ == SERVO_NUMBER)
@@ -174,13 +167,13 @@ SIGNAL (SIG_OVERFLOW2)
 	if (servo_overflow_count == -1)
 	  {
 	    /* Set to low state the previous servo motor pin */
-	    SERVO_PORT &= ~_BV (SERVO_NUMBER - 1);
+	    AC_SERVO_PORT &= ~_BV (SERVO_NUMBER - 1);
 	    /* Number of full overflow (from 0 to SERVO_TCNT_TOP) we need to
 	     * wait (division by SERVO_TCNT_TOP or >> 8) */
-	    servo_overflow_count = servo_high_time_cycle >> 8;
+	    servo_overflow_count = servo_position_cycle >> 8;
 	    /* Restart the counter from remaining TIC that are left and can
 	     * not be used to make a full overflow */
-	    TCNT2 = SERVO_TCNT_TOP - v16_to_v8 (servo_high_time_cycle, 0);
+	    TCNT2 = SERVO_TCNT_TOP - v16_to_v8 (servo_position_cycle, 0);
 	  }
 	else
 	  {
@@ -193,7 +186,7 @@ SIGNAL (SIG_OVERFLOW2)
 		servo_updating_id_ = 0;
 		/* Re-initialize the counter of time spent by each servo motor
 		 * at high state */
-		servo_high_time_cycle = servo_tic_cycle_;
+		servo_position_cycle = servo_tic_cycle_;
 	      }
 	  }
       }

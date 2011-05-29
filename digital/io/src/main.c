@@ -29,6 +29,7 @@
 #include "modules/utils/utils.h"
 #include "modules/path/path.h"
 #include "modules/devices/usdist/usdist.h"
+#include "modules/devices/servo/servo_pos.h"
 #include "modules/flash/flash.h"
 #include "modules/trace/trace.h"
 #include "events.h"
@@ -51,7 +52,6 @@
 #include "fsm.h"
 #include "fsm_queue.h"
 #include "bot.h"
-#include "servo_pos.h"
 #include "radar.h"
 #include "chrono.h"	/* chrono_end_match */
 #include "pwm.h"
@@ -408,7 +408,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	 *   - 1b: servo id number;
 	 *   - 1b: pwm high time value (position).
 	 */
-	servo_set_high_time (args[0], args[1]);
+	servo_set_position (args[0], args[1]);
 	break;
 
       case c ('S', 0):

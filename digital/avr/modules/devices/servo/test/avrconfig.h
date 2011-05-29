@@ -1,9 +1,9 @@
 #ifndef avrconfig_h
 #define avrconfig_h
 /* avrconfig.h */
-/* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
+/* avr.devices.servo - Servo AVR module. {{{
  *
- * Copyright (C) 2008 Dufour Jérémy
+ * Copyright (C) 2011 Maxime Hadjinlian
  *
  * APBTeam:
  *        Web: http://apbteam.org/
@@ -30,6 +30,11 @@
  * 8000000, 11059200, 14745600, 16000000, 18432000, 20000000. */
 #define AC_FREQ 14745600
 
+/* servo - Servo module. */
+/** All servos are currently connected to the same port. */
+#define AC_SERVO_PORT PORTA
+#define AC_SERVO_DDR DDRA
+
 /* uart - UART module. */
 /** Select hardware uart for primary uart: 0, 1 or -1 to disable. */
 #define AC_UART0_PORT 1
@@ -55,7 +60,7 @@
 /** If the send buffer is full when putc:
  *  - DROP: drop the new byte.
  *  - WAIT: wait until there is room in the send buffer. */
-#define AC_UART0_SEND_BUFFER_FULL WAIT
+#define AC_UART0_SEND_BUFFER_FULL DROP
 /** In HOST compilation:
  *  - STDIO: use stdin/out.
  *  - PTS: use pseudo terminal. */
@@ -75,81 +80,12 @@
 
 /* proto - Protocol module. */
 /** Maximum argument size. */
-#define AC_PROTO_ARGS_MAX_SIZE 12
+#define AC_PROTO_ARGS_MAX_SIZE 8
 /** Callback function name. */
 #define AC_PROTO_CALLBACK proto_callback
 /** Putchar function name. */
 #define AC_PROTO_PUTC uart0_putc
 /** Support for quote parameter. */
 #define AC_PROTO_QUOTE 1
-
-/* twi - TWI module. */
-/** Driver to implement TWI: HARD, SOFT, or USI. */
-#define AC_TWI_DRIVER HARD
-/** Do not use interrupts. */
-#define AC_TWI_NO_INTERRUPT 0
-/** TWI frequency, should really be 100 kHz. */
-#define AC_TWI_FREQ 100000
-/** Enable slave part. */
-#define AC_TWI_SLAVE_ENABLE 0
-/** Enable master part. */
-#define AC_TWI_MASTER_ENABLE 1
-/** Master transfer completion callback, optionally defined by the user, called
- * at end of master transfer. */
-#undef AC_TWI_MASTER_DONE
-/** Use internal pull up. */
-#define AC_TWI_PULL_UP 0
-
-
-/* path - Path finding module. */
-/** Report path found for debug. */
-#define AC_PATH_REPORT defined (HOST)
-/** Report function name. */
-#define AC_PATH_REPORT_CALLBACK simu_send_path
-/** Number of possible obstacles. */
-#define AC_PATH_OBSTACLES_NB 2
-/** Number of points per obstacle. */
-#define AC_PATH_OBSTACLES_POINTS_NB 8
-
-/* astar - A* path finding module. */
-/** Neighbor callback. */
-#define AC_ASTAR_NEIGHBOR_CALLBACK path_astar_neighbor_callback
-/** Heuristic callback. */
-#define AC_ASTAR_HEURISTIC_CALLBACK path_astar_heuristic_callback
-
-/* usdist - Analog US distance sensor. */
-/** Number of sensors. */
-#define AC_USDIST_NB 4
-/** Measuring period, in number of update call. */
-#define AC_USDIST_PERIOD 1
-/** List of space separated sensor definition, see usdist.h. */
-#define AC_USDIST_SENSORS \
-    USDIST_SENSOR (0, G, 3) \
-    USDIST_SENSOR (1, G, 1) \
-    USDIST_SENSOR (2, C, 7) \
-    USDIST_SENSOR (3, D, 4)
-
-/* servo - Servo module */
-/** All servos are currently connected to the same port. */
-#define AC_SERVO_PORT PORTA
-#define AC_SERVO_DDR DDRA
-
-/* io - io/ai board. */
-/** TWI address of the io board. */
-#define AC_IO_TWI_ADDRESS 2
-
-/* spi - SPI module. */
-/** Select driver: HARD, SOFT, or NONE. */
-#define AC_SPI0_DRIVER HARD
-/** Same thing for an optionnal second SPI driver. */
-#define AC_SPI1_DRIVER NONE
-
-/* flash - Flash SPI AVR module. */
-/** Flash PORT used. */
-#define AC_FLASH_PORT PORTD
-/** Flash DDR used. */
-#define AC_FLASH_DDR DDRD
-/** Flash SS pin. */
-#define AC_FLASH_BIT_SS 5
 
 #endif /* avrconfig_h */

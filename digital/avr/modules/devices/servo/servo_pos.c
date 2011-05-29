@@ -1,5 +1,5 @@
 /* servo_pos.c */
-/* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
+/* avr.devices.servo - Servo AVR module. {{{
  *
  * Copyright (C) 2009 Dufour Jérémy
  *
@@ -56,5 +56,5 @@ servo_pos_set_high_time (uint8_t servo_id,
 void
 servo_pos_move_to (uint8_t servo_id, uint8_t position)
 {
-      servo_set_high_time (servo_id, servo_pos_high_time[servo_id][position]);
+    servo_set_position (servo_id, servo_pos_high_time[servo_id][position]);
 }

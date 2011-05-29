@@ -1,7 +1,7 @@
 #ifndef servo_pos_h
 #define servo_pos_h
-/* servo_pos.h */
-/* io - Input & Output with Artificial Intelligence (ai) support on AVR. {{{
+/* servo.pos.h */
+/* avr.devices.servo - Servo AVR module. {{{
  *
  * Copyright (C) 2009 Dufour Jérémy
  *
