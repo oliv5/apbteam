@@ -331,8 +331,7 @@ clamp_openclose (uint8_t open)
 	pwm_set_timed (BOT_PWM_CLAMP, BOT_PWM_CLAMP_OPEN);
     else
 	pwm_set_timed (BOT_PWM_CLAMP, BOT_PWM_CLAMP_CLOSE);
-    if (ctx.controled && (CLAMP_IS_SLOT_IN_FRONT_BAY (ctx.pos_current)
-			  || CLAMP_IS_SLOT_IN_BACK_BAY (ctx.pos_current)))
+    if (ctx.controled)
       {
 	int16_t offset = open ? 0
 	    : BOT_CLAMP_CLOSED_ROTATION_OFFSET (ctx.pos_current);
