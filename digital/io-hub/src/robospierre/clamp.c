@@ -50,8 +50,6 @@
  * element from a slot to another one.
  */
 
-FSM_INIT
-
 FSM_STATES (
 	    /* Initial state. */
 	    CLAMP_START,
