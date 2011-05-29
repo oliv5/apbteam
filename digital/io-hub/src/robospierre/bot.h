@@ -54,7 +54,11 @@
 #define BOT_PAWN_TAKING_DISTANCE_MM 150
 
 /** Speed used for initialisation. */
-#define BOT_SPEED_INIT 0x10, 0x10, 0x10, 0x10
+#ifdef HOST
+# define BOT_SPEED_INIT 0x20, 0x20, 0x20, 0x20
+#else
+# define BOT_SPEED_INIT 0x10, 0x10, 0x10, 0x10
+#endif
 /** Normal cruise speed. */
 #define BOT_SPEED_NORMAL 0x40, 0x40, 0x20, 0x20
 
