@@ -53,8 +53,8 @@ typedef struct position_t position_t;
 /** Team color, determine the start zone side. */
 enum team_color_e
 {
-    TEAM_COLOR_LEFT = 0,
-    TEAM_COLOR_RIGHT = 1
+    TEAM_COLOR_RIGHT = 0,
+    TEAM_COLOR_LEFT = 1
 };
 
 /** Current team color, to be read at start up. */

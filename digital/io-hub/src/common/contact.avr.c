@@ -73,7 +73,7 @@ contact_update (void)
 enum team_color_e
 contact_get_color (void)
 {
-    return !IO_GET (CONTACT_COLOR) ? TEAM_COLOR_LEFT : TEAM_COLOR_RIGHT;
+    return IO_GET (CONTACT_COLOR) ? TEAM_COLOR_LEFT : TEAM_COLOR_RIGHT;
 }
 
 uint8_t

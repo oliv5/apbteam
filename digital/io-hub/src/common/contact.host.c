@@ -49,7 +49,7 @@ contact_handle (void *user, mex_msg_t *msg)
     uint32_t contacts;
     mex_msg_pop (msg, "L", &contacts);
     ctx.all = contacts;
-    ctx.color_state = !(contacts & 1) ? TEAM_COLOR_LEFT : TEAM_COLOR_RIGHT;
+    ctx.color_state = (contacts & 1) ? TEAM_COLOR_LEFT : TEAM_COLOR_RIGHT;
     ctx.jack_state = (contacts & 2) ? 1 : 0;
     contacts >>= 2;
 #define CONTACT(io) do { \
