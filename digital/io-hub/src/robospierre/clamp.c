@@ -264,7 +264,7 @@ clamp_door (uint8_t pos, uint8_t open)
     else if (clamp_slot_door[pos] != 0xff)
       {
 	if (open)
-	    pwm_set_timed (clamp_slot_door[pos], BOT_PWM_DOOR_OPEN);
+	    pwm_set_timed (clamp_slot_door[pos], BOT_PWM_DOOR_OPEN (pos));
 	else
 	    pwm_set_timed (clamp_slot_door[pos], BOT_PWM_DOOR_CLOSE (pos));
       }
@@ -482,8 +482,8 @@ FSM_TRANS (CLAMP_IDLE, clamp_drop, CLAMP_DROPING_DOOR_OPENING)
     /* If going forward, drop at back. */
     uint8_t bay = ctx.drop_direction == DIRECTION_FORWARD
 	? CLAMP_SLOT_BACK_BOTTOM : CLAMP_SLOT_FRONT_BOTTOM;
-    pwm_set_timed (clamp_slot_door[bay + 0], BOT_PWM_DOOR_OPEN);
-    pwm_set_timed (clamp_slot_door[bay + 2], BOT_PWM_DOOR_OPEN);
+    pwm_set_timed (clamp_slot_door[bay + 0], BOT_PWM_DOOR_OPEN (bay + 0));
+    pwm_set_timed (clamp_slot_door[bay + 2], BOT_PWM_DOOR_OPEN (bay + 2));
     return FSM_NEXT (CLAMP_IDLE, clamp_drop);
 }
 
@@ -599,8 +599,8 @@ FSM_TRANS (CLAMP_LOCKED, clamp_drop, CLAMP_DROPING_DOOR_OPENING)
     /* If going forward, drop at back. */
     uint8_t bay = ctx.drop_direction == DIRECTION_FORWARD
 	? CLAMP_SLOT_BACK_BOTTOM : CLAMP_SLOT_FRONT_BOTTOM;
-    pwm_set_timed (clamp_slot_door[bay + 0], BOT_PWM_DOOR_OPEN);
-    pwm_set_timed (clamp_slot_door[bay + 2], BOT_PWM_DOOR_OPEN);
+    pwm_set_timed (clamp_slot_door[bay + 0], BOT_PWM_DOOR_OPEN (bay + 0));
+    pwm_set_timed (clamp_slot_door[bay + 2], BOT_PWM_DOOR_OPEN (bay + 2));
     return FSM_NEXT (CLAMP_LOCKED, clamp_drop);
 }
 
@@ -673,7 +673,8 @@ FSM_TRANS_TIMEOUT (CLAMP_MOVE_SRC_CLAMP_CLOSING, BOT_PWM_CLAMP_CLOSE_TIME,
 {
     if (clamp_slot_door[ctx.pos_current] != 0xff)
       {
-	pwm_set_timed (clamp_slot_door[ctx.pos_current], BOT_PWM_DOOR_OPEN);
+	pwm_set_timed (clamp_slot_door[ctx.pos_current],
+		       BOT_PWM_DOOR_OPEN (ctx.pos_current));
 	return FSM_NEXT_TIMEOUT (CLAMP_MOVE_SRC_CLAMP_CLOSING, open_door);
       }
     else

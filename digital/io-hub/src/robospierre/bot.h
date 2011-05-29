@@ -141,20 +141,24 @@
 #define BOT_PWM_DOOR_BACK_BOTTOM 3
 #define BOT_PWM_DOOR_BACK_TOP 4
 
-#define BOT_PWM_CLAMP_OPEN_TIME 125
-#define BOT_PWM_CLAMP_OPEN 0x1ff, 125, 0
-#define BOT_PWM_CLAMP_CLOSE_TIME 75
-#define BOT_PWM_CLAMP_CLOSE -0x3ff, 75, 0
+#define BOT_PWM_CLAMP_OPEN_TIME 150
+#define BOT_PWM_CLAMP_OPEN 0x1ff, 150, 0
+#define BOT_PWM_CLAMP_CLOSE_TIME 150
+#define BOT_PWM_CLAMP_CLOSE -0x1ff, 150, 0
 
 #define BOT_PWM_DOOR_OPEN_TIME 12
-#define BOT_PWM_DOOR_OPEN 0x3ff, 37, 0x55
-#define BOT_PWM_DOOR_CLOSE_TIME 50
+#define BOT_PWM_DOOR_OPEN(slot) \
+    0x1ff, (((slot) == CLAMP_SLOT_FRONT_BOTTOM \
+	     || (slot) == CLAMP_SLOT_BACK_BOTTOM) ? 80 : 62), 0x55
+#define BOT_PWM_DOOR_CLOSE_TIME 100
 #define BOT_PWM_DOOR_CLOSE(slot) \
-    -0x3ff, 50, ((slot == CLAMP_SLOT_FRONT_BOTTOM \
-		  || slot == CLAMP_SLOT_BACK_BOTTOM) ? -0x100 : -0x180)
+    -0x1ff, (((slot) == CLAMP_SLOT_FRONT_BOTTOM \
+	     || (slot) == CLAMP_SLOT_BACK_BOTTOM) ? 80 : 62), \
+    (((slot) == CLAMP_SLOT_FRONT_BOTTOM \
+      || (slot) == CLAMP_SLOT_BACK_BOTTOM) ? -0x100 : -0x180)
 
-#define BOT_PWM_CLAMP_INIT 0x1ff, 125, 0
-#define BOT_PWM_DOOR_INIT 0x1ff, 74, 0x55
-#define BOT_PWM_CLAMP_DOOR_INIT 125
+#define BOT_PWM_CLAMP_INIT 0x1ff, 150, 0
+#define BOT_PWM_DOOR_INIT 0x1ff, 80, 0x55
+#define BOT_PWM_CLAMP_DOOR_INIT 150
 
 #endif /* bot_h */

@@ -288,10 +288,14 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	break;
       case c ('d', 0):
 	/* Open all doors. */
-	pwm_set_timed (BOT_PWM_DOOR_FRONT_BOTTOM, BOT_PWM_DOOR_OPEN);
-	pwm_set_timed (BOT_PWM_DOOR_FRONT_TOP, BOT_PWM_DOOR_OPEN);
-	pwm_set_timed (BOT_PWM_DOOR_BACK_BOTTOM, BOT_PWM_DOOR_OPEN);
-	pwm_set_timed (BOT_PWM_DOOR_BACK_TOP, BOT_PWM_DOOR_OPEN);
+	pwm_set_timed (BOT_PWM_DOOR_FRONT_BOTTOM,
+		       BOT_PWM_DOOR_OPEN (CLAMP_SLOT_FRONT_BOTTOM));
+	pwm_set_timed (BOT_PWM_DOOR_FRONT_TOP,
+		       BOT_PWM_DOOR_OPEN (CLAMP_SLOT_FRONT_TOP));
+	pwm_set_timed (BOT_PWM_DOOR_BACK_BOTTOM,
+		       BOT_PWM_DOOR_OPEN (CLAMP_SLOT_BACK_BOTTOM));
+	pwm_set_timed (BOT_PWM_DOOR_BACK_TOP,
+		       BOT_PWM_DOOR_OPEN (CLAMP_SLOT_BACK_TOP));
 	break;
       case c ('d', 1):
 	/* Drop elements.
