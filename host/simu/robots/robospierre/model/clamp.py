@@ -220,7 +220,7 @@ class Clamp (Observable):
         m = self.__get_robot_matrix ()
         # Look up elements.
         xoffset = (self.BAY_OFFSET, -self.BAY_OFFSET)[side]
-        xmargin = 20
+        xmargin = 40
         ymargin = 50
         for o in self.table.obstacles:
             if o.level == 1 and o.pos is not None:

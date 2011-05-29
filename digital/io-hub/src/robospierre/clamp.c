@@ -38,6 +38,7 @@
 #include "modules/proto/proto.h"
 
 #include "logistic.h"
+#include "pawn_sensor.h"
 
 /*
  * There is two FSM in this file.
@@ -275,16 +276,15 @@ clamp_handle_event (void)
 {
     if (FSM_CAN_HANDLE (AI, clamp_new_element))
       {
-	/* XXX: temporary hack. */
-	uint8_t element_type = contact_get_color () ? ELEMENT_PAWN : ELEMENT_KING;
-	if (!IO_GET (CONTACT_FRONT_BOTTOM)
-	    && !logistic_global.slots[CLAMP_SLOT_FRONT_BOTTOM])
+	uint8_t element_type;
+	element_type = pawn_sensor_get (DIRECTION_FORWARD);
+	if (element_type)
 	  {
 	    clamp_new_element (CLAMP_SLOT_FRONT_BOTTOM, element_type);
 	    return 1;
 	  }
-	if (!IO_GET (CONTACT_BACK_BOTTOM)
-	    && !logistic_global.slots[CLAMP_SLOT_BACK_BOTTOM])
+	element_type = pawn_sensor_get (DIRECTION_BACKWARD);
+	if (element_type)
 	  {
 	    clamp_new_element (CLAMP_SLOT_BACK_BOTTOM, element_type);
 	    return 1;

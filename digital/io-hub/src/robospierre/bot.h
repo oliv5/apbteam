@@ -46,6 +46,13 @@
 /** Angle error at the front contact point. */
 #define BOT_FRONT_CONTACT_ANGLE_ERROR_DEG 0
 
+/** Distance from robot center to front pawn detection threshold. */
+#define BOT_PAWN_FRONT_DETECTION_THRESHOLD_MM 190
+/** Distance from robot center to back pawn detection threshold. */
+#define BOT_PAWN_BACK_DETECTION_THRESHOLD_MM -190
+/** Distance from robot center to an element near enough to be taken. */
+#define BOT_PAWN_TAKING_DISTANCE_MM 150
+
 /** Speed used for initialisation. */
 #define BOT_SPEED_INIT 0x10, 0x10, 0x10, 0x10
 /** Normal cruise speed. */
