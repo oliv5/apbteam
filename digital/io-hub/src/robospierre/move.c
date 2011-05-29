@@ -82,7 +82,7 @@ move_start (position_t position, uint8_t backward)
     /* Reset try counter. */
     move_data.try_again_counter = 3;
     /* Start the FSM. */
-    FSM_HANDLE (AI, move_start);
+    fsm_queue_post_event (FSM_EVENT (AI, move_start));
 }
 
 void
@@ -97,7 +97,7 @@ move_start_noangle (vect_t position, uint8_t backward, int16_t shorten)
     /* Reset try counter. */
     move_data.try_again_counter = 3;
     /* Start the FSM. */
-    FSM_HANDLE (AI, move_start);
+    fsm_queue_post_event (FSM_EVENT (AI, move_start));
 }
 
 void
