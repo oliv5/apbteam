@@ -49,6 +49,8 @@
  * 352/2 mm, and that is the reason why code should handle odd and even
  * columns differently.
  *
+ * There is also extra grid nodes in front of the green zone.
+ *
  * All those tricks are used to reduce the number of nodes.
  */
 
@@ -64,12 +66,18 @@
 /** Number of nodes in the grid. */
 #define PATH_GRID_NODES_NB (PATH_COLUMNS_NB * PATH_COLUMN_NODES_NB)
 
+/** Number of nodes in front of each green zone. */
+#define PATH_GREEN_NODES_NB 4
+
+/** Number of fixed nodes. */
+#define PATH_FIXED_NODES_NB (PATH_GRID_NODES_NB + 2 * PATH_GREEN_NODES_NB)
+
 /** Number of nodes in search graph, last two nodes are destination and source
  * nodes. */
-#define PATH_NODES_NB (PATH_GRID_NODES_NB + 2)
+#define PATH_NODES_NB (PATH_FIXED_NODES_NB + 2)
 
 /** Index of destination node. */
-#define PATH_DST_NODE_INDEX PATH_GRID_NODES_NB
+#define PATH_DST_NODE_INDEX PATH_FIXED_NODES_NB
 
 /** Index of source node. */
 #define PATH_SRC_NODE_INDEX (PATH_DST_NODE_INDEX + 1)
@@ -91,7 +99,7 @@ struct path_t
     /** List of nodes used for A*. */
     struct astar_node_t astar_nodes[PATH_NODES_NB];
     /** Cache of whether a node is blocked. */
-    uint8_t valid[PATH_GRID_NODES_NB];
+    uint8_t valid[PATH_FIXED_NODES_NB];
     /** Position of end points. */
     vect_t endpoints[2];
     /** Whether the last update was a success. */
@@ -102,7 +110,7 @@ struct path_t
 static struct path_t path;
 
 /** Static information on nodes. */
-static const struct path_node_t path_nodes[PATH_GRID_NODES_NB] = {
+static const struct path_node_t path_nodes[PATH_FIXED_NODES_NB] = {
     /* {{{ */
       { 1 }, /* 0 column 0. */
       { 1 }, /* 1 */
@@ -148,6 +156,14 @@ static const struct path_node_t path_nodes[PATH_GRID_NODES_NB] = {
       { 1 }, /* 41 */
       { 1 }, /* 42 */
       { 1 }, /* 43 */
+      { 1 }, /* 44 left green. */
+      { 1 }, /* 45 */
+      { 1 }, /* 46 */
+      { 1 }, /* 47 */
+      { 1 }, /* 48 right green. */
+      { 1 }, /* 49 */
+      { 1 }, /* 50 */
+      { 1 }, /* 51 */
     /* }}} */
 };
 
@@ -165,9 +181,18 @@ path_pos (uint8_t node, vect_t *pos)
 	    + (col % 2 ? 350 / 2 : 0)
 	    - line * 350;
       }
+    else if (node < PATH_GRID_NODES_NB + 2 * PATH_GREEN_NODES_NB)
+      {
+	node -= PATH_GRID_NODES_NB;
+	uint8_t col = node / PATH_GREEN_NODES_NB;
+	uint8_t line = node - col * PATH_GREEN_NODES_NB;
+	pos->x = col == 0 ? BOT_GREEN_ELEMENT_PLACE_DISTANCE_MM
+	    : PG_WIDTH - BOT_GREEN_ELEMENT_PLACE_DISTANCE_MM;
+	pos->y = (5 - line) * 280 + 10;
+      }
     else
       {
-	*pos = path.endpoints[node - PATH_GRID_NODES_NB];
+	*pos = path.endpoints[node - PATH_FIXED_NODES_NB];
       }
 }
 
@@ -180,29 +205,51 @@ path_blocking (uint8_t a, uint8_t b, int16_t *dp)
     vect_t va;
     vect_t vb;
     uint8_t escape_factor = 0;
+    uint8_t factor = 1;
+    uint8_t blocking = 0;
     if (a == PATH_SRC_NODE_INDEX || b == PATH_SRC_NODE_INDEX)
 	escape_factor = path.escape_factor;
     path_pos (a, &va);
     path_pos (b, &vb);
+    /* Test for green zone. */
+    uint8_t a_green, b_green;
+    a_green = va.x < 400 || va.x > PG_WIDTH - 400;
+    b_green = vb.x < 400 || vb.x > PG_WIDTH - 400;
+    if ((va.x < BOT_GREEN_ELEMENT_PLACE_DISTANCE_MM
+	 && vb.x > BOT_GREEN_ELEMENT_PLACE_DISTANCE_MM)
+	|| (va.x > BOT_GREEN_ELEMENT_PLACE_DISTANCE_MM
+	    && vb.x < BOT_GREEN_ELEMENT_PLACE_DISTANCE_MM)
+	|| (va.x > PG_WIDTH - BOT_GREEN_ELEMENT_PLACE_DISTANCE_MM
+	    && vb.x < PG_WIDTH - BOT_GREEN_ELEMENT_PLACE_DISTANCE_MM)
+	|| (va.x < PG_WIDTH - BOT_GREEN_ELEMENT_PLACE_DISTANCE_MM
+	    && vb.x > PG_WIDTH - BOT_GREEN_ELEMENT_PLACE_DISTANCE_MM))
+	blocking = 1;
+    if (a_green && b_green)
+	blocking = 1;
+    if (a_green || b_green)
+	factor = 4;
     /* Test for a blocking obstacle. */
-    for (i = 0; i < PATH_OBSTACLES_NB; i++)
+    for (i = 0; i < PATH_OBSTACLES_NB && !blocking; i++)
       {
 	if (path.obstacles[i].valid)
 	  {
 	    uint16_t d = distance_segment_point (&va, &vb,
 						 &path.obstacles[i].c);
 	    if (d < path.obstacles[i].r)
-	      {
-		if (escape_factor)
-		  {
-		    int16_t d = distance_point_point (&va, &vb);
-		    *dp = d * escape_factor;
-		    return 0;
-		  }
-		else
-		    return 1;
-	      }
+		blocking = 1;
 	  }
+      }
+    /* Handle escaping. */
+    if (blocking)
+      {
+	if (escape_factor)
+	  {
+	    int16_t d = distance_point_point (&va, &vb);
+	    *dp = d * escape_factor;
+	    return 0;
+	  }
+	else
+	    return 1;
       }
     /* Compute distance. */
     int16_t d = distance_point_point (&va, &vb);
@@ -212,7 +259,7 @@ path_blocking (uint8_t a, uint8_t b, int16_t *dp)
 	return 0;
       }
     /* No blocking. */
-    *dp = d;
+    *dp = d * factor;
     return 0;
 }
 
@@ -221,7 +268,7 @@ static void
 path_blocked_update (void)
 {
     uint8_t i, j;
-    for (i = 0; i < PATH_GRID_NODES_NB; i++)
+    for (i = 0; i < PATH_FIXED_NODES_NB; i++)
       {
 	uint8_t valid = 1;
 	/* First, gather information from tables. */
@@ -398,8 +445,69 @@ path_astar_neighbor_callback_grid (uint8_t node,
 	      }
 	  }
       }
-    /* Check if direct path OK. */
+    /* Check path to green nodes. */
     int16_t d;
+    if (col <= 1 || col >= PATH_COLUMNS_NB - 1)
+      {
+	uint8_t green = PATH_GRID_NODES_NB
+	    + (col <= 1 ? 0 : PATH_GREEN_NODES_NB);
+	for (i = green; i < green + PATH_GREEN_NODES_NB; i++)
+	  {
+	    if (!path_blocking (node, i, &d))
+	      {
+		neighbors[neighbors_nb].node = i;
+		neighbors[neighbors_nb].weight = d + 1;
+		neighbors_nb++;
+	      }
+	  }
+      }
+    /* Check if direct path OK. */
+    if (!path_blocking (node, PATH_SRC_NODE_INDEX, &d))
+      {
+	/* Add this neighbor. */
+	neighbors[neighbors_nb].node = PATH_SRC_NODE_INDEX;
+	neighbors[neighbors_nb].weight = d + 1;
+	neighbors_nb++;
+      }
+#if PATH_DEBUG
+    for (i = 0; i < neighbors_nb; i++)
+	DPRINTF (" n %d %d\n", neighbors[i].node, neighbors[i].weight);
+#endif
+    return neighbors_nb;
+}
+
+/** Neighbors callback for green nodes. */
+static uint8_t
+path_astar_neighbor_callback_green (uint8_t node,
+				    struct astar_neighbor_t *neighbors)
+{
+    uint8_t neighbors_nb = 0;
+    uint8_t i;
+    uint8_t col = (node - PATH_GRID_NODES_NB) / PATH_GREEN_NODES_NB;
+    int16_t d;
+    /* Check path to grid nodes. */
+    uint8_t grid = col ? PATH_GRID_NODES_NB - 2 * PATH_COLUMN_NODES_NB : 0;
+    for (i = grid; i < grid + 2 * PATH_COLUMN_NODES_NB; i++)
+      {
+	if (!path_blocking (node, i, &d))
+	  {
+	    neighbors[neighbors_nb].node = i;
+	    neighbors[neighbors_nb].weight = d + 1;
+	    neighbors_nb++;
+	  }
+      }
+    /* Check path to other green nodes. */
+    uint8_t green = PATH_GRID_NODES_NB + (col ? PATH_GREEN_NODES_NB : 0);
+    for (i = green; i < green + PATH_GREEN_NODES_NB; i++)
+      {
+	if (i != node && !path_blocking (node, i, &d))
+	  {
+	    neighbors[neighbors_nb].node = i;
+	    neighbors[neighbors_nb].weight = d + 1;
+	    neighbors_nb++;
+	  }
+      }
+    /* Check if direct path OK. */
     if (!path_blocking (node, PATH_SRC_NODE_INDEX, &d))
       {
 	/* Add this neighbor. */
@@ -422,8 +530,8 @@ path_astar_neighbor_callback_endpoints (uint8_t node,
     uint8_t neighbors_nb = 0;
     uint8_t i;
     assert (node == PATH_DST_NODE_INDEX);
-    /* Select neighbors in the grid. */
-    for (i = 0; i < PATH_GRID_NODES_NB; i++)
+    /* Select neighbors in the fixed nodes. */
+    for (i = 0; i < PATH_FIXED_NODES_NB; i++)
       {
 	/* Discard blocking nodes. */
 	if (!path.valid[i])
@@ -462,6 +570,8 @@ path_astar_neighbor_callback (uint8_t node,
 #endif
     if (node < PATH_GRID_NODES_NB)
 	return path_astar_neighbor_callback_grid (node, neighbors);
+    else if (node < PATH_GRID_NODES_NB + 2 * PATH_GREEN_NODES_NB)
+	return path_astar_neighbor_callback_green (node, neighbors);
     else
 	return path_astar_neighbor_callback_endpoints (node, neighbors);
 }
