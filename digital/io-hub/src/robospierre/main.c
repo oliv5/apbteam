@@ -315,6 +315,12 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	 * - 1b: non zero to open. */
 	clamp_door (args[0], args[1]);
 	break;
+      case c ('w', 0):
+	/* Disable all motor control. */
+	mimot_motor0_free ();
+	mimot_motor1_free ();
+	asserv_free_motor ();
+	break;
 	/* Stats commands.
 	 * - b: interval between stats. */
       case c ('A', 1):
