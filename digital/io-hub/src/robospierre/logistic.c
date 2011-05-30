@@ -293,12 +293,18 @@ logistic_decision (void)
 
     /* Clamp is broken, can't move anything. */
     if (ctx.prepare == 3)
+      {
+	logistic_debug_dump ();
 	return;
+      }
 
     /* We founded a tower ! */
     logistic_new_tower ();
     if (ctx.ready)
+      {
+	logistic_debug_dump ();
 	return;
+      }
 
     /* Check if we really need to prepare something. */
     logistic_check_need_prepare ();
@@ -316,6 +322,7 @@ logistic_decision (void)
 		ctx.collect_direction = DIRECTION_BACKWARD;
 		ctx.clamp_pos_idle = CLAMP_SLOT_BACK_MIDDLE;
 	      }
+	    logistic_debug_dump ();
 	    return;
 	  }
 	if (ELEMENT_IS_HEAD (ctx.slots[CLAMP_SLOT_BACK_BOTTOM]) &&
@@ -328,6 +335,7 @@ logistic_decision (void)
 		ctx.collect_direction = DIRECTION_FORWARD;
 		ctx.clamp_pos_idle = CLAMP_SLOT_FRONT_MIDDLE;
 	      }
+	    logistic_debug_dump ();
 	    return;
 	  }
       }
@@ -377,6 +385,7 @@ logistic_decision (void)
 	  {
 	    /* Build is finished. */
 	    ctx.ready = 1;
+	    logistic_debug_dump ();
 	    return;
 	  }
 	/* Source. */
@@ -388,6 +397,7 @@ logistic_decision (void)
 	    ctx.moving_from = collect_bay;
 	else if (ctx.slots[CLAMP_SLOT_SIDE])
 	    ctx.moving_from = CLAMP_SLOT_SIDE;
+	logistic_debug_dump ();
 	return;
       }
     /* We have to prepare an element to put out. */
@@ -455,7 +465,7 @@ logistic_init (void)
     ctx.moving_from = ctx.moving_to = CLAMP_SLOT_NB;
     ctx.collect_direction = DIRECTION_FORWARD;
     ctx.construct_possible = 0;
-    ctx.prepare = 0;
+    ctx.prepare = 1;
     ctx.ready = 0;
     ctx.need_prepare = 0;
 }

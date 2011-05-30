@@ -128,7 +128,8 @@ top_go_drop (void)
 static uint8_t
 top_decision (void)
 {
-    if (logistic_global.tower_possible)
+    /* If we can make a tower. */
+    if (logistic_global.construct_possible == 1)
 	return top_go_drop ();
     else
 	return top_go_element ();
