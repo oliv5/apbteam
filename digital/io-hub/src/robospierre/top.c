@@ -48,9 +48,11 @@ FSM_STATES (
 	    /* Going out, first pawn emplacement. */
 	    TOP_GOING_OUT2,
 
+	    TOP_GOING_TO_DROP,
 	    TOP_GOING_TO_ELEMENT,
 	    TOP_GOING_TO_GREEN_POS,
 	    TOP_GOING_TO_GREEN_ELEMENT,
+	    TOP_TAKING_GREEN_ELEMENT,
 	    TOP_GOING_FROM_GREEN_ELEMENT)
 
 FSM_START_WITH (TOP_START)
@@ -60,6 +62,8 @@ struct top_t
 {
     /** Target element. */
     uint8_t target_element_id;
+    /** Green element move distance. */
+    int16_t green_move_distance_mm;
 };
 
 /** Global context. */
@@ -79,70 +83,132 @@ FSM_TRANS (TOP_GOING_OUT1, robot_move_success, TOP_GOING_OUT2)
     return FSM_NEXT (TOP_GOING_OUT1, robot_move_success);
 }
 
-uint8_t
+static uint8_t
 top_go_element (void)
 {
     position_t robot_pos;
     asserv_get_position (&robot_pos);
     ctx.target_element_id = element_best (robot_pos);
     position_t element_pos = element_get_pos (ctx.target_element_id);
+    uint8_t backward = logistic_global.collect_direction == DIRECTION_FORWARD
+	? 0 : ASSERV_BACKWARD;
     if (element_pos.a != 0xffff)
       {
 	/* Green zone element. */
-	move_start (element_pos, 0);
+	ctx.green_move_distance_mm = BOT_GREEN_ELEMENT_MOVE_DISTANCE_MM;
+	if (backward)
+	  {
+	    element_pos.a += 0x8000;
+	    ctx.green_move_distance_mm = -ctx.green_move_distance_mm;
+	  }
+	move_start (element_pos, backward);
 	return 2;
       }
     else
       {
 	/* Regular element. */
-	move_start_noangle (element_pos.v, 0, 0);
+	move_start_noangle (element_pos.v, backward, 0);
 	return 1;
       }
 }
 
+static uint8_t
+top_go_drop (void)
+{
+    position_t robot_pos;
+    asserv_get_position (&robot_pos);
+    uint8_t drop_pos_id = 37;
+    position_t drop_pos = element_get_pos (drop_pos_id);
+    uint8_t backward = logistic_global.collect_direction == DIRECTION_FORWARD
+	? 0 : ASSERV_BACKWARD;
+    move_start_noangle (drop_pos.v, backward, 0);
+    return 0;
+}
+
+static uint8_t
+top_decision (void)
+{
+    if (logistic_global.tower_possible)
+	return top_go_drop ();
+    else
+	return top_go_element ();
+}
+
 FSM_TRANS (TOP_GOING_OUT2, robot_move_success,
+	   drop, TOP_GOING_TO_DROP,
 	   element, TOP_GOING_TO_ELEMENT,
 	   green_element, TOP_GOING_TO_GREEN_POS)
 {
-    if (top_go_element () == 1)
-	return FSM_NEXT (TOP_GOING_OUT2, robot_move_success, element);
-    else
-	return FSM_NEXT (TOP_GOING_OUT2, robot_move_success, green_element);
+    switch (top_decision ())
+      {
+      default: return FSM_NEXT (TOP_GOING_OUT2, robot_move_success, drop);
+      case 1: return FSM_NEXT (TOP_GOING_OUT2, robot_move_success, element);
+      case 2: return FSM_NEXT (TOP_GOING_OUT2, robot_move_success,
+			       green_element);
+      }
+}
+
+FSM_TRANS (TOP_GOING_TO_DROP, move_success,
+	   drop, TOP_GOING_TO_DROP,
+	   element, TOP_GOING_TO_ELEMENT,
+	   green_element, TOP_GOING_TO_GREEN_POS)
+{
+    clamp_drop (logistic_global.collect_direction);
+    switch (top_decision ())
+      {
+      default: return FSM_NEXT (TOP_GOING_TO_DROP, move_success, drop);
+      case 1: return FSM_NEXT (TOP_GOING_TO_DROP, move_success, element);
+      case 2: return FSM_NEXT (TOP_GOING_TO_DROP, move_success,
+			       green_element);
+      }
 }
 
 FSM_TRANS (TOP_GOING_TO_ELEMENT, move_success,
+	   drop, TOP_GOING_TO_DROP,
 	   element, TOP_GOING_TO_ELEMENT,
 	   green_element, TOP_GOING_TO_GREEN_POS)
 {
-    if (top_go_element () == 1)
-	return FSM_NEXT (TOP_GOING_TO_ELEMENT, move_success, element);
-    else
-	return FSM_NEXT (TOP_GOING_TO_ELEMENT, move_success, green_element);
+    switch (top_decision ())
+      {
+      default: return FSM_NEXT (TOP_GOING_TO_ELEMENT, move_success, drop);
+      case 1: return FSM_NEXT (TOP_GOING_TO_ELEMENT, move_success, element);
+      case 2: return FSM_NEXT (TOP_GOING_TO_ELEMENT, move_success,
+			       green_element);
+      }
 }
 
 FSM_TRANS (TOP_GOING_TO_GREEN_POS, move_success, TOP_GOING_TO_GREEN_ELEMENT)
 {
-    asserv_move_linearly (BOT_GREEN_ELEMENT_MOVE_DISTANCE_MM);
+    asserv_move_linearly (ctx.green_move_distance_mm);
     return FSM_NEXT (TOP_GOING_TO_GREEN_POS, move_success);
 }
 
 FSM_TRANS (TOP_GOING_TO_GREEN_ELEMENT, robot_move_success,
-	   TOP_GOING_FROM_GREEN_ELEMENT)
+	   TOP_TAKING_GREEN_ELEMENT)
 {
     element_taken (ctx.target_element_id, ELEMENT_PAWN);
-    asserv_move_linearly (-BOT_GREEN_ELEMENT_MOVE_DISTANCE_MM);
     return FSM_NEXT (TOP_GOING_TO_GREEN_ELEMENT, robot_move_success);
 }
 
+FSM_TRANS_TIMEOUT (TOP_TAKING_GREEN_ELEMENT, 250, TOP_GOING_FROM_GREEN_ELEMENT)
+{
+    asserv_move_linearly (-ctx.green_move_distance_mm);
+    return FSM_NEXT_TIMEOUT (TOP_TAKING_GREEN_ELEMENT);
+}
+
 FSM_TRANS (TOP_GOING_FROM_GREEN_ELEMENT, robot_move_success,
+	   drop, TOP_GOING_TO_DROP,
 	   element, TOP_GOING_TO_ELEMENT,
 	   green_element, TOP_GOING_TO_GREEN_POS)
 {
-    if (top_go_element () == 1)
-	return FSM_NEXT (TOP_GOING_FROM_GREEN_ELEMENT, robot_move_success,
-			 element);
-    else
-	return FSM_NEXT (TOP_GOING_FROM_GREEN_ELEMENT, robot_move_success,
-			 green_element);
+    switch (top_decision ())
+      {
+      default: return FSM_NEXT (TOP_GOING_FROM_GREEN_ELEMENT,
+				robot_move_success, drop);
+      case 1: return FSM_NEXT (TOP_GOING_FROM_GREEN_ELEMENT,
+			       robot_move_success, element);
+      case 2: return FSM_NEXT (TOP_GOING_FROM_GREEN_ELEMENT,
+			       robot_move_success, green_element);
+      }
 }
 
