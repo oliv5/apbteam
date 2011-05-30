@@ -29,6 +29,7 @@
 #include "modules/host/host.h"
 #include "modules/host/mex.h"
 #include "modules/adc/adc.h"
+#include "modules/path/path.h"
 #include "io.h"
 
 /** AVR registers. */
@@ -36,6 +37,7 @@ uint8_t PORTA, DDRA, PINA, PINE, PINF;
 
 /** Message types. */
 uint8_t simu_mex_pos_report;
+uint8_t simu_mex_path;
 
 static void
 simu_adc_handle (void *user, mex_msg_t *msg)
@@ -56,6 +58,7 @@ simu_init (void)
     uint8_t mtype = mex_node_reservef ("%s:adc", mex_instance);
     mex_node_register (mtype, simu_adc_handle, 0);
     simu_mex_pos_report = mex_node_reservef ("%s:pos-report", mex_instance);
+    simu_mex_path = mex_node_reservef ("%s:path", mex_instance);
 }
 
 /** Make a simulation step. */
@@ -76,6 +79,19 @@ timer_wait (void)
     mex_node_wait_date (mex_node_date () + 4);
     simu_step ();
     return 0;
+}
+
+/** Send computed path. */
+void
+simu_send_path (vect_t *points, uint8_t len,
+		struct path_obstacle_t *obstacles, uint8_t obstacles_nb)
+{
+    int i;
+    mex_msg_t *m;
+    m = mex_msg_new (simu_mex_path);
+    for (i = 0; i < len; i++)
+	mex_msg_push (m, "hh", points[i].x, points[i].y);
+    mex_node_send (m);
 }
 
 void

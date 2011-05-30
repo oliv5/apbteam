@@ -121,6 +121,24 @@ class Mex:
                 m.push ('L', self.contacts)
                 self.node.send (m)
 
+    class Path (Observable):
+        """Path finding algorithm report.
+
+        - path: sequence of (x, y) coordinates (millimeters).
+
+        """
+
+        def __init__ (self, node, instance):
+            Observable.__init__ (self)
+            self.path = [ ]
+            node.register (instance + ':path', self.__handle)
+
+        def __handle (self, msg):
+            self.path = [ ]
+            while len (msg) >= 4:
+                self.path.append (msg.pop ('hh'))
+            self.notify ()
+
     class PosReport (Observable):
         """General purpose position report.
 
@@ -149,5 +167,6 @@ class Mex:
         self.__contact_pack = self.Contact.Pack (node, instance)
         self.contact = tuple (self.Contact (self.__contact_pack, i)
                 for i in range (CONTACT_NB))
+        self.path = self.Path (node, instance)
         self.pos_report = self.PosReport (node, instance)
 

@@ -120,6 +120,12 @@
 /** Number of possible obstacles. */
 #define AC_PATH_OBSTACLES_NB 2
 
+/* astar - A* path finding module. */
+/** Neighbor callback. */
+#define AC_ASTAR_NEIGHBOR_CALLBACK path_astar_neighbor_callback
+/** Heuristic callback. */
+#define AC_ASTAR_HEURISTIC_CALLBACK path_astar_heuristic_callback
+
 /* io-hub - io/ai board. */
 /** TWI address of the io board. */
 #define AC_IO_TWI_ADDRESS 10

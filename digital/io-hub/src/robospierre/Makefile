@@ -16,7 +16,7 @@ test_element_SOURCES = test_element.c logistic.c element.c
 # Modules needed for IO.
 MODULES = proto uart twi utils \
 	  adc devices/usdist \
-	  math/fixed math/geometry
+	  math/fixed math/geometry path/astar
 AI_MODULES = twi_master common utils fsm move
 test_element_MODULES = host math/fixed math/geometry
 # Configuration file.
