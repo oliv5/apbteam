@@ -35,7 +35,7 @@
 #define AC_UART0_PORT 0
 /** Baudrate: 2400, 4800, 9600, 14400, 19200, 28800, 38400, 57600, 76800,
  * 115200, 230400, 250000, 500000, 1000000. */
-#define AC_UART0_BAUDRATE 115200
+#define AC_UART0_BAUDRATE 9600
 /** Send mode:
  *  - POLLING: no interrupts.
  *  - RING: interrupts, ring buffer. */
@@ -45,7 +45,7 @@
 /** Character size: 5, 6, 7, 8, 9 (only 8 implemented). */
 #define AC_UART0_CHAR_SIZE 8
 /** Parity : ODD, EVEN, NONE. */
-#define AC_UART0_PARITY EVEN
+#define AC_UART0_PARITY NONE
 /** Stop bits : 1, 2. */
 #define AC_UART0_STOP_BITS 1
 /** Send buffer size, should be power of 2 for RING mode. */
@@ -62,11 +62,11 @@
 #define AC_UART0_HOST_DRIVER PTS
 /** Same thing for secondary port. */
 #define AC_UART1_PORT 1
-#define AC_UART1_BAUDRATE 115200
+#define AC_UART1_BAUDRATE 9600
 #define AC_UART1_SEND_MODE RING
 #define AC_UART1_RECV_MODE RING
 #define AC_UART1_CHAR_SIZE 8
-#define AC_UART1_PARITY EVEN
+#define AC_UART1_PARITY NONE
 #define AC_UART1_STOP_BITS 1
 #define AC_UART1_SEND_BUFFER_SIZE 32
 #define AC_UART1_RECV_BUFFER_SIZE 32
@@ -96,15 +96,5 @@
 #define AC_TWI_SLAVE_RECV_BUFFER_SIZE 16
 /** Slave transmission buffer size. */
 #define AC_TWI_SLAVE_SEND_BUFFER_SIZE 16
-
-/* proto - Protocol module. */
-/** Maximum argument size. */
-#define AC_PROTO_ARGS_MAX_SIZE 12
-/** Callback function name. */
-#define AC_PROTO_CALLBACK proto_callback
-/** Putchar function name. */
-#define AC_PROTO_PUTC uart0_putc
-/** Support for quote parameter. */
-#define AC_PROTO_QUOTE 1
 
 #endif /* avrconfig_h */

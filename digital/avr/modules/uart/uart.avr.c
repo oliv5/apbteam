@@ -35,6 +35,7 @@
 #if defined (__AVR_ATmega8__)
 #elif defined (__AVR_ATmega8535__)
 #elif defined (__AVR_ATmega16__)
+#elif defined (__AVR_ATmega164P__)
 #elif defined (__AVR_ATmega32__)
 #elif defined (__AVR_ATmega64__)
 #elif defined (__AVR_ATmega128__)

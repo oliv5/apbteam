@@ -23,12 +23,11 @@
  *
  * }}} */
 
-#include <stdio.h>                                                                                                                          
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "common.h"
-#include "codebar.h"
 #include "modules/twi/twi.h"
 #include "modules/proto/proto.h"
 #include "modules/uart/uart.h"
@@ -39,13 +38,8 @@
 
 /* from robospierre/element.h file */
 #define ELEMENT_UNKOWN 0
-#define ELEMENT_PAWN   1
-#define ELEMENT_QUEEN  2
-#define ELEMENT_KING   4
-
-#define KING  "KING"
-#define QUEEN "QUEEN"
-#define PAWN  "PAWN"
+#define ELEMENT_QUEEN  4
+#define ELEMENT_KING   8
 
 #define STRING_MAX      10
 
@@ -57,64 +51,56 @@ struct status_t
     uint8_t piece2;
 };
 
-void proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
-{
-    /* nothing here*/
-}
+char buffer_u0[STRING_MAX], buffer_u1[STRING_MAX];
 
-uint8_t string_to_element(char* data)
+uint8_t
+string_to_element (char *data, uint8_t data_len)
 {
-    if (strlen(data) == 5)
-        return ELEMENT_QUEEN;
-    if (strcmp(data, KING) == 0)
-        return ELEMENT_KING;
-    if (strcmp(data, PAWN) == 0)
-        return ELEMENT_PAWN;
+    uint8_t i;
+    for (i = 0; i < data_len - 5; i++)
+      {
+	if (memcmp (data + i, "QUEEN", 5) == 0)
+	  {
+	    data[i] = 0;
+	    return ELEMENT_QUEEN;
+	  }
+      }
+    for (i = 0; i < data_len - 4; i++)
+      {
+	if (memcmp (data + i, "KING", 4) == 0)
+	  {
+	    data[i] = 0;
+	    return ELEMENT_KING;
+	  }
+      }
     return ELEMENT_UNKOWN;
 }
 
-char* read_string(int uart_port)
-{ 
-    static int cnt_char_u0 = 0;
-    static char buffer_u0[STRING_MAX] = {'\0'};
-    static int cnt_char_u1 = 0;
-    static char buffer_u1[STRING_MAX] = {'\0'};
-
-    char c;
-
-    if (uart_port == 0 && uart0_poll ())
-    {
-        while ( uart0_poll() && (c = uart0_getc()) != '\r')
-        {
-            buffer_u0[cnt_char_u0] = c;
-            cnt_char_u0++;
-        }
-        buffer_u0[cnt_char_u0+1] = '\0';
-        cnt_char_u0 = 0;
-        return buffer_u0;
-    }
-    else if (uart_port == 1 && uart1_poll()) 
-    {
-        while ( uart1_poll() && (c = uart1_getc()) != '\r')
-        {
-            buffer_u1[cnt_char_u1] = c;
-            cnt_char_u1++;
-        }
-        buffer_u1[cnt_char_u1+1] = '\0';
-        cnt_char_u1 = 0;
-        return buffer_u1;
-    }
-    else
-    {
-        return NULL;
-    }
+void
+read_strings (void)
+{
+    uint8_t i;
+    while (uart0_poll ())
+      {
+	/* Insert char at end of string. */
+	for (i = 1; i < STRING_MAX; i++)
+	    buffer_u0[i - 1] = buffer_u0[i];
+	buffer_u0[STRING_MAX - 1] = uart0_getc ();
+      }
+    while (uart1_poll ())
+      {
+	/* Insert char at end of string. */
+	for (i = 1; i < STRING_MAX; i++)
+	    buffer_u1[i - 1] = buffer_u1[i];
+	buffer_u1[STRING_MAX - 1] = uart1_getc ();
+      }
 }
 
 int
 main (int argc, char **argv)
 {
-    char* buffer;
     struct status_t status;
+    uint8_t element_type;
 
     status.age1   = 0;
     status.piece1 = ELEMENT_UNKOWN;
@@ -126,46 +112,43 @@ main (int argc, char **argv)
     sei ();
     uart0_init ();
     uart1_init ();
-    /* We have successfully boot. */
-    proto_send0 ('z');
     /* Initialize TWI. */
-    twi_init (0x04);
-    /* I am a slave. */
-    proto_send0 ('S');
-	
+    twi_init (0x20);
+
     while (1)
-    {
-        /* Wait until next cycle. */
-    	timer_wait ();
-        if (status.age1 < (uint16_t) -1)
-            status.age1 ++;
-        if (status.age2 < (uint16_t) -1)
-            status.age2 ++;
+      {
+	/* Wait until next cycle. */
+	timer_wait ();
+	if (status.age1 < (uint16_t) -1)
+	    status.age1 ++;
+	if (status.age2 < (uint16_t) -1)
+	    status.age2 ++;
 
-        if ((buffer = read_string(0)) != NULL)
-        { 
-            status.piece1 = string_to_element(buffer);
-        }
+	read_strings ();
+	element_type = string_to_element (buffer_u0, STRING_MAX);
+	if (element_type)
+	  {
+	    status.piece1 = element_type;
+	    status.age1 = 0;
+	  }
+	element_type = string_to_element (buffer_u1, STRING_MAX);
+	if (element_type)
+	  {
+	    status.piece2 = element_type;
+	    status.age2 = 0;
+	  }
 
-        if ((buffer = read_string(1)) != NULL)
-        { 
-            status.piece2 = string_to_element(buffer);
-        }
-
-        uint8_t status_with_crc[8];
-        uint8_t *status_twi = &status_with_crc[1];
-        status_twi[0] = v16_to_v8 (status.age1, 0);
-        status_twi[1] = v16_to_v8 (status.age1, 1);
-        status_twi[2] = status.piece1;
-        status_twi[3] = v16_to_v8 (status.age2, 0);
-        status_twi[4] = v16_to_v8 (status.age2, 1);
-        status_twi[5] = status.piece2;
-        status_twi[6] = 42;
-        status_twi[7] = 32;
-        /* Compute CRC. */
-        status_with_crc[0] = crc_compute (&status_with_crc[1], sizeof (status_with_crc) - 1);
-        twi_slave_update (status_with_crc, sizeof (status_with_crc));
-
-    }
+	uint8_t status_with_crc[7];
+	uint8_t *status_twi = &status_with_crc[1];
+	status_twi[0] = v16_to_v8 (status.age1, 1);
+	status_twi[1] = v16_to_v8 (status.age1, 0);
+	status_twi[2] = status.piece1;
+	status_twi[3] = v16_to_v8 (status.age2, 1);
+	status_twi[4] = v16_to_v8 (status.age2, 0);
+	status_twi[5] = status.piece2;
+	/* Compute CRC. */
+	status_with_crc[0] = crc_compute (&status_with_crc[1], sizeof (status_with_crc) - 1);
+	twi_slave_update (status_with_crc, sizeof (status_with_crc));
+      }
     return 0;
 }

@@ -1,7 +1,7 @@
 BASE = ../../../avr
 AVR_PROGS = codebar_reader
 codebar_reader_SOURCES = codebar.c timer.avr.c
-MODULES = proto twi uart utils
+MODULES = twi uart utils
 AI_MODULES = utils
 CONFIGFILE = avrconfig.h
 AVR_MCU = atmega164p
