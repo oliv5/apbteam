@@ -250,6 +250,33 @@ logistic_put_element ()
       }
 }
 
+/** If we picked up a tower. */
+static void
+logistic_new_tower ()
+{
+    uint8_t dir_bay, nodir_bay;
+    if (ctx.collect_direction == DIRECTION_FORWARD)
+      {
+	dir_bay = CLAMP_SLOT_FRONT_BOTTOM;
+	nodir_bay = CLAMP_SLOT_BACK_BOTTOM;
+      }
+    else
+      {
+	dir_bay = CLAMP_SLOT_BACK_BOTTOM;
+	nodir_bay = CLAMP_SLOT_FRONT_BOTTOM;
+      }
+    if (ctx.slots[dir_bay] == ELEMENT_TOWER)
+      {
+	ctx.ready = 1;
+	if (ctx.collect_direction == DIRECTION_FORWARD)
+	    ctx.collect_direction = DIRECTION_BACKWARD;
+	else
+	    ctx.collect_direction = DIRECTION_FORWARD;
+      }
+    if (ctx.slots[nodir_bay] == ELEMENT_TOWER)
+	ctx.ready = 1;
+}
+
 /** Examine current state and take a decision. */
 static void
 logistic_decision (void)
@@ -266,6 +293,11 @@ logistic_decision (void)
 
     /* Clamp is broken, can't move anything. */
     if (ctx.prepare == 3)
+	return;
+
+    /* We founded a tower ! */
+    logistic_new_tower ();
+    if (ctx.ready)
 	return;
 
     /* Check if we really need to prepare something. */
@@ -359,7 +391,7 @@ logistic_decision (void)
 	return;
       }
     /* We have to prepare an element to put out. */
-    else if ((ctx.prepare == 2 || ctx.need_prepare) && ctx.construct_possible)
+    else if (ctx.prepare == 2 && ctx.construct_possible)
       {
 	logistic_put_element ();
       }

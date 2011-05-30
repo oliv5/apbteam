@@ -44,6 +44,11 @@
 #define ELEMENT_TOWER_1_KING 32
 #define ELEMENT_TOWER_2_KING 64
 
+#define ELEMENT_TOWER (ELEMENT_TOWER_1_QUEEN | \
+		       ELEMENT_TOWER_2_QUEEN | \
+		       ELEMENT_TOWER_1_KING | \
+		       ELEMENT_TOWER_2_KING)
+
 /** Return non zero if element is a head, not a pawn. */
 #define ELEMENT_IS_HEAD(e) ((e) && !((e) & ELEMENT_PAWN))
 
