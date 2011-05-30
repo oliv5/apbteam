@@ -44,12 +44,17 @@ struct logistic_t
     uint8_t collect_direction;
     /** Idle clamp position, depend on collect direction. */
     uint8_t clamp_pos_idle;
-    /** A tower is possible. */
-    uint8_t tower_possible;
-    /** 0 if we can't build a tower, 1 if we can? */
-    uint8_t tower_authorized;
-    /** Inform if a tower is ready and which side. */
-    uint8_t tower_ready_side;
+    /** Inform TOP if no construct is possible (0), if a tower is possible (1), if an
+     * other element can be put even if the clamp is broken (2). */
+    uint8_t construct_possible;
+    /** TOP set 0 if we do not want to build something, 1 if we can build a tower, 2 to prepare
+      anything possible, 3 the clamp is broken, prepare anything with *_BOTTOM. */
+    uint8_t prepare;
+    /** Inform TOP if a construct is ready (1) or not (0). */
+    uint8_t ready;
+    /* Inform TOP that we can't take any more elements and needs to put
+     * construction somewhere. */
+    uint8_t need_prepare;
 };
 
 /** Global context. */
