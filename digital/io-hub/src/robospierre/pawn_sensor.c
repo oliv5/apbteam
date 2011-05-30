@@ -52,7 +52,7 @@ struct pawn_sensor_t pawn_sensor_front, pawn_sensor_back;
 static uint8_t
 pawn_sensor_get_type (uint8_t direction)
 {
-    uint8_t element_type = contact_get_color () ? ELEMENT_PAWN : ELEMENT_KING;
+    uint8_t element_type = IO_GET (CONTACT_STRAT) ? ELEMENT_PAWN : ELEMENT_KING;
     return element_type;
 }
 

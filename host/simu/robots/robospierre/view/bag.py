@@ -35,6 +35,8 @@ class Bag:
         self.jack = Switch (sensor_frame, model_bag.jack, 'Jack')
         self.color_switch = Switch (sensor_frame, model_bag.color_switch,
                 'Color')
+        self.strat_switch = Switch (sensor_frame, model_bag.strat_switch,
+                'Strat')
         self.robot = Robot (table, model_bag.position, model_bag.clamp)
         self.clamp = (
                 ClampTop (actuator_view.add_view (ClampTop.width,

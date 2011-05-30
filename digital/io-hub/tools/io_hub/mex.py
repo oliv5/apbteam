@@ -31,7 +31,7 @@ ADC_NB = 8
 PWM_NB = 6
 PWM_VALUE_MAX = 1024
 
-CONTACT_NB = 9
+CONTACT_NB = 10
 CONTACT_INIT = 0xffffffff
 
 class Mex:

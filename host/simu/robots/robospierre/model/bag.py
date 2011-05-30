@@ -34,8 +34,9 @@ class Bag:
     def __init__ (self, scheduler, table, link_bag):
         self.color_switch = Switch (link_bag.io_hub.contact[0], invert = True)
         self.jack = Switch (link_bag.io_hub.contact[1], invert = True)
+        self.strat_switch = Switch (link_bag.io_hub.contact[9], invert = True)
         self.contact = [ Switch (contact)
-                for contact in link_bag.io_hub.contact[2:] ]
+                for contact in link_bag.io_hub.contact[2:9] ]
         self.position = Position (link_bag.asserv.position)
         self.clamping_motor = MotorBasic (link_bag.io_hub.pwm[2], scheduler,
                 8 * pi, 0, pi)
