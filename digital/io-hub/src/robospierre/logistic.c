@@ -81,8 +81,6 @@ logistic_tower_possible ()
     return;
 }
 
-
-
 /** Examine current state and take a decision. */
 static void
 logistic_decision (void)
@@ -138,7 +136,11 @@ logistic_decision (void)
 	    build_dir = DIRECTION_BACKWARD;
 	else
 	    build_dir = DIRECTION_FORWARD;
-	ctx.collect_direction = build_dir;
+	/* Adapt collect direction. */
+	if (build_dir == DIRECTION_FORWARD)
+	    ctx.collect_direction = DIRECTION_BACKWARD;
+	else
+	    ctx.collect_direction = DIRECTION_FORWARD;
 	/* Fill with pawns. */
 	uint8_t build_bay, collect_bay;
 	if (build_dir == DIRECTION_FORWARD)
