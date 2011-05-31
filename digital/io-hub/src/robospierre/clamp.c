@@ -59,6 +59,10 @@ FSM_STATES (
 	    CLAMP_INIT_FINDING_ROTATION_EDGE,
 	    /* Initialisation sequence: finding top switch. */
 	    CLAMP_INIT_FINDING_TOP,
+	    /* Initialisation sequence: going to rest position. */
+	    CLAMP_INIT_GOING_REST,
+	    /* Clamp ready, waiting in rest position. */
+	    CLAMP_INIT_READY,
 
 	    /* Returning to idle position. */
 	    CLAMP_GOING_IDLE,
@@ -434,10 +438,21 @@ FSM_TRANS (CLAMP_INIT_FINDING_ROTATION_EDGE, clamp_rotation_success,
 }
 
 FSM_TRANS (CLAMP_INIT_FINDING_TOP, clamp_elevation_success,
-	   CLAMP_GOING_IDLE)
+	   CLAMP_INIT_GOING_REST)
 {
     clamp_move (CLAMP_BAY_SIDE_ENTER_LEAVE);
     return FSM_NEXT (CLAMP_INIT_FINDING_TOP, clamp_elevation_success);
+}
+
+FSM_TRANS (CLAMP_INIT_GOING_REST, clamp_move_success, CLAMP_INIT_READY)
+{
+    return FSM_NEXT (CLAMP_INIT_GOING_REST, clamp_move_success);
+}
+
+FSM_TRANS (CLAMP_INIT_READY, init_start_round, CLAMP_GOING_IDLE)
+{
+    clamp_move (logistic_global.clamp_pos_idle);
+    return FSM_NEXT (CLAMP_INIT_READY, init_start_round);
 }
 
 FSM_TRANS (CLAMP_GOING_IDLE, clamp_move_success, CLAMP_IDLE)

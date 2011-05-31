@@ -419,7 +419,8 @@ logistic_init (void)
 	ctx.slots[i] = 0;
     ctx.moving_from = ctx.moving_to = CLAMP_SLOT_NB;
     ctx.collect_direction = DIRECTION_FORWARD;
-    ctx.clamp_pos_idle = CLAMP_SLOT_FRONT_MIDDLE;
+    ctx.clamp_pos_idle = ctx.collect_direction == DIRECTION_FORWARD
+	? CLAMP_SLOT_FRONT_MIDDLE : CLAMP_SLOT_BACK_MIDDLE;
     ctx.construct_possible = 0;
     ctx.prepare = 1;
     ctx.ready = 0;
