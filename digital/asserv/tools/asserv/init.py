@@ -12,10 +12,19 @@ host_marcel = dict (
         E = 0x3ff, D = 0x1ff,
         l = 0x1000,
         )
+host_robospierre = dict (
+        scale = 0.0395840674352314, f = 0xdd1,
+        tkp = 1, tkd = 16,
+        ta = 0.75, tsm = 0x60, tss = 0x10,
+        akp = 2, akd = 16,
+        aa = 0.25, asm = 0x60, ass = 0x10,
+        E = 0x3ff, D = 0x1ff,
+        l = 0x1000,
+        )
 host = {
         'giboulee': host_marcel,
         'marcel': host_marcel,
-        'robospierre': host_marcel,
+        'robospierre': host_robospierre,
         }
 target_marcel = dict (
         scale = 0.0415178942124, f = 0xcef,
