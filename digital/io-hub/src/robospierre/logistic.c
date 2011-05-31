@@ -300,21 +300,21 @@ logistic_make_unload ()
 		   _,  _,  _,
 		   a,      _, RIGHT, 1);
 
-    LOGISTIC_CASE (H,      _,
-		   e,  _,  _,
-		   D,      _, RIGHT, 0);
-
     LOGISTIC_CASE (_,      H,
 		   _,  _,  e,
 		   _,      D, LEFT, 0);
 
-    LOGISTIC_CASE (P,      _,
+    LOGISTIC_CASE (H,      _,
 		   e,  _,  _,
 		   D,      _, RIGHT, 0);
 
     LOGISTIC_CASE (_,      P,
 		   _,  _,  e,
 		   _,      D, LEFT, 0);
+
+    LOGISTIC_CASE (P,      _,
+		   e,  _,  _,
+		   D,      _, RIGHT, 0);
 
     LOGISTIC_CASE (_,      _,
 		   _,  P,  e,
