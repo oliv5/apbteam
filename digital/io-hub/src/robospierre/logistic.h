@@ -27,6 +27,39 @@
 #include "element.h"
 #include "clamp.h"
 
+/** Defines for logistic macro, see LOGISTIC_CASE. */
+/** Any element must be present (not empty). */
+#define LOG_a 0
+/** Do not care if there is an element or not. */
+#define LOG__ 1
+/** There must not be element here. */
+#define LOG_e 2
+/** Pawn to pick up. */
+#define LOG_P 4
+/** A head to pick up. */
+#define LOG_H 5
+/** Pawn who has to be present. */
+#define LOG_p 6
+/** Head who has to be present. */
+#define LOG_h 7
+/** Destination (who has to be empty). */
+#define LOG_D 8
+/* LEFT means we keep the same side, RIGHT means we put the opposed side. */
+#define LOG_DIR_LEFT 0
+#define LOG_DIR_RIGHT 1
+/** Logistic macro to test if a case correspond and to perform movement.
+  * We have to consider that the moving direction is on the left.
+  * New direction is indicated (same or opposed).
+  * Set ready or not. */
+#define LOGISTIC_CASE(e1,       e2, \
+		      e3,  e4,  e5, \
+		      e6,       e7, new_dir, ready) \
+{ \
+    if (logistic_case (LOG_##e1, LOG_##e2, LOG_##e3, LOG_##e4, LOG_##e5, \
+		       LOG_##e6, LOG_##e7, LOG_DIR_##new_dir, ready, 0)) \
+    return; \
+}
+
 /** Logistic context. */
 struct logistic_t
 {

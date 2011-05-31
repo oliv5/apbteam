@@ -65,28 +65,147 @@ logistic_debug_dump (void)
 #endif
 }
 
-static void
-logistic_tower_possible ()
+/** Return 1 if location corresponds to element. */
+inline uint8_t
+logistic_case_test (uint8_t loc, uint8_t e)
 {
-    uint8_t i, head = 0, pawn = 0;
-    ctx.ready = 0;
-    /* If clamp broken. */
-    if (ctx.prepare == 3 && ctx.slots[CLAMP_SLOT_FRONT_BOTTOM])
+    if (e == LOG_a && ctx.slots[loc])
+	return 1;
+    if (e == LOG__)
+	return 1;
+    if ((e == LOG_e || e == LOG_D) && !ctx.slots[loc])
+	return 1;
+    if ((e == LOG_P || e == LOG_p) && ctx.slots[loc] &&
+	!ELEMENT_IS_HEAD (ctx.slots[loc]))
+	return 1;
+    if ((e == LOG_H || e == LOG_h) && ELEMENT_IS_HEAD (ctx.slots[loc]))
+	return 1;
+    return 0;
+}
+
+static uint8_t
+logistic_case (uint8_t e1, uint8_t e2, uint8_t e3, uint8_t e4, uint8_t e5,
+	       uint8_t e6, uint8_t e7, uint8_t new_dir, uint8_t ready,
+	       uint8_t check_symetric)
+{
+    /* Define direction bay and opposed bay. */
+    uint8_t dir_bay, opp_bay;
+    if (ctx.collect_direction == DIRECTION_FORWARD)
       {
-	ctx.construct_possible = 2;
-	ctx.ready = 1;
-	ctx.collect_direction = DIRECTION_BACKWARD;
-	return;
+	dir_bay = CLAMP_SLOT_FRONT_BOTTOM;
+	opp_bay = CLAMP_SLOT_BACK_BOTTOM;
       }
-    else if (ctx.prepare == 3 && ctx.slots[CLAMP_SLOT_BACK_BOTTOM])
+    else
       {
-	ctx.construct_possible = 2;
-	ctx.ready = 1;
-	ctx.collect_direction = DIRECTION_FORWARD;
-	return;
+	dir_bay = CLAMP_SLOT_BACK_BOTTOM;
+	opp_bay = CLAMP_SLOT_FRONT_BOTTOM;
+      }
+    /*if (check_symetric)
+      {
+	uint8_t tmp = dir_bay;
+	dir_bay = opp_bay;
+	opp_bay = tmp;
+      }*/
+
+    /* Emplacement of elements. */
+    uint8_t
+	e1_loc = dir_bay + 2,
+	e3_loc = dir_bay + 1,
+	e6_loc = dir_bay,
+	e4_loc = CLAMP_SLOT_SIDE,
+	e2_loc = opp_bay + 2,
+	e5_loc = opp_bay + 1,
+	e7_loc = opp_bay;
+
+    /* Check elements are here. */
+    if (!(logistic_case_test (e1_loc, e1) &&
+	  logistic_case_test (e2_loc, e2) &&
+	  logistic_case_test (e3_loc, e3) &&
+	  logistic_case_test (e4_loc, e4) &&
+	  logistic_case_test (e5_loc, e5) &&
+	  logistic_case_test (e6_loc, e6) &&
+	  logistic_case_test (e7_loc, e7)))
+      {
+	/* Check mirror. */
+	/*if (!check_symetric)
+	    logistic_case (e1, e2, e3, e4, e5, e6, e7, new_dir, ready, 1);*/
+	return 0;
       }
 
-    for (i = CLAMP_SLOT_FRONT_BOTTOM; i <= CLAMP_SLOT_NB; i++)
+    /* Find source/destination if we have to make a move. */
+    /* Find source. */
+    uint8_t src = CLAMP_SLOT_NB, dst = CLAMP_SLOT_NB;
+    if (e1 == LOG_P ||e1 == LOG_H)
+	src = e1_loc;
+    else if (e3 == LOG_P ||e3 == LOG_H)
+	src = e3_loc;
+    else if (e6 == LOG_P ||e6 == LOG_H)
+	src = e6_loc;
+    else if (e4 == LOG_P ||e4 == LOG_H)
+	src = e4_loc;
+    else if (e2 == LOG_P ||e2 == LOG_H)
+	src = e2_loc;
+    else if (e5 == LOG_P ||e5 == LOG_H)
+	src = e5_loc;
+    else if (e7 == LOG_P ||e7 == LOG_H)
+	src = e7_loc;
+
+    /* Find destination. */
+    if (e1 == LOG_D)
+	dst = e1_loc;
+    else if (e3 == LOG_D)
+	dst = e3_loc;
+    else if (e6 == LOG_D)
+	dst = e6_loc;
+    else if (e4 == LOG_D)
+	dst = e4_loc;
+    else if (e2 == LOG_D)
+	dst = e2_loc;
+    else if (e5 == LOG_D)
+	dst = e5_loc;
+    else if (e7 == LOG_D)
+	dst = e7_loc;
+    
+    /* We are making a move. */
+    if (src != CLAMP_SLOT_NB && dst != CLAMP_SLOT_NB)
+      {
+	if (ctx.slots[src] && !ctx.slots[dst])
+	{
+	    ctx.moving_from = src;
+	    ctx.moving_to = dst;
+	    ctx.ready = 0;
+	}
+      }
+
+    /* Set collect direction. */
+    /* LEFT means we keep the same side, RIGHT means we put the opposed side. */
+    if (new_dir == LOG_DIR_RIGHT)
+      {
+	if (ctx.collect_direction == DIRECTION_FORWARD)
+	    ctx.collect_direction = DIRECTION_BACKWARD;
+	else
+	    ctx.collect_direction = DIRECTION_FORWARD;
+      }
+
+    /* Don't touch clamp's idle position if broken. */
+    if (ctx.prepare != 3)
+      {
+	/* Set clamp position idle. */
+	if (ctx.collect_direction == DIRECTION_FORWARD)
+	    ctx.clamp_pos_idle = CLAMP_SLOT_FRONT_MIDDLE;
+	else
+	    ctx.clamp_pos_idle = CLAMP_SLOT_BACK_MIDDLE;
+      }
+    /* Set ready */
+    ctx.ready = ready;
+    return 1;
+}
+
+static void
+logistic_update_construct_possible ()
+{
+    uint8_t pawn = 0, head = 0, i;
+    for (i = CLAMP_SLOT_FRONT_BOTTOM; i < CLAMP_SLOT_NB; i++)
       {
 	    if (ELEMENT_IS_HEAD (ctx.slots[i]))
 		head++;
@@ -102,13 +221,10 @@ logistic_tower_possible ()
 	ctx.construct_possible = 2;
     else
 	ctx.construct_possible = 0;
-    return;
 }
 
-/* Check if we can't take element anymore and we need to be authorized to
- * unload. */
 static void
-logistic_check_need_prepare ()
+logistic_update_need_prepare ()
 {
     uint8_t i, head = 0, pawn = 0;
     for (i = CLAMP_SLOT_FRONT_BOTTOM; i < CLAMP_SLOT_NB; i++)
@@ -119,162 +235,126 @@ logistic_check_need_prepare ()
 		pawn++;
       }
     if ((head == 1 && pawn == 3) ||
-	head == 2 ||
-	pawn > 4)
+	head == 2 || pawn >= 4)
 	ctx.need_prepare = 1;
     else
 	ctx.need_prepare = 0;
 }
 
-/** Build something not a tower. */
 static void
-logistic_put_element ()
+logisitic_make_broken ()
 {
-    uint8_t dir_bay, nodir_bay;
-    if (ctx.collect_direction == DIRECTION_FORWARD)
-      {
-	dir_bay = CLAMP_SLOT_FRONT_BOTTOM;
-	nodir_bay = CLAMP_SLOT_BACK_BOTTOM;
-      }
-    else
-      {
-	dir_bay = CLAMP_SLOT_BACK_BOTTOM;
-	nodir_bay = CLAMP_SLOT_FRONT_BOTTOM;
-      }
+    LOGISTIC_CASE (_,      _,
+		   _,  _,  _,
+		   a,      _, RIGHT, 1);
 
-    /* If we may build a little tower ? */
-    /* Put the tower on the pawn. */
-    if (ELEMENT_IS_HEAD (ctx.slots[nodir_bay + 2]) &&
-	ctx.slots[nodir_bay] &&
-	!ctx.slots[nodir_bay + 1])
-      {
-	ctx.moving_from = nodir_bay + 2;
-	ctx.moving_to = nodir_bay + 1;
-	return;
-      }
-    /* Little tower is ready. */
-    else if (ELEMENT_IS_HEAD (ctx.slots[nodir_bay + 1]) &&
-	     ctx.slots[nodir_bay])
-	ctx.ready = 1;
-    else if (ELEMENT_IS_HEAD (ctx.slots[nodir_bay]))
-	ctx.ready = 1;
-    /* Find a pawn for a lonely head. */
-    else if (ELEMENT_IS_HEAD (ctx.slots[nodir_bay + 2]))
-      {
-	if (!ctx.slots[nodir_bay] && ctx.slots[CLAMP_SLOT_SIDE])
-	  {
-	    ctx.moving_from = CLAMP_SLOT_SIDE;
-	    ctx.moving_to = nodir_bay;
-	  }
-	else if (!ctx.slots[nodir_bay] && !ELEMENT_IS_HEAD (ctx.slots[dir_bay + 2]) &&
-		 ctx.slots[dir_bay + 2])
-	  {
-	    ctx.moving_from = dir_bay + 2;
-	    ctx.moving_to = nodir_bay;
-	  }
-	else if (!ctx.slots[nodir_bay] &&
-		 !ELEMENT_IS_HEAD (ctx.slots[dir_bay + 1]) &&
-		 ctx.slots[dir_bay + 1])
-	  {
-	    ctx.moving_from = dir_bay + 1;
-	    ctx.moving_to = nodir_bay;
-	  }
-	/* No pawn ! */
-	else if (!ctx.slots[nodir_bay])
-	  {
-	    ctx.moving_from = nodir_bay + 2;
-	    ctx.moving_to = nodir_bay;
-	  }
-      }
-    /* If we may build a little tower ? */
-    /* Put the tower on the pawn. */
-    else if (ELEMENT_IS_HEAD (ctx.slots[dir_bay + 2]) &&
-	ctx.slots[dir_bay] &&
-	!ctx.slots[dir_bay + 1])
-      {
-	ctx.moving_from = dir_bay + 2;
-	ctx.moving_to = dir_bay + 1;
-	return;
-      }
-    /* Little tower is ready. */
-    else if (ELEMENT_IS_HEAD (ctx.slots[dir_bay + 1]) &&
-	     ctx.slots[dir_bay])
-	ctx.ready = 1;
-    else if (ELEMENT_IS_HEAD (ctx.slots[dir_bay]))
-	ctx.ready = 1;
-    /* Find a pawn for a lonely head. */
-    else if (ELEMENT_IS_HEAD (ctx.slots[dir_bay + 2]))
-      {
-	if (!ctx.slots[dir_bay] && ctx.slots[CLAMP_SLOT_SIDE])
-	  {
-	    ctx.moving_from = CLAMP_SLOT_SIDE;
-	    ctx.moving_to = dir_bay;
-	  }
-	else if (!ctx.slots[dir_bay] &&
-		 !ELEMENT_IS_HEAD (ctx.slots[nodir_bay + 2]) &&
-		 ctx.slots[nodir_bay + 2])
-	  {
-	    ctx.moving_from = nodir_bay + 2;
-	    ctx.moving_to = dir_bay;
-	  }
-	else if (!ctx.slots[dir_bay] &&
-		 !ELEMENT_IS_HEAD (ctx.slots[nodir_bay + 1]) &&
-		 ctx.slots[nodir_bay + 1])
-	  {
-	    ctx.moving_from = nodir_bay + 1;
-	    ctx.moving_to = dir_bay;
-	  }
-	/* No pawn ! */
-	else if (!ctx.slots[dir_bay])
-	  {
-	    ctx.moving_from = dir_bay + 2;
-	    ctx.moving_to = dir_bay;
-	  }
-      }
-    /* No head, find any pawn. */
-    else if (!ctx.slots[nodir_bay])
-      {
-	   ctx.moving_to = nodir_bay;
-	   if (ctx.slots[nodir_bay + 2])
-	       ctx.moving_from = nodir_bay + 2;
-	   else if (ctx.slots[CLAMP_SLOT_SIDE])
-	       ctx.moving_from = CLAMP_SLOT_SIDE;
-	   else if (ctx.slots[dir_bay + 2])
-	       ctx.moving_from = dir_bay + 2;
-	   else if (ctx.slots[dir_bay])
-	       ctx.moving_from = dir_bay;
-      }
-    else if (ctx.slots[nodir_bay])
-      {
-	ctx.ready = 1;
-      }
+    LOGISTIC_CASE (_,      _,
+		   _,  _,  _,
+		   _,      a, LEFT, 1);
 }
 
-/** If we picked up a tower. */
 static void
-logistic_new_tower ()
+logistic_make_tower ()
 {
-    uint8_t dir_bay, nodir_bay;
-    if (ctx.collect_direction == DIRECTION_FORWARD)
-      {
-	dir_bay = CLAMP_SLOT_FRONT_BOTTOM;
-	nodir_bay = CLAMP_SLOT_BACK_BOTTOM;
-      }
-    else
-      {
-	dir_bay = CLAMP_SLOT_BACK_BOTTOM;
-	nodir_bay = CLAMP_SLOT_FRONT_BOTTOM;
-      }
-    if (ctx.slots[dir_bay] == ELEMENT_TOWER)
-      {
-	ctx.ready = 1;
-	if (ctx.collect_direction == DIRECTION_FORWARD)
-	    ctx.collect_direction = DIRECTION_BACKWARD;
-	else
-	    ctx.collect_direction = DIRECTION_FORWARD;
-      }
-    if (ctx.slots[nodir_bay] == ELEMENT_TOWER)
-	ctx.ready = 1;
+    LOGISTIC_CASE (D,      _,
+		   e,  _,  _,
+		   H,      _, RIGHT, 1);
+
+    LOGISTIC_CASE (_,      h,
+		   _,  _,  p,
+		   _,      p, LEFT, 1);
+
+    LOGISTIC_CASE (P,      h,
+		   e,  _,  e,
+		   _,      D, LEFT, 0);
+
+    LOGISTIC_CASE (P,      h,
+		   e,  _,  e,
+		   _,      D, LEFT, 0);
+
+    LOGISTIC_CASE (_,      h,
+		   e,  _,  e,
+		   P,      D, LEFT, 0);
+
+    LOGISTIC_CASE (_,      h,
+		   _,  P,  e,
+		   _,      D, LEFT, 0);
+
+    LOGISTIC_CASE (P,      h,
+		   e,  _,  D,
+		   _,      p, LEFT, 0);
+
+    LOGISTIC_CASE (_,      h,
+		   e,  _,  D,
+		   P,      p, LEFT, 0);
+
+    LOGISTIC_CASE (_,      h,
+		   _,  P,  D,
+		   _,      p, LEFT, 0);
+}
+
+static void
+logistic_make_unload ()
+{
+    LOGISTIC_CASE (_,      _,
+		   _,  _,  _,
+		   _,      a, LEFT, 1);
+
+    LOGISTIC_CASE (_,      _,
+		   _,  _,  _,
+		   a,      _, RIGHT, 1);
+
+    LOGISTIC_CASE (H,      _,
+		   e,  _,  _,
+		   D,      _, RIGHT, 0);
+
+    LOGISTIC_CASE (_,      H,
+		   _,  _,  e,
+		   _,      D, LEFT, 0);
+
+    LOGISTIC_CASE (P,      _,
+		   e,  _,  _,
+		   D,      _, RIGHT, 0);
+
+    LOGISTIC_CASE (_,      P,
+		   _,  _,  e,
+		   _,      D, LEFT, 0);
+
+    LOGISTIC_CASE (_,      _,
+		   _,  P,  e,
+		   e,      D, LEFT, 0);
+
+    LOGISTIC_CASE (_,      _,
+		   e,  P,  _,
+		   D,      _, RIGHT, 0);
+}
+
+static void
+logisitic_make_switches ()
+{
+    LOGISTIC_CASE (_,      _,
+		   e,  D,  _,
+		   P,      _, LEFT, 0);
+
+    LOGISTIC_CASE (_,      D,
+		   e,  p,  e,
+		   P,      _, LEFT, 0);
+
+    LOGISTIC_CASE (_,      p,
+		   e,  p,  e,
+		   P,      D, LEFT, 0);
+    
+    LOGISTIC_CASE (D,      _,
+		   e,  _,  _,
+		   H,      _, RIGHT, 0);
+
+    LOGISTIC_CASE (h,      e,
+		   e,  _,  e,
+		   D,      P, LEFT, 0);
+
+    LOGISTIC_CASE (h,      P,
+		   e,  _,  e,
+		   D,      P, LEFT, 0);
 }
 
 /** Examine current state and take a decision. */
@@ -288,172 +368,39 @@ logistic_decision (void)
     ctx.ready = 0;
     ctx.need_prepare = 0;
 
+    /* Update context. */
+    logistic_update_construct_possible ();
     /* Update if a something is possible. */
-    logistic_tower_possible ();
+    logistic_update_need_prepare ();
 
-    /* Clamp is broken, can't move anything. */
-    if (ctx.prepare == 3)
+    /* Broken clamp. */
+    if (ctx.construct_possible && ctx.prepare == 3)
       {
-	logistic_debug_dump ();
-	return;
+	DPRINTF ("\nlogisitic_make_broken\n");
+	logisitic_make_broken ();
       }
+    /* Prepare tower. */
+    else if (ctx.construct_possible == 1 && ctx.prepare != 0)
+      {
 
-    /* We founded a tower ! */
-    logistic_new_tower ();
-    if (ctx.ready)
-      {
-	logistic_debug_dump ();
-	return;
+	DPRINTF ("\nlogisitic_make_tower\n");
+	logistic_make_tower ();
       }
-
-    /* Check if we really need to prepare something. */
-    logistic_check_need_prepare ();
-
-    /* A head is here, put it in the top ! */
-    if (ctx.prepare != 2)
+    /* Need to unload. */
+    else if (ctx.construct_possible == 2 && ctx.prepare == 2)
       {
-	if (ELEMENT_IS_HEAD (ctx.slots[CLAMP_SLOT_FRONT_BOTTOM]) &&
-	    !ctx.slots[CLAMP_SLOT_FRONT_TOP])
-	  {
-	    ctx.moving_from = CLAMP_SLOT_FRONT_BOTTOM;
-	    ctx.moving_to = CLAMP_SLOT_FRONT_TOP;
-	    if (!ctx.slots[CLAMP_SLOT_BACK_TOP])
-	      {
-		ctx.collect_direction = DIRECTION_BACKWARD;
-		ctx.clamp_pos_idle = CLAMP_SLOT_BACK_MIDDLE;
-	      }
-	    logistic_debug_dump ();
-	    return;
-	  }
-	if (ELEMENT_IS_HEAD (ctx.slots[CLAMP_SLOT_BACK_BOTTOM]) &&
-	    !ctx.slots[CLAMP_SLOT_BACK_TOP])
-	  {
-	    ctx.moving_from = CLAMP_SLOT_BACK_BOTTOM;
-	    ctx.moving_to = CLAMP_SLOT_BACK_TOP;
-	    if (!ctx.slots[CLAMP_SLOT_FRONT_TOP])
-	      {
-		ctx.collect_direction = DIRECTION_FORWARD;
-		ctx.clamp_pos_idle = CLAMP_SLOT_FRONT_MIDDLE;
-	      }
-	    logistic_debug_dump ();
-	    return;
-	  }
+	DPRINTF ("\nlogisitic_make_unload\n");
+	logistic_make_unload ();
       }
-    /* We can build a tower and we are authorized to do so. */
-    if (ctx.construct_possible == 1 && ctx.prepare)
-      {
-	/* Where to build the tower. */
-	uint8_t build_dir;
-	if (ELEMENT_IS_HEAD (ctx.slots[CLAMP_SLOT_BACK_TOP]) &&
-	    ELEMENT_IS_HEAD (ctx.slots[CLAMP_SLOT_FRONT_TOP]))
-	  {
-	    if (ctx.slots[CLAMP_SLOT_BACK_BOTTOM] &&
-		ctx.slots[CLAMP_SLOT_FRONT_BOTTOM])
-		build_dir = ctx.collect_direction;
-	    else if (ctx.slots[CLAMP_SLOT_BACK_BOTTOM])
-		build_dir = DIRECTION_BACKWARD;
-	    else
-		build_dir = DIRECTION_FORWARD;
-	  }
-	else if (ELEMENT_IS_HEAD (ctx.slots[CLAMP_SLOT_BACK_TOP]))
-	    build_dir = DIRECTION_BACKWARD;
-	else
-	    build_dir = DIRECTION_FORWARD;
-	/* Adapt collect direction. */
-	if (build_dir == DIRECTION_FORWARD)
-	    ctx.collect_direction = DIRECTION_BACKWARD;
-	else
-	    ctx.collect_direction = DIRECTION_FORWARD;
-	/* Fill with pawns. */
-	uint8_t build_bay, collect_bay;
-	if (build_dir == DIRECTION_FORWARD)
-	  {
-	    build_bay = CLAMP_SLOT_FRONT_BOTTOM;
-	    collect_bay = CLAMP_SLOT_BACK_BOTTOM;
-	  }
-	else
-	  {
-	    build_bay = CLAMP_SLOT_BACK_BOTTOM;
-	    collect_bay = CLAMP_SLOT_FRONT_BOTTOM;
-	  }
-	/* Destination. */
-	if (!ctx.slots[build_bay])
-	    ctx.moving_to = build_bay;
-	else if (!ctx.slots[build_bay + 1])
-	    ctx.moving_to = build_bay + 1;
-	else
-	  {
-	    /* Build is finished. */
-	    ctx.ready = 1;
-	    logistic_debug_dump ();
-	    return;
-	  }
-	/* Source. */
-	if (ctx.slots[collect_bay + 2] &&
-	    !ELEMENT_IS_HEAD (ctx.slots[collect_bay + 2]))
-	    ctx.moving_from = collect_bay + 2;
-	else if (ctx.slots[collect_bay] &&
-		 !ELEMENT_IS_HEAD (ctx.slots[collect_bay]))
-	    ctx.moving_from = collect_bay;
-	else if (ctx.slots[CLAMP_SLOT_SIDE])
-	    ctx.moving_from = CLAMP_SLOT_SIDE;
-	logistic_debug_dump ();
-	return;
-      }
-    /* We have to prepare an element to put out. */
-    else if (ctx.prepare == 2 && ctx.construct_possible)
-      {
-	logistic_put_element ();
-      }
-    /* Time to adjust element inside de robot, not build. */
+    /* Internal switches. */
     else
       {
-	uint8_t get_bay, put_bay;
-	if (ctx.collect_direction == DIRECTION_FORWARD)
-	  {
-	    get_bay = CLAMP_SLOT_FRONT_BOTTOM;
-	    put_bay = CLAMP_SLOT_BACK_BOTTOM;
-	  }
-	else
-	  {
-	    get_bay = CLAMP_SLOT_BACK_BOTTOM;
-	    put_bay = CLAMP_SLOT_FRONT_BOTTOM;
-	  }
-	/* Adjust some pawns. */
-	/* Search source. */
-	if (ctx.slots[get_bay] == ELEMENT_PAWN)
-	    ctx.moving_from = get_bay;
-	else if (ctx.slots[get_bay + 2] == ELEMENT_PAWN)
-	    ctx.moving_from = get_bay + 2;
-	else if (ctx.slots[put_bay + 2] == ELEMENT_PAWN)
-	    ctx.moving_from = put_bay + 2;
-	else if (ctx.slots[put_bay] == ELEMENT_PAWN)
-	    ctx.moving_from = put_bay;
-
-	/* Search destination. */
-	if (ctx.moving_from != CLAMP_SLOT_NB)
-	  {
-	    if (!ctx.slots[CLAMP_SLOT_SIDE])
-		ctx.moving_to = CLAMP_SLOT_SIDE;
-	    else if (!ctx.slots[put_bay])
-		ctx.moving_to = put_bay;
-	    else if (!ctx.slots[put_bay + 2] && ctx.moving_from != put_bay)
-		ctx.moving_to = put_bay + 2;
-	    else
-		ctx.moving_from = CLAMP_SLOT_NB;
-	  }
-	if (ctx.moving_from == ctx.moving_to)
-	  {
-	    ctx.moving_from = CLAMP_SLOT_NB;
-	    ctx.moving_to = CLAMP_SLOT_NB;
-	  }
-
-	if (ctx.collect_direction == DIRECTION_FORWARD)
-	    ctx.clamp_pos_idle = CLAMP_SLOT_FRONT_MIDDLE;
-	else
-	    ctx.clamp_pos_idle = CLAMP_SLOT_BACK_MIDDLE;
+	DPRINTF ("\nlogisitic_make_switches\n");
+	logisitic_make_switches ();
       }
+
     logistic_debug_dump ();
+    return;
 }
 
 void
@@ -464,6 +411,7 @@ logistic_init (void)
 	ctx.slots[i] = 0;
     ctx.moving_from = ctx.moving_to = CLAMP_SLOT_NB;
     ctx.collect_direction = DIRECTION_FORWARD;
+    ctx.clamp_pos_idle = CLAMP_SLOT_FRONT_MIDDLE;
     ctx.construct_possible = 0;
     ctx.prepare = 1;
     ctx.ready = 0;
