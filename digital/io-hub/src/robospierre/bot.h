@@ -173,7 +173,7 @@
     -0x1ff, (((slot) == CLAMP_SLOT_FRONT_BOTTOM \
 	     || (slot) == CLAMP_SLOT_BACK_BOTTOM) ? 80 : 62), \
     (((slot) == CLAMP_SLOT_FRONT_BOTTOM \
-      || (slot) == CLAMP_SLOT_BACK_BOTTOM) ? -0x100 : -0x180)
+      || (slot) == CLAMP_SLOT_BACK_BOTTOM) ? -0x100 : -0x200)
 
 #define BOT_PWM_CLAMP_INIT 0x1ff, 150, 0
 #define BOT_PWM_DOOR_INIT 0x1ff, 80, 0x55
