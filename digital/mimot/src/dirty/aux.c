@@ -183,6 +183,7 @@ aux_traj_find_zero (struct aux_t *aux)
 	if (!zero)
 	  {
 	    aux->speed->cons = 0;
+	    aux->speed->cur = 0;
 	    state_finish (aux->state);
 	    aux->pos = aux->reset_pos;
 	    aux->traj_mode = AUX_TRAJ_DONE;
