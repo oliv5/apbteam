@@ -32,6 +32,7 @@
 #include "clamp.h"
 #include "bot.h"
 
+#include "modules/utils/utils.h"
 #include "modules/math/geometry/distance.h"
 
 /* Handle pawn sensors.  When a pawn is detected, it can not be taken
@@ -93,6 +94,12 @@ pawn_sensor_get (uint8_t direction)
 		  {
 		    ctx->active = 0;
 		    return pawn_sensor_get_type (direction);
+		  }
+		else if (d > UTILS_ABS (dist))
+		  {
+		    vect_from_polar_uf016 (&ctx->active_position, dist,
+					   robot_position.a);
+		    vect_translate (&ctx->active_position, &robot_position.v);
 		  }
 	      }
 	    else
