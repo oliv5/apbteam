@@ -187,21 +187,24 @@ move_go_or_rotate (vect_t dst, uint16_t angle, uint8_t with_angle,
 		   uint8_t backward)
 {
     position_t robot_position;
+    asserv_get_position (&robot_position);
+    uint16_t robot_angle = robot_position.a;
+    if (backward & ASSERV_BACKWARD)
+	robot_angle += 0x8000;
     /* Remember step. */
     move_data.step = dst;
     move_data.step_angle = angle;
     move_data.step_with_angle = with_angle;
     move_data.step_backward = backward;
     /* Compute angle to destination. */
-    asserv_get_position (&robot_position);
     vect_t v = dst; vect_sub (&v, &robot_position.v);
     uint16_t dst_angle = atan2 (v.y, v.x) * ((1l << 16) / (2 * M_PI));
     if (backward & ASSERV_BACKWARD)
 	dst_angle += 0x8000;
     if ((backward & ASSERV_REVERT_OK)
-	&& (dst_angle ^ robot_position.a) & 0x8000)
+	&& (dst_angle ^ robot_angle) & 0x8000)
 	dst_angle += 0x8000;
-    int16_t diff = dst_angle - robot_position.a;
+    int16_t diff = dst_angle - robot_angle;
     /* Move or rotate. */
     if (UTILS_ABS (diff) < 0x1000)
       {
