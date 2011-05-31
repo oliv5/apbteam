@@ -258,7 +258,7 @@ logistic_make_tower ()
 {
     LOGISTIC_CASE (D,      _,
 		   e,  _,  _,
-		   H,      _, RIGHT, 1);
+		   H,      _, RIGHT, 0);
 
     LOGISTIC_CASE (_,      h,
 		   _,  _,  p,
