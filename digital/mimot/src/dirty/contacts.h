@@ -26,7 +26,7 @@
  * }}} */
 
 /** Define contacts. */
-#define CONTACT_AUX0_ZERO_IO C, 0
-#define CONTACT_AUX1_ZERO_IO C, 1
+#define CONTACT_AUX0_ZERO_IO C, 2
+#define CONTACT_AUX1_ZERO_IO C, 3
 
 #endif /* contacts_h */
