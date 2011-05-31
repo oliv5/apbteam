@@ -91,7 +91,7 @@ static const struct robot_t robospierre_robot =
     /** Number of steps for each auxiliary motor encoder. */
     { 256, 250 },
     /** Sensor update function. */
-    NULL,
+    simu_sensor_update_robospierre,
 };
 
 /* Table of models. */
