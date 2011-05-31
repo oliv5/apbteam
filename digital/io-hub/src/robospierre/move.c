@@ -206,8 +206,9 @@ move_go_or_rotate (vect_t dst, uint16_t angle, uint8_t with_angle,
     uint16_t dst_angle = atan2 (v.y, v.x) * ((1l << 16) / (2 * M_PI));
     if (backward & ASSERV_BACKWARD)
 	dst_angle += 0x8000;
+    int16_t diff_angle = dst_angle - robot_angle;
     if ((backward & ASSERV_REVERT_OK)
-	&& (dst_angle ^ robot_angle) & 0x8000)
+	&& (diff_angle > 0x4000 || diff_angle < -0x4000))
 	dst_angle += 0x8000;
     int16_t diff = dst_angle - robot_angle;
     /* Move or rotate. */
