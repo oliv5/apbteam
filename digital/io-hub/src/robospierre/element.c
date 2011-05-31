@@ -706,24 +706,21 @@ element_opposed (uint8_t element_id)
     return op;
 }
 
-position_t
+vect_t
 element_get_pos (uint8_t element_id)
 {
     element_t e = element_get (element_id);
-    position_t pos;
-    pos.v = e.pos;
-    pos.a = 0xffff;
+    vect_t pos;
+    pos = e.pos;
     if (e.attr == (ELEMENT_GREEN |ELEMENT_RIGHT))
       {
 	/* To the right. */
-	pos.a = 0x0000;
-	pos.v.x = PG_WIDTH - BOT_GREEN_ELEMENT_PLACE_DISTANCE_MM;
+	pos.x = PG_WIDTH - BOT_GREEN_ELEMENT_DISTANCE_MM;
       }
     if (e.attr == (ELEMENT_GREEN |ELEMENT_LEFT))
       {
 	/* To the left. */
-	pos.a = 0x8000;
-	pos.v.x = BOT_GREEN_ELEMENT_PLACE_DISTANCE_MM;
+	pos.x = BOT_GREEN_ELEMENT_DISTANCE_MM;
       }
     return pos;
 }

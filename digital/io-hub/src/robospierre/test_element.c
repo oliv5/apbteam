@@ -328,8 +328,8 @@ int main ()
 	  case 'g':
 		printf ("element id: ");
 		scanf ("%i", &x);
-		position_t pos = element_get_pos (x);
-		printf ("x: %u y: %u a: %u\n", pos.v.x, pos.v.y, pos.a);
+		vect_t pos = element_get_pos (x);
+		printf ("x: %u y: %u\n", pos.x, pos.y);
 	    break;
 	  case 'q':
 	    exit = 1;

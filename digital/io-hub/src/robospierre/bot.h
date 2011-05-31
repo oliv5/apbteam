@@ -58,10 +58,9 @@
 
 /** Distance from border to position in front of a green element. */
 #define BOT_GREEN_ELEMENT_PLACE_DISTANCE_MM 600
-/** Distance to go to capture a green element. */
-#define BOT_GREEN_ELEMENT_MOVE_DISTANCE_MM \
-    (BOT_GREEN_ELEMENT_PLACE_DISTANCE_MM - BOT_ELEMENT_RADIUS \
-     - BOT_SIZE_FRONT - 20)
+/** Distance from border to go to capture a green element. */
+#define BOT_GREEN_ELEMENT_DISTANCE_MM \
+    (BOT_ELEMENT_RADIUS + BOT_SIZE_FRONT + 20)
 
 /** Speed used for initialisation. */
 #ifdef HOST
