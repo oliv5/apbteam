@@ -24,7 +24,7 @@
  * }}} */
 #include "common.h"
 
-#include "playground.h"
+#include "playground_2011.h"
 #include "asserv.h"
 
 #define FSM_NAME AI
@@ -69,7 +69,7 @@ struct top_t top_global;
 FSM_TRANS (TOP_START, init_start_round, TOP_GOING_OUT1)
 {
     element_init ();
-    asserv_goto (PG_X (400 + 100), PG_Y (PG_LENGTH - 200), 0);
+    asserv_goto (PG_X (PG_GREEN_WIDTH_MM + 100), PG_Y (PG_LENGTH - 200), 0);
     return FSM_NEXT (TOP_START, init_start_round);
 }
 

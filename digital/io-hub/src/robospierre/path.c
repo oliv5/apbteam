@@ -26,7 +26,7 @@
 #include "defs.h"
 #include "path.h"
 #include "bot.h"
-#include "playground.h"
+#include "playground_2011.h"
 
 #include "modules/path/astar/astar.h"
 #include "modules/utils/utils.h"
@@ -213,8 +213,8 @@ path_blocking (uint8_t a, uint8_t b, int16_t *dp)
     path_pos (b, &vb);
     /* Test for green zone. */
     uint8_t a_green, b_green;
-    a_green = va.x < 400 || va.x > PG_WIDTH - 400;
-    b_green = vb.x < 400 || vb.x > PG_WIDTH - 400;
+    a_green = va.x < PG_GREEN_WIDTH_MM || va.x > PG_WIDTH - PG_GREEN_WIDTH_MM;
+    b_green = vb.x < PG_GREEN_WIDTH_MM || vb.x > PG_WIDTH - PG_GREEN_WIDTH_MM;
     if ((va.x < BOT_GREEN_ELEMENT_PLACE_DISTANCE_MM
 	 && vb.x > BOT_GREEN_ELEMENT_PLACE_DISTANCE_MM)
 	|| (va.x > BOT_GREEN_ELEMENT_PLACE_DISTANCE_MM
