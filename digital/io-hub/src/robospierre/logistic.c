@@ -268,10 +268,6 @@ logistic_make_tower ()
 		   e,  _,  e,
 		   _,      D, LEFT, 0);
 
-    LOGISTIC_CASE (P,      h,
-		   e,  _,  e,
-		   _,      D, LEFT, 0);
-
     LOGISTIC_CASE (_,      h,
 		   e,  _,  e,
 		   P,      D, LEFT, 0);
@@ -322,7 +318,7 @@ logistic_make_unload ()
 
     LOGISTIC_CASE (_,      _,
 		   _,  P,  e,
-		   e,      D, LEFT, 0);
+		   _,      D, LEFT, 0);
 
     LOGISTIC_CASE (_,      _,
 		   e,  P,  _,
@@ -332,9 +328,21 @@ logistic_make_unload ()
 static void
 logisitic_make_switches ()
 {
+    LOGISTIC_CASE (_,      P,
+		   _,  D,  e,
+		   _,      _, LEFT, 0);
+
+    LOGISTIC_CASE (P,      _,
+		   e,  D,  _,
+		   _,      _, LEFT, 0);
+
     LOGISTIC_CASE (_,      _,
 		   e,  D,  _,
 		   P,      _, LEFT, 0);
+
+    LOGISTIC_CASE (_,      _,
+		   _,  D,  e,
+		   _,      P, LEFT, 0);
 
     LOGISTIC_CASE (_,      D,
 		   e,  p,  e,
@@ -348,13 +356,13 @@ logisitic_make_switches ()
 		   e,  _,  _,
 		   H,      _, RIGHT, 0);
 
-    LOGISTIC_CASE (h,      e,
+    LOGISTIC_CASE (h,      _,
 		   e,  _,  e,
-		   D,      P, LEFT, 0);
+		   D,      P, RIGHT, 0);
 
     LOGISTIC_CASE (h,      P,
 		   e,  _,  e,
-		   D,      P, LEFT, 0);
+		   D,      _, RIGHT, 0);
 }
 
 /** Examine current state and take a decision. */
