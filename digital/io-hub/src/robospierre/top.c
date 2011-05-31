@@ -97,7 +97,7 @@ top_go_drop (void)
 {
     position_t robot_pos;
     asserv_get_position (&robot_pos);
-    uint8_t drop_pos_id = 37;
+    uint8_t drop_pos_id = 43;
     vect_t drop_pos = element_get_pos (drop_pos_id);
     uint8_t backward = logistic_global.collect_direction == DIRECTION_FORWARD
 	? 0 : ASSERV_BACKWARD;
