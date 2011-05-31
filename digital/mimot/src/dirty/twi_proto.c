@@ -122,11 +122,6 @@ twi_proto_callback (u8 *buf, u8 size)
 	speed_aux[0].max = buf[4];
 	aux_traj_goto_start (&aux[0], v8_to_v16 (buf[2], buf[3]), 0);
 	break;
-      case c ('B', 1):
-	/* Find the zero position of the aux0.
-	 * - b: speed. */
-	aux_traj_find_limit_start (&aux[0], buf[2], 0);
-	break;
       case c ('c', 3):
 	/* Move the aux1.
 	 * - w: new position.
@@ -134,10 +129,23 @@ twi_proto_callback (u8 *buf, u8 size)
 	speed_aux[1].max = buf[4];
 	aux_traj_goto_start (&aux[1], v8_to_v16 (buf[2], buf[3]), 0);
 	break;
-      case c ('C', 1):
-	/* Find the zero position of the aux1.
-	 * - b: speed. */
-	aux_traj_find_limit_start (&aux[1], buf[2], 0);
+      case c ('B', 5):
+	/* Find the zero position.
+	 * - b: aux index.
+	 * - b: speed.
+	 * - b: use switch.
+	 * - w: reset position. */
+	if (buf[2] < AC_ASSERV_AUX_NB)
+	  {
+	    if (buf[4])
+		aux_traj_find_zero_start (&aux[buf[2]], buf[3],
+					  v8_to_v16 (buf[5], buf[6]), 0);
+	    else
+		aux_traj_find_limit_start (&aux[buf[2]], buf[3],
+					   v8_to_v16 (buf[5], buf[6]), 0);
+	  }
+	else
+	    buf[0] = 0;
 	break;
       case c ('l', 4):
 	/* Clamp.

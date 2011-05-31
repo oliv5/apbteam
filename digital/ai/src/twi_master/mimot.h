@@ -92,6 +92,16 @@ mimot_motor0_zero_position (int8_t speed);
 void
 mimot_motor1_zero_position (int8_t speed);
 
+/** Find zero position. */
+void
+mimot_motor0_find_zero (int8_t speed, uint8_t use_switch,
+			uint16_t reset_position);
+
+/** Find zero position. */
+void
+mimot_motor1_find_zero (int8_t speed, uint8_t use_switch,
+			uint16_t reset_position);
+
 /** Clamp motor0. */
 void
 mimot_motor0_clamp (int8_t speed, int16_t pwm);

@@ -166,19 +166,41 @@ mimot_move_motor1_absolute (uint16_t position, uint8_t speed)
 void
 mimot_motor0_zero_position (int8_t speed)
 {
-    uint8_t *buffer = twi_master_get_buffer (MIMOT_SLAVE);
-    buffer[0] = 'B';
-    buffer[1] = speed;
-    twi_master_send_buffer (2);
+    mimot_motor0_find_zero (speed, 0, 0);
 }
 
 void
 mimot_motor1_zero_position (int8_t speed)
 {
+    mimot_motor1_find_zero (speed, 0, 0);
+}
+
+void
+mimot_motor0_find_zero (int8_t speed, uint8_t use_switch,
+			uint16_t reset_position)
+{
     uint8_t *buffer = twi_master_get_buffer (MIMOT_SLAVE);
-    buffer[0] = 'C';
-    buffer[1] = speed;
-    twi_master_send_buffer (2);
+    buffer[0] = 'B';
+    buffer[1] = 0;
+    buffer[2] = speed;
+    buffer[3] = use_switch;
+    buffer[4] = v16_to_v8 (reset_position, 1);
+    buffer[5] = v16_to_v8 (reset_position, 0);
+    twi_master_send_buffer (6);
+}
+
+void
+mimot_motor1_find_zero (int8_t speed, uint8_t use_switch,
+			uint16_t reset_position)
+{
+    uint8_t *buffer = twi_master_get_buffer (MIMOT_SLAVE);
+    buffer[0] = 'B';
+    buffer[1] = 1;
+    buffer[2] = speed;
+    buffer[3] = use_switch;
+    buffer[4] = v16_to_v8 (reset_position, 1);
+    buffer[5] = v16_to_v8 (reset_position, 0);
+    twi_master_send_buffer (6);
 }
 
 void

@@ -50,6 +50,8 @@ struct aux_t
     uint8_t zero_bv;
     /** Handle blocking by aux instead of pos. */
     uint8_t handle_blocking;
+    /** Reset position after zero is found. */
+    int16_t reset_pos;
 };
 
 extern struct aux_t aux[AC_ASSERV_AUX_NB];
@@ -68,10 +70,12 @@ aux_traj_clamp_start (struct aux_t *aux, int8_t speed, int16_t clampin_pwm,
 		      uint8_t seq);
 
 void
-aux_traj_find_zero_start (struct aux_t *aux, int8_t speed, uint8_t seq);
+aux_traj_find_zero_start (struct aux_t *aux, int8_t speed, int16_t reset_pos,
+			  uint8_t seq);
 
 void
-aux_traj_find_limit_start (struct aux_t *aux, int8_t speed, uint8_t seq);
+aux_traj_find_limit_start (struct aux_t *aux, int8_t speed, int16_t reset_pos,
+			   uint8_t seq);
 
 void
 aux_traj_update (void);

@@ -184,7 +184,7 @@ aux_traj_find_zero (struct aux_t *aux)
 	  {
 	    aux->speed->cons = 0;
 	    state_finish (aux->state);
-	    aux->pos = 0;
+	    aux->pos = aux->reset_pos;
 	    aux->traj_mode = AUX_TRAJ_DONE;
 	  }
 	break;
@@ -193,12 +193,14 @@ aux_traj_find_zero (struct aux_t *aux)
 
 /** Start find zero mode. */
 void
-aux_traj_find_zero_start (struct aux_t *aux, int8_t speed, uint8_t seq)
+aux_traj_find_zero_start (struct aux_t *aux, int8_t speed, int16_t reset_pos,
+			  uint8_t seq)
 {
     aux->traj_mode = AUX_TRAJ_FIND_ZERO_NOT;
     aux->speed->use_pos = 0;
     aux->speed->cons = speed << 8;
     state_start (aux->state, MODE_TRAJ, seq);
+    aux->reset_pos = reset_pos;
 }
 
 /** Find limit mode. */
@@ -225,7 +227,7 @@ aux_traj_find_limit (struct aux_t *aux)
 	if (!--aux->wait)
 	  {
 	    state_finish (aux->state);
-	    aux->pos = 0;
+	    aux->pos = aux->reset_pos;
 	    aux->traj_mode = AUX_TRAJ_DONE;
 	  }
 	break;
@@ -234,13 +236,15 @@ aux_traj_find_limit (struct aux_t *aux)
 
 /** Start find limit mode. */
 void
-aux_traj_find_limit_start (struct aux_t *aux, int8_t speed, uint8_t seq)
+aux_traj_find_limit_start (struct aux_t *aux, int8_t speed, int16_t reset_pos,
+			   uint8_t seq)
 {
     aux->traj_mode = AUX_TRAJ_FIND_LIMIT;
     aux->speed->use_pos = 0;
     aux->speed->cons = speed << 8;
     state_start (aux->state, MODE_TRAJ, seq);
     aux->state->variant = 4;
+    aux->reset_pos = reset_pos;
 }
 
 /** Update trajectories for one motor. */

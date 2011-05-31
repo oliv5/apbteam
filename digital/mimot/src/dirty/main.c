@@ -287,15 +287,22 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	aux_traj_clamp_start (auxp, args[1], v8_to_v16 (args[2], args[3]),
 			      args[4]);
 	break;
-      case c ('y', 3):
+      case c ('y', 6):
 	/* Auxiliary find zero.
 	 * - b: aux index.
 	 * - b: speed.
+	 * - b: use switch.
+	 * - w: reset position.
 	 * - b: sequence number. */
 	if (!auxp) { proto_send0 ('?'); return; }
-	if (args[2] == state->sequence)
+	if (args[5] == state->sequence)
 	    break;
-	aux_traj_find_limit_start (auxp, args[1], args[2]);
+	if (args[2])
+	    aux_traj_find_zero_start (auxp, args[1],
+				      v8_to_v16 (args[3], args[4]), args[5]);
+	else
+	    aux_traj_find_limit_start (auxp, args[1],
+				       v8_to_v16 (args[3], args[4]), args[5]);
 	break;
       case c ('a', 2):
 	/* Set all acknoledge.
