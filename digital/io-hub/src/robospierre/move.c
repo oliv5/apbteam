@@ -24,6 +24,7 @@
  * }}} */
 #include "common.h"
 #include "move.h"
+#include "playground_2011.h"
 
 #include "main.h"
 #include "asserv.h"
@@ -191,6 +192,10 @@ move_go_or_rotate (vect_t dst, uint16_t angle, uint8_t with_angle,
     uint16_t robot_angle = robot_position.a;
     if (backward & ASSERV_BACKWARD)
 	robot_angle += 0x8000;
+    /* Check for green zone. */
+    if (robot_position.v.x < PG_GREEN_WIDTH_MM
+	|| robot_position.v.x > PG_WIDTH - PG_GREEN_WIDTH_MM)
+	backward |= ASSERV_REVERT_OK;
     /* Remember step. */
     move_data.step = dst;
     move_data.step_angle = angle;
