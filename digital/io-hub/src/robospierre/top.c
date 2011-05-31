@@ -49,7 +49,9 @@ FSM_STATES (
 	    TOP_GOING_OUT2,
 
 	    TOP_GOING_TO_DROP,
-	    TOP_GOING_TO_ELEMENT)
+	    TOP_GOING_TO_ELEMENT,
+	    /* Waiting clamp has finished its work. */
+	    TOP_WAITING_CLAMP)
 
 FSM_START_WITH (TOP_START)
 
@@ -137,10 +139,13 @@ FSM_TRANS (TOP_GOING_TO_DROP, move_success,
 }
 
 FSM_TRANS (TOP_GOING_TO_ELEMENT, move_success,
+	   clamp_working, TOP_WAITING_CLAMP,
 	   drop, TOP_GOING_TO_DROP,
 	   element, TOP_GOING_TO_ELEMENT)
 {
     element_taken (ctx.target_element_id, ELEMENT_PAWN);
+    if (clamp_working ())
+	return FSM_NEXT (TOP_GOING_TO_ELEMENT, move_success, clamp_working);
     switch (top_decision ())
       {
       default: return FSM_NEXT (TOP_GOING_TO_ELEMENT, move_success, drop);
@@ -148,3 +153,13 @@ FSM_TRANS (TOP_GOING_TO_ELEMENT, move_success,
       }
 }
 
+FSM_TRANS (TOP_WAITING_CLAMP, clamp_done,
+	   drop, TOP_GOING_TO_DROP,
+	   element, TOP_GOING_TO_ELEMENT)
+{
+    switch (top_decision ())
+      {
+      default: return FSM_NEXT (TOP_WAITING_CLAMP, clamp_done, drop);
+      case 1: return FSM_NEXT (TOP_WAITING_CLAMP, clamp_done, element);
+      }
+}

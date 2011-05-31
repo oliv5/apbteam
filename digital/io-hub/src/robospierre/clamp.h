@@ -64,6 +64,10 @@ enum {
 void
 clamp_init (void);
 
+/** Is clamp working? */
+uint8_t
+clamp_working (void);
+
 /** Move clamp to given position. */
 void
 clamp_move (uint8_t pos);

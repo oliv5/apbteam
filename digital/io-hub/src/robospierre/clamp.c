@@ -95,6 +95,10 @@ FSM_STATES (
 FSM_EVENTS (
 	    /* New element inside bottom slot. */
 	    clamp_new_element,
+	    /* Sent when clamp is working. */
+	    clamp_working,
+	    /* Sent when clamp return to idle state. */
+	    clamp_done,
 	    /* Order to drop elements. */
 	    clamp_drop,
 	    /* Sent once drop is done, but robot should advance to completely
@@ -123,6 +127,8 @@ FSM_START_WITH (CLAMP_MOVE_IDLE)
 /** Clamp context. */
 struct clamp_t
 {
+    /** True if clamp is working. */
+    uint8_t working;
     /** Current position. */
     uint8_t pos_current;
     /** Requested position. */
@@ -194,6 +200,12 @@ void
 clamp_init (void)
 {
     ctx.open = 1;
+}
+
+uint8_t
+clamp_working (void)
+{
+    return ctx.working;
 }
 
 void
@@ -428,11 +440,15 @@ FSM_TRANS (CLAMP_INIT_FINDING_TOP, clamp_elevation_success,
 
 FSM_TRANS (CLAMP_GOING_IDLE, clamp_move_success, CLAMP_IDLE)
 {
+    ctx.working = 0;
+    fsm_queue_post_event (FSM_EVENT (AI, clamp_done));
     return FSM_NEXT (CLAMP_GOING_IDLE, clamp_move_success);
 }
 
 FSM_TRANS (CLAMP_IDLE, clamp_new_element, CLAMP_TAKING_DOOR_CLOSING)
 {
+    ctx.working = 1;
+    fsm_queue_post_event (FSM_EVENT (AI, clamp_working));
     pwm_set_timed (clamp_slot_door[ctx.pos_new],
 		   BOT_PWM_DOOR_CLOSE (ctx.pos_new));
     return FSM_NEXT (CLAMP_IDLE, clamp_new_element);
@@ -470,10 +486,18 @@ FSM_TRANS_TIMEOUT (CLAMP_TAKING_DOOR_CLOSING, BOT_PWM_DOOR_CLOSE_TIME,
 	    return FSM_NEXT_TIMEOUT (CLAMP_TAKING_DOOR_CLOSING, move_to_idle);
 	  }
 	else
+	  {
+	    ctx.working = 0;
+	    fsm_queue_post_event (FSM_EVENT (AI, clamp_done));
 	    return FSM_NEXT_TIMEOUT (CLAMP_TAKING_DOOR_CLOSING, clamp_locked);
+	  }
       }
     else
+      {
+	ctx.working = 0;
+	fsm_queue_post_event (FSM_EVENT (AI, clamp_done));
 	return FSM_NEXT_TIMEOUT (CLAMP_TAKING_DOOR_CLOSING, done);
+      }
 }
 
 FSM_TRANS (CLAMP_MOVING_ELEMENT, clamp_move_success,
@@ -500,12 +524,20 @@ FSM_TRANS (CLAMP_MOVING_ELEMENT, clamp_move_success,
 			     move_to_idle);
 	  }
 	else
+	  {
+	    ctx.working = 0;
+	    fsm_queue_post_event (FSM_EVENT (AI, clamp_done));
 	    return FSM_NEXT (CLAMP_MOVING_ELEMENT, clamp_move_success,
 			     clamp_locked);
+	  }
       }
     else
+      {
+	ctx.working = 0;
+	fsm_queue_post_event (FSM_EVENT (AI, clamp_done));
 	return FSM_NEXT (CLAMP_MOVING_ELEMENT, clamp_move_success,
 			 done);
+      }
 }
 
 FSM_TRANS_TIMEOUT (CLAMP_DROPING_DOOR_OPENING, BOT_PWM_CLAMP_OPEN_TIME,
@@ -539,12 +571,20 @@ FSM_TRANS (CLAMP_DROPING_WAITING_ROBOT, clamp_drop_clear,
 			     move_to_idle);
 	  }
 	else
+	  {
+	    ctx.working = 0;
+	    fsm_queue_post_event (FSM_EVENT (AI, clamp_done));
 	    return FSM_NEXT (CLAMP_DROPING_WAITING_ROBOT, clamp_drop_clear,
 			     clamp_locked);
+	  }
       }
     else
+      {
+	ctx.working = 0;
+	fsm_queue_post_event (FSM_EVENT (AI, clamp_done));
 	return FSM_NEXT (CLAMP_DROPING_WAITING_ROBOT, clamp_drop_clear,
 			 done);
+      }
 }
 
 FSM_TRANS (CLAMP_LOCKED, clamp_new_element, CLAMP_LOCKED)
