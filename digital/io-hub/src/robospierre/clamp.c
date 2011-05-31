@@ -360,14 +360,16 @@ clamp_route (void)
       }
     else if (pos_current == CLAMP_BAY_FRONT_LEAVING)
       {
-	if (pos_request == CLAMP_SLOT_SIDE)
+	if (pos_request == CLAMP_SLOT_SIDE
+	    || pos_request == CLAMP_BAY_SIDE_ENTER_LEAVE)
 	    pos_new = CLAMP_BAY_SIDE_ENTER_LEAVE;
 	else
 	    pos_new = CLAMP_SLOT_BACK_MIDDLE;
       }
     else if (pos_current == CLAMP_BAY_BACK_LEAVING)
       {
-	if (pos_request == CLAMP_SLOT_SIDE)
+	if (pos_request == CLAMP_SLOT_SIDE
+	    || pos_request == CLAMP_BAY_SIDE_ENTER_LEAVE)
 	    pos_new = CLAMP_BAY_SIDE_ENTER_LEAVE;
 	else
 	    pos_new = CLAMP_SLOT_FRONT_MIDDLE;
@@ -434,7 +436,7 @@ FSM_TRANS (CLAMP_INIT_FINDING_ROTATION_EDGE, clamp_rotation_success,
 FSM_TRANS (CLAMP_INIT_FINDING_TOP, clamp_elevation_success,
 	   CLAMP_GOING_IDLE)
 {
-    clamp_move (CLAMP_SLOT_SIDE);
+    clamp_move (CLAMP_BAY_SIDE_ENTER_LEAVE);
     return FSM_NEXT (CLAMP_INIT_FINDING_TOP, clamp_elevation_success);
 }
 
