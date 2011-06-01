@@ -84,7 +84,7 @@ struct element_t element_table[] =
     {ELEMENT_ANY, {3000 - 200, 10 + 280 * 1}, ELEMENT_GREEN | ELEMENT_RIGHT, -100},
 
     /*
-       32 elements in the middle of a square.
+       36 elements in the middle of a square.
        Altern colors in order to retrieve position % 2.
        See ELEMENT_UNLOAD_START and ELEMENT_UNLOAD_END
     */
@@ -118,15 +118,10 @@ struct element_t element_table[] =
     {ELEMENT_NONE | ELEMENT_ANY, {1500 + 0 * 350 + 175, 1 * 350 + 175}, ELEMENT_CENTER | ELEMENT_LEFT, 0},
     {ELEMENT_NONE | ELEMENT_ANY, {1500 + 1 * 350 + 175, 1 * 350 + 175}, ELEMENT_CENTER | ELEMENT_RIGHT, 0},
     {ELEMENT_NONE | ELEMENT_ANY, {1500 + 2 * 350 + 175, 1 * 350 + 175}, ELEMENT_CENTER | ELEMENT_LEFT, 0},
-    {ELEMENT_NONE | ELEMENT_ANY, {1500 - 175, 175}, ELEMENT_CENTER | ELEMENT_LEFT | ELEMENT_BONUS, 0}, /* middle bonus left, red. */
-    {ELEMENT_NONE | ELEMENT_ANY, {1500 + 175, 175}, ELEMENT_CENTER | ELEMENT_RIGHT | ELEMENT_BONUS, 0}, /* middle bonus right, blue. */
-
-    /*
-       4 elements in safe zones.
-       see ELEMENT_UNLOAD_SAFE_START and ELEMENT_UNLOAD_SAFE_END
-    */
     {ELEMENT_NONE, {1500 - 2 * 350 - 175, 175}, ELEMENT_CENTER | ELEMENT_SAFE | ELEMENT_LEFT, -100}, /* left red */
     {ELEMENT_NONE, {1500 - 1 * 350 - 175, 175}, ELEMENT_CENTER | ELEMENT_SAFE | ELEMENT_RIGHT, -100}, /* left blue */
+    {ELEMENT_NONE | ELEMENT_ANY, {1500 - 175, 175}, ELEMENT_CENTER | ELEMENT_LEFT | ELEMENT_BONUS, 0}, /* middle bonus left, red. */
+    {ELEMENT_NONE | ELEMENT_ANY, {1500 + 175, 175}, ELEMENT_CENTER | ELEMENT_RIGHT | ELEMENT_BONUS, 0}, /* middle bonus right, blue. */
     {ELEMENT_NONE, {1500 + 1 * 350 + 175, 175}, ELEMENT_CENTER | ELEMENT_SAFE | ELEMENT_LEFT, -100}, /* right red */
     {ELEMENT_NONE, {1500 + 2 * 350 + 175, 175}, ELEMENT_CENTER | ELEMENT_SAFE | ELEMENT_RIGHT, -100} /* right blue */
 };
