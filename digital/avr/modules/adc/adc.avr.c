@@ -48,7 +48,7 @@
  *        11: Internal 2.56V Voltage Reference with external capacitor
  *        at AREF pin. */
 #define ADMUX_CFG (regv (REFS1, REFS0, ADLAR, MUX4, MUX3, MUX2, MUX1, MUX0, \
-			     1,     1,     0,    0,    0,    0,    0,    0))
+			     0,     1,     0,    0,    0,    0,    0,    0))
 #define ADCSR_CFG (regv (ADEN, ADSC, ADFR, ADIF, ADIE, ADPS2, ADPS1, ADPS0, \
 			    1,    0,    0,    1,    0,     0,     0,     0))
 #define ADCSR_CFG_115200 7
