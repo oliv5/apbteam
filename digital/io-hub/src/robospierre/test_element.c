@@ -168,10 +168,10 @@ test_element_convert (const char *l, uint8_t number)
 	switch (number)
 	  {
 	  case 0: return (29);
-	  case 1: return (63);
-	  case 3: return (64);
-	  case 5: return (61);
-	  case 7: return (62);
+	  case 1: return (61);
+	  case 3: return (62);
+	  case 5: return (63);
+	  case 7: return (64);
 	  case 9: return (65);
 	  case 11: return (66);
 	  case 12: return (30);
