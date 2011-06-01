@@ -121,6 +121,46 @@ class Mex:
                 m.push ('L', self.contacts)
                 self.node.send (m)
 
+    class Codebar (Observable):
+        """Codebar stub.
+
+        - element_type: 'queen', 'king', or anything else.
+
+        """
+
+        def __init__ (self, pack, index):
+            Observable.__init__ (self)
+            self.pack = pack
+            self.index = index
+            self.element_type = None
+            self.register (self.__notified)
+
+        def __notified (self):
+            self.pack.set (self.index, self.element_type)
+
+        class Pack:
+            """Handle emission of several codebar for one message."""
+
+            def __init__ (self, node, instance):
+                self.node = node
+                self.codebars = [0, 0]
+                self.mtype = node.reserve (instance + ':codebar')
+
+            def set (self, index, element_type):
+                if element_type == 'queen':
+                    self.codebars[index] = 4
+                elif element_type == 'king':
+                    self.codebars[index] = 8
+                else:
+                    self.codebars[index] = 0
+                self.__send ()
+
+            def __send (self):
+                m = simu.mex.msg.Msg (self.mtype)
+                for c in self.codebars:
+                    m.push ('b', c)
+                self.node.send (m)
+
     class Path (Observable):
         """Path finding algorithm report.
 
@@ -167,6 +207,9 @@ class Mex:
         self.__contact_pack = self.Contact.Pack (node, instance)
         self.contact = tuple (self.Contact (self.__contact_pack, i)
                 for i in range (CONTACT_NB))
+        self.__codebar_pack = self.Codebar.Pack (node, instance)
+        self.codebar = tuple (self.Codebar (self.__codebar_pack, i)
+                for i in (0, 1))
         self.path = self.Path (node, instance)
         self.pos_report = self.PosReport (node, instance)
 

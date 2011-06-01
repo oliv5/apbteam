@@ -40,6 +40,7 @@
 
 #include "pwm.h"
 #include "contact.h"
+#include "codebar.h"
 #include "radar.h"
 
 #define FSM_NAME AI
@@ -77,6 +78,9 @@ static uint8_t main_stats_asserv_, main_stats_asserv_cpt_;
 /** Contact stats counters. */
 static uint8_t main_stats_contact_, main_stats_contact_cpt_;
 
+/** Codebar stats counters. */
+static uint8_t main_stats_codebar_, main_stats_codebar_cpt_;
+
 /** US sensors stats counters. */
 static uint8_t main_stats_usdist_, main_stats_usdist_cpt_;
 
@@ -103,6 +107,7 @@ main_init (void)
     /* IO modules. */
     pwm_init ();
     contact_init ();
+    codebar_init ();
     usdist_init ();
     /* AI modules. */
     clamp_init ();
@@ -223,6 +228,12 @@ main_loop (void)
 	    proto_send1d ('P', contact_all ());
 	    main_stats_contact_cpt_ = main_stats_contact_;
 	  }
+	if (main_stats_codebar_ && !--main_stats_codebar_cpt_)
+	  {
+	    proto_send2b ('B', codebar_get (DIRECTION_FORWARD),
+			  codebar_get (DIRECTION_BACKWARD));
+	    main_stats_codebar_cpt_ = main_stats_codebar_;
+	  }
 	if (main_stats_usdist_ && !--main_stats_usdist_cpt_)
 	  {
 	    proto_send4w ('U', usdist_mm[0], usdist_mm[1], usdist_mm[2],
@@ -330,6 +341,10 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
       case c ('P', 1):
 	/* Contact stats. */
 	main_stats_contact_ = main_stats_contact_cpt_ = args[0];
+	break;
+      case c ('B', 1):
+	/* Codebar stats. */
+	main_stats_codebar_ = main_stats_codebar_cpt_ = args[0];
 	break;
       case c ('U', 1):
 	/* US sensors stats. */

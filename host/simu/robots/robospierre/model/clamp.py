@@ -30,13 +30,14 @@ from math import pi, cos, sin
 class Slot:
     """Slot which can contain a pawn."""
 
-    def __init__ (self, x, y, z, side, door_motor, contact):
+    def __init__ (self, x, y, z, side, door_motor, contact, codebar = None):
         self.x = x
         self.y = y
         self.z = z
         self.side = side
         self.door_motor = door_motor
         self.contact = contact
+        self.codebar = codebar
         self.pawn = None
 
 class Clamp (Observable):
@@ -62,7 +63,8 @@ class Clamp (Observable):
     SLOT_SIDE = 6
 
     def __init__ (self, table, robot_position, elevation_motor,
-            rotation_motor, clamping_motor, door_motors, slot_contacts):
+            rotation_motor, clamping_motor, door_motors, slot_contacts,
+            codebars):
         Observable.__init__ (self)
         self.table = table
         self.robot_position = robot_position
@@ -75,13 +77,13 @@ class Clamp (Observable):
                 door_motors[2], None, door_motors[3], None)
         self.slots = (
                 Slot (self.BAY_OFFSET, 0, 0 * self.BAY_ZOFFSET, 0,
-                    door_motors[0], slot_contacts[0]),
+                    door_motors[0], slot_contacts[0], codebars[0]),
                 Slot (self.BAY_OFFSET, 0, 1 * self.BAY_ZOFFSET, 0,
                     None, slot_contacts[1]),
                 Slot (self.BAY_OFFSET, 0, 2 * self.BAY_ZOFFSET, 0,
                     door_motors[1], slot_contacts[2]),
                 Slot (-self.BAY_OFFSET, 0, 0 * self.BAY_ZOFFSET, 1,
-                    door_motors[2], slot_contacts[3]),
+                    door_motors[2], slot_contacts[3], codebars[1]),
                 Slot (-self.BAY_OFFSET, 0, 1 * self.BAY_ZOFFSET, 1,
                     None, slot_contacts[4]),
                 Slot (-self.BAY_OFFSET, 0, 2 * self.BAY_ZOFFSET, 1,
@@ -203,6 +205,11 @@ class Clamp (Observable):
                         and slots[0].pawn.kind == 'tower'))
             # This one is really high.
             slots[2].contact.state = not (slots[2].pawn is not None)
+            if slots[0].pawn:
+                slots[0].codebar.element_type = slots[0].pawn.kind
+            else:
+                slots[0].codebar.element_type = None
+            slots[0].codebar.notify ()
         slot_side = self.slots[self.SLOT_SIDE]
         slot_side.contact.state = slot_side.pawn is None
         clamp_slot = self.__get_clamp_slot ()

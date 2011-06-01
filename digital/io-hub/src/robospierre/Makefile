@@ -6,6 +6,7 @@ HOST_PROGS = test_element
 # Sources to compile.
 io_hub_SOURCES = main.c top.c \
 		 clamp.c logistic.c element.c pawn_sensor.c \
+		 codebar.avr.c codebar.host.c \
 		 radar_defs.c radar.c path.c move.c \
 		 init.c fsm.host.c fsm_AI_gen.avr.c fsm_queue.c \
 		 pwm.avr.c pwm.host.c \

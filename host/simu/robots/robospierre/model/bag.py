@@ -44,7 +44,7 @@ class Bag:
             8 * pi, 0, 0.5 * pi) for i in (0, 1, 3, 4) ]
         self.clamp = Clamp (table, self.position, link_bag.mimot.aux[0],
                 link_bag.mimot.aux[1], self.clamping_motor, self.door_motors,
-                self.contact[0:7])
+                self.contact[0:7], link_bag.io_hub.codebar)
         self.distance_sensor = [
                 DistanceSensorSensopart (link_bag.io_hub.adc[0], scheduler, table,
                     (20, 20), pi * 10 / 180, (self.position, ), 2),
