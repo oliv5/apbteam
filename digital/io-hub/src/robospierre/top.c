@@ -108,9 +108,9 @@ top_go_drop (void)
 {
     position_t robot_pos;
     asserv_get_position (&robot_pos);
-    uint8_t drop_pos_id = 43;
+    ctx.target_element_id = 43;
     position_t drop_pos;
-    drop_pos.v = element_get_pos (drop_pos_id);
+    drop_pos.v = element_get_pos (ctx.target_element_id);
     uint8_t backward = logistic_global.collect_direction == DIRECTION_FORWARD
 	? 0 : ASSERV_BACKWARD;
     /* Go above or below the drop point. */
@@ -205,6 +205,7 @@ FSM_TRANS (TOP_WAITING_READY, clamp_done, TOP_DROP_DROPPING)
 
 FSM_TRANS (TOP_DROP_DROPPING, clamp_drop_waiting, TOP_DROP_CLEARING)
 {
+    element_down (ctx.target_element_id, ELEMENT_TOWER);
     asserv_move_linearly (logistic_global.collect_direction
 			  == DIRECTION_FORWARD ? 200 : -200);
     return FSM_NEXT (TOP_DROP_DROPPING, clamp_drop_waiting);
