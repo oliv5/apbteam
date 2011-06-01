@@ -348,21 +348,33 @@ logisitic_make_switches ()
 		   e,  p,  e,
 		   P,      _, LEFT, 0);
 
-    LOGISTIC_CASE (_,      p,
+    LOGISTIC_CASE (_,      a,
 		   e,  p,  e,
 		   P,      D, LEFT, 0);
     
     LOGISTIC_CASE (D,      _,
 		   e,  _,  _,
 		   H,      _, RIGHT, 0);
-
-    LOGISTIC_CASE (h,      _,
-		   e,  _,  e,
-		   D,      P, RIGHT, 0);
+ 
+    LOGISTIC_CASE (_,      D,
+		   _,  _,  e,
+		   _,      H, LEFT, 0);
 
     LOGISTIC_CASE (h,      P,
 		   e,  _,  e,
 		   D,      _, RIGHT, 0);
+
+    LOGISTIC_CASE (h,      e,
+		   e,  _,  e,
+		   D,      P, RIGHT, 0);
+
+    LOGISTIC_CASE (P,      h,
+		   e,  _,  e,
+		   _,      D, LEFT, 0);
+
+    LOGISTIC_CASE (e,      h,
+		   e,  _,  e,
+		   P,      D, LEFT, 0);
 }
 
 void
@@ -421,7 +433,7 @@ logistic_init (void)
     ctx.clamp_pos_idle = ctx.collect_direction == DIRECTION_FORWARD
 	? CLAMP_SLOT_FRONT_MIDDLE : CLAMP_SLOT_BACK_MIDDLE;
     ctx.construct_possible = 0;
-    ctx.prepare = 1;
+    ctx.prepare = 0;
     ctx.ready = 0;
     ctx.need_prepare = 0;
 }
