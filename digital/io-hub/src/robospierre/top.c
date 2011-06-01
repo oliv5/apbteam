@@ -116,9 +116,12 @@ top_decision (void)
 }
 
 FSM_TRANS (TOP_GOING_OUT2, robot_move_success,
+	   clamp_working, TOP_WAITING_CLAMP,
 	   drop, TOP_GOING_TO_DROP,
 	   element, TOP_GOING_TO_ELEMENT)
 {
+    if (clamp_working ())
+	return FSM_NEXT (TOP_GOING_TO_ELEMENT, move_success, clamp_working);
     switch (top_decision ())
       {
       default: return FSM_NEXT (TOP_GOING_OUT2, robot_move_success, drop);
