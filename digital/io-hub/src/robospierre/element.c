@@ -120,8 +120,8 @@ struct element_t element_table[] =
     {ELEMENT_NONE | ELEMENT_ANY, {1500 + 2 * 350 + 175, 1 * 350 + 175}, ELEMENT_CENTER | ELEMENT_LEFT, 0},
     {ELEMENT_NONE, {1500 - 2 * 350 - 175, 175}, ELEMENT_CENTER | ELEMENT_SAFE | ELEMENT_LEFT, -100}, /* left red */
     {ELEMENT_NONE, {1500 - 1 * 350 - 175, 175}, ELEMENT_CENTER | ELEMENT_SAFE | ELEMENT_RIGHT, -100}, /* left blue */
-    {ELEMENT_NONE | ELEMENT_ANY, {1500 - 175, 175}, ELEMENT_CENTER | ELEMENT_LEFT | ELEMENT_BONUS, 0}, /* middle bonus left, red. */
-    {ELEMENT_NONE | ELEMENT_ANY, {1500 + 175, 175}, ELEMENT_CENTER | ELEMENT_RIGHT | ELEMENT_BONUS, 0}, /* middle bonus right, blue. */
+    {ELEMENT_NONE | ELEMENT_ANY, {1500 - 175, 175}, ELEMENT_CENTER | ELEMENT_LEFT | ELEMENT_BONUS, -40}, /* middle bonus left, red. */
+    {ELEMENT_NONE | ELEMENT_ANY, {1500 + 175, 175}, ELEMENT_CENTER | ELEMENT_RIGHT | ELEMENT_BONUS, -40}, /* middle bonus right, blue. */
     {ELEMENT_NONE, {1500 + 1 * 350 + 175, 175}, ELEMENT_CENTER | ELEMENT_SAFE | ELEMENT_LEFT, -100}, /* right red */
     {ELEMENT_NONE, {1500 + 2 * 350 + 175, 175}, ELEMENT_CENTER | ELEMENT_SAFE | ELEMENT_RIGHT, -100} /* right blue */
 };
@@ -379,8 +379,6 @@ element_proba (uint8_t element_id)
 	  {
 	    p_pos = (element_id - ELEMENT_UNLOAD_START) / 2 + 1;
 	    out =  (1000 - p_t) * p_pos;
-	    if (e.attr & ELEMENT_BONUS)
-		out += 1000;
 	  }
 
       }
