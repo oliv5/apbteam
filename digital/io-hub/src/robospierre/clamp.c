@@ -99,6 +99,8 @@ FSM_STATES (
 FSM_EVENTS (
 	    /* New element inside bottom slot. */
 	    clamp_new_element,
+	    /* Order to prepare tower. */
+	    clamp_prepare,
 	    /* Sent when clamp is working. */
 	    clamp_working,
 	    /* Sent when clamp return to idle state. */
@@ -241,6 +243,13 @@ clamp_new_element (uint8_t pos, uint8_t element_type)
     ctx.pos_new = pos;
     ctx.new_element_type = element_type;
     FSM_HANDLE (AI, clamp_new_element);
+}
+
+void
+clamp_prepare (uint8_t prepare)
+{
+    logistic_global.prepare = 1;
+    FSM_HANDLE (AI, clamp_prepare);
 }
 
 uint8_t
@@ -475,6 +484,42 @@ FSM_TRANS (CLAMP_IDLE, clamp_new_element, CLAMP_TAKING_DOOR_CLOSING)
     pwm_set_timed (clamp_slot_door[ctx.pos_new],
 		   BOT_PWM_DOOR_CLOSE (ctx.pos_new));
     return FSM_NEXT (CLAMP_IDLE, clamp_new_element);
+}
+
+FSM_TRANS (CLAMP_IDLE, clamp_prepare,
+	   move_element, CLAMP_MOVING_ELEMENT,
+	   move_to_idle, CLAMP_GOING_IDLE,
+	   clamp_locked, CLAMP_LOCKED,
+	   done, CLAMP_IDLE)
+{
+    logistic_decision ();
+    if (logistic_global.moving_from != CLAMP_SLOT_NB)
+      {
+	clamp_move_element (logistic_global.moving_from,
+			    logistic_global.moving_to);
+	return FSM_NEXT (CLAMP_IDLE, clamp_prepare, move_element);
+      }
+    else if (logistic_global.clamp_pos_idle != ctx.pos_current)
+      {
+	if (logistic_path_clear (ctx.pos_current,
+				 logistic_global.clamp_pos_idle))
+	  {
+	    clamp_move (logistic_global.clamp_pos_idle);
+	    return FSM_NEXT (CLAMP_IDLE, clamp_prepare, move_to_idle);
+	  }
+	else
+	  {
+	    ctx.working = 0;
+	    fsm_queue_post_event (FSM_EVENT (AI, clamp_done));
+	    return FSM_NEXT (CLAMP_IDLE, clamp_prepare, clamp_locked);
+	  }
+      }
+    else
+      {
+	ctx.working = 0;
+	fsm_queue_post_event (FSM_EVENT (AI, clamp_done));
+	return FSM_NEXT (CLAMP_IDLE, clamp_prepare, done);
+      }
 }
 
 FSM_TRANS (CLAMP_IDLE, clamp_drop, CLAMP_DROPING_DOOR_OPENING)

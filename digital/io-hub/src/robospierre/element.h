@@ -171,4 +171,10 @@ element_nearest_element_id (position_t robot_pos);
 vect_t
 element_get_pos (uint8_t element_id);
 
+extern inline element_t
+element_get (uint8_t element_id)
+{
+    return element_table[element_id];
+}
+
 #endif /* element_h */

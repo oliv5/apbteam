@@ -131,13 +131,6 @@ struct element_t element_table[] =
     {ELEMENT_NONE, {1500 + 2 * 350 + 175, 175}, ELEMENT_CENTER | ELEMENT_SAFE | ELEMENT_RIGHT} /* right blue */
 };
 
-inline element_t
-element_get (uint8_t element_id)
-{
-    assert (element_id < UTILS_COUNT (element_table));
-    return element_table[element_id];
-}
-
 inline void
 element_set (uint8_t element_id, element_t element)
 {

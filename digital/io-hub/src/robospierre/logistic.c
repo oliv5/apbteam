@@ -365,8 +365,7 @@ logisitic_make_switches ()
 		   D,      _, RIGHT, 0);
 }
 
-/** Examine current state and take a decision. */
-static void
+void
 logistic_decision (void)
 {
     /* Reset. */

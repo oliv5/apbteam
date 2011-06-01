@@ -51,7 +51,13 @@ FSM_STATES (
 	    TOP_GOING_TO_DROP,
 	    TOP_GOING_TO_ELEMENT,
 	    /* Waiting clamp has finished its work. */
-	    TOP_WAITING_CLAMP)
+	    TOP_WAITING_CLAMP,
+	    /* Waiting construction is ready to drop. */
+	    TOP_WAITING_READY,
+	    /* Dropping, opening the doors. */
+	    TOP_DROP_DROPPING,
+	    /* Dropping, clearing so that doors can be closed. */
+	    TOP_DROP_CLEARING)
 
 FSM_START_WITH (TOP_START)
 
@@ -85,6 +91,11 @@ top_go_element (void)
     position_t robot_pos;
     asserv_get_position (&robot_pos);
     ctx.target_element_id = element_best (robot_pos);
+    element_t e = element_get (ctx.target_element_id);
+    if (e.attr & ELEMENT_GREEN)
+	logistic_global.prepare = 0;
+    else
+	logistic_global.prepare = 1;
     vect_t element_pos = element_get_pos (ctx.target_element_id);
     uint8_t backward = logistic_global.collect_direction == DIRECTION_FORWARD
 	? 0 : ASSERV_BACKWARD;
@@ -130,14 +141,18 @@ FSM_TRANS (TOP_GOING_OUT2, robot_move_success,
 }
 
 FSM_TRANS (TOP_GOING_TO_DROP, move_success,
-	   drop, TOP_GOING_TO_DROP,
-	   element, TOP_GOING_TO_ELEMENT)
+	   ready, TOP_DROP_DROPPING,
+	   wait_clamp, TOP_WAITING_READY)
 {
-    clamp_drop (logistic_global.collect_direction);
-    switch (top_decision ())
+    if (logistic_global.ready)
       {
-      default: return FSM_NEXT (TOP_GOING_TO_DROP, move_success, drop);
-      case 1: return FSM_NEXT (TOP_GOING_TO_DROP, move_success, element);
+	clamp_drop (logistic_global.collect_direction);
+	return FSM_NEXT (TOP_GOING_TO_DROP, move_success, ready);
+      }
+    else
+      {
+	clamp_prepare (1);
+	return FSM_NEXT (TOP_GOING_TO_DROP, move_success, wait_clamp);
       }
 }
 
@@ -166,3 +181,28 @@ FSM_TRANS (TOP_WAITING_CLAMP, clamp_done,
       case 1: return FSM_NEXT (TOP_WAITING_CLAMP, clamp_done, element);
       }
 }
+
+FSM_TRANS (TOP_WAITING_READY, clamp_done, TOP_DROP_DROPPING)
+{
+    clamp_drop (logistic_global.collect_direction);
+    return FSM_NEXT (TOP_WAITING_READY, clamp_done);
+}
+
+FSM_TRANS (TOP_DROP_DROPPING, clamp_drop_waiting, TOP_DROP_CLEARING)
+{
+    asserv_move_linearly (200);
+    return FSM_NEXT (TOP_DROP_DROPPING, clamp_drop_waiting);
+}
+
+FSM_TRANS (TOP_DROP_CLEARING, robot_move_success,
+	   drop, TOP_GOING_TO_DROP,
+	   element, TOP_GOING_TO_ELEMENT)
+{
+    clamp_drop_clear ();
+    switch (top_decision ())
+      {
+      default: return FSM_NEXT (TOP_DROP_CLEARING, robot_move_success, drop);
+      case 1: return FSM_NEXT (TOP_DROP_CLEARING, robot_move_success, element);
+      }
+}
+

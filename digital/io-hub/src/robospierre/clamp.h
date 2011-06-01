@@ -80,6 +80,10 @@ clamp_move_element (uint8_t from, uint8_t to);
 void
 clamp_new_element (uint8_t pos, uint8_t element_type);
 
+/** Change logisitic preparation level and update clamp state. */
+void
+clamp_prepare (uint8_t prepare);
+
 /** Drop an element tower.  Return 0 if not currently possible.  If
  * drop_direction is forward, drop at the back. */
 uint8_t

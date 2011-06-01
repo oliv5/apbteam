@@ -97,6 +97,10 @@ extern struct logistic_t logistic_global;
 void
 logistic_init (void);
 
+/** Examine current state and take a decision. */
+void
+logistic_decision (void);
+
 /** To be called at regular interval to check for bad robot state. */
 void
 logistic_update (void);
