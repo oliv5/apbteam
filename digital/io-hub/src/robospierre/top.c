@@ -109,10 +109,25 @@ top_go_drop (void)
     position_t robot_pos;
     asserv_get_position (&robot_pos);
     uint8_t drop_pos_id = 43;
-    vect_t drop_pos = element_get_pos (drop_pos_id);
+    position_t drop_pos;
+    drop_pos.v = element_get_pos (drop_pos_id);
     uint8_t backward = logistic_global.collect_direction == DIRECTION_FORWARD
 	? 0 : ASSERV_BACKWARD;
-    move_start_noangle (drop_pos, backward, 0);
+    /* Go above or below the drop point. */
+    if (drop_pos.v.y > PG_LENGTH / 2)
+      {
+	drop_pos.v.y -= 350 / 2;
+	drop_pos.a = PG_A_DEG (-90);
+      }
+    else
+      {
+	drop_pos.v.y += 350 / 2;
+	drop_pos.a = PG_A_DEG (90);
+      }
+    if (logistic_global.collect_direction == DIRECTION_BACKWARD)
+	drop_pos.a += PG_A_DEG (180);
+    /* Go! */
+    move_start (drop_pos, backward);
     return 0;
 }
 
@@ -190,7 +205,8 @@ FSM_TRANS (TOP_WAITING_READY, clamp_done, TOP_DROP_DROPPING)
 
 FSM_TRANS (TOP_DROP_DROPPING, clamp_drop_waiting, TOP_DROP_CLEARING)
 {
-    asserv_move_linearly (200);
+    asserv_move_linearly (logistic_global.collect_direction
+			  == DIRECTION_FORWARD ? 200 : -200);
     return FSM_NEXT (TOP_DROP_DROPPING, clamp_drop_waiting);
 }
 
