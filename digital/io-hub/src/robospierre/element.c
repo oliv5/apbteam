@@ -314,8 +314,6 @@ element_score (position_t robot_pos, uint8_t element_id)
 	score += align;
       }
 
-    /* Adjust score with time probability. */
-    score += element_proba (element_id);
     return score;
 }
 
