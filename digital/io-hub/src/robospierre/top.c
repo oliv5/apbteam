@@ -125,7 +125,7 @@ top_go_drop (void)
 	drop_pos.a = PG_A_DEG (90);
       }
     if (logistic_global.collect_direction == DIRECTION_BACKWARD)
-	drop_pos.a += PG_A_DEG (180);
+	drop_pos.a += POSITION_A_DEG (180);
     /* Go! */
     move_start (drop_pos, backward);
     return 0;
