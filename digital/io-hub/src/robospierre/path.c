@@ -247,9 +247,9 @@ path_blocking (uint8_t a, uint8_t b, int16_t *dp)
 	    && vb.x < PG_WIDTH - BOT_GREEN_ELEMENT_PLACE_DISTANCE_MM)
 	|| (va.x < PG_WIDTH - BOT_GREEN_ELEMENT_PLACE_DISTANCE_MM
 	    && vb.x > PG_WIDTH - BOT_GREEN_ELEMENT_PLACE_DISTANCE_MM))
-	blocking = 1;
+	return 1;
     if (a_green && b_green)
-	blocking = 1;
+	return 1;
     if (a_green || b_green)
 	factor = 4;
     /* Test for a blocking obstacle. */
