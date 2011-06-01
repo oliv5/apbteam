@@ -56,7 +56,7 @@ codebar_get (uint8_t direction)
     uint8_t offset = direction == DIRECTION_FORWARD ? 1 : 4;
     uint16_t age = v8_to_v16 (buffer[offset], buffer[offset + 1]);
     uint16_t type = buffer[offset + 2];
-    if (age > 225)
+    if (age > 3 * 250)
 	return 0;
     else
 	return  type;
