@@ -90,8 +90,11 @@ struct element_t
     vect_t pos;
     /** Emplacement attributes. */
     uint8_t attr;
-    /** Bonus coefficient (or Mallus if negative). */
-    int8_t bonus;
+    /** Bonus coefficient (or Mallus if negative) for load scores. */
+    int8_t bonus_load;
+    /** Bonus coefficient (or Mallus if negative) for unload scores. */
+    int8_t bonus_unload;
+
 };
 typedef struct element_t element_t;
 
