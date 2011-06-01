@@ -447,10 +447,21 @@ FSM_TRANS (CLAMP_INIT_FINDING_ROTATION_EDGE, clamp_rotation_success,
 }
 
 FSM_TRANS (CLAMP_INIT_FINDING_TOP, clamp_elevation_success,
-	   CLAMP_INIT_GOING_REST)
+	   rest, CLAMP_INIT_GOING_REST,
+	   demo, CLAMP_GOING_IDLE)
 {
-    clamp_move (CLAMP_BAY_SIDE_ENTER_LEAVE);
-    return FSM_NEXT (CLAMP_INIT_FINDING_TOP, clamp_elevation_success);
+    if (IO_GET (CONTACT_STRAT))
+      {
+	clamp_move (CLAMP_BAY_SIDE_ENTER_LEAVE);
+	return FSM_NEXT (CLAMP_INIT_FINDING_TOP, clamp_elevation_success,
+			 rest);
+      }
+    else
+      {
+	clamp_move (logistic_global.clamp_pos_idle);
+	return FSM_NEXT (CLAMP_INIT_FINDING_TOP, clamp_elevation_success,
+			 demo);
+      }
 }
 
 FSM_TRANS (CLAMP_INIT_GOING_REST, clamp_move_success, CLAMP_INIT_READY)
