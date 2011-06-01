@@ -433,7 +433,7 @@ logistic_init (void)
     ctx.clamp_pos_idle = ctx.collect_direction == DIRECTION_FORWARD
 	? CLAMP_SLOT_FRONT_MIDDLE : CLAMP_SLOT_BACK_MIDDLE;
     ctx.construct_possible = 0;
-    ctx.prepare = 0;
+    ctx.prepare = 1;
     ctx.ready = 0;
     ctx.need_prepare = 0;
 }
