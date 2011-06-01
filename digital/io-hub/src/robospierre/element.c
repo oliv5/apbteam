@@ -527,7 +527,7 @@ element_taken (uint8_t element_id, uint8_t element_type)
 {
     assert (element_id < UTILS_COUNT (element_table));
     static uint8_t pawn_c = 3, queen_c = 1, king_c = 1, any_nb = 5;
-    uint8_t other_side_id, other_side_id_element;
+    uint8_t other_side_id, other_side_id_element = 0;
 
     if (element_type != ELEMENT_PAWN && element_type != ELEMENT_QUEEN && element_type != ELEMENT_KING)
 	return;
