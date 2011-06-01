@@ -108,7 +108,7 @@ top_go_drop (void)
 {
     position_t robot_pos;
     asserv_get_position (&robot_pos);
-    ctx.target_element_id = 43;
+    ctx.target_element_id = element_unload_best (robot_pos);
     position_t drop_pos;
     drop_pos.v = element_get_pos (ctx.target_element_id);
     uint8_t backward = logistic_global.collect_direction == DIRECTION_FORWARD

@@ -216,7 +216,7 @@ element_unload_best (position_t robot_pos)
 	 i <= ELEMENT_UNLOAD_END;
 	 i++)
       {
-	score = element_score (robot_pos , i);
+	score = element_unload_score (robot_pos , i);
 	if (best == 0xff || best_score < score)
 	  {
 	    best = i;
