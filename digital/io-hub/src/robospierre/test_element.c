@@ -283,6 +283,10 @@ int main ()
 	    scanf ("%i", &test_chrono_ms);
 	    break;
 	  case 'c':
+	    if (team_color == TEAM_COLOR_RIGHT)
+		team_color = TEAM_COLOR_LEFT;
+	    else
+		team_color = TEAM_COLOR_RIGHT;
 	    team_color ^= TEAM_COLOR_RIGHT;
 	    printf ("Side is now %u\n", team_color);
 	    break;

@@ -90,6 +90,8 @@ struct element_t
     vect_t pos;
     /** Emplacement attributes. */
     uint8_t attr;
+    /** Bonus coefficient (or Mallus if negative). */
+    int8_t bonus;
 };
 typedef struct element_t element_t;
 
@@ -103,6 +105,8 @@ typedef struct element_t element_t;
 #define ELEMENT_UNLOAD_END 62
 #define ELEMENT_UNLOAD_SAFE_START 63
 #define ELEMENT_UNLOAD_SAFE_END 66
+
+#define ELEMENT_BONUS_COEFF 100
 
 /** Elements on table. */
 extern struct element_t element_table[];
