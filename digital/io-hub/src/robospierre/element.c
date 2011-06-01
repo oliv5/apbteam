@@ -704,6 +704,13 @@ element_get_pos (uint8_t element_id)
 }
 
 uint8_t
+element_blocking (uint8_t element_id)
+{
+    element_t e = element_get (element_id);
+    return e.type == ELEMENT_TOWER;
+}
+
+uint8_t
 element_blocking_path (vect_t a, vect_t b, int16_t ab)
 {
      uint8_t i;
@@ -712,33 +719,36 @@ element_blocking_path (vect_t a, vect_t b, int16_t ab)
      for (i = 0; i < UTILS_COUNT (element_table); i++)
        {
 	 e = element_get (i);
-	 /* Compute square of distance to obstacle, see
-	  * distance_segment_point in modules/math/geometry for the method
-	  * explanation. */
-	 int32_t absq = (int32_t) ab * ab;
-	 vect_t vab = b; vect_sub (&vab, &a);
-	 vect_t vao = e.pos; vect_sub (&vao, &a);
-	 int32_t dp = vect_dot_product (&vab, &vao);
-	 int32_t dsq;
-	 if (dp < 0)
+	 if (e.type == ELEMENT_TOWER)
 	   {
-	     dsq = vect_dot_product (&vao, &vao);
+	     /* Compute square of distance to obstacle, see
+	      * distance_segment_point in modules/math/geometry for the method
+	      * explanation. */
+	     int32_t absq = (int32_t) ab * ab;
+	     vect_t vab = b; vect_sub (&vab, &a);
+	     vect_t vao = e.pos; vect_sub (&vao, &a);
+	     int32_t dp = vect_dot_product (&vab, &vao);
+	     int32_t dsq;
+	     if (dp < 0)
+	       {
+		 dsq = vect_dot_product (&vao, &vao);
+	       }
+	     else if (dp > absq)
+	       {
+		 vect_t vbo = e.pos; vect_sub (&vbo, &b);
+		 dsq = vect_dot_product (&vbo, &vbo);
+	       }
+	     else
+	       {
+		 vect_t vabn = vab; vect_normal (&vabn);
+		 dsq = vect_dot_product (&vabn, &vao) / ab;
+		 dsq *= dsq;
+	       }
+	     /* Compare with square of authorised distance. */
+	     if (dsq < (int32_t) (BOT_ELEMENT_RADIUS + BOT_SIZE_SIDE + 20) *
+		 (BOT_ELEMENT_RADIUS + BOT_SIZE_SIDE + 20))
+		 return 1;
 	   }
-	 else if (dp > absq)
-	   {
-	     vect_t vbo = e.pos; vect_sub (&vbo, &b);
-	     dsq = vect_dot_product (&vbo, &vbo);
-	   }
-	 else
-	   {
-	     vect_t vabn = vab; vect_normal (&vabn);
-	     dsq = vect_dot_product (&vabn, &vao) / ab;
-	     dsq *= dsq;
-	   }
-	 /* Compare with square of authorised distance. */
-	 if (dsq < (int32_t) (BOT_ELEMENT_RADIUS + BOT_SIZE_SIDE + 20) *
-	     (BOT_ELEMENT_RADIUS + BOT_SIZE_SIDE + 20))
-	     return 1;
        }
      return 0;
 }

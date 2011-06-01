@@ -27,6 +27,7 @@
 #include "path.h"
 #include "bot.h"
 #include "playground_2011.h"
+#include "element.h"
 
 #include "modules/path/astar/astar.h"
 #include "modules/utils/utils.h"
@@ -196,6 +197,29 @@ path_pos (uint8_t node, vect_t *pos)
       }
 }
 
+static uint8_t
+path_element_blocking (uint8_t node)
+{
+    vect_t pos;
+    path_pos (node, &pos);
+    int16_t square_x = (pos.x - 450 - 1) / 350;
+    int16_t square_y = (2100 - pos.y - 1) / 350;
+    uint8_t element_id = ELEMENT_UNLOAD_START + square_x + 6 * square_y;
+    if (element_blocking (element_id))
+	return 1;
+    uint8_t intersection = ((pos.x - 450) / 350) != square_x;
+    if (intersection)
+      {
+	if (element_blocking (element_id + 1))
+	    return 1;
+	if (element_blocking (element_id + 6))
+	    return 1;
+	if (element_blocking (element_id + 6 + 1))
+	    return 1;
+      }
+    return 0;
+}
+
 /** Return 1 if the direct path between a and b nodes is blocked, also compute
  * distance. */
 static uint8_t
@@ -239,24 +263,26 @@ path_blocking (uint8_t a, uint8_t b, int16_t *dp)
 		blocking = 1;
 	  }
       }
-    /* Handle escaping. */
-    if (blocking)
-      {
-	if (escape_factor)
-	  {
-	    int16_t d = distance_point_point (&va, &vb);
-	    *dp = d * escape_factor;
-	    return 0;
-	  }
-	else
-	    return 1;
-      }
     /* Compute distance. */
     int16_t d = distance_point_point (&va, &vb);
     if (d == 0)
       {
 	*dp = 0;
 	return 0;
+      }
+    /* Test for a blocking element. */
+    if (element_blocking_path (va, vb, d))
+	blocking = 1;
+    /* Handle escaping. */
+    if (blocking)
+      {
+	if (escape_factor)
+	  {
+	    *dp = d * escape_factor;
+	    return 0;
+	  }
+	else
+	    return 1;
       }
     /* No blocking. */
     *dp = d * factor;
@@ -272,7 +298,8 @@ path_blocked_update (void)
       {
 	uint8_t valid = 1;
 	/* First, gather information from tables. */
-	if (!path_nodes[i].usable)
+	if (!path_nodes[i].usable
+	    || path_element_blocking (i))
 	    valid = 0;
 	else
 	  {

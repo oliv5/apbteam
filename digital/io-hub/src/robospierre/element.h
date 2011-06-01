@@ -179,6 +179,10 @@ element_get (uint8_t element_id)
     return element_table[element_id];
 }
 
+/** Return whether an element is blocking robot. */
+uint8_t
+element_blocking (uint8_t element_id);
+
 /** Return whether an element is blocking a line segment.
  * - a: line segment first point.
  * - b: line segment second point.
