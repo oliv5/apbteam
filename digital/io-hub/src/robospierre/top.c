@@ -32,6 +32,7 @@
 
 #include "logistic.h"
 #include "move.h"
+#include "chrono.h"
 
 /*
  * Here is the top FSM.  This FSM is suppose to give life to the robot with an
@@ -111,6 +112,17 @@ FSM_TRANS_TIMEOUT (TOP_GOING_OUT1_BLOCK_WAIT, 250, TOP_GOING_OUT1)
 }
 
 static uint8_t
+top_prepare_level (void)
+{
+    if (ctx.broken)
+	return 3;
+    else if (logistic_global.need_prepare || chrono_remaining_time () < 45000l)
+	return 2;
+    else
+	return 1;
+}
+
+static uint8_t
 top_go_element (void)
 {
     position_t robot_pos;
@@ -122,7 +134,7 @@ top_go_element (void)
 	if (e.attr & ELEMENT_GREEN)
 	    logistic_global.prepare = 0;
 	else
-	    logistic_global.prepare = 1;
+	    logistic_global.prepare = top_prepare_level ();
       }
     vect_t element_pos = element_get_pos (ctx.target_element_id);
     uint8_t backward = logistic_global.collect_direction == DIRECTION_FORWARD
@@ -164,11 +176,12 @@ top_decision (void)
 {
     /* If we can make a tower. */
     if (logistic_global.construct_possible == 1
-	|| (ctx.broken && logistic_global.construct_possible == 2))
+	|| ((ctx.broken || logistic_global.prepare == 2)
+	    && logistic_global.construct_possible == 2))
 	return top_go_drop ();
     if (logistic_global.need_prepare)
       {
-	clamp_prepare (ctx.broken ? 3 : 2);
+	clamp_prepare (top_prepare_level ());
 	return top_go_drop ();
       }
     else
@@ -227,7 +240,7 @@ FSM_TRANS (TOP_GOING_TO_DROP, move_success,
       }
     else
       {
-	clamp_prepare (ctx.broken ? 3 : 1);
+	clamp_prepare (top_prepare_level ());
 	return FSM_NEXT (TOP_GOING_TO_DROP, move_success, wait_clamp);
       }
 }
