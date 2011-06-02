@@ -35,6 +35,8 @@
 int test_print_type_ = TEST_PRINT_TYPE_SCORE_PICK;
 position_t test_robot_pos_ = {{0, 2100}, 1};
 
+uint8_t PINE;
+
 enum team_color_e team_color;
 
 /** Stubbed chrono. */

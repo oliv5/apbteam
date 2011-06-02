@@ -88,6 +88,10 @@ struct logistic_t
     /* Inform TOP that we can't take any more elements and needs to put
      * construction somewhere. */
     uint8_t need_prepare;
+    /** Filtered side slot sensor. */
+    uint8_t side_state;
+    /** Filtered side slot sensor counter. */
+    uint16_t side_filter;
 };
 
 /** Global context. */

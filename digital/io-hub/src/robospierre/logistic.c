@@ -28,6 +28,9 @@
 #include "clamp.h"
 #include "defs.h"
 
+#include "contact.h"
+#include "io.h"
+
 #include "debug.host.h"
 
 /** Handle elements stored inside the robot. */
@@ -441,6 +444,21 @@ logistic_init (void)
 void
 logistic_update (void)
 {
+    uint8_t side_now = !IO_GET (CONTACT_SIDE);
+    /* Filter side contact. */
+    if (side_now)
+      {
+	ctx.side_filter = 0;
+	ctx.side_state = 1;
+      }
+    else if (ctx.side_filter++ == 2 * 250)
+      {
+	ctx.side_state = 0;
+	ctx.side_filter = 0;
+      }
+    /* Side slot element can be lost. */
+    if (ctx.moving_from != CLAMP_SLOT_SIDE && !ctx.side_state)
+	ctx.slots[CLAMP_SLOT_SIDE] = 0;
 }
 
 void
