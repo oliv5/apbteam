@@ -518,6 +518,14 @@ logistic_drop (uint8_t direction)
     logistic_decision ();
 }
 
+void
+logistic_dump (void)
+{
+    uint8_t i;
+    for (i = 0; i < CLAMP_SLOT_NB; i++)
+	ctx.slots[i] = 0;
+}
+
 static uint8_t
 logistic_slot_clear (uint8_t slot)
 {

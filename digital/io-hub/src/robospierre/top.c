@@ -56,6 +56,10 @@ FSM_STATES (
 	    TOP_GOING_TO_ELEMENT,
 	    /* Waiting clamp has finished its work. */
 	    TOP_WAITING_CLAMP,
+	    /* Unblocking: waiting a little bit. */
+	    TOP_UNBLOCKING_SHAKE_WAIT,
+	    /* Unblocking: shaking. */
+	    TOP_UNBLOCKING_SHAKE,
 	    /* Waiting construction is ready to drop. */
 	    TOP_WAITING_READY,
 	    /* Dropping, opening the doors. */
@@ -72,6 +76,8 @@ struct top_t
     uint8_t target_element_id;
     /** Chaos counter. */
     uint8_t chaos;
+    /** Broken clamp. */
+    uint8_t broken;
 };
 
 /** Global context. */
@@ -111,10 +117,13 @@ top_go_element (void)
     asserv_get_position (&robot_pos);
     ctx.target_element_id = element_best (robot_pos);
     element_t e = element_get (ctx.target_element_id);
-    if (e.attr & ELEMENT_GREEN)
-	logistic_global.prepare = 0;
-    else
-	logistic_global.prepare = 1;
+    if (!ctx.broken)
+      {
+	if (e.attr & ELEMENT_GREEN)
+	    logistic_global.prepare = 0;
+	else
+	    logistic_global.prepare = 1;
+      }
     vect_t element_pos = element_get_pos (ctx.target_element_id);
     uint8_t backward = logistic_global.collect_direction == DIRECTION_FORWARD
 	? 0 : ASSERV_BACKWARD;
@@ -154,11 +163,12 @@ static uint8_t
 top_decision (void)
 {
     /* If we can make a tower. */
-    if (logistic_global.construct_possible == 1)
+    if (logistic_global.construct_possible == 1
+	|| (ctx.broken && logistic_global.construct_possible == 2))
 	return top_go_drop ();
     if (logistic_global.need_prepare)
       {
-	clamp_prepare (2);
+	clamp_prepare (ctx.broken ? 3 : 2);
 	return top_go_drop ();
       }
     else
@@ -217,7 +227,7 @@ FSM_TRANS (TOP_GOING_TO_DROP, move_success,
       }
     else
       {
-	clamp_prepare (1);
+	clamp_prepare (ctx.broken ? 3 : 1);
 	return FSM_NEXT (TOP_GOING_TO_DROP, move_success, wait_clamp);
       }
 }
@@ -292,10 +302,51 @@ FSM_TRANS (TOP_WAITING_CLAMP, clamp_done,
       }
 }
 
+FSM_TRANS (TOP_WAITING_CLAMP, clamp_blocked, TOP_UNBLOCKING_SHAKE_WAIT)
+{
+    return FSM_NEXT (TOP_WAITING_CLAMP, clamp_blocked);
+}
+
+FSM_TRANS_TIMEOUT (TOP_UNBLOCKING_SHAKE_WAIT, 250,
+		   try_again, TOP_UNBLOCKING_SHAKE,
+		   tryout, TOP_WAITING_CLAMP)
+{
+    if (ctx.chaos < 4)
+      {
+	int16_t dist = logistic_global.collect_direction
+	    == DIRECTION_FORWARD ? 100 : -100;
+	asserv_move_linearly (++ctx.chaos % 2 ? -dist : dist);
+	return FSM_NEXT_TIMEOUT (TOP_UNBLOCKING_SHAKE_WAIT, try_again);
+      }
+    else
+      {
+	ctx.broken = 1;
+	clamp_prepare (3);
+	return FSM_NEXT_TIMEOUT (TOP_UNBLOCKING_SHAKE_WAIT, tryout);
+      }
+}
+
+FSM_TRANS (TOP_UNBLOCKING_SHAKE, robot_move_success, TOP_WAITING_CLAMP)
+{
+    clamp_prepare (0);
+    return FSM_NEXT (TOP_UNBLOCKING_SHAKE, robot_move_success);
+}
+
+FSM_TRANS (TOP_UNBLOCKING_SHAKE, robot_move_failure,
+	   TOP_UNBLOCKING_SHAKE_WAIT)
+{
+    return FSM_NEXT (TOP_UNBLOCKING_SHAKE, robot_move_failure);
+}
+
 FSM_TRANS (TOP_WAITING_READY, clamp_done, TOP_DROP_DROPPING)
 {
     clamp_drop (logistic_global.collect_direction);
     return FSM_NEXT (TOP_WAITING_READY, clamp_done);
+}
+
+FSM_TRANS (TOP_WAITING_READY, clamp_blocked, TOP_UNBLOCKING_SHAKE_WAIT)
+{
+    return FSM_NEXT (TOP_WAITING_CLAMP, clamp_blocked);
 }
 
 FSM_TRANS (TOP_DROP_DROPPING, clamp_drop_waiting, TOP_DROP_CLEARING)

@@ -124,6 +124,10 @@ logistic_element_move_done (void);
 void
 logistic_drop (uint8_t direction);
 
+/** Dump every element. */
+void
+logistic_dump (void);
+
 /** Is path clear between two positions? */
 uint8_t
 logistic_path_clear (uint8_t slot1, uint8_t slot2);

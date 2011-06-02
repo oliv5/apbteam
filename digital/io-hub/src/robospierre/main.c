@@ -144,6 +144,9 @@ main_event_to_fsm (void)
     if (mimot_motor0_status == success
 	&& mimot_motor1_status == success)
 	FSM_HANDLE_E (AI, clamp_elevation_rotation_success);
+    if (mimot_motor0_status == failure
+	|| mimot_motor1_status == failure)
+	FSM_HANDLE_E (AI, clamp_elevation_or_rotation_failure);
     if (mimot_motor0_status == success)
 	FSM_HANDLE_E (AI, clamp_elevation_success);
     else if (mimot_motor0_status == failure)
