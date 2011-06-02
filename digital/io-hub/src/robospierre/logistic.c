@@ -522,7 +522,8 @@ void
 logistic_dump (void)
 {
     uint8_t i;
-    for (i = 0; i < CLAMP_SLOT_NB; i++)
+    /* Drop all except side. */
+    for (i = 0; i < CLAMP_SLOT_SIDE; i++)
 	ctx.slots[i] = 0;
 }
 
