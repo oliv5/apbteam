@@ -574,12 +574,22 @@ logistic_dump (void)
 static uint8_t
 logistic_slot_clear (uint8_t slot)
 {
-    if (CLAMP_IS_SLOT_IN_FRONT_BAY (slot)
-	&& ctx.slots[CLAMP_SLOT_FRONT_MIDDLE])
-	return 0;
-    if (CLAMP_IS_SLOT_IN_BACK_BAY (slot)
-	&& ctx.slots[CLAMP_SLOT_BACK_MIDDLE])
-	return 0;
+    if (CLAMP_IS_SLOT_IN_FRONT_BAY (slot))
+      {
+	if (ctx.slots[CLAMP_SLOT_FRONT_MIDDLE])
+	    return 0;
+	uint8_t middle_type = ctx.slots[CLAMP_SLOT_FRONT_BOTTOM];
+	if (ELEMENT_IS_HEAD (middle_type) || middle_type == ELEMENT_TOWER)
+	    return 0;
+      }
+    else if (CLAMP_IS_SLOT_IN_BACK_BAY (slot))
+      {
+	if (ctx.slots[CLAMP_SLOT_BACK_MIDDLE])
+	    return 0;
+	uint8_t middle_type = ctx.slots[CLAMP_SLOT_BACK_BOTTOM];
+	if (ELEMENT_IS_HEAD (middle_type) || middle_type == ELEMENT_TOWER)
+	    return 0;
+      }
     return 1;
 }
 

@@ -479,6 +479,33 @@ clamp_head_check_prepare (uint8_t from)
 	ctx.contact_head_before_move = !IO_GET (CONTACT_BACK_TOP);
 }
 
+/* When clamp moved to bottom slot, we can discover it is actually a tower.
+ * In this case, stop movement. */
+static uint8_t
+clamp_tower_check (void)
+{
+    uint8_t from = logistic_global.moving_from;
+    if ((from == CLAMP_SLOT_FRONT_BOTTOM || from == CLAMP_SLOT_BACK_BOTTOM)
+	&& ctx.pos_current == from
+	&& logistic_global.slots[from] == ELEMENT_PAWN)
+      {
+	/* Look tower contact. */
+	uint8_t contact_tower;
+	if (from == CLAMP_SLOT_FRONT_BOTTOM)
+	    contact_tower = !IO_GET (CONTACT_FRONT_MIDDLE);
+	else
+	    contact_tower = !IO_GET (CONTACT_BACK_MIDDLE);
+	/* Change? */
+	if (contact_tower)
+	  {
+	    logistic_element_change (from, ELEMENT_TOWER);
+	    clamp_taken_pawn (ELEMENT_TOWER);
+	    return 1;
+	  }
+      }
+    return 0;
+}
+
 static void
 clamp_blocked (void)
 {
@@ -869,10 +896,17 @@ FSM_TRANS (CLAMP_MOVE_ROUTING, clamp_elevation_or_rotation_failure,
 }
 
 FSM_TRANS (CLAMP_MOVE_SRC_ROUTING, clamp_elevation_rotation_success,
+	   cancel, CLAMP_MOVE_IDLE,
 	   done, CLAMP_MOVE_SRC_CLAMP_CLOSING,
 	   next, CLAMP_MOVE_SRC_ROUTING)
 {
-    if (ctx.pos_current == ctx.pos_request)
+    if (clamp_tower_check ())
+      {
+	fsm_queue_post_event (FSM_EVENT (AI, clamp_move_success));
+	return FSM_NEXT (CLAMP_MOVE_SRC_ROUTING, clamp_elevation_rotation_success,
+			 cancel);
+      }
+    else if (ctx.pos_current == ctx.pos_request)
       {
 	clamp_openclose (0);
 	return FSM_NEXT (CLAMP_MOVE_SRC_ROUTING,
