@@ -160,6 +160,14 @@ top_decision (void)
 	return top_go_element ();
 }
 
+static void
+top_taken_pawn (void)
+{
+    position_t robot_pos;
+    asserv_get_position (&robot_pos);
+    element_taken (element_nearest_element_id (robot_pos), ELEMENT_PAWN);
+}
+
 FSM_TRANS (TOP_GOING_OUT2, robot_move_success,
 	   clamp_working, TOP_WAITING_CLAMP,
 	   drop, TOP_GOING_TO_DROP,
@@ -224,6 +232,13 @@ FSM_TRANS (TOP_GOING_TO_DROP, move_failure,
       }
 }
 
+FSM_TRANS (TOP_GOING_TO_DROP, clamp_working, TOP_WAITING_CLAMP)
+{
+    top_taken_pawn ();
+    move_stop ();
+    return FSM_NEXT (TOP_GOING_TO_DROP, clamp_working);
+}
+
 FSM_TRANS (TOP_GOING_TO_ELEMENT, move_success,
 	   clamp_working, TOP_WAITING_CLAMP,
 	   drop, TOP_GOING_TO_DROP,
@@ -252,6 +267,13 @@ FSM_TRANS (TOP_GOING_TO_ELEMENT, move_failure,
       default: return FSM_NEXT (TOP_GOING_TO_ELEMENT, move_failure, drop);
       case 1: return FSM_NEXT (TOP_GOING_TO_ELEMENT, move_failure, element);
       }
+}
+
+FSM_TRANS (TOP_GOING_TO_ELEMENT, clamp_working, TOP_WAITING_CLAMP)
+{
+    top_taken_pawn ();
+    move_stop ();
+    return FSM_NEXT (TOP_GOING_TO_ELEMENT, clamp_working);
 }
 
 FSM_TRANS (TOP_WAITING_CLAMP, clamp_done,

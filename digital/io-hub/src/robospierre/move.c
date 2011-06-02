@@ -102,6 +102,13 @@ move_start_noangle (vect_t position, uint8_t backward, int16_t shorten)
 }
 
 void
+move_stop (void)
+{
+    /* Stop the FSM. */
+    fsm_queue_post_event (FSM_EVENT (AI, move_stop));
+}
+
+void
 move_obstacles_update (void)
 {
     uint8_t i;
@@ -144,6 +151,8 @@ FSM_EVENTS (
 	    robot_move_failure,
 	    /* Initialize the FSM and start the movement directly. */
 	    move_start,
+	    /* Stop movement. */
+	    move_stop,
 	    /* Movement success. */
 	    move_success,
 	    /* Movement failure. */
@@ -343,6 +352,12 @@ FSM_TRANS_TIMEOUT (MOVE_ROTATING, 1250,
     return FSM_NEXT_TIMEOUT (MOVE_ROTATING);
 }
 
+FSM_TRANS (MOVE_ROTATING, move_stop, MOVE_IDLE)
+{
+    asserv_stop_motor ();
+    return FSM_NEXT (MOVE_ROTATING, move_stop);
+}
+
 FSM_TRANS (MOVE_MOVING, robot_move_success,
 	   done, MOVE_IDLE,
 	   path_found_rotate, MOVE_ROTATING,
@@ -415,6 +430,12 @@ FSM_TRANS (MOVE_MOVING, obstacle_in_front,
 	return FSM_NEXT (MOVE_MOVING, obstacle_in_front, tryagain);
 }
 
+FSM_TRANS (MOVE_MOVING, move_stop, MOVE_IDLE)
+{
+    asserv_stop_motor ();
+    return FSM_NEXT (MOVE_MOVING, move_stop);
+}
+
 FSM_TRANS (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, robot_move_success,
 	   tryout, MOVE_IDLE,
 	   path_found_rotate, MOVE_ROTATING,
@@ -479,6 +500,12 @@ FSM_TRANS (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, robot_move_failure,
       }
 }
 
+FSM_TRANS (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, move_stop, MOVE_IDLE)
+{
+    asserv_stop_motor ();
+    return FSM_NEXT (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, move_stop);
+}
+
 FSM_TRANS_TIMEOUT (MOVE_WAIT_FOR_CLEAR_PATH, 250,
 		   path_found_rotate, MOVE_ROTATING,
 		   path_found, MOVE_MOVING,
@@ -505,5 +532,10 @@ FSM_TRANS_TIMEOUT (MOVE_WAIT_FOR_CLEAR_PATH, 250,
 	else
 	    return FSM_NEXT_TIMEOUT (MOVE_WAIT_FOR_CLEAR_PATH, no_path_found_tryagain);
       }
+}
+
+FSM_TRANS (MOVE_WAIT_FOR_CLEAR_PATH, move_stop, MOVE_IDLE)
+{
+    return FSM_NEXT (MOVE_WAIT_FOR_CLEAR_PATH, move_stop);
 }
 

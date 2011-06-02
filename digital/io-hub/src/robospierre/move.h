@@ -48,6 +48,10 @@ move_start (position_t position, uint8_t backward);
 void
 move_start_noangle (vect_t position, uint8_t backward, int16_t shorten);
 
+/** Stop movement. */
+void
+move_stop (void);
+
 /** To be called when obstacles positions are computed. */
 void
 move_obstacles_update (void);
