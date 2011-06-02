@@ -25,9 +25,9 @@
  *
  * }}} */
 
-#define CONTACT_COLOR E, 5
-#define CONTACT_JACK E, 6
-#define CONTACT_STRAT E, 3
+#define CONTACT_COLOR E, 3
+#define CONTACT_JACK E, 5
+#define CONTACT_STRAT E, 1
 #define CONTACT_FRONT_BOTTOM A, 4
 #define CONTACT_FRONT_MIDDLE F, 4
 #define CONTACT_BACK_BOTTOM A, 5
