@@ -156,6 +156,11 @@ top_decision (void)
     /* If we can make a tower. */
     if (logistic_global.construct_possible == 1)
 	return top_go_drop ();
+    if (logistic_global.need_prepare)
+      {
+	clamp_prepare (2);
+	return top_go_drop ();
+      }
     else
 	return top_go_element ();
 }
