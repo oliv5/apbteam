@@ -83,6 +83,8 @@ logistic_case_test (uint8_t loc, uint8_t e)
 	return 1;
     if ((e == LOG_H || e == LOG_h) && ELEMENT_IS_HEAD (ctx.slots[loc]))
 	return 1;
+    if (e == LOG_t && ctx.slots[loc] == ELEMENT_TOWER)
+	return 1;
     return 0;
 }
 
@@ -208,6 +210,14 @@ static void
 logistic_update_construct_possible ()
 {
     uint8_t pawn = 0, head = 0, i;
+    /* Check for tower. */
+    if (ctx.slots[CLAMP_SLOT_FRONT_BOTTOM] ==  ELEMENT_TOWER ||
+	ctx.slots[CLAMP_SLOT_BACK_BOTTOM] == ELEMENT_TOWER)
+      {
+	ctx.construct_possible = 1;
+	return;
+      }
+
     for (i = CLAMP_SLOT_FRONT_BOTTOM; i < CLAMP_SLOT_NB; i++)
       {
 	    if (ELEMENT_IS_HEAD (ctx.slots[i]))
@@ -258,6 +268,11 @@ logistic_update_need_prepare ()
     /* If a head appear at the back (?) */
     if (ELEMENT_IS_HEAD (ctx.slots[opp_bay]))
 	ctx.need_prepare = 1;
+
+    /* We founded a tower ! */
+    if (ctx.slots[CLAMP_SLOT_FRONT_BOTTOM] == ELEMENT_TOWER ||
+	ctx.slots[CLAMP_SLOT_FRONT_BOTTOM] == ELEMENT_TOWER)
+	ctx.need_prepare = 1;
 }
 
 static void
@@ -275,6 +290,14 @@ logisitic_make_broken ()
 static void
 logistic_make_tower ()
 {
+    LOGISTIC_CASE (_,      _,
+		   _,  _,  _,
+		   _,      t, LEFT, 1);
+
+    LOGISTIC_CASE (_,      _,
+		   _,  _,  _,
+		   t,      _, RIGHT, 1);
+
     LOGISTIC_CASE (D,      _,
 		   e,  _,  _,
 		   H,      _, RIGHT, 0);

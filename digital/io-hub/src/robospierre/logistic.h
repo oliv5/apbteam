@@ -44,6 +44,8 @@
 #define LOG_h 7
 /** Destination (who has to be empty). */
 #define LOG_D 8
+/** We have a tower (always at bottom). */
+#define LOG_t 9
 /* LEFT means we keep the same side, RIGHT means we put the opposed side. */
 #define LOG_DIR_LEFT 0
 #define LOG_DIR_RIGHT 1
