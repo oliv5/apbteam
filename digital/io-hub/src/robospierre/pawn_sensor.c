@@ -31,6 +31,7 @@
 #include "element.h"
 #include "clamp.h"
 #include "bot.h"
+#include "playground.h"
 #include "codebar.h"
 
 #include "modules/utils/utils.h"
@@ -91,6 +92,16 @@ pawn_sensor_get (uint8_t direction)
 	    asserv_get_position (&robot_position);
 	    if (ctx->active)
 	      {
+		/* In green zone, take it when near enougth from the wall. */
+		if (robot_position.v.x < BOT_GREEN_ELEMENT_DISTANCE_MM + 10
+		    || (robot_position.v.x > PG_WIDTH
+			- BOT_GREEN_ELEMENT_DISTANCE_MM - 10))
+		  {
+		    ctx->active = 0;
+		    return pawn_sensor_get_type (direction);
+		  }
+		/* Else, take it if near enough from the supposed element
+		 * position. */
 		int32_t d = distance_point_point (&ctx->active_position,
 						  &robot_position.v);
 		if (d < BOT_PAWN_TAKING_DISTANCE_MM)
