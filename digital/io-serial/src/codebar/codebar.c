@@ -64,6 +64,11 @@ string_to_element (char *data, uint8_t data_len)
 	    data[i] = 0;
 	    return ELEMENT_QUEEN;
 	  }
+	if (memcmp (data + i, "QWEEN", 5) == 0)
+	  {
+	    data[i] = 0;
+	    return ELEMENT_QUEEN;
+	  }
       }
     for (i = 0; i < data_len - 4; i++)
       {
