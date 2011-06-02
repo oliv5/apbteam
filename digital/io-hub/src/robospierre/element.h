@@ -94,6 +94,9 @@ struct element_t
     int8_t bonus_load;
     /** Bonus coefficient (or Mallus if negative) for unload scores. */
     int8_t bonus_unload;
+    /** Failure expiration date, can not take this element until chrono is
+     * lower than this date in seconds. */
+    uint8_t failure_until_s;
 
 };
 typedef struct element_t element_t;
@@ -151,6 +154,10 @@ element_taken (uint8_t element_id, uint8_t element_type);
 /** Call this function when the robot put down an element. */
 void
 element_down (uint8_t element_id, uint8_t element_type);
+
+/** Call this function when taking an element failled. */
+void
+element_failure (uint8_t element_id);
 
 /** Gives the nearest element from a position. */
 uint8_t
