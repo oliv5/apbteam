@@ -207,7 +207,7 @@ FSM_TRANS (TOP_DROP_DROPPING, clamp_drop_waiting, TOP_DROP_CLEARING)
 {
     element_down (ctx.target_element_id, ELEMENT_TOWER);
     asserv_move_linearly (logistic_global.collect_direction
-			  == DIRECTION_FORWARD ? 200 : -200);
+			  == DIRECTION_FORWARD ? 150 : -150);
     return FSM_NEXT (TOP_DROP_DROPPING, clamp_drop_waiting);
 }
 
