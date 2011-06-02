@@ -188,6 +188,12 @@ main_loop (void)
 	/* Is match over? */
 	if (chrono_is_match_over ())
 	  {
+	    /* Power off doors. */
+	    pwm_set (BOT_PWM_DOOR_FRONT_BOTTOM, 0);
+	    pwm_set (BOT_PWM_DOOR_FRONT_TOP, 0);
+	    pwm_set (BOT_PWM_DOOR_BACK_BOTTOM, 0);
+	    pwm_set (BOT_PWM_DOOR_BACK_TOP, 0);
+	    pwm_set (BOT_PWM_CLAMP, 0);
 	    /* End it and block here indefinitely. */
 	    chrono_end_match (42);
 	    return;
