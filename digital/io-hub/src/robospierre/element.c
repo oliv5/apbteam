@@ -72,12 +72,12 @@ struct element_t element_table[] =
        To be symmetric, alternate % 2.
        See ELEMENT_GREEN_START and ELEMENT_GREEN_END
     */
-    {ELEMENT_ANY, {200, 10 + 280 * 5}, ELEMENT_GREEN |ELEMENT_LEFT, 0, 0, 0}, /* top left */
-    {ELEMENT_ANY, {3000 - 200, 10 + 280 * 5}, ELEMENT_GREEN | ELEMENT_RIGHT, 0, 0, 0}, /* top right */
+    {ELEMENT_ANY, {200, 10 + 280 * 5}, ELEMENT_GREEN |ELEMENT_LEFT, 10, 0, 0}, /* top left */
+    {ELEMENT_ANY, {3000 - 200, 10 + 280 * 5}, ELEMENT_GREEN | ELEMENT_RIGHT, 10, 0, 0}, /* top right */
     {ELEMENT_ANY, {200, 10 + 280 * 4}, ELEMENT_GREEN |ELEMENT_LEFT, 0, 0, 0}, /* 2nd line left */
     {ELEMENT_ANY, {3000 - 200, 10 + 280 * 4}, ELEMENT_GREEN | ELEMENT_RIGHT, 0, 0, 0}, /* 2nd line right */
-    {ELEMENT_ANY, {200, 10 + 280 * 3}, ELEMENT_GREEN |ELEMENT_LEFT, 0, 0, 0}, /* ... */
-    {ELEMENT_ANY, {3000 - 200, 10 + 280 * 3}, ELEMENT_GREEN | ELEMENT_RIGHT, 0, 0, 0},
+    {ELEMENT_ANY, {200, 10 + 280 * 3}, ELEMENT_GREEN |ELEMENT_LEFT, 10, 0, 0}, /* ... */
+    {ELEMENT_ANY, {3000 - 200, 10 + 280 * 3}, ELEMENT_GREEN | ELEMENT_RIGHT, 10, 0, 0},
     {ELEMENT_ANY, {200, 10 + 280 * 2}, ELEMENT_GREEN |ELEMENT_LEFT, 0, 0, 0},
     {ELEMENT_ANY, {3000 - 200, 10 + 280 * 2}, ELEMENT_GREEN | ELEMENT_RIGHT, 0, 0, 0},
     {ELEMENT_ANY, {200, 10 + 280 * 1}, ELEMENT_GREEN |ELEMENT_LEFT, -100, 0, 0},
