@@ -334,6 +334,38 @@ logistic_make_tower ()
 static void
 logistic_make_unload ()
 {
+    /* Making a small tower. Move head when having pawn. */
+    LOGISTIC_CASE (D,      _,
+		   e,  p,  _,
+		   H,      _, RIGHT, 0);
+
+    LOGISTIC_CASE (D,      p,
+		   e,  e,  e,
+		   H,      _, RIGHT, 0);
+
+    LOGISTIC_CASE (D,      _,
+		   e,  e,  e,
+		   H,      p, RIGHT, 0);
+
+    /* Making a small tower. Move pawn under head. */
+    LOGISTIC_CASE (_,      h,
+		   _,  P,  e,
+		   _,      D, LEFT, 0);
+
+    LOGISTIC_CASE (P,      h,
+		   e,  e,  e,
+		   _,      D, LEFT, 0);
+
+    LOGISTIC_CASE (_,      h,
+		   e,  e,  e,
+		   P,      D, LEFT, 0);
+
+    /* Making a small tower. Finally move head on pawn. */
+    LOGISTIC_CASE (_,      H,
+		   _,  _,  D,
+		   _,      p, LEFT, 1);
+
+    /* Having any element. */
     LOGISTIC_CASE (_,      _,
 		   _,  _,  _,
 		   _,      a, LEFT, 1);
