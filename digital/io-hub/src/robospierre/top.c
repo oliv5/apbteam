@@ -45,8 +45,12 @@ FSM_STATES (
 	    TOP_START,
 	    /* Going out of start area. */
 	    TOP_GOING_OUT1,
+	    /* Problem going out, wait before retry. */
+	    TOP_GOING_OUT1_BLOCK_WAIT,
 	    /* Going out, first pawn emplacement. */
 	    TOP_GOING_OUT2,
+	    /* Problem going out, wait before retry. */
+	    TOP_GOING_OUT2_BLOCK_WAIT,
 
 	    TOP_GOING_TO_DROP,
 	    TOP_GOING_TO_ELEMENT,
@@ -66,6 +70,8 @@ struct top_t
 {
     /** Target element. */
     uint8_t target_element_id;
+    /** Chaos counter. */
+    uint8_t chaos;
 };
 
 /** Global context. */
@@ -75,7 +81,8 @@ struct top_t top_global;
 FSM_TRANS (TOP_START, init_start_round, TOP_GOING_OUT1)
 {
     element_init ();
-    asserv_goto (PG_X (PG_GREEN_WIDTH_MM + 100), PG_Y (PG_LENGTH - 200), 0);
+    asserv_goto (PG_X (PG_GREEN_WIDTH_MM + 100),
+		 PG_Y (PG_LENGTH - 200), 0);
     return FSM_NEXT (TOP_START, init_start_round);
 }
 
@@ -83,6 +90,18 @@ FSM_TRANS (TOP_GOING_OUT1, robot_move_success, TOP_GOING_OUT2)
 {
     asserv_goto (PG_X (1500 - 2 * 350), PG_Y (PG_LENGTH - 350), 0);
     return FSM_NEXT (TOP_GOING_OUT1, robot_move_success);
+}
+
+FSM_TRANS (TOP_GOING_OUT1, robot_move_failure, TOP_GOING_OUT1_BLOCK_WAIT)
+{
+    return FSM_NEXT (TOP_GOING_OUT1, robot_move_failure);
+}
+
+FSM_TRANS_TIMEOUT (TOP_GOING_OUT1_BLOCK_WAIT, 250, TOP_GOING_OUT1)
+{
+    asserv_goto (PG_X (PG_GREEN_WIDTH_MM + 100),
+		 PG_Y (PG_LENGTH - 200 - (++ctx.chaos % 4) * 10), 0);
+    return FSM_NEXT_TIMEOUT (TOP_GOING_OUT1_BLOCK_WAIT);
 }
 
 static uint8_t
@@ -155,6 +174,25 @@ FSM_TRANS (TOP_GOING_OUT2, robot_move_success,
       }
 }
 
+FSM_TRANS (TOP_GOING_OUT2, robot_move_failure, TOP_GOING_OUT2_BLOCK_WAIT)
+{
+    return FSM_NEXT (TOP_GOING_OUT2, robot_move_failure);
+}
+
+FSM_TRANS_TIMEOUT (TOP_GOING_OUT2_BLOCK_WAIT, 250,
+		   clamp_working, TOP_WAITING_CLAMP,
+		   drop, TOP_GOING_TO_DROP,
+		   element, TOP_GOING_TO_ELEMENT)
+{
+    if (clamp_working ())
+	return FSM_NEXT_TIMEOUT (TOP_GOING_OUT2_BLOCK_WAIT, clamp_working);
+    switch (top_decision ())
+      {
+      default: return FSM_NEXT_TIMEOUT (TOP_GOING_OUT2_BLOCK_WAIT, drop);
+      case 1: return FSM_NEXT_TIMEOUT (TOP_GOING_OUT2_BLOCK_WAIT, element);
+      }
+}
+
 FSM_TRANS (TOP_GOING_TO_DROP, move_success,
 	   ready, TOP_DROP_DROPPING,
 	   wait_clamp, TOP_WAITING_READY)
@@ -171,6 +209,21 @@ FSM_TRANS (TOP_GOING_TO_DROP, move_success,
       }
 }
 
+FSM_TRANS (TOP_GOING_TO_DROP, move_failure,
+	   clamp_working, TOP_WAITING_CLAMP,
+	   drop, TOP_GOING_TO_DROP,
+	   element, TOP_GOING_TO_ELEMENT)
+{
+    element_failure (ctx.target_element_id);
+    if (clamp_working ())
+	return FSM_NEXT (TOP_GOING_TO_DROP, move_failure, clamp_working);
+    switch (top_decision ())
+      {
+      default: return FSM_NEXT (TOP_GOING_TO_DROP, move_failure, drop);
+      case 1: return FSM_NEXT (TOP_GOING_TO_DROP, move_failure, element);
+      }
+}
+
 FSM_TRANS (TOP_GOING_TO_ELEMENT, move_success,
 	   clamp_working, TOP_WAITING_CLAMP,
 	   drop, TOP_GOING_TO_DROP,
@@ -183,6 +236,21 @@ FSM_TRANS (TOP_GOING_TO_ELEMENT, move_success,
       {
       default: return FSM_NEXT (TOP_GOING_TO_ELEMENT, move_success, drop);
       case 1: return FSM_NEXT (TOP_GOING_TO_ELEMENT, move_success, element);
+      }
+}
+
+FSM_TRANS (TOP_GOING_TO_ELEMENT, move_failure,
+	   clamp_working, TOP_WAITING_CLAMP,
+	   drop, TOP_GOING_TO_DROP,
+	   element, TOP_GOING_TO_ELEMENT)
+{
+    element_failure (ctx.target_element_id);
+    if (clamp_working ())
+	return FSM_NEXT (TOP_GOING_TO_ELEMENT, move_failure, clamp_working);
+    switch (top_decision ())
+      {
+      default: return FSM_NEXT (TOP_GOING_TO_ELEMENT, move_failure, drop);
+      case 1: return FSM_NEXT (TOP_GOING_TO_ELEMENT, move_failure, element);
       }
 }
 
@@ -220,6 +288,18 @@ FSM_TRANS (TOP_DROP_CLEARING, robot_move_success,
       {
       default: return FSM_NEXT (TOP_DROP_CLEARING, robot_move_success, drop);
       case 1: return FSM_NEXT (TOP_DROP_CLEARING, robot_move_success, element);
+      }
+}
+
+FSM_TRANS (TOP_DROP_CLEARING, robot_move_failure,
+	   drop, TOP_GOING_TO_DROP,
+	   element, TOP_GOING_TO_ELEMENT)
+{
+    clamp_drop_clear ();
+    switch (top_decision ())
+      {
+      default: return FSM_NEXT (TOP_DROP_CLEARING, robot_move_failure, drop);
+      case 1: return FSM_NEXT (TOP_DROP_CLEARING, robot_move_failure, element);
       }
 }
 
