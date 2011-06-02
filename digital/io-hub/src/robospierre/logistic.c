@@ -363,6 +363,10 @@ logistic_make_unload ()
     /* Making a small tower. Finally move head on pawn. */
     LOGISTIC_CASE (_,      H,
 		   _,  _,  D,
+		   _,      p, LEFT, 0);
+
+    LOGISTIC_CASE (_,      _,
+		   _,  _,  h,
 		   _,      p, LEFT, 1);
 
     /* Having any element. */
