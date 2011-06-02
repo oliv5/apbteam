@@ -242,6 +242,22 @@ logistic_update_need_prepare ()
 	ctx.need_prepare = 1;
     else
 	ctx.need_prepare = 0;
+
+    /* Define direction bay and opposed bay. */
+    uint8_t dir_bay, opp_bay;
+    if (ctx.collect_direction == DIRECTION_FORWARD)
+      {
+	dir_bay = CLAMP_SLOT_FRONT_BOTTOM;
+	opp_bay = CLAMP_SLOT_BACK_BOTTOM;
+      }
+    else
+      {
+	dir_bay = CLAMP_SLOT_BACK_BOTTOM;
+	opp_bay = CLAMP_SLOT_FRONT_BOTTOM;
+      }
+    /* If a head appear at the back (?) */
+    if (ELEMENT_IS_HEAD (ctx.slots[opp_bay]))
+	ctx.need_prepare = 1;
 }
 
 static void
@@ -303,19 +319,11 @@ logistic_make_unload ()
 		   _,  _,  _,
 		   a,      _, RIGHT, 1);
 
-    LOGISTIC_CASE (_,      H,
+    LOGISTIC_CASE (_,      a,
 		   _,  _,  e,
 		   _,      D, LEFT, 0);
 
-    LOGISTIC_CASE (H,      _,
-		   e,  _,  _,
-		   D,      _, RIGHT, 0);
-
-    LOGISTIC_CASE (_,      P,
-		   _,  _,  e,
-		   _,      D, LEFT, 0);
-
-    LOGISTIC_CASE (P,      _,
+    LOGISTIC_CASE (a,      _,
 		   e,  _,  _,
 		   D,      _, RIGHT, 0);
 
@@ -358,10 +366,6 @@ logisitic_make_switches ()
     LOGISTIC_CASE (D,      _,
 		   e,  _,  _,
 		   H,      _, RIGHT, 0);
- 
-    LOGISTIC_CASE (_,      D,
-		   _,  _,  e,
-		   _,      H, LEFT, 0);
 
     LOGISTIC_CASE (h,      P,
 		   e,  _,  e,
