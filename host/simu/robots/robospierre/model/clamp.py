@@ -193,6 +193,9 @@ class Clamp (Observable):
                     and slots[2].pawn and slots[2].door_motor.angle:
                 slots[0].pawn.tower.append (slots[2].pawn)
                 slots[2].pawn = None
+            if slots[0].pawn is None and slots[1].pawn is None \
+                    and slots[2].pawn and slots[2].door_motor.angle:
+                slots[0].pawn, slots[2].pawn = slots[2].pawn, None
 
     def update_contacts (self):
         """Update pawn contacts."""
