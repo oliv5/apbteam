@@ -96,7 +96,7 @@ struct element_t
     int8_t bonus_unload;
     /** Failure expiration date, can not take this element until chrono is
      * lower than this date in seconds. */
-    uint8_t failure_until_s;
+    int8_t failure_until_s;
 
 };
 typedef struct element_t element_t;

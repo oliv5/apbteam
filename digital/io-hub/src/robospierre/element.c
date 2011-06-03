@@ -198,7 +198,7 @@ element_unload_score (position_t robot_pos, uint8_t element_id)
 
     /* Failed element. */
     if (e.failure_until_s
-	&& e.failure_until_s + failure_offset_s < chrono_remaining_time () / 1000)
+	&& e.failure_until_s + failure_offset_s < (int) (chrono_remaining_time () / 1000))
 	return -1;
 
     /* Bonus adjust. */
@@ -277,7 +277,7 @@ element_score (position_t robot_pos, uint8_t element_id)
 
     /* Failed element. */
     if (e.failure_until_s
-	&& e.failure_until_s + failure_offset_s < chrono_remaining_time () / 1000)
+	&& e.failure_until_s + failure_offset_s < (int) (chrono_remaining_time () / 1000))
 	return -1;
 
     if (e.type == ELEMENT_KING)
