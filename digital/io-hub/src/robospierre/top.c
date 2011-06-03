@@ -39,6 +39,8 @@
  * impression of intelligence... Well...
  */
 
+#define TOP_PAWN_TIME 45000l
+
 FSM_INIT
 
 FSM_STATES (
@@ -116,7 +118,8 @@ top_prepare_level (void)
 {
     if (ctx.broken)
 	return 3;
-    else if (logistic_global.need_prepare || chrono_remaining_time () < 45000l)
+    else if (logistic_global.need_prepare
+	     || chrono_remaining_time () < TOP_PAWN_TIME)
 	return 2;
     else
 	return 1;
@@ -151,6 +154,8 @@ top_go_drop (void)
     ctx.target_element_id = element_unload_best (robot_pos);
     position_t drop_pos;
     drop_pos.v = element_get_pos (ctx.target_element_id);
+    if (!ctx.broken)
+	logistic_global.prepare = top_prepare_level ();
     uint8_t backward = logistic_global.collect_direction == DIRECTION_FORWARD
 	? 0 : ASSERV_BACKWARD;
     /* Go above or below the drop point. */
@@ -176,7 +181,7 @@ top_decision (void)
 {
     /* If we can make a tower. */
     if (logistic_global.construct_possible == 1
-	|| ((ctx.broken || logistic_global.prepare == 2)
+	|| ((ctx.broken || chrono_remaining_time () < TOP_PAWN_TIME)
 	    && logistic_global.construct_possible == 2))
 	return top_go_drop ();
     if (logistic_global.need_prepare)
