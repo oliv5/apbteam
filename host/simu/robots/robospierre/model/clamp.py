@@ -206,7 +206,7 @@ class Clamp (Observable):
                     slots[1].pawn is not None
                     or (slots[0].pawn is not None
                         and slots[0].pawn.kind == 'tower'))
-            slots[2].contact.state = True
+            slots[2].contact.state = not (slots[2] is not None)
             if slots[0].pawn:
                 slots[0].codebar.element_type = slots[0].pawn.kind
             else:

@@ -161,6 +161,8 @@ struct clamp_t
     uint8_t open;
     /** True if clamp position is controled. */
     uint8_t controled;
+    /** Contact state at start of move, for head check. */
+    uint8_t contact_head_before_move;
 };
 
 /** Global context. */
@@ -212,6 +214,9 @@ clamp_openclose (uint8_t open);
 static void
 clamp_route (void);
 
+static void
+clamp_head_check_prepare (uint8_t from);
+
 void
 clamp_init (void)
 {
@@ -243,6 +248,7 @@ clamp_move_element (uint8_t from, uint8_t to)
     assert (from != to);
     ctx.pos_request = from;
     ctx.moving_to = to;
+    clamp_head_check_prepare (from);
     FSM_HANDLE (AI, clamp_move);
 }
 
@@ -435,11 +441,11 @@ clamp_taken_pawn (uint8_t element_type)
 
 /* When lifting an element, we can discover it is actually a head.  In this
  * case, change destination. */
-void
-clamp_change (void)
+static void
+clamp_head_check (void)
 {
     uint8_t from = logistic_global.moving_from;
-    if (logistic_global.slots[from] == ELEMENT_PAWN)
+    if (!ctx.contact_head_before_move && logistic_global.slots[from] == ELEMENT_PAWN)
       {
 	/* Look head contact. */
 	uint8_t contact_head = 0;
@@ -460,6 +466,17 @@ clamp_change (void)
 		ctx.pos_request = ctx.moving_to = logistic_global.moving_to;
 	  }
       }
+}
+
+/** Prepare head check, if contact is set yet, this is not a new head. */
+static void
+clamp_head_check_prepare (uint8_t from)
+{
+    ctx.contact_head_before_move = 0;
+    if (CLAMP_IS_SLOT_IN_FRONT_BAY (from))
+	ctx.contact_head_before_move = !IO_GET (CONTACT_FRONT_TOP);
+    else if (CLAMP_IS_SLOT_IN_BACK_BAY (from))
+	ctx.contact_head_before_move = !IO_GET (CONTACT_BACK_TOP);
 }
 
 static void
@@ -909,7 +926,7 @@ FSM_TRANS (CLAMP_MOVE_DST_ROUTING, clamp_elevation_rotation_success,
 	   done_open_clamp, CLAMP_MOVE_DST_CLAMP_OPENING,
 	   next, CLAMP_MOVE_DST_ROUTING)
 {
-    clamp_change ();
+    clamp_head_check ();
     if (ctx.pos_current == ctx.pos_request)
       {
 	if (clamp_slot_door[ctx.pos_current] != 0xff)
