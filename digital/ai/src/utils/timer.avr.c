@@ -29,6 +29,18 @@
 #include "modules/utils/utils.h"
 #include "io.h"
 
+/** Set to 1 when timer overflowed, reset in timer_wait. */
+static volatile uint8_t timer_overflow;
+
+/** Incremented when timer overflowed. */
+static volatile uint8_t timer_tick;
+
+ISR (TIMER0_OVF_vect)
+{
+    timer_overflow = 1;
+    timer_tick++;
+}
+
 void
 timer_init (void)
 {
@@ -50,19 +62,22 @@ timer_init (void)
     TCCR0B = regv (FOC0A, FOC0B, 5, 4, WGM02, CS02, CS01, CS00,
 		       0,     0, 0, 0,     0,    1,    0,    0);
 #endif
+    TIMSK0 = _BV (TOIE0);
 }
 
 uint8_t
 timer_wait (void)
 {
-    /* Let's pretend we have reached overflow before calling this function. */
-    uint8_t count_before_ov = 1;
-    /* Loop until an overflow of the timer occurs. */
-    while (!(TIFR_reg & _BV (TOV0)))
-	/* We have not reached overflow. */
-	count_before_ov = 0;
-    /* Write 1 to clear overflow. */
-    TIFR_reg = _BV (TOV0);
-    return count_before_ov;
+    uint8_t late = 1;
+    while (!timer_overflow)
+	late = 0;
+    timer_overflow = 0;
+    return late;
+}
+
+uint8_t
+timer_get_tick (void)
+{
+    return timer_tick;
 }
 

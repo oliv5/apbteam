@@ -52,17 +52,17 @@ void
 timer_init (void);
 
 /**
- * Wait until the timer overflows.
- * @return
- *  - 0 if we are on time (we have not reached overflow before calling this
- *  function).
- *  - 1 if we have already reached overflow.
- * @warning if this function return 1, it means we are late and the main loop
- * is lasting more than the time configured. Consequence, some important
- * functions (like the chronometer for match duration) will not work
- * correctly!
+ * Wait until next tick.  Return non zero if we are late.
+ *
+ * Warning: if this function return non zero, it means we are late and the
+ * main loop is lasting more than the time configured. Consequence: some
+ * important functions will not work correctly!
  */
 uint8_t
 timer_wait (void);
+
+/** Get a tick value, incremented at each tick, never reset. */
+uint8_t
+timer_get_tick (void);
 
 #endif /* timer_h */

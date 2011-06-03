@@ -181,7 +181,7 @@ FSM_TRANS (INIT_GOING_TO_START_POSITION, robot_move_success,
 
 FSM_TRANS (INIT_WAITING_SECOND_JACK_OUT, jack_removed, INIT_FINISHED)
 {
-    chrono_init ();
+    chrono_start ();
     fsm_queue_post_event (FSM_EVENT (AI, init_start_round));
     return FSM_NEXT (INIT_WAITING_SECOND_JACK_OUT, jack_removed);
 }

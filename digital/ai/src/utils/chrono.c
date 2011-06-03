@@ -33,105 +33,69 @@
 
 #include "chrono.h"
 
-/**
- * Implementation notes.
- * This module compute the number of tic of the main loop it should count
- * before the match is over (chrono_init). Every tic of the main loop, it
- * decrements the counter (chrono_update). When the counter is zero, the
- * match is over (chrono_is_match_over, chrono_end_match).
- */
-
-/** Number of overflows of the timer to wait before the match is over. */
-#define CHRONO_MATCH_OVERFLOW_COUNT \
+/** Number of timer tick to wait before the match is over. */
+#define CHRONO_MATCH_TICK_COUNT \
     (CHRONO_MATCH_DURATION_MS / TIMER_PERIOD_MS)
 
-/**
- * Duration of a loop to emulate from the original behaviour, in ms.
- */
-#define CHRONO_LOOP_DURATION_MS 4
-
-/**
- * Time to wait before resetting slaves board, in ms.
- */
+/** Time to wait before resetting slaves board, in ms. */
 #define CHRONO_WAIT_BEFORE_RESET_MS 1000
 
-/**
- * Number of time to overflow before the end of the match.
- */
-static uint32_t chrono_ov_count_;
+/** Number of timer tick left before the match ends. */
+static uint32_t chrono_tick_left_;
 
-/**
- * Status of the chrono module.
- * Set to 0 if the module is disabled, otherwise set to a non 0 value.
- */
-static uint8_t chrono_enabled_ = 0;
+/** Last timer tick value. */
+static uint8_t chrono_last_tick_;
 
+/** Is chrono started? */
+static uint8_t chrono_started_;
 
 void
-chrono_init (void)
+chrono_start (void)
 {
-    /* Enable chrono. */
-    chrono_enable ();
-    /* Set the overflow counter to the maximum of overflow before the end of
-     * the match. */
-    chrono_ov_count_ = CHRONO_MATCH_OVERFLOW_COUNT;
+    chrono_started_ = 1;
+    chrono_tick_left_ = CHRONO_MATCH_TICK_COUNT;
+    chrono_last_tick_ = timer_get_tick ();
 }
 
 void
 chrono_update (void)
 {
-    /* Decrement overflow counter if it is possible. */
-    if (chrono_enabled_ && chrono_ov_count_)
-	chrono_ov_count_--;
+    if (chrono_started_)
+      {
+	uint8_t new_tick = timer_get_tick ();
+	uint8_t diff = new_tick - chrono_last_tick_;
+	chrono_last_tick_ = new_tick;
+	if (diff > chrono_tick_left_)
+	    chrono_tick_left_ = 0;
+	else
+	    chrono_tick_left_ -= diff;
+      }
 }
 
 uint8_t
 chrono_is_match_over (void)
 {
-    if (!chrono_enabled_ || chrono_ov_count_)
+    if (!chrono_started_ || chrono_tick_left_)
 	return 0;
     else
 	return 1;
 }
 
-void
-chrono_enable (void)
-{
-    chrono_enabled_ = 1;
-}
-
-void
-chrono_disable (void)
-{
-    chrono_enabled_ = 0;
-}
-
-uint8_t
-chrono_enabled (void)
-{
-    return chrono_enabled_;
-}
-
 uint32_t
 chrono_remaining_time (void)
 {
-    return chrono_ov_count_ * TIMER_PERIOD_MS;
+    return chrono_tick_left_ * TIMER_PERIOD_MS;
 }
 
 void
 chrono_end_match (uint8_t block)
 {
-    /* Make sure previous command has been acknowledged. If not, retransmit
-     * until acknowledged */
-    while (!twi_master_sync ())
-	utils_delay_ms (CHRONO_LOOP_DURATION_MS);
-
     /* Make the bot stop moving */
     asserv_stop_motor ();
 
     /* Wait until complete */
     while (!twi_master_sync ())
-	utils_delay_ms (CHRONO_LOOP_DURATION_MS);
+	timer_wait ();
 
     /* Wait CHRONO_WAIT_BEFORE_RESET ms before reseting */
     utils_delay_ms (CHRONO_WAIT_BEFORE_RESET_MS);
@@ -149,9 +113,3 @@ chrono_end_match (uint8_t block)
 #endif
 }
 
-void
-chrono_set_timer (uint32_t elapsed_time)
-{
-    if (chrono_enabled_)
-        chrono_ov_count_ = elapsed_time / TIMER_PERIOD_MS;
-}

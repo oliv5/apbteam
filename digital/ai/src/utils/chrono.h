@@ -26,57 +26,21 @@
  * }}} */
 
 /**
- * @file Module to manage the chrono responsible to stop the bot after 90s.
- *
- * It is based on the main timer to know when to stop the bot.
- *
- * The main loop should never last more than the 4.44ms defined, otherwise,
- * this module will not be precise at all!
+ * Module to manage the chrono responsible to stop the robot after 90s.
  */
 
 /** Duration of a match in milliseconds, with margin. */
-#define CHRONO_MATCH_DURATION_MS (90000 - 2500)
+#define CHRONO_MATCH_DURATION_MS (90000 - 1500)
 
-/**
- * Initialize the chrono module.
- * It setups it for a duration of CHRONO_MATCH_DURATION_MS.
- */
+/** Start chrono count down. */
 void
-chrono_init (void);
+chrono_start (void);
 
-/**
- * Update chrono module.
- * You must call this function every overflow of the main timer.
- */
+/** Update chrono module. */
 void
 chrono_update (void);
 
-/**
- * Enable chrono module.
- * You should call this function when a match start.
- */
-void
-chrono_enable (void);
-
-/**
- * Disable chrono module.
- */
-void
-chrono_disable (void);
-
-/**
- * Is chrono module enabled?
- * @return 0 if not enabled, other values otherwise.
- */
-uint8_t
-chrono_enabled (void);
-
-/**
- * Match over?
- * @return
- *   - 0 if the match is not finished yet.
- *   - 1 if the match is over.
- */
+/** Match over? Return 0 if you still have chance to make points! */
 uint8_t
 chrono_is_match_over (void);
 
@@ -95,13 +59,5 @@ chrono_remaining_time (void);
  */
 void
 chrono_end_match (uint8_t block);
-
-/**
- * Set timer at desired value.
- * This function should be used for tests purpose only.
- * @param elapsed_time elapsed time since beginning.
- */
-void
-chrono_set_timer (uint32_t elapsed_time);
 
 #endif /* chrono_h */

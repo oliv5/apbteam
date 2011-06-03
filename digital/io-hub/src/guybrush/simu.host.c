@@ -89,6 +89,12 @@ timer_wait (void)
     return 0;
 }
 
+uint8_t
+timer_get_tick (void)
+{
+    return mex_node_date () / 4;
+}
+
 /** Send computed path. */
 void
 simu_send_path (vect_t *points, uint8_t len,

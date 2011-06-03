@@ -227,6 +227,12 @@ timer_wait (void)
     return 0;
 }
 
+uint8_t
+timer_get_tick (void)
+{
+    return mex_node_date () / 4;
+}
+
 void
 eeprom_load_param (void)
 {
