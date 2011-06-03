@@ -252,6 +252,13 @@ path_blocking (uint8_t a, uint8_t b, int16_t *dp)
 	return 1;
     if (a_green || b_green)
 	factor = 4;
+    /* Test for protected zone. */
+    if (va.y <= 350 && va.x > PG_WIDTH / 2 - 350 && va.y < PG_WIDTH / 2 + 350
+	&& (vb.x < PG_WIDTH / 2 - 350 || vb.x > PG_WIDTH / 2 + 350))
+	return 1;
+    if (vb.y <= 350 && vb.x > PG_WIDTH / 2 - 350 && vb.y < PG_WIDTH / 2 + 350
+	&& (va.x < PG_WIDTH / 2 - 350 || va.x > PG_WIDTH / 2 + 350))
+	return 1;
     /* Test for a blocking obstacle. */
     for (i = 0; i < PATH_OBSTACLES_NB && !blocking; i++)
       {
