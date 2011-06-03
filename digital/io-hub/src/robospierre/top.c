@@ -261,7 +261,8 @@ FSM_TRANS (TOP_GOING_TO_DROP, move_failure,
 	   drop, TOP_GOING_TO_DROP,
 	   element, TOP_GOING_TO_ELEMENT)
 {
-    element_failure (ctx.target_element_id);
+    if (ctx.target_element_id != 0xff)
+	element_failure (ctx.target_element_id);
     if (clamp_working ())
 	return FSM_NEXT (TOP_GOING_TO_DROP, move_failure, clamp_working);
     switch (top_decision ())
@@ -282,7 +283,8 @@ FSM_TRANS (TOP_GOING_TO_ELEMENT, move_success,
 	   drop, TOP_GOING_TO_DROP,
 	   element, TOP_GOING_TO_ELEMENT)
 {
-    element_failure (ctx.target_element_id); /* Do not take this one again. */
+    if (ctx.target_element_id != 0xff)
+	element_failure (ctx.target_element_id); /* Do not take this one again. */
     if (clamp_working ())
 	return FSM_NEXT (TOP_GOING_TO_ELEMENT, move_success, clamp_working);
     switch (top_decision ())
@@ -297,7 +299,8 @@ FSM_TRANS (TOP_GOING_TO_ELEMENT, move_failure,
 	   drop, TOP_GOING_TO_DROP,
 	   element, TOP_GOING_TO_ELEMENT)
 {
-    element_failure (ctx.target_element_id);
+    if (ctx.target_element_id != 0xff)
+	element_failure (ctx.target_element_id);
     if (clamp_working ())
 	return FSM_NEXT (TOP_GOING_TO_ELEMENT, move_failure, clamp_working);
     switch (top_decision ())
@@ -318,6 +321,7 @@ FSM_TRANS (TOP_GOING_TO_ELEMENT, top_bumper, TOP_GOING_TO_ELEMENT)
     if (!ctx.broken)
 	logistic_global.prepare = top_prepare_level ();
     move_stop ();
+    ctx.target_element_id = 0xff;
     top_go_this_element (pawn_sensor_get_last_bumped (), BOT_ELEMENT_RADIUS - 50);
     return FSM_NEXT (TOP_GOING_TO_ELEMENT, top_bumper);
 }
@@ -392,7 +396,8 @@ FSM_TRANS (TOP_WAITING_READY, clamp_blocked, TOP_UNBLOCKING_SHAKE_WAIT)
 
 FSM_TRANS (TOP_DROP_DROPPING, clamp_drop_waiting, TOP_DROP_CLEARING)
 {
-    element_down (ctx.target_element_id, ELEMENT_TOWER);
+    if (ctx.target_element_id != 0xff)
+	element_down (ctx.target_element_id, ELEMENT_TOWER);
     asserv_move_linearly (logistic_global.collect_direction
 			  == DIRECTION_FORWARD ? 150 : -150);
     return FSM_NEXT (TOP_DROP_DROPPING, clamp_drop_waiting);
