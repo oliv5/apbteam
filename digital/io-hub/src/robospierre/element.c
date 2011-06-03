@@ -280,15 +280,15 @@ element_score (position_t robot_pos, uint8_t element_id)
 	&& e.failure_until_s + failure_offset_s < chrono_remaining_time () / 1000)
 	return -1;
 
-    if (e.type & ELEMENT_PAWN)
-	score += ELEMENT_PAWN_SCORE;
-    if (e.type & ELEMENT_QUEEN)
-	score += ELEMENT_QUEEN_SCORE;
-    if (e.type & ELEMENT_KING)
+    if (e.type == ELEMENT_KING)
 	score += ELEMENT_KING_SCORE;
-    if (e.type & ELEMENT_ANY)
+    else if (e.type == ELEMENT_QUEEN)
+	score += ELEMENT_QUEEN_SCORE;
+    else if (e.type == ELEMENT_PAWN)
+	score += ELEMENT_PAWN;
+    else if (e.type ==  ELEMENT_ANY)
 	score += ELEMENT_ANY_SCORE;
-    else if (e.type & ELEMENT_NONE)
+    if (e.type & ELEMENT_NONE)
 	score /= 2;
 
     /* Add score modifier. */

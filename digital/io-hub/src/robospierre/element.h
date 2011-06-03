@@ -57,8 +57,8 @@
 
 #define ELEMENT_PAWN_SCORE 10
 #define ELEMENT_ANY_SCORE 15
-#define ELEMENT_QUEEN_SCORE 20
-#define ELEMENT_KING_SCORE 30
+#define ELEMENT_QUEEN_SCORE 20 * 30
+#define ELEMENT_KING_SCORE 30 * 30
 
 /** Emplacement attributes bits. */
 #define ELEMENT_BONUS 1
