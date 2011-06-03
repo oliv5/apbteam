@@ -34,6 +34,9 @@
 #include "bot.h"
 #include "playground.h"
 
+/** Offset to be used when everything fail. */
+static uint8_t failure_offset_s;
+
 /** Elements on table. */
 struct element_t element_table[] =
 {
@@ -179,7 +182,7 @@ element_unload_score (position_t robot_pos, uint8_t element_id)
 
     /* Failed element. */
     if (e.failure_until_s
-	&& e.failure_until_s < chrono_remaining_time () / 1000)
+	&& e.failure_until_s + failure_offset_s < chrono_remaining_time () / 1000)
 	return -1;
 
     /* Bonus adjust. */
@@ -217,17 +220,23 @@ element_unload_best (position_t robot_pos)
     uint8_t i;
     uint8_t best = 0xff;
     int32_t score, best_score = 0;
-    for (i = ELEMENT_UNLOAD_START;
-	 i <= ELEMENT_UNLOAD_END;
-	 i++)
+    uint8_t retry = 0;
+    do
       {
-	score = element_unload_score (robot_pos , i);
-	if (best == 0xff || best_score < score)
+	if (retry && failure_offset_s != 255)
+	    failure_offset_s++;
+	for (i = ELEMENT_UNLOAD_START;
+	     i <= ELEMENT_UNLOAD_END;
+	     i++)
 	  {
-	    best = i;
-	    best_score = score;
+	    score = element_unload_score (robot_pos , i);
+	    if (best == 0xff || best_score < score)
+	      {
+		best = i;
+		best_score = score;
+	      }
 	  }
-      }
+      } while (best_score == -1 && retry++ < 10);
     return best;
 }
 
@@ -252,7 +261,7 @@ element_score (position_t robot_pos, uint8_t element_id)
 
     /* Failed element. */
     if (e.failure_until_s
-	&& e.failure_until_s < chrono_remaining_time () / 1000)
+	&& e.failure_until_s + failure_offset_s < chrono_remaining_time () / 1000)
 	return -1;
 
     if (e.type & ELEMENT_PAWN)
@@ -401,15 +410,21 @@ element_best (position_t robot_pos)
     uint8_t i;
     uint8_t best = 0xff;
     int32_t score = 0, best_score = 0;
-    for (i = 0; i < UTILS_COUNT (element_table); i++)
+    uint8_t retry = 0;
+    do
       {
-	score = element_score (robot_pos ,i);
-	if (best == 0xff || best_score < score)
+	if (retry && failure_offset_s != 255)
+	    failure_offset_s++;
+	for (i = 0; i < UTILS_COUNT (element_table); i++)
 	  {
-	    best = i;
-	    best_score = score;
+	    score = element_score (robot_pos ,i);
+	    if (best == 0xff || best_score < score)
+	      {
+		best = i;
+		best_score = score;
+	      }
 	  }
-      }
+      } while (best_score == -1 && retry++ < 10);
     return best;
 }
 
