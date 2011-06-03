@@ -75,14 +75,14 @@ struct element_t element_table[] =
        To be symmetric, alternate % 2.
        See ELEMENT_GREEN_START and ELEMENT_GREEN_END
     */
-    {ELEMENT_ANY, {200, 10 + 280 * 5}, ELEMENT_GREEN |ELEMENT_LEFT, 10, 0, 0}, /* top left */
-    {ELEMENT_ANY, {3000 - 200, 10 + 280 * 5}, ELEMENT_GREEN | ELEMENT_RIGHT, 10, 0, 0}, /* top right */
-    {ELEMENT_ANY, {200, 10 + 280 * 4}, ELEMENT_GREEN |ELEMENT_LEFT, 0, 0, 0}, /* 2nd line left */
-    {ELEMENT_ANY, {3000 - 200, 10 + 280 * 4}, ELEMENT_GREEN | ELEMENT_RIGHT, 0, 0, 0}, /* 2nd line right */
-    {ELEMENT_ANY, {200, 10 + 280 * 3}, ELEMENT_GREEN |ELEMENT_LEFT, 10, 0, 0}, /* ... */
-    {ELEMENT_ANY, {3000 - 200, 10 + 280 * 3}, ELEMENT_GREEN | ELEMENT_RIGHT, 10, 0, 0},
-    {ELEMENT_ANY, {200, 10 + 280 * 2}, ELEMENT_GREEN |ELEMENT_LEFT, 0, 0, 0},
-    {ELEMENT_ANY, {3000 - 200, 10 + 280 * 2}, ELEMENT_GREEN | ELEMENT_RIGHT, 0, 0, 0},
+    {ELEMENT_ANY, {200, 10 + 280 * 5}, ELEMENT_GREEN |ELEMENT_LEFT, 110, 0, 0}, /* top left */
+    {ELEMENT_ANY, {3000 - 200, 10 + 280 * 5}, ELEMENT_GREEN | ELEMENT_RIGHT, 110, 0, 0}, /* top right */
+    {ELEMENT_ANY, {200, 10 + 280 * 4}, ELEMENT_GREEN |ELEMENT_LEFT, 100, 0, 0}, /* 2nd line left */
+    {ELEMENT_ANY, {3000 - 200, 10 + 280 * 4}, ELEMENT_GREEN | ELEMENT_RIGHT, 100, 0, 0}, /* 2nd line right */
+    {ELEMENT_ANY, {200, 10 + 280 * 3}, ELEMENT_GREEN |ELEMENT_LEFT, 110, 0, 0}, /* ... */
+    {ELEMENT_ANY, {3000 - 200, 10 + 280 * 3}, ELEMENT_GREEN | ELEMENT_RIGHT, 110, 0, 0},
+    {ELEMENT_ANY, {200, 10 + 280 * 2}, ELEMENT_GREEN |ELEMENT_LEFT, 100, 0, 0},
+    {ELEMENT_ANY, {3000 - 200, 10 + 280 * 2}, ELEMENT_GREEN | ELEMENT_RIGHT, 100, 0, 0},
     {ELEMENT_ANY, {200, 10 + 280 * 1}, ELEMENT_GREEN |ELEMENT_LEFT, -100, 0, 0},
     {ELEMENT_ANY, {3000 - 200, 10 + 280 * 1}, ELEMENT_GREEN | ELEMENT_RIGHT, -100, 0, 0},
 
@@ -154,6 +154,19 @@ element_init ()
 	    e.type = ELEMENT_NONE;
 	    element_set (i, e);
 	  }
+      }
+
+    /* Negative bonus for the other green zone at start. */
+    /* Do not touch last green emplacement. */
+    for (i = ELEMENT_GREEN_START; i <= ELEMENT_GREEN_END - 2; i++)
+      {
+	    element_t e = element_get (i);
+	    if (!((team_color == TEAM_COLOR_LEFT && (e.attr & ELEMENT_LEFT)) ||
+		  (team_color == TEAM_COLOR_RIGHT && (e.attr & ELEMENT_RIGHT))))
+	      {
+		e.bonus_load *= -1;
+		element_set (i, e);
+	      }
       }
 }
 
@@ -274,33 +287,6 @@ element_score (position_t robot_pos, uint8_t element_id)
 	score += ELEMENT_ANY_SCORE;
     else if (e.type & ELEMENT_NONE)
 	score /= 2;
-
-    /* Big score for our green zone. */
-    if (e.type != ELEMENT_NONE && (e.attr & ELEMENT_GREEN))
-      {
-	/* In our zone. */
-	if ((team_color == TEAM_COLOR_LEFT && (e.attr & ELEMENT_LEFT)) ||
-	    (team_color == TEAM_COLOR_RIGHT && (e.attr & ELEMENT_RIGHT)))
-	    score *= 150;
-	/* In the other zone, boost score if our green zone is empty. */
-	else
-	  {
-	    element_t el;
-	    int cpt = 0;
-	    u8 i;
-	    /* Is our green zone empty ? */
-	    for (i = ELEMENT_GREEN_START; i <= ELEMENT_GREEN_END; i++)
-	      {
-		el = element_get (i);
-		if (((team_color == TEAM_COLOR_LEFT && (el.attr & ELEMENT_LEFT)) ||
-		     (team_color == TEAM_COLOR_RIGHT && (el.attr & ELEMENT_RIGHT)))
-		    && el.type == ELEMENT_NONE)
-		    cpt++;
-	      }
-	    if (cpt == 5)
-		score *= 150;
-	  }
-      }
 
     /* Add score modifier. */
     score += e.bonus_load * ELEMENT_BONUS_COEFF;
