@@ -660,6 +660,19 @@ element_down (uint8_t element_id, uint8_t element_type)
     element_t e = element_get (element_id);
     e.type = element_type;
     element_set (element_id, e);
+
+    /* Remove our green zone score at first unload. */
+    uint8_t i;
+    for (i = ELEMENT_GREEN_START; i <= ELEMENT_GREEN_END - 2; i++)
+      {
+	    element_t e = element_get (i);
+	    if ((team_color == TEAM_COLOR_LEFT && (e.attr & ELEMENT_LEFT)) ||
+		 (team_color == TEAM_COLOR_RIGHT && (e.attr & ELEMENT_RIGHT)))
+	      {
+		    e.bonus_load = 0;
+		    element_set (i, e);
+	      }
+      }
 }
 
 void
