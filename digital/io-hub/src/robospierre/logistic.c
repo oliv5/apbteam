@@ -562,6 +562,25 @@ logistic_drop (uint8_t direction)
     logistic_decision ();
 }
 
+uint8_t
+logistic_drop_element_type (uint8_t direction)
+{
+    uint8_t bay = direction == DIRECTION_FORWARD
+	? CLAMP_SLOT_BACK_BOTTOM : CLAMP_SLOT_FRONT_BOTTOM;
+    uint8_t nb = 0;
+    uint8_t element_type = ELEMENT_NONE;
+    uint8_t i;
+    for (i = bay; i < bay + 3; i++)
+      {
+	if (ctx.slots[i])
+	  {
+	    nb++;
+	    element_type = ctx.slots[i];
+	  }
+      }
+    return nb > 1 ? ELEMENT_TOWER : element_type;
+}
+
 void
 logistic_dump (void)
 {

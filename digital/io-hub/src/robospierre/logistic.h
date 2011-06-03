@@ -128,6 +128,10 @@ logistic_element_move_done (void);
 void
 logistic_drop (uint8_t direction);
 
+/** Get element type to be dropped. */
+uint8_t
+logistic_drop_element_type (uint8_t direction);
+
 /** Dump every element. */
 void
 logistic_dump (void);

@@ -405,7 +405,9 @@ FSM_TRANS (TOP_WAITING_READY, clamp_blocked, TOP_UNBLOCKING_SHAKE_WAIT)
 FSM_TRANS (TOP_DROP_DROPPING, clamp_drop_waiting, TOP_DROP_CLEARING)
 {
     if (ctx.target_element_id != 0xff)
-	element_down (ctx.target_element_id, ELEMENT_TOWER);
+	element_down (ctx.target_element_id,
+		      logistic_drop_element_type
+		      (logistic_global.collect_direction));
     if (!IO_GET (CONTACT_STRAT))
 	element_i_like_green ();
     asserv_move_linearly (logistic_global.collect_direction
