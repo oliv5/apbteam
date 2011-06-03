@@ -175,7 +175,14 @@ top_go_drop (void)
     uint8_t backward = logistic_global.collect_direction == DIRECTION_FORWARD
 	? 0 : ASSERV_BACKWARD;
     /* Go above or below the drop point. */
-    if (drop_pos.v.y > PG_LENGTH / 2)
+    if (drop_pos.v.y < 350)
+      {
+	/* Protected zone. */
+	drop_pos.v.x = PG_WIDTH / 2;
+	drop_pos.v.y = 350;
+	drop_pos.a = PG_A_DEG (45);
+      }
+    else if (drop_pos.v.y > PG_LENGTH / 2)
       {
 	drop_pos.v.y -= 350 / 2;
 	drop_pos.a = PG_A_DEG (-90);
