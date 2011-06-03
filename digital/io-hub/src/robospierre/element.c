@@ -801,7 +801,7 @@ element_i_like_green ()
 		  (team_color == TEAM_COLOR_RIGHT && (e.attr & ELEMENT_RIGHT)))
 		&& e.bonus_load < 0)
 		  {
-		    e.bonus_load = 10;
+		    e.bonus_load = 40;
 		    element_set (i, e);
 		  }
       }
