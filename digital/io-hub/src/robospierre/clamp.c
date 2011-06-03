@@ -522,6 +522,45 @@ clamp_blocked (void)
     fsm_queue_post_event (FSM_EVENT (AI, clamp_move_failure));
 }
 
+#define CLAMP_DECISION_MOVE_ELEMENT 0
+#define CLAMP_DECISION_MOVE_TO_IDLE 1
+#define CLAMP_DECISION_CLAMP_LOCKED 2
+#define CLAMP_DECISION_DONE 3
+
+static uint8_t
+clamp_decision (uint8_t unblock)
+{
+    if (!unblock && logistic_global.moving_from != CLAMP_SLOT_NB)
+      {
+	clamp_move_element (logistic_global.moving_from,
+			    logistic_global.moving_to);
+	return CLAMP_DECISION_MOVE_ELEMENT;
+      }
+    else if (logistic_global.prepare != 3
+	     && (unblock
+		 || logistic_global.clamp_pos_idle != ctx.pos_current))
+      {
+	if (logistic_path_clear (ctx.pos_current,
+				 logistic_global.clamp_pos_idle))
+	  {
+	    clamp_move (logistic_global.clamp_pos_idle);
+	    return CLAMP_DECISION_MOVE_TO_IDLE;
+	  }
+	else
+	  {
+	    ctx.working = 0;
+	    fsm_queue_post_event (FSM_EVENT (AI, clamp_done));
+	    return CLAMP_DECISION_CLAMP_LOCKED;
+	  }
+      }
+    else
+      {
+	ctx.working = 0;
+	fsm_queue_post_event (FSM_EVENT (AI, clamp_done));
+	return CLAMP_DECISION_DONE;
+      }
+}
+
 /* CLAMP FSM */
 
 FSM_TRANS (CLAMP_START, init_actuators, CLAMP_INIT_OPENING)
@@ -623,32 +662,16 @@ FSM_TRANS (CLAMP_IDLE, clamp_prepare,
 	   done, CLAMP_IDLE)
 {
     logistic_decision ();
-    if (logistic_global.moving_from != CLAMP_SLOT_NB)
+    switch (clamp_decision (0))
       {
-	clamp_move_element (logistic_global.moving_from,
-			    logistic_global.moving_to);
+      default:
+      case CLAMP_DECISION_MOVE_ELEMENT:
 	return FSM_NEXT (CLAMP_IDLE, clamp_prepare, move_element);
-      }
-    else if (logistic_global.prepare != 3
-	     && logistic_global.clamp_pos_idle != ctx.pos_current)
-      {
-	if (logistic_path_clear (ctx.pos_current,
-				 logistic_global.clamp_pos_idle))
-	  {
-	    clamp_move (logistic_global.clamp_pos_idle);
-	    return FSM_NEXT (CLAMP_IDLE, clamp_prepare, move_to_idle);
-	  }
-	else
-	  {
-	    ctx.working = 0;
-	    fsm_queue_post_event (FSM_EVENT (AI, clamp_done));
-	    return FSM_NEXT (CLAMP_IDLE, clamp_prepare, clamp_locked);
-	  }
-      }
-    else
-      {
-	ctx.working = 0;
-	fsm_queue_post_event (FSM_EVENT (AI, clamp_done));
+      case CLAMP_DECISION_MOVE_TO_IDLE:
+	return FSM_NEXT (CLAMP_IDLE, clamp_prepare, move_to_idle);
+      case CLAMP_DECISION_CLAMP_LOCKED:
+	return FSM_NEXT (CLAMP_IDLE, clamp_prepare, clamp_locked);
+      case CLAMP_DECISION_DONE:
 	return FSM_NEXT (CLAMP_IDLE, clamp_prepare, done);
       }
 }
@@ -671,32 +694,16 @@ FSM_TRANS_TIMEOUT (CLAMP_TAKING_DOOR_CLOSING, BOT_PWM_DOOR_CLOSE_TIME,
 {
     logistic_element_new (ctx.pos_new, ctx.new_element_type);
     clamp_taken_pawn (ctx.new_element_type);
-    if (logistic_global.moving_from != CLAMP_SLOT_NB)
+    switch (clamp_decision (0))
       {
-	clamp_move_element (logistic_global.moving_from,
-			    logistic_global.moving_to);
+      default:
+      case CLAMP_DECISION_MOVE_ELEMENT:
 	return FSM_NEXT_TIMEOUT (CLAMP_TAKING_DOOR_CLOSING, move_element);
-      }
-    else if (logistic_global.prepare != 3
-	     && logistic_global.clamp_pos_idle != ctx.pos_current)
-      {
-	if (logistic_path_clear (ctx.pos_current,
-				 logistic_global.clamp_pos_idle))
-	  {
-	    clamp_move (logistic_global.clamp_pos_idle);
-	    return FSM_NEXT_TIMEOUT (CLAMP_TAKING_DOOR_CLOSING, move_to_idle);
-	  }
-	else
-	  {
-	    ctx.working = 0;
-	    fsm_queue_post_event (FSM_EVENT (AI, clamp_done));
-	    return FSM_NEXT_TIMEOUT (CLAMP_TAKING_DOOR_CLOSING, clamp_locked);
-	  }
-      }
-    else
-      {
-	ctx.working = 0;
-	fsm_queue_post_event (FSM_EVENT (AI, clamp_done));
+      case CLAMP_DECISION_MOVE_TO_IDLE:
+	return FSM_NEXT_TIMEOUT (CLAMP_TAKING_DOOR_CLOSING, move_to_idle);
+      case CLAMP_DECISION_CLAMP_LOCKED:
+	return FSM_NEXT_TIMEOUT (CLAMP_TAKING_DOOR_CLOSING, clamp_locked);
+      case CLAMP_DECISION_DONE:
 	return FSM_NEXT_TIMEOUT (CLAMP_TAKING_DOOR_CLOSING, done);
       }
 }
@@ -708,35 +715,19 @@ FSM_TRANS (CLAMP_MOVING_ELEMENT, clamp_move_success,
 	   done, CLAMP_IDLE)
 {
     logistic_element_move_done ();
-    if (logistic_global.moving_from != CLAMP_SLOT_NB)
+    switch (clamp_decision (0))
       {
-	clamp_move_element (logistic_global.moving_from,
-			    logistic_global.moving_to);
+      default:
+      case CLAMP_DECISION_MOVE_ELEMENT:
 	return FSM_NEXT (CLAMP_MOVING_ELEMENT, clamp_move_success,
 			 move_element);
-      }
-    else if (logistic_global.prepare != 3
-	     && logistic_global.clamp_pos_idle != ctx.pos_current)
-      {
-	if (logistic_path_clear (ctx.pos_current,
-				 logistic_global.clamp_pos_idle))
-	  {
-	    clamp_move (logistic_global.clamp_pos_idle);
-	    return FSM_NEXT (CLAMP_MOVING_ELEMENT, clamp_move_success,
-			     move_to_idle);
-	  }
-	else
-	  {
-	    ctx.working = 0;
-	    fsm_queue_post_event (FSM_EVENT (AI, clamp_done));
-	    return FSM_NEXT (CLAMP_MOVING_ELEMENT, clamp_move_success,
-			     clamp_locked);
-	  }
-      }
-    else
-      {
-	ctx.working = 0;
-	fsm_queue_post_event (FSM_EVENT (AI, clamp_done));
+      case CLAMP_DECISION_MOVE_TO_IDLE:
+	return FSM_NEXT (CLAMP_MOVING_ELEMENT, clamp_move_success,
+			 move_to_idle);
+      case CLAMP_DECISION_CLAMP_LOCKED:
+	return FSM_NEXT (CLAMP_MOVING_ELEMENT, clamp_move_success,
+			 clamp_locked);
+      case CLAMP_DECISION_DONE:
 	return FSM_NEXT (CLAMP_MOVING_ELEMENT, clamp_move_success,
 			 done);
       }
@@ -762,35 +753,19 @@ FSM_TRANS (CLAMP_DROPING_WAITING_ROBOT, clamp_drop_clear,
 	   done, CLAMP_IDLE)
 {
     logistic_drop (ctx.drop_direction);
-    if (logistic_global.moving_from != CLAMP_SLOT_NB)
+    switch (clamp_decision (0))
       {
-	clamp_move_element (logistic_global.moving_from,
-			    logistic_global.moving_to);
+      default:
+      case CLAMP_DECISION_MOVE_ELEMENT:
 	return FSM_NEXT (CLAMP_DROPING_WAITING_ROBOT, clamp_drop_clear,
 			 move_element);
-      }
-    else if (logistic_global.prepare != 3
-	     && logistic_global.clamp_pos_idle != ctx.pos_current)
-      {
-	if (logistic_path_clear (ctx.pos_current,
-				 logistic_global.clamp_pos_idle))
-	  {
-	    clamp_move (logistic_global.clamp_pos_idle);
-	    return FSM_NEXT (CLAMP_DROPING_WAITING_ROBOT, clamp_drop_clear,
-			     move_to_idle);
-	  }
-	else
-	  {
-	    ctx.working = 0;
-	    fsm_queue_post_event (FSM_EVENT (AI, clamp_done));
-	    return FSM_NEXT (CLAMP_DROPING_WAITING_ROBOT, clamp_drop_clear,
-			     clamp_locked);
-	  }
-      }
-    else
-      {
-	ctx.working = 0;
-	fsm_queue_post_event (FSM_EVENT (AI, clamp_done));
+      case CLAMP_DECISION_MOVE_TO_IDLE:
+	return FSM_NEXT (CLAMP_DROPING_WAITING_ROBOT, clamp_drop_clear,
+			 move_to_idle);
+      case CLAMP_DECISION_CLAMP_LOCKED:
+	return FSM_NEXT (CLAMP_DROPING_WAITING_ROBOT, clamp_drop_clear,
+			 clamp_locked);
+      case CLAMP_DECISION_DONE:
 	return FSM_NEXT (CLAMP_DROPING_WAITING_ROBOT, clamp_drop_clear,
 			 done);
       }
@@ -820,25 +795,14 @@ FSM_TRANS (CLAMP_BLOCKED, clamp_prepare,
 	   clamp_locked, CLAMP_LOCKED,
 	   done, CLAMP_IDLE)
 {
-    if (logistic_global.prepare != 3)
+    switch (clamp_decision (1))
       {
-	if (logistic_path_clear (ctx.pos_current,
-				 logistic_global.clamp_pos_idle))
-	  {
-	    clamp_move (logistic_global.clamp_pos_idle);
-	    return FSM_NEXT (CLAMP_BLOCKED, clamp_prepare, move_to_idle);
-	  }
-	else
-	  {
-	    ctx.working = 0;
-	    fsm_queue_post_event (FSM_EVENT (AI, clamp_done));
-	    return FSM_NEXT (CLAMP_BLOCKED, clamp_prepare, clamp_locked);
-	  }
-      }
-    else
-      {
-	ctx.working = 0;
-	fsm_queue_post_event (FSM_EVENT (AI, clamp_done));
+      default:
+      case CLAMP_DECISION_MOVE_TO_IDLE:
+	return FSM_NEXT (CLAMP_BLOCKED, clamp_prepare, move_to_idle);
+      case CLAMP_DECISION_CLAMP_LOCKED:
+	return FSM_NEXT (CLAMP_BLOCKED, clamp_prepare, clamp_locked);
+      case CLAMP_DECISION_DONE:
 	return FSM_NEXT (CLAMP_BLOCKED, clamp_prepare, done);
       }
 }
