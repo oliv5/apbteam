@@ -23,6 +23,7 @@
  *
  * }}} */
 #include "common.h"
+#include "io.h"
 
 #include "playground_2011.h"
 #include "asserv.h"
@@ -34,6 +35,7 @@
 #include "move.h"
 #include "chrono.h"
 #include "pawn_sensor.h"
+#include "contact.h"
 
 /*
  * Here is the top FSM.  This FSM is suppose to give life to the robot with an
@@ -398,6 +400,8 @@ FSM_TRANS (TOP_DROP_DROPPING, clamp_drop_waiting, TOP_DROP_CLEARING)
 {
     if (ctx.target_element_id != 0xff)
 	element_down (ctx.target_element_id, ELEMENT_TOWER);
+    if (!IO_GET (CONTACT_STRAT))
+	element_i_like_green ();
     asserv_move_linearly (logistic_global.collect_direction
 			  == DIRECTION_FORWARD ? 150 : -150);
     return FSM_NEXT (TOP_DROP_DROPPING, clamp_drop_waiting);
