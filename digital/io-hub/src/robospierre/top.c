@@ -81,6 +81,8 @@ struct top_t
     uint8_t chaos;
     /** Broken clamp. */
     uint8_t broken;
+    /** Saved, direction when picking element. */
+    uint8_t go_to_element_direction;
 };
 
 /** Global context. */
@@ -140,6 +142,7 @@ top_go_element (void)
 	    logistic_global.prepare = top_prepare_level ();
       }
     vect_t element_pos = element_get_pos (ctx.target_element_id);
+    ctx.go_to_element_direction = logistic_global.collect_direction;
     uint8_t backward = logistic_global.collect_direction == DIRECTION_FORWARD
 	? 0 : ASSERV_BACKWARD;
     move_start_noangle (element_pos, backward, 0);
@@ -323,6 +326,16 @@ FSM_TRANS (TOP_WAITING_CLAMP, clamp_done,
 FSM_TRANS (TOP_WAITING_CLAMP, clamp_blocked, TOP_UNBLOCKING_SHAKE_WAIT)
 {
     return FSM_NEXT (TOP_WAITING_CLAMP, clamp_blocked);
+}
+
+FSM_TRANS (TOP_WAITING_CLAMP, clamp_taken, TOP_WAITING_CLAMP)
+{
+    position_t robot_pos;
+    asserv_get_position (&robot_pos);
+    if (robot_pos.v.x < 400 || robot_pos.v.x > PG_WIDTH - 400)
+	asserv_move_linearly (ctx.go_to_element_direction
+			      == DIRECTION_FORWARD ? -50 : 50);
+    return FSM_NEXT (TOP_WAITING_CLAMP, clamp_taken);
 }
 
 FSM_TRANS_TIMEOUT (TOP_UNBLOCKING_SHAKE_WAIT, 250,

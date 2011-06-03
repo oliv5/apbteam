@@ -103,6 +103,8 @@ FSM_EVENTS (
 	    clamp_new_element,
 	    /* Order to prepare tower. */
 	    clamp_prepare,
+	    /* Sent when an element has just been taken (door closed). */
+	    clamp_taken,
 	    /* Sent when clamp is working. */
 	    clamp_working,
 	    /* Sent when clamp return to idle state. */
@@ -614,6 +616,7 @@ FSM_TRANS_TIMEOUT (CLAMP_TAKING_DOOR_CLOSING, BOT_PWM_DOOR_CLOSE_TIME,
 		   clamp_locked, CLAMP_LOCKED,
 		   done, CLAMP_IDLE)
 {
+    fsm_queue_post_event (FSM_EVENT (AI, clamp_taken));
     logistic_element_new (ctx.pos_new, ctx.new_element_type);
     if (logistic_global.moving_from != CLAMP_SLOT_NB)
       {
