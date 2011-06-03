@@ -156,7 +156,7 @@ simu_sensor_update_marcel (void)
 void
 simu_sensor_update_robospierre (void)
 {
-    PINC = 0;
+    PINC = 0xf0;
     if (simu_aux_model[0].th < 120.0 * 5.0 / 6.0 * simu_aux_model[0].m.i_G)
 	PINC |= IO_BV (CONTACT_AUX0_ZERO_IO);
 }

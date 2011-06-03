@@ -97,6 +97,12 @@ mimot_motor1_cmd_status (void)
 	return none;
 }
 
+uint8_t
+mimot_get_input (void)
+{
+    return mimot_status.input_port;
+}
+
 uint16_t
 mimot_get_motor0_position (void)
 {

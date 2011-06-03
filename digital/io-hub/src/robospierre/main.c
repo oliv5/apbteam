@@ -41,6 +41,7 @@
 #include "pwm.h"
 #include "contact.h"
 #include "codebar.h"
+#include "pawn_sensor.h"
 #include "radar.h"
 
 #define FSM_NAME AI
@@ -207,6 +208,7 @@ main_loop (void)
 	/* Update IO modules. */
 	pwm_update ();
 	contact_update ();
+	pawn_sensor_update ();
 	if (usdist_update ())
 	  {
 	    position_t robot_pos;
@@ -234,7 +236,7 @@ main_loop (void)
 	  }
 	if (main_stats_contact_ && !--main_stats_contact_cpt_)
 	  {
-	    proto_send1d ('P', contact_all ());
+	    proto_send1d ('P', contact_all () | (uint32_t) mimot_get_input () << 24);
 	    main_stats_contact_cpt_ = main_stats_contact_;
 	  }
 	if (main_stats_codebar_ && !--main_stats_codebar_cpt_)

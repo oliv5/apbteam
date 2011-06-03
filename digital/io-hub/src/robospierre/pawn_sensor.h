@@ -30,4 +30,12 @@
 uint8_t
 pawn_sensor_get (uint8_t direction);
 
+/** Update pawn sensors. */
+void
+pawn_sensor_update (void);
+
+/** Return last bumped pawn. */
+vect_t
+pawn_sensor_get_last_bumped (void);
+
 #endif /* pawn_sensor_h */

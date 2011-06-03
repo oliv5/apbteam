@@ -33,6 +33,7 @@
 #include "logistic.h"
 #include "move.h"
 #include "chrono.h"
+#include "pawn_sensor.h"
 
 /*
  * Here is the top FSM.  This FSM is suppose to give life to the robot with an
@@ -69,6 +70,10 @@ FSM_STATES (
 	    TOP_DROP_DROPPING,
 	    /* Dropping, clearing so that doors can be closed. */
 	    TOP_DROP_CLEARING)
+
+FSM_EVENTS (
+	    /* Bumpers have seen something. */
+	    top_bumper)
 
 FSM_START_WITH (TOP_START)
 
@@ -127,6 +132,15 @@ top_prepare_level (void)
 	return 1;
 }
 
+static void
+top_go_this_element (vect_t pos, int16_t shorten)
+{
+    ctx.go_to_element_direction = logistic_global.collect_direction;
+    uint8_t backward = logistic_global.collect_direction == DIRECTION_FORWARD
+	? 0 : ASSERV_BACKWARD;
+    move_start_noangle (pos, backward, shorten);
+}
+
 static uint8_t
 top_go_element (void)
 {
@@ -142,10 +156,7 @@ top_go_element (void)
 	    logistic_global.prepare = top_prepare_level ();
       }
     vect_t element_pos = element_get_pos (ctx.target_element_id);
-    ctx.go_to_element_direction = logistic_global.collect_direction;
-    uint8_t backward = logistic_global.collect_direction == DIRECTION_FORWARD
-	? 0 : ASSERV_BACKWARD;
-    move_start_noangle (element_pos, backward, 0);
+    top_go_this_element (element_pos, 0);
     return 1;
 }
 
@@ -310,6 +321,15 @@ FSM_TRANS (TOP_GOING_TO_ELEMENT, clamp_working, TOP_WAITING_CLAMP)
     top_taken_pawn ();
     move_stop ();
     return FSM_NEXT (TOP_GOING_TO_ELEMENT, clamp_working);
+}
+
+FSM_TRANS (TOP_GOING_TO_ELEMENT, top_bumper, TOP_GOING_TO_ELEMENT)
+{
+    if (!ctx.broken)
+	logistic_global.prepare = top_prepare_level ();
+    move_stop ();
+    top_go_this_element (pawn_sensor_get_last_bumped (), BOT_ELEMENT_RADIUS - 50);
+    return FSM_NEXT (TOP_GOING_TO_ELEMENT, top_bumper);
 }
 
 FSM_TRANS (TOP_WAITING_CLAMP, clamp_done,

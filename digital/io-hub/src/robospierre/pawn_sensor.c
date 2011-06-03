@@ -23,6 +23,7 @@
  *
  * }}} */
 #include "common.h"
+#include "defs.h"
 #include "pawn_sensor.h"
 
 #include "asserv.h"
@@ -33,6 +34,12 @@
 #include "bot.h"
 #include "playground.h"
 #include "codebar.h"
+#include "mimot.h"
+#include "main.h"
+
+#define FSM_NAME AI
+#include "fsm.h"
+#include "fsm_queue.h"
 
 #include "modules/utils/utils.h"
 #include "modules/math/geometry/distance.h"
@@ -49,8 +56,18 @@ struct pawn_sensor_t
     vect_t active_position;
 };
 
+/** Pawn sensor general context. */
+struct pawn_sensor_general_t
+{
+    /** Last bumped element position. */
+    vect_t last_bumped;
+    /** Bumper triggered, wait until the next one. */
+    uint16_t bump_wait;
+};
+
 /** Global contexts. */
 struct pawn_sensor_t pawn_sensor_front, pawn_sensor_back;
+struct pawn_sensor_general_t pawn_sensor_global;
 
 static uint8_t
 pawn_sensor_get_type (uint8_t direction)
@@ -130,5 +147,65 @@ pawn_sensor_get (uint8_t direction)
 	ctx->active = 0;
       }
     return 0;
+}
+
+void
+pawn_sensor_bumper (uint8_t bumped, uint16_t dx, uint16_t dy)
+{
+    uint8_t i;
+    if (bumped)
+      {
+	/* Compute pawn position. */
+	position_t robot_pos;
+	asserv_get_position (&robot_pos);
+	vect_t bumped_pawn;
+	bumped_pawn.x = dx;
+	bumped_pawn.y = dy;
+	vect_rotate_uf016 (&bumped_pawn, robot_pos.a);
+	vect_translate (&bumped_pawn, &robot_pos.v);
+	/* Do not count if out of the table. */
+	if (bumped_pawn.x < 400 + BOT_ELEMENT_RADIUS
+	    && bumped_pawn.x >= PG_WIDTH - 400 - BOT_ELEMENT_RADIUS
+	    && bumped_pawn.y < BOT_ELEMENT_RADIUS
+	    && bumped_pawn.y >= PG_WIDTH - BOT_ELEMENT_RADIUS)
+	    return;
+	/* Do not count the opponent as a pawn. */
+	for (i = 0; i < main_obstacles_nb; i++)
+	  {
+	    uint16_t dist = distance_point_point (&bumped_pawn,
+						  &main_obstacles_pos[i]);
+	    if (dist < 300 + BOT_ELEMENT_RADIUS)
+		return;
+	  }
+	/* OK, take it. */
+	pawn_sensor_global.last_bumped = bumped_pawn;
+	fsm_queue_post_event (FSM_EVENT (AI, top_bumper));
+	pawn_sensor_global.bump_wait = 3 * 250;
+      }
+}
+
+void
+pawn_sensor_update (void)
+{
+#define BUMPER_FRONT_LEFT _BV (6)
+#define BUMPER_FRONT_RIGHT _BV (7)
+#define BUMPER_BACK_RIGHT _BV (5)
+#define BUMPER_BACK_LEFT _BV (4)
+    if (pawn_sensor_global.bump_wait)
+	pawn_sensor_global.bump_wait--;
+    else
+      {
+	uint8_t bumpers = mimot_get_input ();
+	pawn_sensor_bumper (!(bumpers & BUMPER_FRONT_LEFT), 120, 265);
+	pawn_sensor_bumper (!(bumpers & BUMPER_FRONT_RIGHT), 120, -265);
+	pawn_sensor_bumper (!(bumpers & BUMPER_BACK_RIGHT), -120, -265);
+	pawn_sensor_bumper (!(bumpers & BUMPER_BACK_LEFT), -120, 265);
+      }
+}
+
+vect_t
+pawn_sensor_get_last_bumped (void)
+{
+    return pawn_sensor_global.last_bumped;
 }
 

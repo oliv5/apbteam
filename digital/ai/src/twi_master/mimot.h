@@ -56,6 +56,10 @@ mimot_motor0_cmd_status (void);
 asserv_status_e
 mimot_motor1_cmd_status (void);
 
+/** Return input port state. */
+uint8_t
+mimot_get_input (void);
+
 /** Get motor0 position in steps. */
 uint16_t
 mimot_get_motor0_position (void);
