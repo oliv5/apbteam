@@ -176,8 +176,8 @@
       || (slot) == CLAMP_SLOT_BACK_BOTTOM) ? -0x100 : -0x200)
 
 #define BOT_PWM_CLAMP_INIT 0x1ff, 150, 0
-#define BOT_PWM_DOOR_INIT 0x1ff, 80, 0
+#define BOT_PWM_DOOR_INIT 0x100, 160, 0
 #define BOT_PWM_DOOR_INIT_START 0x55
-#define BOT_PWM_CLAMP_DOOR_INIT 150
+#define BOT_PWM_CLAMP_DOOR_INIT 250
 
 #endif /* bot_h */
