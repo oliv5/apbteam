@@ -248,8 +248,10 @@ FSM_TRANS (TOP_GOING_TO_DROP, move_success,
 {
     if (logistic_global.ready)
       {
-	clamp_drop (logistic_global.collect_direction);
-	return FSM_NEXT (TOP_GOING_TO_DROP, move_success, ready);
+	if (clamp_drop (logistic_global.collect_direction))
+	    return FSM_NEXT (TOP_GOING_TO_DROP, move_success, ready);
+	else
+	    return FSM_NEXT (TOP_GOING_TO_DROP, move_success, wait_clamp);
       }
     else
       {
@@ -385,10 +387,14 @@ FSM_TRANS (TOP_UNBLOCKING_SHAKE, robot_move_failure,
     return FSM_NEXT (TOP_UNBLOCKING_SHAKE, robot_move_failure);
 }
 
-FSM_TRANS (TOP_WAITING_READY, clamp_done, TOP_DROP_DROPPING)
+FSM_TRANS (TOP_WAITING_READY, clamp_done,
+	   drop, TOP_DROP_DROPPING,
+	   not_ready, TOP_WAITING_READY)
 {
-    clamp_drop (logistic_global.collect_direction);
-    return FSM_NEXT (TOP_WAITING_READY, clamp_done);
+    if (clamp_drop (logistic_global.collect_direction))
+	return FSM_NEXT (TOP_WAITING_READY, clamp_done, drop);
+    else
+	return FSM_NEXT (TOP_WAITING_READY, clamp_done, not_ready);
 }
 
 FSM_TRANS (TOP_WAITING_READY, clamp_blocked, TOP_UNBLOCKING_SHAKE_WAIT)
