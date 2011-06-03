@@ -201,4 +201,8 @@ element_blocking (uint8_t element_id);
 uint8_t
 element_blocking_path (vect_t a, vect_t b, int16_t ab);
 
+/** Ask to adjust score for the opposed green zone. */
+void
+element_i_like_green ();
+
 #endif /* element_h */

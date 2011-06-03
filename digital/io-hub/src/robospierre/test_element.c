@@ -32,6 +32,8 @@
 #define TEST_PRINT_TYPE_SCORE_PICK 0
 #define TEST_PRINT_TYPE_SCORE_UNLOAD 1
 #define TEST_PRINT_TYPE_ELEMENT 2
+#define TEST_PRINT_TYPE_BONUS_UNLOAD 3
+#define TEST_PRINT_TYPE_BONUS_LOAD 4
 int test_print_type_ = TEST_PRINT_TYPE_SCORE_PICK;
 position_t test_robot_pos_ = {{0, 2100}, 1};
 
@@ -189,6 +191,16 @@ test_element_get_score (uint8_t element_id)
 	return (long int) element_score (test_robot_pos_, element_id);
     else if (test_print_type_ == TEST_PRINT_TYPE_SCORE_UNLOAD)
 	return (long int) element_unload_score (test_robot_pos_, element_id);
+    else if (test_print_type_ == TEST_PRINT_TYPE_BONUS_LOAD)
+      {
+	element_t e = element_get (element_id);
+	return (long int) e.bonus_load;
+      }
+    else if (test_print_type_ == TEST_PRINT_TYPE_BONUS_UNLOAD)
+      {
+	element_t e = element_get (element_id);
+	return (long int) e.bonus_unload;
+      }
     else
 	return (long int) element_table[element_id].type;
 }
@@ -253,7 +265,9 @@ int main ()
 	element_init ();
 	printf ("\ncommands:\n");
 	printf ("s: print scores, ");
+	printf ("a: print load bonus, ");
 	printf ("p: print unload scores, ");
+	printf ("z: print unload bonus, ");
 	printf ("e: print elements, ");
 	printf ("t: set match time, ");
 	printf ("c: set robot side, ");
@@ -262,6 +276,7 @@ int main ()
 	printf ("n: indicate there is no element, ");
 	printf ("m: id of nearest element, ");
 	printf ("g: get position and angle of desired element,");
+	printf ("u: call I like green,");
 	printf ("q: quit\n");
 	printf ("your choice: ");
 	fflush (stdin);
@@ -272,8 +287,16 @@ int main ()
 	    test_print_type_ = TEST_PRINT_TYPE_SCORE_PICK;
 	    test_element_print_table ();
 	    break;
+	  case 'a':
+	    test_print_type_ = TEST_PRINT_TYPE_BONUS_LOAD;
+	    test_element_print_table ();
+	    break;
 	  case 'p':
 	    test_print_type_ = TEST_PRINT_TYPE_SCORE_UNLOAD;
+	    test_element_print_table ();
+	    break;
+	  case 'z':
+	    test_print_type_ = TEST_PRINT_TYPE_BONUS_UNLOAD;
 	    test_element_print_table ();
 	    break;
 	  case 'e':
@@ -336,6 +359,10 @@ int main ()
 		scanf ("%i", &x);
 		vect_t pos = element_get_pos (x);
 		printf ("x: %u y: %u\n", pos.x, pos.y);
+	    break;
+	  case 'u':
+	    printf ("call I like green ...");
+	    element_i_like_green ();
 	    break;
 	  case 'q':
 	    exit = 1;

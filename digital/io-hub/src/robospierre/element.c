@@ -164,8 +164,11 @@ element_init ()
 	    if (!((team_color == TEAM_COLOR_LEFT && (e.attr & ELEMENT_LEFT)) ||
 		  (team_color == TEAM_COLOR_RIGHT && (e.attr & ELEMENT_RIGHT))))
 	      {
-		e.bonus_load *= -1;
-		element_set (i, e);
+		if (e.bonus_load > 0)
+		  {
+		    e.bonus_load *= -1;
+		    element_set (i, e);
+		  }
 	      }
       }
 }
@@ -770,4 +773,23 @@ element_blocking_path (vect_t a, vect_t b, int16_t ab)
 	   }
        }
      return 0;
+}
+
+void
+element_i_like_green ()
+{
+    /* Negative bonus for the other green zone at start. */
+    /* Do not touch last green emplacement. */
+    int i;
+    for (i = ELEMENT_GREEN_START; i <= ELEMENT_GREEN_END - 2; i++)
+      {
+	    element_t e = element_get (i);
+	    if (!((team_color == TEAM_COLOR_LEFT && (e.attr & ELEMENT_LEFT)) ||
+		  (team_color == TEAM_COLOR_RIGHT && (e.attr & ELEMENT_RIGHT)))
+		&& e.bonus_load < 0)
+		  {
+		    e.bonus_load = 10;
+		    element_set (i, e);
+		  }
+      }
 }
