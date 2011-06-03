@@ -115,6 +115,10 @@ logistic_update (void);
 void
 logistic_element_new (uint8_t pos, uint8_t element_type);
 
+/** Oh la la, the pawn was not a pawn, it's a head. */
+void
+logistic_element_change (uint8_t pos, uint8_t element_type);
+
 /** To be called when a element movement is done. */
 void
 logistic_element_move_done (void);

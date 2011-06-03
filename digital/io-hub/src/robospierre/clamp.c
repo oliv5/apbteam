@@ -373,11 +373,17 @@ clamp_route (void)
       }
     else if (pos_current == CLAMP_BAY_FRONT_LEAVE)
       {
-	pos_new = CLAMP_BAY_FRONT_LEAVING;
+	if (CLAMP_IS_SLOT_IN_FRONT_BAY (pos_request))
+	    pos_new = pos_request;
+	else
+	    pos_new = CLAMP_BAY_FRONT_LEAVING;
       }
     else if (pos_current == CLAMP_BAY_BACK_LEAVE)
       {
-	pos_new = CLAMP_BAY_BACK_LEAVING;
+	if (CLAMP_IS_SLOT_IN_BACK_BAY (pos_request))
+	    pos_new = pos_request;
+	else
+	    pos_new = CLAMP_BAY_BACK_LEAVING;
       }
     else if (pos_current == CLAMP_BAY_FRONT_LEAVING)
       {
@@ -415,6 +421,34 @@ clamp_route (void)
     ctx.controled = 1;
     /* Remember new position. */
     ctx.pos_current = pos_new;
+}
+
+/* When lifting an element, we can discover it is actually a head.  In this
+ * case, change destination. */
+void
+clamp_change (void)
+{
+    uint8_t from = logistic_global.moving_from;
+    if (logistic_global.slots[from] == ELEMENT_PAWN)
+      {
+	/* Look head contact. */
+	uint8_t contact_head = 0;
+	if (from == CLAMP_SLOT_FRONT_BOTTOM)
+	    contact_head = !IO_GET (CONTACT_FRONT_TOP);
+	else if (from == CLAMP_SLOT_BACK_BOTTOM)
+	    contact_head = !IO_GET (CONTACT_BACK_TOP);
+	/* Change? */
+	if (contact_head)
+	  {
+	    logistic_element_change (from, ELEMENT_KING);
+	    if (logistic_global.moving_from != from)
+		/* Cancel move. */
+		ctx.pos_request = ctx.moving_to = from;
+	    else
+		/* Change move. */
+		ctx.pos_request = ctx.moving_to = logistic_global.moving_to;
+	  }
+      }
 }
 
 static void
@@ -861,6 +895,7 @@ FSM_TRANS (CLAMP_MOVE_DST_ROUTING, clamp_elevation_rotation_success,
 	   done_open_clamp, CLAMP_MOVE_DST_CLAMP_OPENING,
 	   next, CLAMP_MOVE_DST_ROUTING)
 {
+    clamp_change ();
     if (ctx.pos_current == ctx.pos_request)
       {
 	if (clamp_slot_door[ctx.pos_current] != 0xff)

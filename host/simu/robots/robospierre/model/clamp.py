@@ -203,8 +203,7 @@ class Clamp (Observable):
                     slots[1].pawn is not None
                     or (slots[0].pawn is not None
                         and slots[0].pawn.kind == 'tower'))
-            # This one is really high.
-            slots[2].contact.state = not (slots[2].pawn is not None)
+            slots[2].contact.state = True
             if slots[0].pawn:
                 slots[0].codebar.element_type = slots[0].pawn.kind
             else:
@@ -213,7 +212,8 @@ class Clamp (Observable):
         slot_side = self.slots[self.SLOT_SIDE]
         slot_side.contact.state = slot_side.pawn is None
         clamp_slot = self.__get_clamp_slot ()
-        if clamp_slot is not None:
+        if clamp_slot is not None and clamp_slot != self.SLOT_FRONT_TOP \
+                and clamp_slot != self.SLOT_BACK_TOP:
             clamp_slot.contact.state = False
         for slot in self.slots:
             slot.contact.notify ()

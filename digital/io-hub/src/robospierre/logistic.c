@@ -534,6 +534,14 @@ logistic_element_new (uint8_t pos, uint8_t element_type)
 }
 
 void
+logistic_element_change (uint8_t pos, uint8_t element_type)
+{
+    assert (pos < CLAMP_SLOT_NB);
+    ctx.slots[pos] = element_type;
+    logistic_decision ();
+}
+
+void
 logistic_element_move_done (void)
 {
     assert (!ctx.slots[ctx.moving_to]);
