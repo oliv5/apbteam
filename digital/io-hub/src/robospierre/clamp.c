@@ -425,6 +425,14 @@ clamp_route (void)
     ctx.pos_current = pos_new;
 }
 
+static void
+clamp_taken_pawn (uint8_t element_type)
+{
+    position_t robot_pos;
+    asserv_get_position (&robot_pos);
+    element_taken (element_nearest_element_id (robot_pos), element_type);
+}
+
 /* When lifting an element, we can discover it is actually a head.  In this
  * case, change destination. */
 void
@@ -443,6 +451,7 @@ clamp_change (void)
 	if (contact_head)
 	  {
 	    logistic_element_change (from, ELEMENT_KING);
+	    clamp_taken_pawn (ELEMENT_HEAD);
 	    if (logistic_global.moving_from != from)
 		/* Cancel move. */
 		ctx.pos_request = ctx.moving_to = from;
@@ -617,6 +626,7 @@ FSM_TRANS_TIMEOUT (CLAMP_TAKING_DOOR_CLOSING, BOT_PWM_DOOR_CLOSE_TIME,
 		   done, CLAMP_IDLE)
 {
     logistic_element_new (ctx.pos_new, ctx.new_element_type);
+    clamp_taken_pawn (ctx.new_element_type);
     if (logistic_global.moving_from != CLAMP_SLOT_NB)
       {
 	clamp_move_element (logistic_global.moving_from,
@@ -747,6 +757,7 @@ FSM_TRANS (CLAMP_LOCKED, clamp_new_element, CLAMP_LOCKED)
     pwm_set_timed (clamp_slot_door[ctx.pos_new],
 		   BOT_PWM_DOOR_CLOSE (ctx.pos_new));
     logistic_element_new (ctx.pos_new, ctx.new_element_type);
+    clamp_taken_pawn (ctx.new_element_type);
     return FSM_NEXT (CLAMP_LOCKED, clamp_new_element);
 }
 
