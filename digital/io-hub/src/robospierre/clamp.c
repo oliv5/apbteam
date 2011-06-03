@@ -616,7 +616,6 @@ FSM_TRANS_TIMEOUT (CLAMP_TAKING_DOOR_CLOSING, BOT_PWM_DOOR_CLOSE_TIME,
 		   clamp_locked, CLAMP_LOCKED,
 		   done, CLAMP_IDLE)
 {
-    fsm_queue_post_event (FSM_EVENT (AI, clamp_taken));
     logistic_element_new (ctx.pos_new, ctx.new_element_type);
     if (logistic_global.moving_from != CLAMP_SLOT_NB)
       {
@@ -871,6 +870,7 @@ FSM_TRANS_TIMEOUT (CLAMP_MOVE_SRC_CLAMP_CLOSING, BOT_PWM_CLAMP_CLOSE_TIME,
 		   open_door, CLAMP_MOVE_SRC_DOOR_OPENDING,
 		   move, CLAMP_MOVE_DST_ROUTING)
 {
+    fsm_queue_post_event (FSM_EVENT (AI, clamp_taken));
     if (clamp_slot_door[ctx.pos_current] != 0xff)
       {
 	pwm_set_timed (clamp_slot_door[ctx.pos_current],
