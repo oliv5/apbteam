@@ -742,7 +742,7 @@ uint8_t
 element_blocking (uint8_t element_id)
 {
     element_t e = element_get (element_id);
-    return e.type == ELEMENT_TOWER || e.type == ELEMENT_PAWN;
+    return e.type == ELEMENT_TOWER;
 }
 
 uint8_t
@@ -754,7 +754,7 @@ element_blocking_path (vect_t a, vect_t b, int16_t ab)
      for (i = 0; i < UTILS_COUNT (element_table); i++)
        {
 	 e = element_get (i);
-	 if (e.type == ELEMENT_TOWER || e.type == ELEMENT_PAWN)
+	 if (e.type == ELEMENT_TOWER)
 	   {
 	     /* Compute square of distance to obstacle, see
 	      * distance_segment_point in modules/math/geometry for the method
