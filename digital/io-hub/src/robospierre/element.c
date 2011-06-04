@@ -68,7 +68,7 @@ struct element_t element_table[] =
     {ELEMENT_NONE | ELEMENT_PAWN, {1500 + 1 * 350, 1 * 350}, ELEMENT_INTERSEC | ELEMENT_RIGHT, -30, 0, 0},
 
     /* Central pawn. (see ELEMENT_CENTRAL_PAWN) */
-    {ELEMENT_PAWN, {1500, 3 * 350}, ELEMENT_INTERSEC | ELEMENT_CENTER, 50, 0, 0},
+    {ELEMENT_PAWN, {1500, 3 * 350}, ELEMENT_INTERSEC | ELEMENT_CENTER, 30, 0, 0},
 
     /*
        10 elements on green zones.
