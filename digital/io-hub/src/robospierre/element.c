@@ -799,7 +799,8 @@ element_i_like_green ()
 	    element_t e = element_get (i);
 	    if (!((team_color == TEAM_COLOR_LEFT && (e.attr & ELEMENT_LEFT)) ||
 		  (team_color == TEAM_COLOR_RIGHT && (e.attr & ELEMENT_RIGHT)))
-		&& e.bonus_load < 0)
+		&& e.bonus_load < 0
+		&& (e.type == ELEMENT_KING || e.type == ELEMENT_QUEEN))
 		  {
 		    e.bonus_load = 40;
 		    element_set (i, e);
