@@ -30,6 +30,7 @@
 #include "contact.h"
 #include "bot.h"
 #include "element.h"
+#include "playground.h"
 
 #define FSM_NAME AI
 #include "fsm.h"
@@ -489,6 +490,11 @@ clamp_tower_check (void)
 	&& ctx.pos_current == from
 	&& logistic_global.slots[from] == ELEMENT_PAWN)
       {
+	/* Check for green zone. */
+	position_t robot_pos;
+	asserv_get_position (&robot_pos);
+	if (robot_pos.v.x < 450 || robot_pos.v.x > PG_WIDTH - 450)
+	    return 0;
 	/* Look tower contact. */
 	uint8_t contact_tower;
 	if (from == CLAMP_SLOT_FRONT_BOTTOM)
