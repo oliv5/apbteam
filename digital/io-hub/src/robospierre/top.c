@@ -153,9 +153,15 @@ top_go_element (void)
     if (!ctx.broken)
       {
 	if (e.attr & ELEMENT_GREEN)
+	  {
 	    logistic_global.prepare = 0;
+	    pawn_sensor_bumper_enable (0);
+	  }
 	else
+	  {
 	    logistic_global.prepare = top_prepare_level ();
+	    pawn_sensor_bumper_enable (1);
+	  }
       }
     vect_t element_pos = element_get_pos (ctx.target_element_id);
     top_go_this_element (element_pos, 0);
@@ -172,6 +178,7 @@ top_go_drop (void)
     drop_pos.v = element_get_pos (ctx.target_element_id);
     if (!ctx.broken)
 	logistic_global.prepare = top_prepare_level ();
+    pawn_sensor_bumper_enable (0);
     uint8_t backward = logistic_global.collect_direction == DIRECTION_FORWARD
 	? 0 : ASSERV_BACKWARD;
     /* Go above or below the drop point. */

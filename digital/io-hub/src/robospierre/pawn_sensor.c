@@ -59,6 +59,8 @@ struct pawn_sensor_t
 /** Pawn sensor general context. */
 struct pawn_sensor_general_t
 {
+    /** Activate bumpers. */
+    uint8_t bumper_enabled;
     /** Last bumped element position. */
     vect_t last_bumped;
     /** Bumper triggered, wait until the next one. */
@@ -191,16 +193,25 @@ pawn_sensor_update (void)
 #define BUMPER_FRONT_RIGHT _BV (7)
 #define BUMPER_BACK_RIGHT _BV (5)
 #define BUMPER_BACK_LEFT _BV (4)
-    if (pawn_sensor_global.bump_wait)
-	pawn_sensor_global.bump_wait--;
-    else
+    if (pawn_sensor_global.bumper_enabled)
       {
-	uint8_t bumpers = mimot_get_input ();
-	pawn_sensor_bumper (!(bumpers & BUMPER_FRONT_LEFT), 120, 265);
-	pawn_sensor_bumper (!(bumpers & BUMPER_FRONT_RIGHT), 120, -265);
-	pawn_sensor_bumper (!(bumpers & BUMPER_BACK_RIGHT), -120, -265);
-	pawn_sensor_bumper (!(bumpers & BUMPER_BACK_LEFT), -120, 265);
+	if (pawn_sensor_global.bump_wait)
+	    pawn_sensor_global.bump_wait--;
+	else
+	  {
+	    uint8_t bumpers = mimot_get_input ();
+	    pawn_sensor_bumper (!(bumpers & BUMPER_FRONT_LEFT), 120, 265);
+	    pawn_sensor_bumper (!(bumpers & BUMPER_FRONT_RIGHT), 120, -265);
+	    pawn_sensor_bumper (!(bumpers & BUMPER_BACK_RIGHT), -120, -265);
+	    pawn_sensor_bumper (!(bumpers & BUMPER_BACK_LEFT), -120, 265);
+	  }
       }
+}
+
+void
+pawn_sensor_bumper_enable (uint8_t enabled)
+{
+    pawn_sensor_global.bumper_enabled = enabled;
 }
 
 vect_t

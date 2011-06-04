@@ -34,6 +34,10 @@ pawn_sensor_get (uint8_t direction);
 void
 pawn_sensor_update (void);
 
+/** Enable bumpers. */
+void
+pawn_sensor_bumper_enable (uint8_t enabled);
+
 /** Return last bumped pawn. */
 vect_t
 pawn_sensor_get_last_bumped (void);
