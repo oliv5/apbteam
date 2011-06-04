@@ -422,7 +422,7 @@ FSM_TRANS (TOP_DROP_DROPPING, clamp_drop_waiting, TOP_DROP_CLEARING)
 	element_down (ctx.target_element_id,
 		      logistic_drop_element_type
 		      (logistic_global.collect_direction));
-    if (!IO_GET (CONTACT_STRAT))
+    if (IO_GET (CONTACT_STRAT))
 	element_i_like_green ();
     asserv_move_linearly (logistic_global.collect_direction
 			  == DIRECTION_FORWARD ? 150 : -150);
