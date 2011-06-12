@@ -191,15 +191,16 @@ element_get (uint8_t element_id)
 
 /** Return whether an element is blocking robot. */
 uint8_t
-element_blocking (uint8_t element_id);
+element_blocking (uint8_t element_id, uint8_t blocking);
 
 /** Return whether an element is blocking a line segment.
  * - a: line segment first point.
  * - b: line segment second point.
  * - ab: line segment length.
+ * - escape: trying to escape, be a little bit more permissive.
  * - returns: 1 if the path should not be used. */
 uint8_t
-element_blocking_path (vect_t a, vect_t b, int16_t ab);
+element_blocking_path (vect_t a, vect_t b, int16_t ab, uint8_t escape);
 
 /** Ask to adjust score for the opposed green zone. */
 void

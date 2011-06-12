@@ -739,22 +739,22 @@ element_get_pos (uint8_t element_id)
 }
 
 uint8_t
-element_blocking (uint8_t element_id)
+element_blocking (uint8_t element_id, uint8_t escape)
 {
     element_t e = element_get (element_id);
-    return e.type == ELEMENT_TOWER;
+    return e.type == ELEMENT_TOWER || (!escape && e.type == ELEMENT_PAWN);
 }
 
 uint8_t
-element_blocking_path (vect_t a, vect_t b, int16_t ab)
+element_blocking_path (vect_t a, vect_t b, int16_t ab, uint8_t escape)
 {
      uint8_t i;
      element_t e;
-     /* For each obstacle, try to find an intersection. */
-     for (i = 0; i < UTILS_COUNT (element_table); i++)
+     /* Only unload area are blocking. */
+     for (i = ELEMENT_UNLOAD_START; i <= ELEMENT_UNLOAD_END; i++)
        {
 	 e = element_get (i);
-	 if (e.type == ELEMENT_TOWER)
+	 if (e.type == ELEMENT_TOWER || (!escape && e.type == ELEMENT_PAWN))
 	   {
 	     /* Compute square of distance to obstacle, see
 	      * distance_segment_point in modules/math/geometry for the method

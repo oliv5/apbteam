@@ -198,23 +198,23 @@ path_pos (uint8_t node, vect_t *pos)
 }
 
 static uint8_t
-path_element_blocking (uint8_t node)
+path_element_blocking (uint8_t node, uint8_t escape)
 {
     vect_t pos;
     path_pos (node, &pos);
     int16_t square_x = (pos.x - 450 - 1) / 350;
     int16_t square_y = (2100 - pos.y - 1) / 350;
     uint8_t element_id = ELEMENT_UNLOAD_START + square_x + 6 * square_y;
-    if (element_blocking (element_id))
+    if (element_blocking (element_id, escape))
 	return 1;
     uint8_t intersection = ((pos.x - 450) / 350) != square_x;
     if (intersection)
       {
-	if (element_blocking (element_id + 1))
+	if (element_blocking (element_id + 1, escape))
 	    return 1;
-	if (element_blocking (element_id + 6))
+	if (element_blocking (element_id + 6, escape))
 	    return 1;
-	if (element_blocking (element_id + 6 + 1))
+	if (element_blocking (element_id + 6 + 1, escape))
 	    return 1;
       }
     return 0;
@@ -278,7 +278,7 @@ path_blocking (uint8_t a, uint8_t b, int16_t *dp)
 	return 0;
       }
     /* Test for a blocking element. */
-    if (element_blocking_path (va, vb, d))
+    if (element_blocking_path (va, vb, d, path.escape_factor))
 	blocking = 1;
     /* Handle escaping. */
     if (blocking)
@@ -306,7 +306,7 @@ path_blocked_update (void)
 	uint8_t valid = 1;
 	/* First, gather information from tables. */
 	if (!path_nodes[i].usable
-	    || path_element_blocking (i))
+	    || path_element_blocking (i, path.escape_factor))
 	    valid = 0;
 	else
 	  {
