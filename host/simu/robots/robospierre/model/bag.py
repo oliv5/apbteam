@@ -28,11 +28,14 @@ from simu.model.motor_basic import MotorBasic
 from simu.model.distance_sensor_sensopart import DistanceSensorSensopart
 from simu.robots.robospierre.model.clamp import Clamp
 from math import pi
+import random
 
 class Bag:
 
     def __init__ (self, scheduler, table, link_bag):
         self.color_switch = Switch (link_bag.io_hub.contact[0], invert = True)
+        self.color_switch.state = random.choice ((False, True))
+        self.color_switch.notify ()
         self.jack = Switch (link_bag.io_hub.contact[1], invert = True)
         self.strat_switch = Switch (link_bag.io_hub.contact[9], invert = True)
         self.contact = [ Switch (contact)

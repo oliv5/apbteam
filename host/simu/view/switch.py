@@ -28,6 +28,8 @@ class Switch:
 
     def __init__ (self, frame, model, text):
         self.var = IntVar ()
+        if model.state is not None:
+            self.var.set ((0, 1)[model.state])
         self.button = Checkbutton (frame, variable = self.var,
                 command = self.__update, text = text, indicatoron = False)
         self.button.pack ()
