@@ -434,6 +434,7 @@ FSM_TRANS (TOP_DROP_CLEARING, robot_move_success,
 	   element, TOP_GOING_TO_ELEMENT)
 {
     clamp_drop_clear ();
+    pawn_sensor_bumper_wait (3 * 250);
     switch (top_decision ())
       {
       default: return FSM_NEXT (TOP_DROP_CLEARING, robot_move_success, drop);
@@ -446,6 +447,7 @@ FSM_TRANS (TOP_DROP_CLEARING, robot_move_failure,
 	   element, TOP_GOING_TO_ELEMENT)
 {
     clamp_drop_clear ();
+    pawn_sensor_bumper_wait (3 * 250);
     switch (top_decision ())
       {
       default: return FSM_NEXT (TOP_DROP_CLEARING, robot_move_failure, drop);

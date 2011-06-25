@@ -214,6 +214,12 @@ pawn_sensor_bumper_enable (uint8_t enabled)
     pawn_sensor_global.bumper_enabled = enabled;
 }
 
+void
+pawn_sensor_bumper_wait (uint16_t wait)
+{
+    pawn_sensor_global.bump_wait = wait;
+}
+
 vect_t
 pawn_sensor_get_last_bumped (void)
 {

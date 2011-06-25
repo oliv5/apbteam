@@ -38,6 +38,10 @@ pawn_sensor_update (void);
 void
 pawn_sensor_bumper_enable (uint8_t enabled);
 
+/** Temporarily disable bumpers. */
+void
+pawn_sensor_bumper_wait (uint16_t wait);
+
 /** Return last bumped pawn. */
 vect_t
 pawn_sensor_get_last_bumped (void);
