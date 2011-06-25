@@ -81,8 +81,6 @@ FSM_STATES (
 	    CLAMP_LOCKED,
 	    /* Clamp blocked. */
 	    CLAMP_BLOCKED,
-	    /* Clamp unblocking, returning to prevous position. */
-	    CLAMP_UNBLOCKING,
 
 	    /* Waiting movement order. */
 	    CLAMP_MOVE_IDLE,
@@ -152,8 +150,6 @@ struct clamp_t
     uint8_t pos_current;
     /** Requested position. */
     uint8_t pos_request;
-    /** Last position before move. */
-    uint8_t pos_previous;
     /** Element moving destination. */
     uint8_t moving_to;
     /** Position of a new element. */
@@ -340,16 +336,6 @@ clamp_handle_event (void)
     return 0;
 }
 
-/** Return to last position. */
-static void
-clamp_unblock (void)
-{
-    ctx.pos_current = ctx.pos_previous;
-    ctx.pos_request = ctx.pos_current;
-    ctx.moving_to = CLAMP_POS_NB;
-    FSM_HANDLE (AI, clamp_move);
-}
-
 /** Open or close clamp and adjust rotation. */
 static void
 clamp_openclose (uint8_t open)
@@ -375,14 +361,8 @@ clamp_route (void)
     uint8_t pos_new;
     uint8_t pos_current = ctx.pos_current;
     uint8_t pos_request = ctx.pos_request;
-    /* Save previous position for unblocking. */
-    ctx.pos_previous = pos_current;
     /* Compute new position. */
-    if (pos_current == pos_request)
-      {
-	pos_new = pos_current;
-      }
-    else if (CLAMP_IS_SLOT_IN_FRONT_BAY (pos_current))
+    if (CLAMP_IS_SLOT_IN_FRONT_BAY (pos_current))
       {
 	if (!CLAMP_IS_SLOT_IN_FRONT_BAY (pos_request))
 	    pos_new = CLAMP_BAY_FRONT_LEAVE;
@@ -841,36 +821,21 @@ FSM_TRANS (CLAMP_LOCKED, clamp_drop, CLAMP_DROPING_DOOR_OPENING)
     return FSM_NEXT (CLAMP_LOCKED, clamp_drop);
 }
 
-FSM_TRANS (CLAMP_BLOCKED, clamp_prepare, CLAMP_UNBLOCKING)
-{
-    clamp_unblock ();
-    return FSM_NEXT (CLAMP_BLOCKED, clamp_prepare);
-}
-
-FSM_TRANS (CLAMP_UNBLOCKING, clamp_move_success,
-	   move_element, CLAMP_MOVING_ELEMENT,
+FSM_TRANS (CLAMP_BLOCKED, clamp_prepare,
 	   move_to_idle, CLAMP_GOING_IDLE,
 	   clamp_locked, CLAMP_LOCKED,
 	   done, CLAMP_IDLE)
 {
-    switch (clamp_decision (0))
+    switch (clamp_decision (1))
       {
       default:
-      case CLAMP_DECISION_MOVE_ELEMENT:
-	return FSM_NEXT (CLAMP_UNBLOCKING, clamp_move_success, move_element);
       case CLAMP_DECISION_MOVE_TO_IDLE:
-	return FSM_NEXT (CLAMP_UNBLOCKING, clamp_move_success, move_to_idle);
+	return FSM_NEXT (CLAMP_BLOCKED, clamp_prepare, move_to_idle);
       case CLAMP_DECISION_CLAMP_LOCKED:
-	return FSM_NEXT (CLAMP_UNBLOCKING, clamp_move_success, clamp_locked);
+	return FSM_NEXT (CLAMP_BLOCKED, clamp_prepare, clamp_locked);
       case CLAMP_DECISION_DONE:
-	return FSM_NEXT (CLAMP_UNBLOCKING, clamp_move_success, done);
+	return FSM_NEXT (CLAMP_BLOCKED, clamp_prepare, done);
       }
-}
-
-FSM_TRANS (CLAMP_UNBLOCKING, clamp_move_failure, CLAMP_BLOCKED)
-{
-    fsm_queue_post_event (FSM_EVENT (AI, clamp_blocked));
-    return FSM_NEXT (CLAMP_UNBLOCKING, clamp_move_failure);
 }
 
 /* CLAMP_MOVE FSM */
