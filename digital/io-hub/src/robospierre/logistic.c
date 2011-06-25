@@ -582,11 +582,13 @@ logistic_drop_element_type (uint8_t direction)
 }
 
 void
-logistic_dump (void)
+logistic_dump (uint8_t direction, uint8_t drop_top)
 {
+    /* Drop. */
     uint8_t i;
-    /* Drop all except side. */
-    for (i = 0; i < CLAMP_SLOT_SIDE; i++)
+    uint8_t bay = direction == DIRECTION_FORWARD
+	? CLAMP_SLOT_FRONT_BOTTOM : CLAMP_SLOT_BACK_BOTTOM;
+    for (i = bay; i < bay + 2 + drop_top; i++)
 	ctx.slots[i] = 0;
 }
 

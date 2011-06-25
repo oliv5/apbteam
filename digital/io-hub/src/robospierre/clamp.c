@@ -537,13 +537,38 @@ clamp_blocked (void)
 {
     /* Free everything. */
     clamp_openclose (1);
-    clamp_door (CLAMP_SLOT_FRONT_BOTTOM, 1);
-    clamp_door (CLAMP_SLOT_FRONT_TOP, 1);
-    clamp_door (CLAMP_SLOT_BACK_BOTTOM, 1);
-    clamp_door (CLAMP_SLOT_BACK_TOP, 1);
+    uint16_t rotation_position = mimot_get_motor1_position ();
+    uint16_t elevation_position = mimot_get_motor0_position ();
+    if (rotation_position < BOT_CLAMP_BAY_SIDE_ROTATION_STEP
+	- BOT_CLAMP_BAY_SIDE_MARGIN_ROTATION_STEP)
+      {
+	clamp_door (CLAMP_SLOT_FRONT_BOTTOM, 1);
+	if (elevation_position
+	    > (BOT_CLAMP_SLOT_FRONT_MIDDLE_ELEVATION_STEP
+	       + BOT_CLAMP_SLOT_FRONT_TOP_ELEVATION_STEP) / 2)
+	  {
+	    clamp_door (CLAMP_SLOT_FRONT_TOP, 1);
+	    logistic_dump (DIRECTION_FORWARD, 1);
+	  }
+	else
+	    logistic_dump (DIRECTION_FORWARD, 0);
+      }
+    else if (rotation_position > BOT_CLAMP_BAY_SIDE_ROTATION_STEP
+	+ BOT_CLAMP_BAY_SIDE_MARGIN_ROTATION_STEP)
+      {
+	clamp_door (CLAMP_SLOT_BACK_BOTTOM, 1);
+	if (elevation_position
+	    > (BOT_CLAMP_SLOT_BACK_MIDDLE_ELEVATION_STEP
+	       + BOT_CLAMP_SLOT_BACK_TOP_ELEVATION_STEP) / 2)
+	  {
+	    clamp_door (CLAMP_SLOT_BACK_TOP, 1);
+	    logistic_dump (DIRECTION_BACKWARD, 1);
+	  }
+	else
+	    logistic_dump (DIRECTION_BACKWARD, 0);
+      }
     mimot_motor0_free ();
     mimot_motor1_free ();
-    logistic_dump ();
     /* Signal problem. */
     fsm_queue_post_event (FSM_EVENT (AI, clamp_move_failure));
 }

@@ -132,9 +132,9 @@ logistic_drop (uint8_t direction);
 uint8_t
 logistic_drop_element_type (uint8_t direction);
 
-/** Dump every element. */
+/** Dump every element on one direction. */
 void
-logistic_dump (void);
+logistic_dump (uint8_t direction, uint8_t drop_top);
 
 /** Is path clear between two positions? */
 uint8_t
