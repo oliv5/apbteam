@@ -657,12 +657,26 @@ element_taken (uint8_t element_id, uint8_t element_type)
 void
 element_down (uint8_t element_id, uint8_t element_type)
 {
+    uint8_t i;
     element_t e = element_get (element_id);
     e.type = element_type;
     element_set (element_id, e);
 
+    /* Malus elements near this element. */
+    for (i = ELEMENT_INTERSEC_START; i <= ELEMENT_INTERSEC_END; i++)
+      {
+	element_t ie = element_get (i);
+	if (UTILS_ABS (e.pos.x - ie.pos.x)
+	    < BOT_ELEMENT_RADIUS + BOT_SIZE_SIDE + 20
+	    && UTILS_ABS (e.pos.y - ie.pos.y)
+	    < BOT_ELEMENT_RADIUS + BOT_SIZE_SIDE + 20)
+	  {
+	    ie.bonus_load = -50;
+	    element_set (i, ie);
+	  }
+      }
+
     /* Remove our green zone score at first unload. */
-    uint8_t i;
     for (i = ELEMENT_GREEN_START; i <= ELEMENT_GREEN_END - 2; i++)
       {
 	    element_t e = element_get (i);
