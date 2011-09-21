@@ -675,18 +675,6 @@ element_down (uint8_t element_id, uint8_t element_type)
 	    element_set (i, ie);
 	  }
       }
-
-    /* Remove our green zone score at first unload. */
-    for (i = ELEMENT_GREEN_START; i <= ELEMENT_GREEN_END - 2; i++)
-      {
-	    element_t e = element_get (i);
-	    if ((team_color == TEAM_COLOR_LEFT && (e.attr & ELEMENT_LEFT)) ||
-		 (team_color == TEAM_COLOR_RIGHT && (e.attr & ELEMENT_RIGHT)))
-	      {
-		    e.bonus_load = 0;
-		    element_set (i, e);
-	      }
-      }
 }
 
 void
@@ -819,5 +807,22 @@ element_i_like_green ()
 		    e.bonus_load = 40;
 		    element_set (i, e);
 		  }
+      }
+}
+
+void
+element_no_more_green (void)
+{
+    uint8_t i;
+    /* Remove our green zone score at first unload. */
+    for (i = ELEMENT_GREEN_START; i <= ELEMENT_GREEN_END - 2; i++)
+      {
+	element_t e = element_get (i);
+	if ((team_color == TEAM_COLOR_LEFT && (e.attr & ELEMENT_LEFT)) ||
+	    (team_color == TEAM_COLOR_RIGHT && (e.attr & ELEMENT_RIGHT)))
+	  {
+	    e.bonus_load = 0;
+	    element_set (i, e);
+	  }
       }
 }

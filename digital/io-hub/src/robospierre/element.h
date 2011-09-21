@@ -206,4 +206,8 @@ element_blocking_path (vect_t a, vect_t b, int16_t ab, uint8_t escape);
 void
 element_i_like_green ();
 
+/** Do not go to our green zone any more. */
+void
+element_no_more_green (void);
+
 #endif /* element_h */

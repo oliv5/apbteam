@@ -90,6 +90,8 @@ struct top_t
     uint8_t broken;
     /** Saved, direction when picking element. */
     uint8_t go_to_element_direction;
+    /** Return to our green zone again. */
+    uint8_t green_again;
 };
 
 /** Global context. */
@@ -99,6 +101,7 @@ struct top_t top_global;
 FSM_TRANS (TOP_START, init_start_round, TOP_GOING_OUT1)
 {
     element_init ();
+    ctx.green_again = 3;
     asserv_goto (PG_X (PG_GREEN_WIDTH_MM + 100),
 		 PG_Y (PG_LENGTH - 200), 0);
     return FSM_NEXT (TOP_START, init_start_round);
@@ -305,6 +308,12 @@ FSM_TRANS (TOP_GOING_TO_ELEMENT, move_success,
 	element_failure (ctx.target_element_id); /* Do not take this one again. */
     if (clamp_working ())
 	return FSM_NEXT (TOP_GOING_TO_ELEMENT, move_success, clamp_working);
+    if (ctx.green_again)
+      {
+	ctx.green_again--;
+	if (ctx.green_again == 0)
+	    element_no_more_green ();
+      }
     switch (top_decision ())
       {
       default: return FSM_NEXT (TOP_GOING_TO_ELEMENT, move_success, drop);
@@ -321,6 +330,12 @@ FSM_TRANS (TOP_GOING_TO_ELEMENT, move_failure,
 	element_failure (ctx.target_element_id);
     if (clamp_working ())
 	return FSM_NEXT (TOP_GOING_TO_ELEMENT, move_failure, clamp_working);
+    if (ctx.green_again)
+      {
+	ctx.green_again--;
+	if (ctx.green_again == 0)
+	    element_no_more_green ();
+      }
     switch (top_decision ())
       {
       default: return FSM_NEXT (TOP_GOING_TO_ELEMENT, move_failure, drop);
@@ -331,6 +346,12 @@ FSM_TRANS (TOP_GOING_TO_ELEMENT, move_failure,
 FSM_TRANS (TOP_GOING_TO_ELEMENT, clamp_working, TOP_WAITING_CLAMP)
 {
     move_stop ();
+    if (ctx.green_again)
+      {
+	ctx.green_again--;
+	if (ctx.green_again == 0)
+	    element_no_more_green ();
+      }
     return FSM_NEXT (TOP_GOING_TO_ELEMENT, clamp_working);
 }
 
