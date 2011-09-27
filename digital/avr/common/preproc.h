@@ -29,6 +29,17 @@
  *
  * To run tests, give it to cpp -DPREPROC_TEST. */
 
+
+#ifdef PREPROC_TEST
+#define empty_list
+#define empty_list_comma
+#define one_item_list a
+#define one_item_list_comma ,a
+#define two_items_list a, b
+#define two_items_list_comma ,a ,b
+#define ten_items_list a, b, c, d, e, f, g, h, i, j
+#endif
+
 /** Count the number of macro arguments. */
 #define PREPROC_NARG(args...) \
     PREPROC_NARG_ (dummy, ## args)
@@ -53,15 +64,15 @@
 		       N, ...) N
 
 #ifdef PREPROC_TEST
-#define a 1, 2, 3, 4
 NARG:
  0: PREPROC_NARG ()
  1: PREPROC_NARG (1)
  2: PREPROC_NARG (1, 2)
  3: PREPROC_NARG (1, 2, 3)
- 4: PREPROC_NARG (a)
+ 10: PREPROC_NARG (ten_items_list)
  63: PREPROC_NARG (,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, \
 		   ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,)
+#undef a
 #endif
 
 /** Paste arguments together.  Macro arguments are completely macro-expanded
@@ -112,6 +123,137 @@ NARG_CALL:
  one which is 11: PREPROC_NARG_CALL (macro_, 11)
  two which are 11 and 22: PREPROC_NARG_CALL (macro_, 11, 22)
  three which are 11, 22 and 33: PREPROC_NARG_CALL (macro_, 11, 22, 33)
+#endif
+
+/** Reverse a list (maximum of 10 elements).
+ * For example, PREPROC_LIST_REVERSE(a, b, c) will expand to c, b, a. */
+#define PREPROC_LIST_REVERSE(args...) \
+    PREPROC_NARG_CALL (PREPROC_LIST_REVERSE_, ## args)
+#define PREPROC_LIST_REVERSE_0()
+#define PREPROC_LIST_REVERSE_1(arg) arg
+#define PREPROC_LIST_REVERSE_2(arg, args...) \
+	PREPROC_LIST_REVERSE_1(args), arg
+/* Boring details... {{{ */
+#define PREPROC_LIST_REVERSE_3(arg, args...) \
+	PREPROC_LIST_REVERSE_2(args), arg
+#define PREPROC_LIST_REVERSE_4(arg, args...) \
+	PREPROC_LIST_REVERSE_3(args), arg
+#define PREPROC_LIST_REVERSE_5(arg, args...) \
+	PREPROC_LIST_REVERSE_4(args), arg
+#define PREPROC_LIST_REVERSE_6(arg, args...) \
+	PREPROC_LIST_REVERSE_5(args), arg
+#define PREPROC_LIST_REVERSE_7(arg, args...) \
+	PREPROC_LIST_REVERSE_6(args), arg
+#define PREPROC_LIST_REVERSE_8(arg, args...) \
+	PREPROC_LIST_REVERSE_7(args), arg
+#define PREPROC_LIST_REVERSE_9(arg, args...) \
+	PREPROC_LIST_REVERSE_8(args), arg
+#define PREPROC_LIST_REVERSE_10(arg, args...) \
+	PREPROC_LIST_REVERSE_9(args), arg
+/* }}} */
+
+#ifdef PREPROC_TEST
+PREPROC_LIST_REVERSE:
+ : PREPROC_LIST_REVERSE (empty_list)
+ a: PREPROC_LIST_REVERSE (one_item_list)
+ b, a: PREPROC_LIST_REVERSE (two_items_list)
+ j, i, h, g, f, e, d, c, b, a: PREPROC_LIST_REVERSE (ten_items_list)
+#endif
+
+/** Call a macro for every argument (maximum of 10).
+ * For example, PREPROC_FOR(macro, a, b, c) will expand to macro(a) macro(b)
+ * macro(c). */
+/* First step needed to expand macro which can contain commas. */
+#define PREPROC_FOR(macro, args...) \
+    PREPROC_FOR_ (macro, ## args)
+#define PREPROC_FOR_(macro, args...) \
+    PREPROC_PASTE (PREPROC_FOR_, PREPROC_NARG (args)) (macro, args)
+#define PREPROC_FOR_0(macro, dummy_arg)
+#define PREPROC_FOR_1(macro, arg) macro (arg)
+#define PREPROC_FOR_2(macro, arg, args...) \
+    macro (arg) PREPROC_FOR_1 (macro, args)
+/* Boring details... {{{ */
+#define PREPROC_FOR_3(macro, arg, args...) \
+    macro (arg) PREPROC_FOR_2 (macro, args)
+#define PREPROC_FOR_4(macro, arg, args...) \
+    macro (arg) PREPROC_FOR_3 (macro, args)
+#define PREPROC_FOR_5(macro, arg, args...) \
+    macro (arg) PREPROC_FOR_4 (macro, args)
+#define PREPROC_FOR_6(macro, arg, args...) \
+    macro (arg) PREPROC_FOR_5 (macro, args)
+#define PREPROC_FOR_7(macro, arg, args...) \
+    macro (arg) PREPROC_FOR_6 (macro, args)
+#define PREPROC_FOR_8(macro, arg, args...) \
+    macro (arg) PREPROC_FOR_7 (macro, args)
+#define PREPROC_FOR_9(macro, arg, args...) \
+    macro (arg) PREPROC_FOR_8 (macro, args)
+#define PREPROC_FOR_10(macro, arg, args...) \
+    macro (arg) PREPROC_FOR_9 (macro, args)
+/* }}} */
+
+#ifdef PREPROC_TEST
+#define macro(arg) <arg>
+PREPROC_FOR:
+ : PREPROC_FOR (macro)
+ : PREPROC_FOR (macro, empty_list)
+ <a>: PREPROC_FOR (macro, one_item_list)
+ <a> <b>: PREPROC_FOR (macro, two_items_list)
+ <a> <b> <c> <d> <e> <f> <g> <h> <i> <j>: PREPROC_FOR (macro, ten_items_list)
+If first comma is included in the list:
+ : PREPROC_FOR (macro empty_list_comma)
+ <a>: PREPROC_FOR (macro one_item_list_comma)
+ <a> <b>: PREPROC_FOR (macro two_items_list_comma)
+#undef macro
+#endif
+
+/** Call a macro for every arguments (maximum of 10) with an argument index.
+ * For example, PREPROC_FOR_ENUM(macro, a, b, c) will expand to macro(0, a)
+ * macro(1, b) macro(2, c). */
+/* First step needed to expand macro which can contain commas. */
+#define PREPROC_FOR_ENUM(macro, args...) \
+    PREPROC_FOR_ENUM_ (macro, ## args)
+/* Second step needed to expand args. */
+#define PREPROC_FOR_ENUM_(macro, args...) \
+    PREPROC_FOR_ENUM__ (macro, PREPROC_NARG (args), PREPROC_LIST_REVERSE (args))
+#define PREPROC_FOR_ENUM__(macro, nargs, args...) \
+    PREPROC_PASTE (PREPROC_FOR_ENUM_, nargs) (macro, args)
+#define PREPROC_FOR_ENUM_0(macro, dummy_arg)
+#define PREPROC_FOR_ENUM_1(macro, arg) macro (0, arg)
+#define PREPROC_FOR_ENUM_2(macro, arg, args...) \
+    PREPROC_FOR_ENUM_1 (macro, args) macro (1, arg)
+/* Boring details... {{{ */
+#define PREPROC_FOR_ENUM_3(macro, arg, args...) \
+    PREPROC_FOR_ENUM_2 (macro, args) macro (2, arg)
+#define PREPROC_FOR_ENUM_4(macro, arg, args...) \
+    PREPROC_FOR_ENUM_3 (macro, args) macro (3, arg)
+#define PREPROC_FOR_ENUM_5(macro, arg, args...) \
+    PREPROC_FOR_ENUM_4 (macro, args) macro (4, arg)
+#define PREPROC_FOR_ENUM_6(macro, arg, args...) \
+    PREPROC_FOR_ENUM_5 (macro, args) macro (5, arg)
+#define PREPROC_FOR_ENUM_7(macro, arg, args...) \
+    PREPROC_FOR_ENUM_6 (macro, args) macro (6, arg)
+#define PREPROC_FOR_ENUM_8(macro, arg, args...) \
+    PREPROC_FOR_ENUM_7 (macro, args) macro (7, arg)
+#define PREPROC_FOR_ENUM_9(macro, arg, args...) \
+    PREPROC_FOR_ENUM_8 (macro, args) macro (8, arg)
+#define PREPROC_FOR_ENUM_10(macro, arg, args...) \
+    PREPROC_FOR_ENUM_9 (macro, args) macro (9, arg)
+/* }}} */
+
+#ifdef PREPROC_TEST
+#define macro(index, arg) <index, arg>
+PREPROC_FOR_ENUM:
+ : PREPROC_FOR_ENUM (macro)
+ : PREPROC_FOR_ENUM (macro, empty_list)
+ <0, a>: PREPROC_FOR_ENUM (macro, one_item_list)
+ <0, a> <1, b>: PREPROC_FOR_ENUM (macro, two_items_list)
+ <0, a> <1, b> <2, c> <3, d> <4, e> <5, f> <6, g> <7, h> <8, i> <9, j>:
+     PREPROC_FOR_ENUM (macro, ten_items_list)
+If first comma is included in the list:
+ : PREPROC_FOR_ENUM (macro empty_list_comma)
+ <0, a>: PREPROC_FOR_ENUM (macro one_item_list_comma)
+ <0, a> <1, b>: PREPROC_FOR_ENUM (macro two_items_list_comma)
+#undef macro
 #endif
 
 #endif /* preproc_h */
