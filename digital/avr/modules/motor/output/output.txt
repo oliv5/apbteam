@@ -1,0 +1,34 @@
+=====================
+ motor/output module
+=====================
+:Author: Nicolas Schodet
+
+Introduction
+============
+
+The output module provides an interface with hardware outputs.  They are
+usually PWM hardware connected to a H-bridge to power the motors.
+
+Usage
+=====
+
+The `output_t` structure contains information about the current state and
+configuration of the output.  The `max` and `min` fields must be initialised
+by user code (you can use a data initializer) and left untouched afterward,
+then `output_init` should be called to associate each output with hardware.
+
+Each output hardware is associated with an index fixed in the compile time
+configuration.
+
+To change the current output value, use the `output_set` function.  It will
+filter value (saturation with `max`, dead zone with `min`, optional negation
+if `reverse` is set) and store it for next update.  Each output hardware will
+reflect this value once `output_update` is called.
+
+An output can be reversed by setting the `reverse` field before `output_init`
+is called or using `output_set_reverse` function.
+
+API
+===
+
+.. include:: output.exd
