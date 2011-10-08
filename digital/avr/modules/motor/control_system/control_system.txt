@@ -1,0 +1,33 @@
+=============================
+ motor/control_system module
+=============================
+:Author: Nicolas Schodet
+
+Introduction
+============
+
+This module will bind together several layers of motor control modules.  It
+aims at helping sequencing them in the right order to meets real time
+constrains and state changes sequence required order.
+
+Usage
+=====
+
+You should use one of `control_system_single_t` for a single motor system, or
+`control_system_polar_t` for a dual motor differential robot configuration.
+The encoder and output structures should be initialised and their pointers be
+set before the `control_system_*_init` is called.
+
+The `control_system_*_update_prepare` function should be called right before
+you wait for the next cycle, but after you made changes to consigns.  Once the
+next cycle start, as fast as possible, you should first update encoders, then
+call the `control_system_*_update` function, and finally update outputs.
+
+This is important that consigns (and control state) are not changed between
+update preparation and update, because the update function is also responsible
+to reset some internal variables when state is changed.
+
+API
+===
+
+.. include:: control_system.exd

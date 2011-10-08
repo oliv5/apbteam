@@ -1,0 +1,47 @@
+============================
+ motor/control_state module
+============================
+:Author: Nicolas Schodet
+
+Introduction
+============
+
+The control state provides a way to enable or disable each control module in a
+control system.
+
+Usage
+=====
+
+Use `control_state_set_mode` to enable a control mode and every lower control
+mode.  For example::
+
+   control_state_set_mode (CS_MODE_SPEED_CONTROL, 0);
+
+will enable speed control, position control and blocking detection.
+
+The second argument can be used to disable a lower mode. For example, you can
+enable position control without blocking detection::
+
+   control_state_set_mode (CS_MODE_POS_CONTROL, CS_MODE_BLOCKING_DETECTION);
+
+Actually, blocking detection is always enabled, only its effect can be
+avoided (if disable, a blocked state will not disable control).
+
+Use `control_state_finished` to signal that the current high level move is
+finished.  This will restore every position control and blocking detection if
+at least one position control is enabled and set the finished flag.
+
+Use `control_state_blocked` to signal a blocked state.  This will disable
+every mode and set the blocked flag.
+
+The functions `control_state_is_finished` and `control_state_is_blocked` can
+be used to query those flags.
+
+When state has changed, it is usually safest to wait for the next control
+cycle before state is changed again.  This is done naturally if the order of
+update functions is respected (see control system documentation).
+
+API
+===
+
+.. include:: control_state.exd

@@ -1,0 +1,39 @@
+============================
+ motor/speed_control module
+============================
+:Author: Nicolas Schodet
+
+Introduction
+============
+
+This module provides two speed control modes, to be chained with a position
+control module.  Its role is to make sure that movement acceleration is not
+too high.
+
+Usage
+=====
+
+The `max` and `acc` parameters should be set to maximum speed and maximum
+acceleration.  Other fields should better be changed using the helper
+functions.
+
+The first control mode respects a speed consign.  User choose a desired speed
+and the module will change the actual speed according to acceleration to match
+consign.  Use the `speed_control_set_speed`.
+
+The second mode will move to a position, by increasing and decreasing speed
+according to the acceleration. Use the `speed_control_pos_offset` and
+`speed_control_pos_offset_from_here` functions.  The first function use an
+offset relative to the current controlled position so that small errors are not
+accumulated over several movements.
+
+The `speed_control_hard_stop` function is quite dangerous as it does not
+respect the maximum acceleration.  Only use this if you know what you are
+doing!  This can be used for example to stop as soon as a contact is triggered
+to find a zero position at very low speed.  The regular braking method is
+`speed_control_set_speed` with a zero speed.
+
+API
+===
+
+.. include:: speed_control.exd

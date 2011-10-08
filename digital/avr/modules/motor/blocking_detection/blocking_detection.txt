@@ -1,0 +1,21 @@
+=================================
+ motor/blocking_detection module
+=================================
+:Author: Nicolas Schodet
+
+Introduction
+============
+
+This module try to detect when there is something which blocks a motor.  This
+is not meant to protect the motor, its role is to inform upper layer that an
+action must be taken.
+
+Usage
+=====
+
+TODO: about to change.
+
+API
+===
+
+.. include:: blocking_detection.exd

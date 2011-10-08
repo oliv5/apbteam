@@ -1,0 +1,32 @@
+==========================
+ motor/pos_control module
+==========================
+:Author: Nicolas Schodet
+
+Introduction
+============
+
+This module provides position control, usually for a DC motor.  Given a
+position consign, it will adjust output power so that the measured position
+matches the consign.  There is no speed control, this is handled by another
+module.
+
+Usage
+=====
+
+The `pos_control_t` structure contains both current control state and control
+parameters.  The `kp`, `kd` and `ki` parameters are the PID coefficients,
+using a fixed point representation. The `e_sat`, `i_sat` and `d_sat` are the
+maximum values for error, integral and differential values.  They must be
+adapted so that PID computation does not overflow.  See the
+`pos_control_compute_pid` function comments for guidelines to choose those
+values.
+
+The `cur` field is updated by this module with the current position.  The
+`cons` field must be written by user to set the position consign.  This module
+will try to make the current position matches the consign position.
+
+API
+===
+
+.. include:: pos_control.exd
