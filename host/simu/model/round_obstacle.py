@@ -24,6 +24,7 @@
 """Obstacle with a round shape."""
 from math import pi, cos, sin, sqrt
 from utils.observable import Observable
+from simu.utils.vector import vector
 
 class RoundObstacle (Observable):
 
@@ -38,17 +39,19 @@ class RoundObstacle (Observable):
         to intersection point, else, return None."""
         if self.pos is None:
             return None
-        ab = sqrt ((b[0] - a[0]) ** 2 + (b[1] - a[1]) ** 2) # distance AB.
-        n = ((b[0] - a[0]) / ab, (b[1] - a[1]) / ab) # vector of length 1.
-        o = self.pos # obstacle center.
+        a, b = vector (a), vector (b)
+        vab = b - a
+        ab = abs (vab) # distance AB.
+        n = vab.unit () # vector of length 1.
+        o = vector (self.pos) # obstacle center.
         # To check if the line (AB) intersects the circle, compute distance
         # from circle center to line using a dot product.
-        vao = (o[0] - a[0], o[1] - a[1]) # vector AO.
-        # dot product, (-n[1], n[0]) is perpendicular to n.
-        doc = abs (vao[0] * -n[1] + vao[1] * n[0])
+        vao = o - a # vector AO.
+        # abs of dot product.
+        doc = abs (vao * n.normal ())
         if doc < self.radius:
             # Line intersects, check if segment intersects.
-            m = vao[0] * n[0] + vao[1] * n[1]
+            m = vao * n
             f = sqrt (self.radius ** 2 - doc ** 2)
             if m - f > 0 and m - f < ab:
                 return m - f
