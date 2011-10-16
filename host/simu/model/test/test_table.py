@@ -24,9 +24,11 @@
 """Test table model and obstacles."""
 from simu.model.table import Table
 from simu.model.round_obstacle import RoundObstacle
+from simu.model.rectangular_obstacle import RectangularObstacle
 from simu.inter.drawable import Drawable, DrawableCanvas
 from simu.utils.vector import vector
 from Tkinter import *
+from math import pi
 
 class Area (Drawable):
 
@@ -44,6 +46,14 @@ class Area (Drawable):
                 continue
             if isinstance (o, RoundObstacle):
                 self.draw_circle (o.pos, o.radius)
+            elif isinstance (o, RectangularObstacle):
+                self.trans_push ()
+                self.trans_translate (o.pos)
+                self.trans_rotate (o.angle)
+                self.draw_circle ((0, 0), 0.2)
+                self.draw_rectangle ((o.dim[0] / 2, o.dim[1] / 2),
+                        (-o.dim[0] / 2, -o.dim[1] / 2), fill = '')
+                self.trans_pop ()
             else:
                 raise TypeError ("unknown obstacle")
         if self.a is not None:
@@ -105,7 +115,7 @@ class TestTable (Frame):
                 text = 'Nearest', value = 'nearest')
         self.test_nearest.pack (side = 'top')
         self.new_obstacle_round_frame = LabelFrame (self.right_frame)
-        self.new_obstacle_round_frame.pack (side = 'top')
+        self.new_obstacle_round_frame.pack (side = 'top', fill = 'x')
         self.new_obstacle_radius = Scale (self.new_obstacle_round_frame,
                 label = 'Radius', orient = 'horizontal', from_ = 0.5, to = 10,
                 resolution = 0.5)
@@ -115,9 +125,25 @@ class TestTable (Frame):
                 command = self.new_round_obstacle)
         self.new_obstacle_round_frame.configure (
                 labelwidget = self.new_obstacle_round)
+        self.new_obstacle_rect_frame = LabelFrame (self.right_frame)
+        self.new_obstacle_rect_frame.pack (side = 'top', fill = 'x')
+        self.new_obstacle_dim0 = Scale (self.new_obstacle_rect_frame,
+                label = 'Dim[0]', orient = 'horizontal', from_ = 1, to = 10,
+                resolution = 1)
+        self.new_obstacle_dim0.pack (side = 'top')
+        self.new_obstacle_dim1 = Scale (self.new_obstacle_rect_frame,
+                label = 'Dim[1]', orient = 'horizontal', from_ = 1, to = 10,
+                resolution = 1)
+        self.new_obstacle_dim1.pack (side = 'top')
+        self.new_obstacle_rect = Button (self.new_obstacle_rect_frame,
+                text = 'New rectangular obstacle',
+                command = self.new_rectangular_obstacle)
+        self.new_obstacle_rect_frame.configure (
+                labelwidget = self.new_obstacle_rect)
         self.area_view = AreaView (self)
         self.area_view.pack (expand = True, fill = 'both')
         self.area_view.bind ('<1>', self.click)
+        self.area_view.bind ('<3>', self.rotate)
 
     def update (self, draw = True):
         self.area_view.area.update (self.test_var.get ())
@@ -139,7 +165,7 @@ class TestTable (Frame):
             objs = [ [ self.area_view.area.a, 0.2, move_a ],
                     [ self.area_view.area.b, 0.2, move_b ] ]
             for o in self.area_view.area.table.obstacles:
-                objs.append ([ o.pos, o.radius, o ])
+                objs.append ([ o.pos, getattr (o, 'radius', 0.2), o ])
             for obj in objs:
                 opos = vector (obj[0])
                 radius = obj[1]
@@ -153,9 +179,27 @@ class TestTable (Frame):
             self.move = None
         self.update ()
 
+    def rotate (self, ev):
+        pos = vector (self.area_view.screen_coord ((ev.x, ev.y)))
+        for o in self.area_view.area.table.obstacles:
+            if o.pos is None or not hasattr (o, 'angle'):
+                continue
+            opos = vector (o.pos)
+            if abs (opos - pos) < 0.2:
+                o.angle += pi / 4
+        self.update ()
+
     def new_round_obstacle (self):
         o = RoundObstacle (self.new_obstacle_radius.get ())
         o.pos = (5, -5)
+        self.area_view.area.table.obstacles.append (o)
+        self.update ()
+
+    def new_rectangular_obstacle (self):
+        o = RectangularObstacle ((float (self.new_obstacle_dim0.get ()),
+            float (self.new_obstacle_dim1.get ())))
+        o.pos = (5, -5)
+        o.angle = 0
         self.area_view.area.table.obstacles.append (o)
         self.update ()
 
