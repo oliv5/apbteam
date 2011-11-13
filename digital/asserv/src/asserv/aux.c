@@ -199,6 +199,7 @@ aux_traj_find_limit (struct aux_t *aux)
 	pos_reset (aux->speed->pos);
 	aux->speed->cur = 0;
 	aux->state->mode = MODE_PWM;
+	aux->state->variant = 0;
 	pwm_set (aux->pwm, 0);
 	aux->pos = 0;
 	aux->traj_mode = AUX_TRAJ_DONE;
