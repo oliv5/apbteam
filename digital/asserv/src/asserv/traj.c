@@ -32,12 +32,8 @@
 
 #include <math.h>
 
-#include "state.h"
-
-#include "pos.h"
-#include "speed.h"
+#include "cs.h"
 #include "postrack.h"
-#include "pwm.h"
 
 #include "contacts.h"
 
@@ -56,6 +52,8 @@
 /** Traj mode enum. */
 enum
 {
+    /* Detect end of speed controled position control. */
+    TRAJ_SPEED,
     /* Go to the wall. */
     TRAJ_FTW,
     /* Go to the dispenser. */
@@ -112,18 +110,39 @@ traj_init (void)
     traj_set_angle_limit (traj_angle_limit);
 }
 
-/** Angle offset.  Directly handled to speed layer. */
+/** Wait for zero speed mode. */
 void
-traj_angle_offset_start (int32_t angle, uint8_t seq)
+traj_speed (void)
+{
+    if ((!cs_main.speed_theta.use_pos
+	 || cs_main.speed_theta.pos_cons == cs_main.pos_theta.cons)
+	&& (!cs_main.speed_alpha.use_pos
+	    || cs_main.speed_alpha.pos_cons == cs_main.pos_alpha.cons))
+      {
+	control_state_finished (&cs_main.state);
+	traj_mode = TRAJ_DONE;
+      }
+}
+
+/** Start speed mode. */
+void
+traj_speed_start (void)
+{
+    /* Speed setup should have been done yet. */
+    control_state_set_mode (&cs_main.state, CS_MODE_TRAJ_CONTROL, 0);
+    traj_mode = TRAJ_SPEED;
+}
+
+/** Angle offset. */
+void
+traj_angle_offset_start (int32_t angle)
 {
     int32_t a = fixed_mul_f824 (angle, 2 * PI_F824);
     uint32_t f = postrack_footing;
     int32_t arc = fixed_mul_f824 (f, a);
-    speed_theta.use_pos = speed_alpha.use_pos = 1;
-    speed_theta.pos_cons = pos_theta.cons;
-    speed_alpha.pos_cons = pos_alpha.cons;
-    speed_alpha.pos_cons += arc;
-    state_start (&state_main, MODE_SPEED, seq);
+    speed_control_set_speed (&cs_main.speed_theta, 0);
+    speed_control_pos_offset (&cs_main.speed_alpha, arc);
+    traj_speed_start ();
 }
 
 /** Go to the wall mode. */
@@ -131,9 +150,8 @@ static void
 traj_ftw (void)
 {
     uint8_t left, center, right;
-    int16_t speed;
-    speed = speed_theta.slow;
-    speed *= 256;
+    int8_t speed;
+    speed = cs_main.speed_theta.slow;
     if (!traj_backward)
       {
 	left = !IO_GET (CONTACT_FRONT_LEFT_IO);
@@ -156,64 +174,56 @@ traj_ftw (void)
 		traj_center_delay--;
 	  }
       }
-    speed_theta.use_pos = speed_alpha.use_pos = 0;
-    speed_theta.cons = speed;
-    speed_alpha.cons = 0;
-    state_main.variant = 0;
+    speed_control_set_speed (&cs_main.speed_theta, speed);
+    speed_control_set_speed (&cs_main.speed_alpha, 0);
     if (!left && !right)
       {
 	/* Backward. */
-#ifndef HOST
-	/* No angular control. */
-	state_main.variant = 2;
-#endif
       }
     else if (!center && (!left || !right))
       {
-#ifndef HOST
-	/* No angular control. */
-	state_main.variant = 2;
-#else
+#ifdef HOST
 	/* On host, we must do the job. */
-	speed_theta.cons = speed / 4;
-	if (left)
-	    speed_alpha.cons = speed / 2;
-	else
-	    speed_alpha.cons = -speed / 2;
+	speed_control_set_speed (&cs_main.speed_theta, speed / 4);
+	speed_control_set_speed (&cs_main.speed_alpha,
+				 left ? speed / 2 : -speed / 2);
 #endif
       }
     else
       {
 	/* Stay here. */
-	speed_theta.use_pos = speed_alpha.use_pos = 1;
-	speed_theta.pos_cons = pos_theta.cur;
-	speed_alpha.pos_cons = pos_alpha.cur;
-	speed_theta.cur = 0;
-	speed_alpha.cur = 0;
-	state_finish (&state_main);
+	speed_control_hard_stop (&cs_main.speed_theta);
+	speed_control_hard_stop (&cs_main.speed_alpha);
+	control_state_finished (&cs_main.state);
 	traj_mode = TRAJ_DONE;
       }
 }
 
 /** Start go to the wall mode. */
 void
-traj_ftw_start (uint8_t backward, uint8_t seq)
+traj_ftw_start (uint8_t backward)
 {
     traj_mode = TRAJ_FTW;
     traj_backward = backward;
     traj_use_center = 0;
-    state_start (&state_main, MODE_TRAJ, seq);
+#ifndef HOST
+    /* No angular control. */
+    control_state_set_mode (&cs_main.state, CS_MODE_TRAJ_CONTROL,
+			    CS_MODE_POS_CONTROL_ALPHA);
+#else
+    control_state_set_mode (&cs_main.state, CS_MODE_TRAJ_CONTROL, 0);
+#endif
 }
 
 /** Start go to the wall mode, with center sensor. */
 void
-traj_ftw_start_center (uint8_t backward, uint8_t center_delay, uint8_t seq)
+traj_ftw_start_center (uint8_t backward, uint8_t center_delay)
 {
     traj_mode = TRAJ_FTW;
     traj_backward = backward;
     traj_use_center = 1;
     traj_center_delay = center_delay;
-    state_start (&state_main, MODE_TRAJ, seq);
+    control_state_set_mode (&cs_main.state, CS_MODE_TRAJ_CONTROL, 0);
 }
 
 /** Push the wall mode. */
@@ -221,7 +231,7 @@ static void
 traj_ptw (void)
 {
     /* If blocking, the wall was found. */
-    if (pos_theta.blocked_counter >= pos_theta.blocked_counter_limit)
+    if (cs_main.blocking_detection_theta.blocked)
       {
 	/* Initialise position. */
 	if (traj_init_x != -1)
@@ -231,13 +241,10 @@ traj_ptw (void)
 	if (traj_init_a != -1)
 	    postrack_a = traj_init_a;
 	/* Stop motor control. */
-	pos_reset (&pos_theta);
-	pos_reset (&pos_alpha);
-	state_main.variant = 0;
-	state_main.mode = MODE_PWM;
-	pwm_set (&pwm_left, 0);
-	pwm_set (&pwm_right, 0);
-	state_finish (&state_main);
+	output_set (cs_main.output_left, 0);
+	output_set (cs_main.output_right, 0);
+	control_state_set_mode (&cs_main.state, CS_MODE_NONE, 0);
+	control_state_finished (&cs_main.state);
 	traj_mode = TRAJ_DONE;
       }
 }
@@ -245,59 +252,52 @@ traj_ptw (void)
 /** Start push the wall mode.  Position is initialised unless -1. */
 void
 traj_ptw_start (uint8_t backward, int32_t init_x, int32_t init_y,
-		int32_t init_a, uint8_t seq)
+		int32_t init_a)
 {
-    int16_t speed;
+    int8_t speed;
     traj_mode = TRAJ_PTW;
     traj_init_x = init_x;
     traj_init_y = init_y;
     traj_init_a = init_a;
-    state_start (&state_main, MODE_TRAJ, seq);
     /* Use slow speed, without alpha control. */
-    speed = speed_theta.slow;
-    speed *= 256;
+    speed = cs_main.speed_theta.slow;
     if (backward)
 	speed = -speed;
-    speed_theta.use_pos = speed_alpha.use_pos = 0;
-    speed_theta.cons = speed;
-    speed_alpha.cons = 0;
-    state_main.variant = 2;
+    speed_control_set_speed (&cs_main.speed_theta, speed);
+    speed_control_set_speed (&cs_main.speed_alpha, 0);
+    control_state_set_mode (&cs_main.state, CS_MODE_TRAJ_CONTROL,
+			    CS_MODE_POS_CONTROL_ALPHA
+			    | CS_MODE_BLOCKING_DETECTION);
 }
 
 /** Go to the dispenser mode. */
 static void
 traj_gtd (void)
 {
-    int16_t speed;
-    speed = speed_theta.slow;
-    speed *= 256;
-    speed_theta.use_pos = speed_alpha.use_pos = 0;
+    int8_t speed;
+    speed = cs_main.speed_theta.slow;
     if (IO_GET (CONTACT_CENTER_IO))
       {
-	speed_theta.cons = speed;
-	speed_alpha.cons = 0;
+	speed_control_set_speed (&cs_main.speed_theta, speed);
+	speed_control_set_speed (&cs_main.speed_alpha, 0);
       }
     else
       {
 	/* Stay here. */
-	speed_theta.use_pos = speed_alpha.use_pos = 1;
-	speed_theta.pos_cons = pos_theta.cur;
-	speed_alpha.pos_cons = pos_alpha.cur;
-	speed_theta.cur = 0;
-	speed_alpha.cur = 0;
-	state_main.variant = 0;
-	state_finish (&state_main);
+	speed_control_hard_stop (&cs_main.speed_theta);
+	speed_control_hard_stop (&cs_main.speed_alpha);
+	control_state_finished (&cs_main.state);
 	traj_mode = TRAJ_DONE;
       }
 }
 
 /** Start go to the dispenser mode. */
 void
-traj_gtd_start (uint8_t seq)
+traj_gtd_start (void)
 {
     traj_mode = TRAJ_GTD;
-    state_start (&state_main, MODE_TRAJ, seq);
-    state_main.variant = 2;
+    control_state_set_mode (&cs_main.state, CS_MODE_TRAJ_CONTROL,
+			    CS_MODE_POS_CONTROL_ALPHA);
 }
 
 /** Go to position mode. */
@@ -310,8 +310,7 @@ traj_goto (void)
 	&& UTILS_ABS (dy) < ((int32_t) traj_eps) << 8)
       {
 	/* Near enough, stop, let speed terminate the movement. */
-	state_main.mode = MODE_SPEED;
-	traj_mode = TRAJ_DONE;
+	traj_mode = TRAJ_SPEED;
       }
     else
       {
@@ -338,32 +337,30 @@ traj_goto (void)
 	  }
 	int32_t arc = fixed_mul_f824 (arad, postrack_footing);
 	/* Compute consign. */
-	speed_alpha.pos_cons = pos_alpha.cur;
-	speed_alpha.pos_cons += arc;
+	speed_control_pos_offset_from_here (&cs_main.speed_alpha, arc);
 	if (UTILS_ABS (arad) < traj_angle_limit_rad)
 	  {
-	    speed_theta.pos_cons = pos_theta.cur;
-	    speed_theta.pos_cons += dt >> 8;
+	    speed_control_pos_offset_from_here (&cs_main.speed_theta,
+						dt >> 8);
 	  }
 	else
 	  {
-	    speed_theta.pos_cons = pos_theta.cons;
+	    speed_control_set_speed (&cs_main.speed_theta, 0);
 	  }
       }
 }
 
 /** Start go to position mode (x, y: f24.8). */
 void
-traj_goto_start (uint32_t x, uint32_t y, uint8_t backward, uint8_t seq)
+traj_goto_start (uint32_t x, uint32_t y, uint8_t backward)
 {
     traj_mode = TRAJ_GOTO;
     traj_goto_x = x;
     traj_goto_y = y;
     traj_backward = backward;
-    speed_theta.use_pos = speed_alpha.use_pos = 1;
-    speed_theta.pos_cons = pos_theta.cons;
-    speed_alpha.pos_cons = pos_alpha.cons;
-    state_start (&state_main, MODE_TRAJ, seq);
+    speed_control_pos_offset (&cs_main.speed_theta, 0);
+    speed_control_pos_offset (&cs_main.speed_alpha, 0);
+    control_state_set_mode (&cs_main.state, CS_MODE_TRAJ_CONTROL, 0);
 }
 
 /** Go to angle mode. */
@@ -375,8 +372,7 @@ traj_goto_angle (void)
     if (UTILS_ABS (da) < traj_aeps)
       {
 	/* Near enough, stop, let speed terminate the movement. */
-	state_main.mode = MODE_SPEED;
-	traj_mode = TRAJ_DONE;
+	traj_mode = TRAJ_SPEED;
       }
     else
       {
@@ -385,21 +381,19 @@ traj_goto_angle (void)
 				       2 * PI_F824);
 	int32_t arc = fixed_mul_f824 (arad, postrack_footing);
 	/* Compute consign. */
-	speed_alpha.pos_cons = pos_alpha.cur;
-	speed_alpha.pos_cons += arc;
+	speed_control_pos_offset_from_here (&cs_main.speed_alpha, arc);
       }
 }
 
 /** Start go to angle mode (a: f8.24). */
 void
-traj_goto_angle_start (uint32_t a, uint8_t seq)
+traj_goto_angle_start (uint32_t a)
 {
     traj_mode = TRAJ_GOTO_ANGLE;
     traj_goto_a = a;
-    speed_theta.use_pos = speed_alpha.use_pos = 1;
-    speed_theta.pos_cons = pos_theta.cons;
-    speed_alpha.pos_cons = pos_alpha.cons;
-    state_start (&state_main, MODE_TRAJ, seq);
+    speed_control_pos_offset (&cs_main.speed_theta, 0);
+    speed_control_pos_offset (&cs_main.speed_alpha, 0);
+    control_state_set_mode (&cs_main.state, CS_MODE_TRAJ_CONTROL, 0);
 }
 
 /** Go to position, then angle mode. */
@@ -423,46 +417,50 @@ traj_goto_xya (void)
 
 /** Start go to position, then angle mode (x, y: f24.8, a: f8.24). */
 void
-traj_goto_xya_start (uint32_t x, uint32_t y, uint32_t a, uint8_t backward,
-		     uint8_t seq)
+traj_goto_xya_start (uint32_t x, uint32_t y, uint32_t a, uint8_t backward)
 {
     traj_mode = TRAJ_GOTO_XYA;
     traj_goto_x = x;
     traj_goto_y = y;
     traj_goto_a = a;
     traj_backward = backward;
-    speed_theta.use_pos = speed_alpha.use_pos = 1;
-    speed_theta.pos_cons = pos_theta.cons;
-    speed_alpha.pos_cons = pos_alpha.cons;
-    state_start (&state_main, MODE_TRAJ, seq);
+    speed_control_pos_offset (&cs_main.speed_theta, 0);
+    speed_control_pos_offset (&cs_main.speed_alpha, 0);
+    control_state_set_mode (&cs_main.state, CS_MODE_TRAJ_CONTROL, 0);
 }
 
 /* Compute new speed according the defined trajectory. */
 void
 traj_update (void)
 {
-    switch (traj_mode)
+    if (cs_main.state.modes & CS_MODE_TRAJ_CONTROL)
       {
-      case TRAJ_FTW:
-	traj_ftw ();
-	break;
-      case TRAJ_PTW:
-	traj_ptw ();
-	break;
-      case TRAJ_GTD:
-	traj_gtd ();
-	break;
-      case TRAJ_GOTO:
-	traj_goto ();
-	break;
-      case TRAJ_GOTO_ANGLE:
-	traj_goto_angle ();
-	break;
-      case TRAJ_GOTO_XYA:
-	traj_goto_xya ();
-	break;
-      case TRAJ_DONE:
-	break;
+	switch (traj_mode)
+	  {
+	  case TRAJ_SPEED:
+	    traj_speed ();
+	    break;
+	  case TRAJ_FTW:
+	    traj_ftw ();
+	    break;
+	  case TRAJ_PTW:
+	    traj_ptw ();
+	    break;
+	  case TRAJ_GTD:
+	    traj_gtd ();
+	    break;
+	  case TRAJ_GOTO:
+	    traj_goto ();
+	    break;
+	  case TRAJ_GOTO_ANGLE:
+	    traj_goto_angle ();
+	    break;
+	  case TRAJ_GOTO_XYA:
+	    traj_goto_xya ();
+	    break;
+	  case TRAJ_DONE:
+	    break;
+	  }
       }
 }
 

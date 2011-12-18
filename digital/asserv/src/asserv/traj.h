@@ -40,30 +40,32 @@ void
 traj_update (void);
 
 void
-traj_angle_offset_start (int32_t angle, uint8_t seq);
+traj_speed_start (void);
 
 void
-traj_ftw_start (uint8_t backward, uint8_t seq);
+traj_angle_offset_start (int32_t angle);
 
 void
-traj_ftw_start_center (uint8_t backward, uint8_t center_delay, uint8_t seq);
+traj_ftw_start (uint8_t backward);
+
+void
+traj_ftw_start_center (uint8_t backward, uint8_t center_delay);
 
 void
 traj_ptw_start (uint8_t backward, int32_t init_x, int32_t init_y,
-		int32_t init_a, uint8_t seq);
+		int32_t init_a);
 
 void
-traj_gtd_start (uint8_t seq);
+traj_gtd_start (void);
 
 void
-traj_goto_start (uint32_t x, uint32_t y, uint8_t backward, uint8_t seq);
+traj_goto_start (uint32_t x, uint32_t y, uint8_t backward);
 
 void
-traj_goto_angle_start (uint32_t a, uint8_t seq);
+traj_goto_angle_start (uint32_t a);
 
 void
-traj_goto_xya_start (uint32_t x, uint32_t y, uint32_t a, uint8_t backward,
-		     uint8_t seq);
+traj_goto_xya_start (uint32_t x, uint32_t y, uint32_t a, uint8_t backward);
 
 void
 traj_set_angle_limit (uint16_t a);

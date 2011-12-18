@@ -39,52 +39,30 @@
 #include <time.h>
 #include <sys/time.h>
 
-#include "pwm.h"
+#include "cs.h"
 #include "aux.h"
 
 #include "contacts.h"
 
-#include "motor_model.host.h"
 #include "models.host.h"
 
 /** Simulate some AVR regs. */
 uint8_t DDRF, PORTC, PORTD, PORTE, PORTF, PORTG, PINC;
 
-/** Overall counter values. */
-uint16_t counter_left, counter_right,
-	 counter_aux[AC_ASSERV_AUX_NB];
-/** Counter differences since last update.
- * Maximum of 9 significant bits, sign included. */
-int16_t counter_left_diff, counter_right_diff,
-	counter_aux_diff[AC_ASSERV_AUX_NB];
-/** Overall uncorrected counter values. */
-static int32_t counter_right_raw;
-/** Correction factor (f8.24). */
-uint32_t counter_right_correction = 1L << 24;
-
-/** PWM control states. */
-struct pwm_t pwm_left = PWM_INIT_FOR (pwm_left);
-struct pwm_t pwm_right = PWM_INIT_FOR (pwm_right);
-struct pwm_t pwm_aux[AC_ASSERV_AUX_NB] = {
-    PWM_INIT_FOR (pwm_aux0), PWM_INIT_FOR (pwm_aux1)
-};
-/** PWM reverse directions. */
-uint8_t pwm_reverse;
-
 /* Robot model. */
 const struct robot_t *simu_robot;
 
 /** Motor models. */
-struct motor_t simu_left_model, simu_right_model,
-	       simu_aux_model[AC_ASSERV_AUX_NB];
+motor_model_t simu_left_model, simu_right_model,
+	      simu_aux_model[AC_ASSERV_AUX_NB];
 
 /** Computed simulated position (mm, rad). */
 double simu_pos_x, simu_pos_y, simu_pos_a;
 
-/** Full counter values. */
-uint32_t simu_counter_left, simu_counter_right,
-	 simu_counter_aux[AC_ASSERV_AUX_NB];
-double simu_counter_left_th, simu_counter_right_th;
+/** Full encoder values. */
+uint32_t simu_encoder_left, simu_encoder_right,
+	 simu_encoder_aux[AC_ASSERV_AUX_NB];
+double simu_encoder_left_th, simu_encoder_right_th;
 
 /** Use mex. */
 int simu_mex;
@@ -307,13 +285,13 @@ simu_step (void)
     int i;
     double old_left_th, old_right_th, old_aux_th[AC_ASSERV_AUX_NB];
     /* Convert pwm value into voltage. */
-    simu_left_model.u = simu_left_model.m.u_max
-	* ((double) pwm_left.cur / (PWM_MAX + 1));
-    simu_right_model.u = simu_right_model.m.u_max
-	* ((double) pwm_right.cur / (PWM_MAX + 1));
+    simu_left_model.u = simu_robot->u_max
+	* ((double) output_left.cur / (OUTPUT_MAX + 1));
+    simu_right_model.u = simu_robot->u_max
+	* ((double) output_right.cur / (OUTPUT_MAX + 1));
     for (i = 0; i < AC_ASSERV_AUX_NB; i++)
-	simu_aux_model[i].u = simu_aux_model[i].m.u_max
-	    * ((double) pwm_aux[i].cur / (PWM_MAX + 1));
+	simu_aux_model[i].u = simu_robot->u_max
+	    * ((double) output_aux[i].cur / (OUTPUT_MAX + 1));
     /* Make one step. */
     old_left_th = simu_left_model.th;
     old_right_th = simu_right_model.th;
@@ -358,14 +336,14 @@ simu_step (void)
 	    old_out = out;
 	  }
       }
-    /* Modify counters. */
-    uint32_t counter_left_new;
-    uint32_t counter_right_new;
+    /* Modify encoders. */
+    uint32_t encoder_left_new;
+    uint32_t encoder_right_new;
     if (!simu_robot->encoder_separated)
       {
-	counter_left_new = simu_left_model.th / (2*M_PI)
+	encoder_left_new = simu_left_model.th / (2*M_PI)
 	    * simu_robot->main_encoder_steps;
-	counter_right_new = simu_right_model.th / (2*M_PI)
+	encoder_right_new = simu_right_model.th / (2*M_PI)
 	    * simu_robot->main_encoder_steps;
       }
     else
@@ -380,40 +358,36 @@ simu_step (void)
 	    * (simu_robot->encoder_footing / simu_robot->footing);
 	double left_enc_diff = 0.5 * (sum + diff);
 	double right_enc_diff = 0.5 * (sum - diff);
-	simu_counter_left_th += left_enc_diff / simu_robot->encoder_wheel_r;
-	simu_counter_right_th += right_enc_diff / simu_robot->encoder_wheel_r;
-	counter_left_new = simu_counter_left_th / (2*M_PI)
+	simu_encoder_left_th += left_enc_diff / simu_robot->encoder_wheel_r;
+	simu_encoder_right_th += right_enc_diff / simu_robot->encoder_wheel_r;
+	encoder_left_new = simu_encoder_left_th / (2*M_PI)
 	    * simu_robot->main_encoder_steps;
-	counter_right_new = simu_counter_right_th / (2*M_PI)
+	encoder_right_new = simu_encoder_right_th / (2*M_PI)
 	    * simu_robot->main_encoder_steps;
       }
-    /* Update an integer counter. */
-    counter_left_diff = counter_left_new - simu_counter_left;
-    counter_left += counter_left_diff;
-    simu_counter_left = counter_left_new;
-    counter_right_diff = counter_right_new - simu_counter_right;
-    counter_right_raw += counter_right_diff;
-    uint16_t right_new = fixed_mul_f824 (counter_right_raw,
-					 counter_right_correction);
-    counter_right_diff = (int16_t) (right_new - counter_right);
-    counter_right = right_new;
-    simu_counter_right = counter_right_new;
-    /* Update auxiliary counter. */
+    /* Update an integer encoder. */
+    encoder_left.diff = encoder_left_new - simu_encoder_left;
+    encoder_left.cur += encoder_left.diff;
+    simu_encoder_left = encoder_left_new;
+    encoder_right.diff = encoder_right_new - simu_encoder_right;
+    encoder_right.cur += encoder_right.diff;
+    simu_encoder_right = encoder_right_new;
+    /* Update auxiliary encoder. */
     for (i = 0; i < AC_ASSERV_AUX_NB; i++)
       {
 	if (simu_robot->aux_motor[i])
 	  {
-	    uint32_t counter_aux_new = simu_aux_model[i].th / (2*M_PI)
+	    uint32_t encoder_aux_new = simu_aux_model[i].th / (2*M_PI)
 		* simu_robot->aux_encoder_steps[i];
-	    counter_aux_diff[i] = counter_aux_new - simu_counter_aux[i];
-	    counter_aux[i] += counter_aux_diff[i];
-	    simu_counter_aux[i] = counter_aux_new;
+	    encoder_aux[i].diff = encoder_aux_new - simu_encoder_aux[i];
+	    encoder_aux[i].cur += encoder_aux[i].diff;
+	    simu_encoder_aux[i] = encoder_aux_new;
 	  }
 	else
 	  {
-	    counter_aux_diff[i] = 0;
-	    counter_aux[i] = 0;
-	    simu_counter_aux[i] = 0;
+	    encoder_aux[i].diff = 0;
+	    encoder_aux[i].cur = 0;
+	    simu_encoder_aux[i] = 0;
 	  }
       }
     /* Update sensors. */
@@ -448,18 +422,18 @@ simu_send (void)
 	simu_pos_a_sent = simu_pos_a_to_send;
       }
     /* Send PWM. */
-    static int16_t pwm_left_sent, pwm_right_sent;
+    static int16_t output_left_sent, output_right_sent;
     if (first
-	|| pwm_left_sent == pwm_left.cur
-	|| pwm_right_sent == pwm_right.cur)
+	|| output_left_sent == output_left.cur
+	|| output_right_sent == output_right.cur) // BUG?
       {
 	m = mex_msg_new (simu_mex_pwm);
-	mex_msg_push (m, "hh", pwm_left.cur, pwm_right.cur);
+	mex_msg_push (m, "hh", output_left.cur, output_right.cur);
 	for (i = 0; i < AC_ASSERV_AUX_NB; i++)
-	    mex_msg_push (m, "h", pwm_aux[i].cur);
+	    mex_msg_push (m, "h", output_aux[i].cur);
 	mex_node_send (m);
-	pwm_left_sent = pwm_left.cur;
-	pwm_right_sent = pwm_right.cur;
+	output_left_sent = output_left.cur;
+	output_right_sent = output_right.cur;
       }
     /* Send Aux position. */
     static int32_t simu_aux_model_sent[AC_ASSERV_AUX_NB];
@@ -542,30 +516,6 @@ timer_read (void)
     return 0;
 }
 
-/** Initialize the counters. */
-void
-counter_init (void)
-{
-}
-
-/** Update overall counter values and compute diffs. */
-void
-counter_update (void)
-{
-}
-
-/** Initialise PWM generator. */
-void
-pwm_init (void)
-{
-}
-
-/** Update the hardware PWM values. */
-void
-pwm_update (void)
-{
-}
-
 void
 eeprom_read_params (void)
 {
@@ -579,11 +529,5 @@ eeprom_write_params (void)
 void
 eeprom_clear_params (void)
 {
-}
-
-void
-pwm_set_reverse (uint8_t reverse)
-{
-    pwm_reverse = reverse;
 }
 

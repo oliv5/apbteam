@@ -121,4 +121,37 @@
 /** Same thing for an optionnal second SPI driver. */
 #define AC_SPI1_DRIVER NONE
 
+/* motor/encoder - Encoder module. */
+/** Use external encoder module. */
+#define AC_ENCODER_USE_EXT 1
+
+/* motor/encoder/ext - External encoder module. */
+/** Number of encoders. */
+#define AC_ENCODER_EXT_NB 4
+/** Use external memory hardware interface. */
+#define AC_ENCODER_EXT_USE_XMEM 1
+/** Reverse flag for each encoder (1 to reverse direction). */
+#define AC_ENCODER_EXT_REVERSE 1, 0, 1, 1
+/** Right shift for all encoders to lower resolution. */
+#define AC_ENCODER_EXT_SHIFT 1
+/** For debug purpose only! */
+#define AC_ENCODER_EXT_EXPORT_READ 1
+
+/* motor/output - Output module. */
+/** Use Output Compare PWM output. */
+#define AC_OUTPUT_USE_PWM_OCR 0
+/** Use Motor Power PWM output. */
+#define AC_OUTPUT_USE_PWM_MP 1
+/** Define module and module index for each output. */
+#define AC_OUTPUT_LIST (pwm_mp, 0), (pwm_mp, 1), (pwm_mp, 2), (pwm_mp, 3)
+
+/* motor/output/pwm_mp - Motor Power board PWM output module. */
+/** Number of outputs, there is two outputs per board. */
+#define AC_OUTPUT_PWM_MP_NB 4
+/** Slave select for first Motor Power board.
+ * WARNING: this must match hardware SS pin if using hardware SPI! */
+#define AC_OUTPUT_PWM_MP_SPI_SS_IO_0 B, 0
+/** Slave select for next Motor Power boards. */
+#define AC_OUTPUT_PWM_MP_SPI_SS_IO_1 E, 4
+
 #endif /* avrconfig_h */

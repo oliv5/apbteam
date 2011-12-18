@@ -1,9 +1,9 @@
-#ifndef counter_h
-#define counter_h
-/* counter.h */
+#ifndef cs_h
+#define cs_h
+/* cs.h - Control system definition. */
 /* asserv - Position & speed motor control on AVR. {{{
  *
- * Copyright (C) 2008 Nicolas Schodet
+ * Copyright (C) 2011 Nicolas Schodet
  *
  * APBTeam:
  *        Web: http://apbteam.org/
@@ -24,20 +24,23 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "modules/motor/control_system/control_system.h"
+#include "modules/motor/encoder/encoder_corrector.h"
 
-extern uint16_t counter_left, counter_right,
-       counter_aux[AC_ASSERV_AUX_NB];
-extern uint32_t counter_right_correction;
-extern int16_t counter_left_diff, counter_right_diff,
-       counter_aux_diff[AC_ASSERV_AUX_NB];
+extern encoder_t encoder_left, encoder_right, encoder_aux[AC_ASSERV_AUX_NB];
+extern encoder_corrector_t encoder_right_corrector;
+extern output_t output_left, output_right, output_aux[AC_ASSERV_AUX_NB];
 
-void
-counter_init (void);
-
-void
-counter_update_step (void);
+extern control_system_polar_t cs_main;
+extern control_system_single_t cs_aux[AC_ASSERV_AUX_NB];
 
 void
-counter_update (void);
+cs_init (void);
 
-#endif /* counter_h */
+void
+cs_update_prepare (void);
+
+void
+cs_update (void);
+
+#endif /* cs_h */

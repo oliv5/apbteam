@@ -1,9 +1,7 @@
-#ifndef pwm_config_h
-#define pwm_config_h
-/* pwm_config.h - Helper for PWM configuration. */
+/* seq.c */
 /* asserv - Position & speed motor control on AVR. {{{
  *
- * Copyright (C) 2008 Nicolas Schodet
+ * Copyright (C) 2011 Nicolas Schodet
  *
  * APBTeam:
  *        Web: http://apbteam.org/
@@ -24,29 +22,10 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "common.h"
+#include "seq.h"
 
-/* Simplify conditionnal compilation. */
-#define PWM1or2 (defined (PWM1) || defined (PWM2))
-#define PWM3or4 (defined (PWM3) || defined (PWM4))
-#ifdef PWM1
-# define PWM1c(x) x
-#else
-# define PWM1c(x) 0
-#endif
-#ifdef PWM2
-# define PWM2c(x) x
-#else
-# define PWM2c(x) 0
-#endif
-#ifdef PWM3
-# define PWM3c(x) x
-#else
-# define PWM3c(x) 0
-#endif
-#ifdef PWM4
-# define PWM4c(x) x
-#else
-# define PWM4c(x) 0
-#endif
+seq_t seq_main;
 
-#endif /* pwm_config_h */
+seq_t seq_aux[AC_ASSERV_AUX_NB];
+

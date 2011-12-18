@@ -32,11 +32,7 @@
 #include "io.h"
 
 #include "misc.h"
-#include "state.h"
 
-#include "pwm.h"
-#include "pos.h"
-#include "speed.h"
 #include "postrack.h"
 #include "traj.h"
 #include "aux.h"
@@ -79,14 +75,14 @@ twi_proto_update (void)
     u8 status_with_crc[16];
     u8 *status = &status_with_crc[1];
     status[0] = 0
-	| (state_aux[1].blocked << 7)
-	| (state_aux[1].finished << 6)
-	| (state_aux[0].blocked << 5)
-	| (state_aux[0].finished << 4)
-	| (speed_theta.cur < 0 ? (1 << 3) : 0)
-	| (speed_theta.cur > 0 ? (1 << 2) : 0)
-	| (state_main.blocked << 1)
-	| (state_main.finished << 0);
+	| (control_state_is_blocked (&cs_aux[1].state) ? (1 << 7) : 0)
+	| (control_state_is_finished (&cs_aux[1].state) ? (1 << 6) : 0)
+	| (control_state_is_blocked (&cs_aux[0].state) ? (1 << 5) : 0)
+	| (control_state_is_finished (&cs_aux[0].state) ? (1 << 4) : 0)
+	| (cs_main.speed_theta.cur < 0 ? (1 << 3) : 0)
+	| (cs_main.speed_theta.cur > 0 ? (1 << 2) : 0)
+	| (control_state_is_blocked (&cs_main.state) ? (1 << 1) : 0)
+	| (control_state_is_finished (&cs_main.state) ? (1 << 0) : 0);
     status[1] = PINC;
     status[2] = twi_proto.seq;
     status[3] = v32_to_v8 (postrack_x, 3);
@@ -111,6 +107,7 @@ twi_proto_update (void)
 static void
 twi_proto_callback (u8 *buf, u8 size)
 {
+    int32_t offset;
     /* Check CRC. */
     if (crc_compute (buf + 1, size - 1) != buf[0])
 	return;
@@ -132,41 +129,36 @@ twi_proto_callback (u8 *buf, u8 size)
 	break;
       case c ('w', 0):
 	/* Set zero pwm. */
-	pos_reset (&pos_theta);
-	pos_reset (&pos_alpha);
-	state_main.mode = MODE_PWM;
-	pwm_set (&pwm_left, 0);
-	pwm_set (&pwm_right, 0);
+	output_set (&output_left, 0);
+	output_set (&output_right, 0);
+	control_state_set_mode (&cs_main.state, CS_MODE_NONE, 0);
 	break;
       case c ('s', 0):
 	/* Stop (set zero speed). */
-	state_main.mode = MODE_SPEED;
-	state_main.variant = 0;
-	speed_theta.use_pos = speed_alpha.use_pos = 0;
-	speed_theta.cons = 0;
-	speed_alpha.cons = 0;
+	speed_control_set_speed (&cs_main.speed_theta, 0);
+	speed_control_set_speed (&cs_main.speed_alpha, 0);
+	control_state_set_mode (&cs_main.state, CS_MODE_SPEED_CONTROL, 0);
 	break;
       case c ('l', 3):
 	/* Set linear speed controlled position consign.
 	 * - 3b: theta consign offset. */
-	speed_theta.use_pos = speed_alpha.use_pos = 1;
-	speed_theta.pos_cons = pos_theta.cons;
 	if (buf[2] & 0x80)
-	    speed_theta.pos_cons += v8_to_v32 (0xff, buf[2], buf[3], buf[4]);
+	    offset = v8_to_v32 (0xff, buf[2], buf[3], buf[4]);
 	else
-	    speed_theta.pos_cons += v8_to_v32 (0, buf[2], buf[3], buf[4]);
-	speed_alpha.pos_cons = pos_alpha.cons;
-	state_start (&state_main, MODE_SPEED, 0);
+	    offset = v8_to_v32 (0, buf[2], buf[3], buf[4]);
+	speed_control_pos_offset (&cs_main.speed_theta, offset);
+	speed_control_pos_offset (&cs_main.speed_alpha, 0);
+	traj_speed_start ();
 	break;
       case c ('a', 2):
 	/* Set angular speed controlled position consign.
 	 * - w: angle offset. */
-	traj_angle_offset_start (((int32_t) (int16_t) v8_to_v16 (buf[2], buf[3])) << 8, 0);
+	traj_angle_offset_start (((int32_t) (int16_t) v8_to_v16 (buf[2], buf[3])) << 8);
 	break;
       case c ('f', 1):
 	/* Go to the wall.
 	 * - b: 0: forward, 1: backward. */
-	traj_ftw_start (buf[2], 0);
+	traj_ftw_start (buf[2]);
 	break;
       case c ('G', 9):
 	/* Push the wall.
@@ -183,18 +175,18 @@ twi_proto_callback (u8 *buf, u8 size)
 	    traj_ptw_start (buf[2],
 			    v8_to_v32 (buf[3], buf[4], buf[5], 0xff),
 			    v8_to_v32 (buf[6], buf[7], buf[8], 0xff),
-			    angle, 0);
+			    angle);
 	  }
 	break;
       case c ('g', 2):
 	/* Go to the wall using center sensor with delay.
 	 * - b: 0: forward, 1: backward.
 	 * - b: delay. */
-	traj_ftw_start_center (buf[2], buf[3], 0);
+	traj_ftw_start_center (buf[2], buf[3]);
 	break;
       case c ('F', 0):
 	/* Go to the dispenser. */
-	traj_gtd_start (0);
+	traj_gtd_start ();
 	break;
       case c ('x', 7):
 	/* Go to position.
@@ -203,12 +195,12 @@ twi_proto_callback (u8 *buf, u8 size)
 	 * - b: backward (see traj.h). */
 	traj_goto_start (v8_to_v32 (buf[2], buf[3], buf[4], 0),
 			 v8_to_v32 (buf[5], buf[6], buf[7], 0),
-			 buf[8], 0);
+			 buf[8]);
 	break;
       case c ('y', 2):
 	/* Go to angle.
 	 * - w: angle. */
-	traj_goto_angle_start (v8_to_v32 (0, buf[2], buf[3], 0), 0);
+	traj_goto_angle_start (v8_to_v32 (0, buf[2], buf[3], 0));
 	break;
       case c ('X', 9):
 	/* Go to position, then angle.
@@ -219,31 +211,31 @@ twi_proto_callback (u8 *buf, u8 size)
 	traj_goto_xya_start (v8_to_v32 (buf[2], buf[3], buf[4], 0),
 			     v8_to_v32 (buf[5], buf[6], buf[7], 0),
 			     v8_to_v32 (0, buf[8], buf[9], 0),
-			     buf[10], 0);
+			     buf[10]);
 	break;
       case c ('b', 3):
 	/* Move the aux0.
 	 * - w: new position.
 	 * - b: speed. */
-	speed_aux[0].max = buf[4];
-	aux_traj_goto_start (&aux[0], v8_to_v16 (buf[2], buf[3]), 0);
+	cs_aux[0].speed.max = buf[4];
+	aux_traj_goto_start (&aux[0], v8_to_v16 (buf[2], buf[3]));
 	break;
       case c ('B', 1):
 	/* Find the aux0 zero position.
 	 * - b: speed. */
-	aux_traj_find_limit_start (&aux[0], buf[2], 0);
+	aux_traj_find_limit_start (&aux[0], buf[2]);
 	break;
       case c ('c', 3):
 	/* Move the aux1.
 	 * - w: new position.
 	 * - b: speed. */
-	speed_aux[1].max = buf[4];
-	aux_traj_goto_start (&aux[1], v8_to_v16 (buf[2], buf[3]), 0);
+	cs_aux[1].speed.max = buf[4];
+	aux_traj_goto_start (&aux[1], v8_to_v16 (buf[2], buf[3]));
 	break;
       case c ('C', 1):
 	/* Find the aux1 zero position.
 	 * - b: speed. */
-	aux_traj_find_zero_reverse_start (&aux[1], buf[2], 0);
+	aux_traj_find_zero_reverse_start (&aux[1], buf[2]);
 	break;
       case c ('r', 1):
 	/* Set aux zero pwm.
@@ -251,9 +243,8 @@ twi_proto_callback (u8 *buf, u8 size)
 	 */
 	if (buf[2] < AC_ASSERV_AUX_NB)
 	  {
-	    pos_reset (&pos_aux[buf[2]]);
-	    state_aux[buf[2]].mode = MODE_PWM;
-	    pwm_set (&pwm_aux[buf[2]], 0);
+	    output_set (&output_aux[buf[2]], 0);
+	    control_state_set_mode (&cs_aux[buf[2]].state, CS_MODE_NONE, 0);
 	  }
 	else
 	    buf[0] = 0;
@@ -313,10 +304,10 @@ twi_proto_params (u8 *buf, u8 size)
 	     * - b: alpha slow. */
 	    if (size < 4)
 		return 1;
-	    speed_theta.max = buf[0];
-	    speed_alpha.max = buf[1];
-	    speed_theta.slow = buf[2];
-	    speed_alpha.slow = buf[3];
+	    cs_main.speed_theta.max = buf[0];
+	    cs_main.speed_alpha.max = buf[1];
+	    cs_main.speed_theta.slow = buf[2];
+	    cs_main.speed_alpha.slow = buf[3];
 	    eat = 4;
 	    break;
 	  default:

@@ -25,7 +25,6 @@
 #define _GNU_SOURCE 1 /* Need ISO C99 features as well. */
 #include "common.h"
 
-#include "motor_model.host.h"
 #include "models.host.h"
 #include "simu.host.h"
 
@@ -34,87 +33,13 @@
 
 #define NO_CORNER { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 } }
 
-/* RE25CLL with 1:10 gearbox model. */
-static const struct motor_def_t re25cll_model =
-{
-    /* Motor characteristics. */
-    407 * (2*M_PI) / 60,/* Speed constant ((rad/s)/V). */
-    23.4 / 1000,	/* Torque constant (N.m/A). */
-    0,			/* Bearing friction (N.m/(rad/s)). */
-    2.18,		/* Terminal resistance (Ohm). */
-    0.24 / 1000,	/* Terminal inductance (H). */
-    12.0,		/* Maximum voltage (V). */
-    /* Gearbox characteristics. */
-    10,			/* Gearbox ratio. */
-    0.75,		/* Gearbox efficiency. */
-    /* Load characteristics. */
-    0.0,		/* Load (kg.m^2). */
-    /* Hardware limits. */
-    -INFINITY, +INFINITY,
-};
-
-/* RE25G with 1:20.25 gearbox model. */
-static const struct motor_def_t re25g_model =
-{
-    /* Motor characteristics. */
-    407 * (2*M_PI) / 60,/* Speed constant ((rad/s)/V). */
-    23.4 / 1000,	/* Torque constant (N.m/A). */
-    0,			/* Bearing friction (N.m/(rad/s)). */
-    2.32,		/* Terminal resistance (Ohm). */
-    0.24 / 1000,	/* Terminal inductance (H). */
-    24.0,		/* Maximum voltage (V). */
-    /* Gearbox characteristics. */
-    20.25,		/* Gearbox ratio. */
-    0.75,		/* Gearbox efficiency. */
-    /* Load characteristics. */
-    0.0,		/* Load (kg.m^2). */
-    /* Hardware limits. */
-    -INFINITY, +INFINITY,
-};
-
-/* AMAX32GHP with 1:16 gearbox model. */
-static const struct motor_def_t amax32ghp_model =
-{
-    /* Motor characteristics. */
-    269 * (2*M_PI) / 60,/* Speed constant ((rad/s)/V). */
-    25.44 / 1000,	/* Torque constant (N.m/A). */
-    0,			/* Bearing friction (N.m/(rad/s)). */
-    3.99,		/* Terminal resistance (Ohm). */
-    0.24 / 1000,	/* Terminal inductance (H). */
-    24.0,		/* Maximum voltage (V). */
-    /* Gearbox characteristics. */
-    16,			/* Gearbox ratio. */
-    0.75,		/* Gearbox efficiency. */
-    /* Load characteristics. */
-    0.0,		/* Load (kg.m^2). */
-    /* Hardware limits. */
-    -INFINITY, +INFINITY,
-};
-
-/* Faulhaber 2657 and a 1:9.7 ratio gearbox. */
-static const struct motor_def_t faulhaber_2657_model =
-{
-    /* Motor characteristics. */
-    274 * (2*M_PI) / 60,/* Speed constant ((rad/s)/V). */
-    34.8 / 1000,	/* Torque constant (N.m/A). */
-    0,			/* Bearing friction (N.m/(rad/s)). */
-    2.84,		/* Terminal resistance (Ohm). */
-    0.380 / 1000,	/* Terminal inductance (H). */
-    24.0,		/* Maximum voltage (V). */
-    /* Gearbox characteristics. */
-    9.7,		/* Gearbox ratio. */
-    0.80,		/* Gearbox efficiency. */
-    /* Load characteristics. */
-    0.0,		/* Load (kg.m^2). */
-    /* Hardware limits. */
-    -INFINITY, +INFINITY,
-};
-
 /* Gloubi, Efrei 2006. */
 static const struct robot_t gloubi_robot =
 {
     /* Main motors. */
-    &re25cll_model,
+    &motor_model_def_re25cll_x10,
+    /* Motors voltage (V). */
+    12.0,
     /* Number of steps on the main motors encoders. */
     500,
     /* Wheel radius (m). */
@@ -127,14 +52,16 @@ static const struct robot_t gloubi_robot =
     13.0, // approx
     /* Whether the encoder is mounted on the main motor (false) or not (true). */
     0,
-    0.0, 0.0, { NULL, NULL }, { 0, 0 }, NULL, NULL, NO_CORNER
+    0.0, 0.0, { NULL, NULL }, { 0, 0 }, { 0, 0 }, NULL, NULL, NO_CORNER, NULL
 };
 
 /* Taz, APBTeam/Efrei 2005. */
 static const struct robot_t taz_robot =
 {
     /* Main motors. */
-    &re25cll_model,
+    &motor_model_def_re25cll_x10,
+    /* Motors voltage (V). */
+    12.0,
     /* Number of steps on the main motors encoders. */
     500,
     /* Wheel radius (m). */
@@ -147,14 +74,16 @@ static const struct robot_t taz_robot =
     0.0,
     /* Whether the encoder is mounted on the main motor (false) or not (true). */
     0,
-    0.0, 0.0, { NULL, NULL }, { 0, 0 }, NULL, NULL, NO_CORNER
+    0.0, 0.0, { NULL, NULL }, { 0, 0 }, { 0, 0 }, NULL, NULL, NO_CORNER, NULL
 };
 
 /* TazG, Taz with RE25G motors. */
 static const struct robot_t tazg_robot =
 {
     /* Main motors. */
-    &re25g_model,
+    &motor_model_def_re25g_x20_25,
+    /* Motors voltage (V). */
+    24.0,
     /* Number of steps on the main motors encoders. */
     500,
     /* Wheel radius (m). */
@@ -167,35 +96,16 @@ static const struct robot_t tazg_robot =
     0.0,
     /* Whether the encoder is mounted on the main motor (false) or not (true). */
     0,
-    0.0, 0.0, { NULL, NULL }, { 0, 0 }, NULL, NULL, NO_CORNER
-};
-
-/* Giboulée arm model, with a RE25CLL and a 1:10 ratio gearbox. */
-static const struct motor_def_t giboulee_arm_model =
-{
-    /* Motor characteristics. */
-    407 * (2*M_PI) / 60,/* Speed constant ((rad/s)/V). */
-    23.4 / 1000,	/* Torque constant (N.m/A). */
-    0,			/* Bearing friction (N.m/(rad/s)). */
-    2.18,		/* Terminal resistance (Ohm). */
-    0.24 / 1000,	/* Terminal inductance (H). */
-    24.0,		/* Maximum voltage (V). */
-    /* WARNING: Giboulée arm use a 12V motor on 24V power, PWM should be
-     * limited to half scale. */
-    /* Gearbox characteristics. */
-    10,			/* Gearbox ratio. */
-    0.75,		/* Gearbox efficiency. */
-    /* Load characteristics. */
-    0.200 * 0.1 * 0.1,	/* Load (kg.m^2). */
-    /* Hardware limits. */
-    -INFINITY, +INFINITY,
+    0.0, 0.0, { NULL, NULL }, { 0, 0 }, { 0, 0 }, NULL, NULL, NO_CORNER, NULL
 };
 
 /* Giboulée, APBTeam 2008. */
 static const struct robot_t giboulee_robot =
 {
     /* Main motors. */
-    &amax32ghp_model,
+    &motor_model_def_amax32ghp_x16,
+    /* Motors voltage (V). */
+    24.0,
     /* Number of steps on the main motors encoders. */
     2500,
     /* Wheel radius (m). */
@@ -213,16 +123,18 @@ static const struct robot_t giboulee_robot =
     /** Distance between the encoders wheels (m). */
     0.28,
     /** Auxiliary motors, NULL if not present. */
-    { &giboulee_arm_model, NULL },
+    { &motor_model_def_re25cll_x10, NULL },
     /** Number of steps for each auxiliary motor encoder. */
     { 500, 0 },
+    /** Load for auxiliary motors (kg.m^2). */
+    { 0.200 * 0.1 * 0.1, 0 },
     /** Sensor update function. */
     simu_sensor_update_giboulee,
-    NULL, NO_CORNER,
+    NULL, NO_CORNER, NULL
 };
 
 /* AquaJim arm model, with a RE40G and a 1:4 + 15:80 ratio gearbox. */
-static const struct motor_def_t aquajim_arm_model =
+static motor_model_def_t aquajim_arm_model_def =
 {
     /* Motor characteristics. */
     317 * (2*M_PI) / 60,/* Speed constant ((rad/s)/V). */
@@ -230,34 +142,11 @@ static const struct motor_def_t aquajim_arm_model =
     0,			/* Bearing friction (N.m/(rad/s)). */
     0.316,		/* Terminal resistance (Ohm). */
     0.08 / 1000,	/* Terminal inductance (H). */
-    24.0,		/* Maximum voltage (V). */
     /* Gearbox characteristics. */
     4.0 * 80.0 / 15.0,	/* Gearbox ratio. */
     0.75,		/* Gearbox efficiency. */
     /* Load characteristics. */
-    0.05 * 2.5 * 0.06 * 0.06,	/* Load (kg.m^2). */
-    /* Hardware limits. */
-    -INFINITY, +INFINITY,
-};
-
-/* AquaJim elevator model, with a RE25CLL and a 1:10 ratio gearbox. */
-static const struct motor_def_t aquajim_elevator_model =
-{
-    /* Motor characteristics. */
-    407 * (2*M_PI) / 60,/* Speed constant ((rad/s)/V). */
-    23.4 / 1000,	/* Torque constant (N.m/A). */
-    0,			/* Bearing friction (N.m/(rad/s)). */
-    2.18,		/* Terminal resistance (Ohm). */
-    0.24 / 1000,	/* Terminal inductance (H). */
-    24.0,		/* Maximum voltage (V). */
-    /* WARNING: this motor uses a 12V motor on 24V power, PWM should be
-     * limited to half scale. */
-    /* Gearbox characteristics. */
-    10,			/* Gearbox ratio. */
-    0.75,		/* Gearbox efficiency. */
-    /* Load characteristics. */
-    0.200 * 0.01 * 0.01,/* Load (kg.m^2). */
-    /* This is a pifometric estimation. */
+    0.0,		/* Load (kg.m^2). */
     /* Hardware limits. */
     -INFINITY, +INFINITY,
 };
@@ -266,7 +155,9 @@ static const struct motor_def_t aquajim_elevator_model =
 static const struct robot_t aquajim_robot =
 {
     /* Main motors. */
-    &amax32ghp_model,
+    &motor_model_def_amax32ghp_x16,
+    /* Motors voltage (V). */
+    24.0,
     /* Number of steps on the main motors encoders. */
     2500,
     /* Wheel radius (m). */
@@ -284,61 +175,30 @@ static const struct robot_t aquajim_robot =
     /** Distance between the encoders wheels (m). */
     0.28,
     /** Auxiliary motors, NULL if not present. */
-    { &aquajim_arm_model, &aquajim_elevator_model },
+    { &aquajim_arm_model_def, &motor_model_def_re25cll_x10 },
     /** Number of steps for each auxiliary motor encoder. */
     { 250, 250 },
+    /** Load for auxiliary motors (kg.m^2). */
+    { 0.05 * 2.5 * 0.06 * 0.06, 0.200 * 0.01 * 0.01 /* Pif */ },
     /** Sensor update function. */
     simu_sensor_update_aquajim,
-    NULL, NO_CORNER,
+    NULL, NO_CORNER, NULL
 };
 
-/* Marcel elevator model, with a Faulhaber 2657 and a 1:9.7 ratio gearbox. */
-static const struct motor_def_t marcel_elevator_model =
+void
+marcel_robot_init (const struct robot_t *robot, struct motor_model_t *main_motor_left,
+		   struct motor_model_t *main_motor_right, struct motor_model_t aux_motor[])
 {
-    /* Motor characteristics. */
-    274 * (2*M_PI) / 60,/* Speed constant ((rad/s)/V). */
-    34.8 / 1000,	/* Torque constant (N.m/A). */
-    0,			/* Bearing friction (N.m/(rad/s)). */
-    2.84,		/* Terminal resistance (Ohm). */
-    0.380 / 1000,	/* Terminal inductance (H). */
-    24.0,		/* Maximum voltage (V). */
-    /* Gearbox characteristics. */
-    9.7,		/* Gearbox ratio. */
-    0.80,		/* Gearbox efficiency. */
-    /* Load characteristics. */
-    1.0 * 0.01115 * 0.01115,/* Load (kg.m^2). */
-    /* This is a pifometric estimation. */
-    /* Hardware limits. */
-    0.0, +INFINITY,
-};
-
-/* Marcel gate model, with a RE25CLL and a 1:10 ratio gearbox. */
-static const struct motor_def_t marcel_gate_model =
-{
-    /* Motor characteristics. */
-    407 * (2*M_PI) / 60,/* Speed constant ((rad/s)/V). */
-    23.4 / 1000,	/* Torque constant (N.m/A). */
-    0,			/* Bearing friction (N.m/(rad/s)). */
-    2.18,		/* Terminal resistance (Ohm). */
-    0.24 / 1000,	/* Terminal inductance (H). */
-    24.0,		/* Maximum voltage (V). */
-    /* WARNING: this motor uses a 12V motor on 24V power, PWM should be
-     * limited to half scale. */
-    /* Gearbox characteristics. */
-    10,			/* Gearbox ratio. */
-    0.75,		/* Gearbox efficiency. */
-    /* Load characteristics. */
-    0.100 * 0.01 * 0.01,/* Load (kg.m^2). */
-    /* This is a pifometric estimation. */
-    /* Hardware limits. */
-    -INFINITY, +INFINITY,
-};
+    aux_motor[0].m.th_min = 0.0;
+}
 
 /* Marcel, APBTeam 2010. */
 static const struct robot_t marcel_robot =
 {
     /* Main motors. */
-    &amax32ghp_model,
+    &motor_model_def_amax32ghp_x16,
+    /* Motors voltage (V). */
+    24.0,
     /* Number of steps on the main motors encoders. */
     2500,
     /* Wheel radius (m). */
@@ -356,19 +216,25 @@ static const struct robot_t marcel_robot =
     /** Distance between the encoders wheels (m). */
     0.28,
     /** Auxiliary motors, NULL if not present. */
-    { &marcel_elevator_model, &marcel_gate_model },
+    { &motor_model_def_faulhaber_2657_x9_7, &motor_model_def_re25cll_x10 },
     /** Number of steps for each auxiliary motor encoder. */
     { 256, 250 },
+    /** Load for auxiliary motors (kg.m^2). */
+    { 1.0 * 0.01115 * 0.01115, 0.100 * 0.01 * 0.01 /* Pif */ },
     /** Sensor update function. */
     simu_sensor_update_marcel,
     NULL, NO_CORNER,
+    /** Initialisation function. */
+    marcel_robot_init,
 };
 
 /* Robospierre, APBTeam 2011. */
 static const struct robot_t robospierre_robot =
 {
     /* Main motors. */
-    &faulhaber_2657_model,
+    &motor_model_def_faulhaber_2657_x9_7,
+    /* Motors voltage (V). */
+    24.0,
     /* Number of steps on the main motors encoders. */
     2500,
     /* Wheel radius (m). */
@@ -389,6 +255,8 @@ static const struct robot_t robospierre_robot =
     { NULL, NULL },
     /** Number of steps for each auxiliary motor encoder. */
     { 0, 0 },
+    /** Load for auxiliary motors (kg.m^2). */
+    { 0, 0 },
     /** Sensor update function. */
     NULL,
     /** Table test function, return false if given robot point is not in
@@ -396,6 +264,8 @@ static const struct robot_t robospierre_robot =
     simu_table_test_robospierre,
     /** Robot corners, from front left, then clockwise. */
     { { 150, 110 }, { 150, -110 }, { -150, -110 }, { -150, 110 } },
+    /** Initialisation function. */
+    NULL,
 };
 
 /* Table of models. */
@@ -429,8 +299,8 @@ models_get (const char *name)
 
 /** Initialise simulation models. */
 void
-models_init (const struct robot_t *robot, struct motor_t *main_motor_left,
-	     struct motor_t *main_motor_right, struct motor_t aux_motor[])
+models_init (const struct robot_t *robot, motor_model_t *main_motor_left,
+	     motor_model_t *main_motor_right, motor_model_t aux_motor[])
 {
     int i;
     if (main_motor_left)
@@ -456,10 +326,13 @@ models_init (const struct robot_t *robot, struct motor_t *main_motor_left,
 	    if (robot->aux_motor[i])
 	      {
 		aux_motor[i].m = *robot->aux_motor[i];
+		aux_motor[i].m.J = robot->aux_load[i];
 		aux_motor[i].h = ECHANT_PERIOD;
 		aux_motor[i].d = 1000;
 	      }
 	  }
       }
+    if (robot->init)
+	robot->init (robot, main_motor_left, main_motor_right, aux_motor);
 }
 

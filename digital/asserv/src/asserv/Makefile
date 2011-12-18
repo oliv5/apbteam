@@ -1,15 +1,13 @@
 BASE = ../../../avr
 PROGS = asserv
-AVR_PROGS = test_counter
-HOST_PROGS = test_motor_model
-asserv_SOURCES = main.c timer.avr.c counter_ext.avr.c pwm.avr.c pwm_mp.avr.c \
-		 pwm_ocr.avr.c pos.c speed.c postrack.c traj.c aux.c \
-		 twi_proto.c eeprom.avr.c state.c \
-		 simu.host.c motor_model.host.c models.host.c
-test_counter_SOURCES = test_counter.c timer.avr.c
-test_motor_model_SOURCES = test_motor_model.c motor_model.host.c models.host.c
-MODULES = proto uart utils math/fixed twi spi
-test_motor_model_MODULES =
+asserv_SOURCES = main.c timer.avr.c \
+		 postrack.c traj.c aux.c cs.c \
+		 twi_proto.c eeprom.avr.c seq.c \
+		 simu.host.c models.host.c
+MODULES = proto uart utils math/fixed twi spi \
+	  motor/encoder motor/encoder/ext motor/output motor/output/pwm_mp \
+	  motor/control_system motor/speed_control motor/pos_control \
+	  motor/blocking_detection motor/motor_model
 CONFIGFILE = avrconfig.h
 # atmega8, atmega8535, atmega128...
 AVR_MCU = atmega128

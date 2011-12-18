@@ -28,7 +28,7 @@
 #include "modules/math/fixed/fixed.h"
 #include "modules/math/math.h"
 
-#include "counter.h"
+#include "cs.h"
 
 /** Current position, f24.8. */
 int32_t postrack_x, postrack_y;
@@ -60,9 +60,9 @@ void
 postrack_update (void)
 {
     int32_t d, dd, da, na, dsc;
-    d = counter_right_diff + counter_left_diff;		/* 10b */
+    d = encoder_right.diff + encoder_left.diff;		/* 10b */
     d <<= 16;						/* 10.16b */
-    if (counter_right_diff == counter_left_diff)
+    if (encoder_right.diff == encoder_left.diff)
       {
 	/* Line. */
 	postrack_x += fixed_mul_f824 (d, fixed_cos_f824 (postrack_a)) >> 8;
@@ -71,7 +71,7 @@ postrack_update (void)
     else
       {
 	/* Arc. */
-	dd = counter_right_diff - counter_left_diff;	/* 10b */
+	dd = encoder_right.diff - encoder_left.diff;	/* 10b */
 	dd <<= 16;					/* 10.16b */
 	da = fixed_mul_f824 (dd, postrack_footing_factor);/* 8.24b */
 	/* New angle. */
