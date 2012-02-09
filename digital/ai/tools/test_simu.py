@@ -49,32 +49,29 @@ class ObstacleWithBeacon (obstacle_view.RoundObstacle):
 class TestSimu (InterNode):
     """Interface, with simulated programs."""
 
-    def __init__ (self, robot_class):
+    def __init__ (self, robot_class, robot_nb = 1):
         # Hub.
-        self.hub = mex.hub.Hub (min_clients = 4)
+        self.hub = mex.hub.Hub (min_clients = 1 + robot_class.client_nb
+                * robot_nb)
         self.forked_hub = utils.forked.Forked (self.hub.wait)
         # InterNode.
         InterNode.__init__ (self)
         def proto_time ():
             return self.node.date / self.node.tick
-        # Robot parameters.
-        robot = robot_class (proto_time)
-        self.robot = robot
-        # Asserv.
-        self.asserv = robot.asserv
-        self.asserv.async = True
-        self.tk.createfilehandler (self.asserv, READABLE, self.asserv_read)
-        # Mimot.
-        self.mimot = robot.mimot
-        self.mimot.async = True
-        self.tk.createfilehandler (self.mimot, READABLE, self.mimot_read)
-        # Io.
-        self.io = robot.io
-        self.io.async = True
-        self.tk.createfilehandler (self.io, READABLE, self.io_read)
+        # Robot instances.
+        self.robots = [ robot_class (proto_time, 'robot%d' % i)
+                for i in xrange (robot_nb) ]
+        for r in self.robots:
+            for prog in r.protos:
+                prog.async = True
+                def prog_read (f, mask, prog = prog):
+                    prog.proto.read ()
+                    prog.proto.sync ()
+                self.tk.createfilehandler (prog, READABLE, prog_read)
         # Add table.
-        self.table_model = robot.table_model.Table ()
-        self.table = robot.table_view.Table (self.table_view, self.table_model)
+        self.table_model = robot_class.table_model.Table ()
+        self.table = robot_class.table_view.Table (self.table_view,
+                self.table_model)
         self.obstacle = obstacle_model.RoundObstacle (150)
         self.table_model.obstacles.append (self.obstacle)
         self.obstacle_beacon = obstacle_model.RoundObstacle (40, 2)
@@ -82,43 +79,30 @@ class TestSimu (InterNode):
         self.obstacle_view = ObstacleWithBeacon (self.table, self.obstacle,
                 self.obstacle_beacon)
         self.table_view.bind ('<2>', self.place_obstacle)
-        # Add robot.
-        self.robot_link = robot.robot_link.Bag (self.node)
-        self.robot_model = robot.robot_model.Bag (self.node, self.table_model,
-                self.robot_link)
-        self.robot_view = robot.robot_view.Bag (self.table,
-                self.actuator_view, self.sensor_frame, self.robot_model)
-        # Color switch.
-        self.robot_model.color_switch.register (self.change_color)
+        # Add robots.
+        for r in self.robots:
+            r.link = r.robot_link.Bag (self.node, r.instance)
+            r.model = r.robot_model.Bag (self.node, self.table_model, r.link)
+            r.view = r.robot_view.Bag (self.table, self.actuator_view,
+                    self.sensor_frame, r.model)
+            # Color switch.
+            def change_color (r = r):
+                i = r.model.color_switch.state
+                r.asserv.set_simu_pos (*r.robot_start_pos[i]);
+            r.model.color_switch.register (change_color)
 
     def close (self):
         self.forked_hub.kill ()
         import time
         time.sleep (1)
 
-    def asserv_read (self, file, mask):
-        self.asserv.proto.read ()
-        self.asserv.proto.sync ()
-
-    def mimot_read (self, file, mask):
-        self.mimot.proto.read ()
-        self.mimot.proto.sync ()
-
-    def io_read (self, file, mask):
-        self.io.proto.read ()
-        self.io.proto.sync ()
-
     def step (self):
         """Overide step to handle retransmissions, could be made cleaner using
         simulated time."""
         InterNode.step (self)
-        self.asserv.proto.sync ()
-        self.mimot.proto.sync ()
-        self.io.proto.sync ()
-
-    def change_color (self, *dummy):
-        i = self.robot_model.color_switch.state
-        self.asserv.set_simu_pos (*self.robot.robot_start_pos[i]);
+        for r in self.robots:
+            for prog in r.protos:
+                prog.proto.sync ()
 
     def place_obstacle (self, ev):
         pos = self.table_view.screen_coord ((ev.x, ev.y))
@@ -132,6 +116,8 @@ def run (default_robot, test_class = TestSimu):
     parser = optparse.OptionParser ()
     parser.add_option ('-r', '--robot', help = "use specified robot",
             metavar = 'NAME', default = default_robot)
+    parser.add_option ('-n', '--robot-nb', help = "number of robots",
+            type = 'int', metavar = 'NB', default = 1)
     (options, args) = parser.parse_args ()
     if args:
         parser.error ("too many arguments")
@@ -143,7 +129,7 @@ def run (default_robot, test_class = TestSimu):
         robot = robospierre.Robot
     else:
         parser.error ("unknown robot")
-    app = test_class (robot)
+    app = test_class (robot, options.robot_nb)
     app.mainloop ()
     app.close ()
 

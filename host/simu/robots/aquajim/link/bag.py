@@ -27,7 +27,7 @@ import asserv.mex
 
 class Bag:
 
-    def __init__ (self, node):
-        self.asserv = asserv.mex.Mex (node)
-        self.io = io.mex.Mex (node)
+    def __init__ (self, node, instance = 'robot0'):
+        self.asserv = asserv.mex.Mex (node, '%s:asserv0' % instance)
+        self.io = io.mex.Mex (node, '%s:io0' % instance)
 
