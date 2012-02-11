@@ -58,13 +58,21 @@ speed_init (void)
 static void
 speed_update_by_speed (struct speed_t *speed)
 {
-    /* Update current speed. */
-    if (UTILS_ABS (speed->cons - speed->cur) < speed->acc)
-	speed->cur = speed->cons;
-    else if (speed->cons > speed->cur)
-	speed->cur += speed->acc;
+    /* Update current speed (be careful of overflow!). */
+    if (speed->cons > speed->cur)
+      {
+	if ((uint16_t) (speed->cons - speed->cur) < (uint16_t) speed->acc)
+	    speed->cur = speed->cons;
+	else
+	    speed->cur += speed->acc;
+      }
     else
-	speed->cur -= speed->acc;
+      {
+	if ((uint16_t) (speed->cur - speed->cons) < (uint16_t) speed->acc)
+	    speed->cur = speed->cons;
+	else
+	    speed->cur -= speed->acc;
+      }
 }
 
 /** Compute maximum allowed speed according to: distance left, maximum speed,
