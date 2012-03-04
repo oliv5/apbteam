@@ -1,7 +1,7 @@
-/* position.h */
-/* Beacon triangulation algorithms. {{{
+/* update.h */
+/* Beacon udapte position mode. {{{
  *
- * Copyright (C) 2011 Florent Duchon
+ * Copyright (C) 2012 Florent Duchon
  *
  * APBTeam:
  *        Web: http://apbteam.org/
@@ -23,54 +23,18 @@
  *
  * }}} */
 
-#ifndef _POSITION_H
-#define _POSITION_H
+#ifndef _UPDATE_H
+#define _UPDATE_H
 
-#define MAX_OBSTACLE 		2
-#define MAX_BEACON			3
-#define MAX_TEMP_POSITION	MAX_OBSTACLE * 2
-#define OBSTACLE_RADIUS		100
-#define IGNORE_ANGLE			1000
+#include "position.h"
 
 /* Status returns */
-typedef enum{
-	POSITION_NO_ERROR,
-	POSITION_IGNORE_ANGLE
-} TPositionStatus;
+typedef enum {
+	UPDATE_OBSTACLE_NOT_FOUND,
+	UPDATE_OBSTACLE_FOUND
+} TUpdateStatus;
 
-/* Structures definition */
-
-/* Beacon Structure */
-typedef struct
-{
-	int angleNumber;					
-	float angle[MAX_OBSTACLE+1];
-}beacon_s;
-
-/* Obstacle structure */
-typedef struct
-{
-	int x;
-	int y;
-	int trust
-}opponent_s;
-
-/* Coordinates structure */
-typedef struct
-{
-	int x;
-	int y;
-}coord_s;
-
-/* Recovery Structure */
-typedef struct
-{
-	int x;
-	int y;
-	int occurence;
-}recovery_s;
-
-/* This function is used to initialize all needed structures */
-void init_struct(void);
+/* This function checks is the given coord is a potential obstacle and updates the structure in consequence */
+TUpdateStatus update(coord_s * point);
 
 #endif

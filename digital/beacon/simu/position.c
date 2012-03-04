@@ -23,81 +23,133 @@
  *
  * }}} */
 
-#include <stdio.h>
 #include "position.h"
+#include "debug.h"
+#include "recovery.h"
+#include "update.h"
+#include "formula.h"
+#include "trust.h"
 
-extern beacon_value_s beacon;
-extern opponent_s opponent;
+beacon_s beacon[MAX_BEACON+1];
+opponent_s opponent[MAX_OBSTACLE+1];
 
+/* This function is used to initialize all needed structures */
 void init_struct(void)
 {
-	beacon.angle[0]=0;
-	beacon.angle[1]=0;
-	beacon.angle[2]=0;
-	beacon.angle[3]=0;
-	beacon.last_updated_beacon = 0;
-	beacon.before_last_updated_beacon = 0;
-	opponent.x = 0;
-	opponent.y = 0;
+	int i = 0;
+	int j = 0;
+	for(i = 1; i <= MAX_BEACON; i++)
+	{
+		beacon[i].angleNumber = 0;
+		for(j = 1; j <= MAX_OBSTACLE ; j++)
+		{
+			beacon[i].angle[j] = 1;
+		}
+	}
+	
+	for(i = 1; i <= MAX_OBSTACLE; i++)
+	{
+		opponent[i].x = 0;
+		opponent[i].y = 0;
+		opponent[i].trust = TRUST_MIN;
+	}
 }
 
-float degree_to_radian(int value)
+int update_position(int beaconID, int angleID, double angle)
 {
-	float temp = 0;
-	temp = (value * 2 * M_PI) / 360;
-	return temp;
-}
-
-void update_position(int beacon_number,double angle)
-{
+	static int last_ID[2] = {0};
+	int last_valid_id = 0;
 	int which_formula = 0;	
-	if(beacon_number == beacon.last_updated_beacon)
-	{
-		beacon.last_updated_beacon = beacon_number;
-	}
-	else
-	{
-		beacon.before_last_updated_beacon = beacon.last_updated_beacon;
-		beacon.last_updated_beacon = beacon_number;
-	}
-	which_formula = beacon.before_last_updated_beacon + beacon.last_updated_beacon;
-// 	printf("[position.c] => Update_position beacon_number = %d   angle = %f\n",(int)beacon_number,(double)angle);
-	beacon.angle[beacon_number] = angle;
+	coord_s temp_position[MAX_TEMP_POSITION];
+	int i = 0;
+	
+	int formula_status = 0;
+	int global_status = 0;
+	int update_status = UPDATE_OBSTACLE_NOT_FOUND;
+	int recovery_status = 0;
+	
+	DEBUG_POSITION("Update_position with beaconID = %d and angleID = %d and angle = %f\n",(int)beaconID,(int) angleID, (double)angle);
+	DEBUG_POSITION("last_ID[0]  = %d  last_ID[1]  = %d\n",(int)last_ID[0],(int)last_ID[1]);
 
-	switch(which_formula)
+	/* Calculate which formula need to be used to compute position */
+	for(i = 0 ; i < 2; i++)
 	{
-		case 3:
-//  			printf("[position.c] => Formula 3\r\n");
-// 			printf("[position.c] => angle[1] = %f angle[2] = %f\n",beacon.angle[1],beacon.angle[2]);
-  			opponent.x = LARGEUR_TABLE * tan(beacon.angle[2]) * tan(beacon.angle[1]) / (tan(beacon.angle[2])+tan(beacon.angle[1]));
-  			opponent.y = LARGEUR_TABLE * tan(beacon.angle[1]) / (tan(beacon.angle[2])+tan(beacon.angle[1]));
-			break;
-		case 4:
-//  			printf("[position.c] => Formula 4\r\n");
-			if(beacon.angle[3] > M_PI/2)
-			{
- 				opponent.y = (LARGEUR_DEMI_TABLE*tan(M_PI - beacon.angle[3]) - LARGEUR_TABLE*tan(beacon.angle[1]) + LONGUEUR_TABLE) / (tan(M_PI - beacon.angle[3]) - tan(beacon.angle[1]));
-			}
-			else
-			{
-				opponent.y = (LARGEUR_DEMI_TABLE*tan(beacon.angle[3]) + LARGEUR_TABLE*tan(beacon.angle[1])-LONGUEUR_TABLE) / (tan(beacon.angle[1]) + tan(beacon.angle[3]));
-			}
-			opponent.x = (LARGEUR_TABLE - opponent.y)*tan(beacon.angle[1]);
-			break;
-		case 5:
-// 			printf("[position.c] => formula 5\r\n");
-			if(beacon.angle[3] > M_PI/2)
-			{
-				opponent.y = (LONGUEUR_TABLE + LARGEUR_DEMI_TABLE * tan(M_PI - beacon.angle[3])) / (tan(beacon.angle[2]) + tan(M_PI - beacon.angle[3]));
-			}
-			else
-			{
-				opponent.y = (LARGEUR_DEMI_TABLE*tan(beacon.angle[3]) - LONGUEUR_TABLE) / (tan(beacon.angle[3]) - tan(beacon.angle[2]));
-			}
-			opponent.x = tan(beacon.angle[2]) * opponent.y;
-			break;
-		default:
-// 			printf("[position.c] => Unknown Formula\r\n");
-			break;
+		if(beaconID != last_ID[i])
+		{
+			last_valid_id = last_ID[i];
+		}
 	}
+	which_formula = beaconID + last_valid_id;
+		
+
+	if(last_valid_id != 0)
+	{
+		if(trust_check_level() == TRUST_LEVEL_OK)
+		{
+			/* Compute all hypotheticals positions and save them into temporary_position tab*/
+			for(i = 1 ; i <= beacon[last_valid_id].angleNumber ; i++)
+			{
+				formula_status = formula_compute_position(which_formula,beaconID,beacon[last_valid_id].angle[i],angle,&temp_position[i]);
+				if(formula_status == FORMULA_VALID_POSITION)
+				{
+					update_status += update(&temp_position[i]);
+					if(update_status == UPDATE_OBSTACLE_FOUND)
+					{
+						break;
+					}
+				}
+			}
+			if(update_status == UPDATE_OBSTACLE_NOT_FOUND)
+			{
+				/* Obstacle not found */
+				trust_decrease();
+			}
+			global_status = POSITION_NO_ERROR;
+		}
+		else /* Need Recovery */
+		{
+			/* Compute all hypotheticals positions and save them into temporary_position tab*/
+			for(i = 1 ; i <= beacon[last_valid_id].angleNumber ; i++)
+			{				
+				if(beacon[last_valid_id].angle[i] != IGNORE_ANGLE)
+				{
+					formula_status = formula_compute_position(which_formula,beaconID,beacon[last_valid_id].angle[i],angle,&temp_position[i]);
+					if(formula_status == FORMULA_VALID_POSITION)
+					{
+						/* If the angle is not ignored and the computed position is valid, feed the recovery system */
+						recovery_status = recovery(&temp_position[i],&opponent[0]);
+						if((recovery_status == RECOVERY_IN_PROGRESS)||(recovery_status == RECOVERY_FINISHED))
+						{
+							global_status = POSITION_NO_ERROR;
+							break;
+						}
+						else if(recovery_status == RECOVERY_IGNORE_ANGLE_NEXT_TIME)
+						{
+							global_status = POSITION_IGNORE_ANGLE;
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	/* Save angle context */
+	beacon[beaconID].angleNumber = angleID;
+	if(global_status == POSITION_NO_ERROR)
+	{
+		beacon[beaconID].angle[angleID] = angle;
+	}
+	else /* Angle must be ignored next time */
+	{
+		beacon[beaconID].angle[angleID] = IGNORE_ANGLE;
+	}
+
+	/* Save ID context */
+	if(beaconID != last_valid_id)
+	{
+		last_ID[1] = last_ID[0];
+		last_ID[0] = beaconID;
+	}
+	return 0;
 }

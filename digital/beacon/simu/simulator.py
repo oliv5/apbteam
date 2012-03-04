@@ -32,9 +32,16 @@ from math import pi
 import math
 import random
 import decimal
+import time
+	
+import fcntl
+import os
+from subprocess import *
+	
 	
 class Obstacle:
-    def __init__ (self, pos, radius, factor):
+    def __init__ (self, id, pos, radius, factor):
+	self.id = id
         self.pos = pos
         self.radius = radius
         self.factor = factor
@@ -50,7 +57,7 @@ class Beacon (Drawable):
 		self.pos = pos 			# position (x,y)
 		self.orientation = orientation 	# orientation in degrees
 		self.size = size		# side size
-		self.angle = 0			# obstacles angle
+		self.angle = {}			# obstacles angle
 		self.mode = 0			# 0 = deactivated
 						# 1 = activated
 	def draw_beacon (self): 
@@ -108,7 +115,13 @@ class Area (Drawable):
 				self.draw_line ((b.pos[0],b.pos[1]),(o.pos[0],o.pos[1]),fill='cyan', arrow = NONE)
 
 	def populate (self):
-		self.obstacles.append (Obstacle ((500, 500), 200, 0))
+		self.obstacles.append (Obstacle (1,(random.randrange(100,2700),random.randrange(100,1700)), 200, 0))
+		self.obstacles.append (Obstacle (2,(random.randrange(100,2700), random.randrange(100,1700)), 200, 0))
+		
+		#self.obstacles.append (Obstacle (1,(1666,1411), 200, 0))
+		#self.obstacles.append (Obstacle (2,(2604,344), 200, 0))
+		#self.obstacles.append (Obstacle ((500, 500), 200, 0))
+
 		self.beacons.append (Beacon (self, 1, (-40,2040), 270,80))
 		self.beacons.append (Beacon (self, 2, (-40,-40),0,80))
 		self.beacons.append (Beacon (self, 3, (3040,1000), 180,80))
@@ -146,7 +159,14 @@ class beacon_simu (Frame):
 		self.createWidgets (border_min, border_max)
 		self.robot_pos.set("Robot position = (0 , 0)")
 		self.phantom_pos.set("Last phantom position = ")
-
+		args = []
+		args[0:0] = [ './beacon.host' ]
+		self.p = Popen (args,shell=True, stdin = PIPE, stdout = PIPE)
+		self.counter = 0
+		self.valeur_ko = 0
+		self.valeur_ok = 0
+		self.total = 0
+		
 	def createWidgets (self, border_min, border_max):
 		# Bottom Panel
 		self.bottomFrame = Frame (self)
@@ -194,9 +214,10 @@ class beacon_simu (Frame):
 		# Sixth subPanel for Exit button
 		self.subPanel6 = Frame (self.bottomFrame)
 		self.subPanel6.pack (side = 'right', fill = 'both')
-		self.quitButton = Button (self.subPanel6, text = 'Quit', command = self.quit)
-		self.quitButton.pack (side = 'right', fill = 'both')
-		
+		self.quitButton = Button (self.subPanel6, text = 'Quit', command = self.exit)
+		self.quitButton.pack (side = 'right', fill = 'both')		
+		self.recoveryButton = Button (self.subPanel6, text = 'Recovery', command = self.recovery)
+		self.recoveryButton.pack (side = 'right', fill = 'both')				
 		self.areaview = AreaView (border_min, border_max, self)
 		self.areaview.pack (expand = True, fill = 'both')
 		self.areaview.bind ('<1>', self.click)
@@ -220,11 +241,14 @@ class beacon_simu (Frame):
 
 	def click (self, ev):
 		pos = self.areaview.screen_coord ((ev.x, ev.y))
-		
 		# Update obstacles position
 		for o in self.areaview.area.obstacles:
 			if  self.areaview.area.border_min[0] < pos[0] < self.areaview.area.border_max[0] and self.areaview.area.border_min[1] < pos[1] < self.areaview.area.border_max[1]:
-				o.pos = pos
+				dx = o.pos[0] - pos[0]
+				dy = o.pos[1] - pos[1]
+				if dx * dx + dy * dy < 300*300:
+					print "Obstacle trouve"
+					o.pos = pos
 				self.robot_pos.set("Robot position = (%.0f , %.0f)" % pos)
 
 		# Check beacon mode
@@ -236,70 +260,115 @@ class beacon_simu (Frame):
 		# Update area
 		self.update ()
 
-	def call_algorithm (self,num1,num2):
-		args = [0,0,0,0,0,0,0,0]
-		for b in self.areaview.area.beacons:
-			if b.id is num1:
-				args[1]=num1
-				args[2]=b.angle
-			if b.id is num2:
-				args[3]=num2
-				args[4]=b.angle
-		args = [repr(a) for a in args]
-		args[0:0] = [ './beacon.host' ]
-		p = Popen (args, stdout = PIPE)
-		output = p.communicate ()[0]
-		del p
-		output = output.split ('\n')
-		return output
+	def call_algorithm (self,num,angle,angleID):
+		temp = []
+		self.p.stdin.write(str(num)+'\n')
+		self.p.stdin.flush()
+		self.p.stdin.write(str(angle)+'\n')
+		self.p.stdin.flush()
+		self.p.stdin.write(str(angleID)+'\n')
+		self.p.stdin.flush()
+		for o in self.areaview.area.obstacles:
+			x = self.p.stdout.readline().split('\n')
+			y= self.p.stdout.readline().split('\n')
+			trust = self.p.stdout.readline().split('\n')
+			temp.append([x,y,trust])
+		return temp
 
 	def rotate_beacons (self): # Simulate a rotation for a all beacons, ie set beacon.angles.	
 		# Set the requested imprecision
  		imprecision = self.precisionScale.get () #1 to 3 degrees
 		imprecision = int (math.radians(imprecision)*1000)
 		imprecision = decimal.Decimal(random.randrange(-imprecision,imprecision))/1000
+		#imprecision = 0
 		# Compute angles for every beaconss
-		for o in self.areaview.area.obstacles:
-			for b in self.areaview.area.beacons:
+		for b in self.areaview.area.beacons:
+			for o in self.areaview.area.obstacles:
 				if b.id is 1:
-					b.angle = math.atan(o.pos[0]/(2000-o.pos[1]))+float(imprecision)
+					b.angle[o.id] = math.atan(float(o.pos[0])/(float(2000)-float(o.pos[1])))+float(imprecision)
 				if b.id is 2:
-					b.angle = math.atan(o.pos[0]/o.pos[1])+float(imprecision)
+					b.angle[o.id] = math.atan(float(o.pos[0])/float(o.pos[1]))+float(imprecision)
+					#print math.degrees(b.angle[o.id])
 				if b.id is 3:
-					b.angle = math.atan((3000-o.pos[0])/(1000-o.pos[1]))+float(imprecision)
-					if b.angle < 0:
-						b.angle = pi - abs(b.angle)
+					b.angle[o.id] = math.atan((float(3000)-float(o.pos[0]))/(float(1000)-float(o.pos[1])))+float(imprecision)
+					if b.angle[o.id] < 0:
+						b.angle[o.id] = pi - abs(b.angle[o.id])
+
 
 	def manual_mode (self):
 		# Manual mode : warning : two beacons must already be activated
 		self.rotate_beacons ()
-		temp = [0,0,0]
-		i = 0
 		for b in self.areaview.area.beacons:
 			if b.mode is 1:
-				temp[i] = b.id
-				i=i+1
-		phantom_pos = self.call_algorithm(temp[0],temp[1])
-		self.areaview.add_phantom((int (phantom_pos[0]),int (phantom_pos[1])))
-		self.phantom_pos.set("Last phantom position = (%.0f , %.0f)" %(float(phantom_pos[0]),float(phantom_pos[1])))
+					phantom_pos = self.call_algorithm(b.id,b.angle[1],1)
+					phantom_pos = self.call_algorithm(b.id,b.angle[2],2)
+		self.areaview.add_phantom((int (phantom_pos[0][0]),int (phantom_pos[0][1])))
+		self.areaview.add_phantom((int (phantom_pos[1][0]),int (phantom_pos[1][1])))
+		#self.phantom_pos.set("Last phantom position = (%.0f , %.0f)" %(float(phantom_pos[0]),float(phantom_pos[1])))
 		self.update ()
 
 	def automatic_mode (self):
 		# Automatic  mode : all beacons are used
 		self.rotate_beacons ()
-		
-		# Randomly select two beacons and update obstacles position
-		exclude = random.randrange(1,4)
-		if exclude is 1:
-			phantom_pos = self.call_algorithm(2,3)
-		if exclude is 2:
-			phantom_pos = self.call_algorithm(1,3)
-		if exclude is 3:
-			phantom_pos = self.call_algorithm(1,2)
-		
-		# Draw the computed position
-		self.areaview.add_phantom((int (phantom_pos[0]),int (phantom_pos[1])))
-		self.phantom_pos.set("Last phantom position = (%.0f , %.0f)" %(float(phantom_pos[0]),float(phantom_pos[1])))
+		select = random.randrange(1,4)
+		for b in self.areaview.area.beacons:
+			if b.id is select:
+				temp = 1
+				for o in self.areaview.area.obstacles:
+					phantom_pos = self.call_algorithm(b.id,b.angle[temp],temp)
+					for o in self.areaview.area.obstacles:
+						if phantom_pos[temp-1][2][0] is not '0':
+							self.areaview.add_phantom((int (phantom_pos[temp-1][0][0]),int (phantom_pos[temp-1][1][0])))
+					temp = temp + 1
+
+
+
+
+	def automatic_mode_old (self):
+		# Automatic  mode : all beacons are used
+		self.rotate_beacons ()
+		select = random.randrange(1,4)
+		for b in self.areaview.area.beacons:
+			if b.id is select:
+				phantom_pos = self.call_algorithm(b.id,b.angle[1],1)
+				if phantom_pos[0][2][0] is not '0':
+					self.areaview.add_phantom((int (phantom_pos[0][0][0]),int (phantom_pos[0][1][0])))
+				if phantom_pos[1][2][0] is not '0':
+					self.areaview.add_phantom((int (phantom_pos[1][0][0]),int (phantom_pos[1][1][0])))
+				phantom_pos = self.call_algorithm(b.id,b.angle[2],2)
+				# Draw the computed position
+				if phantom_pos[0][2][0] is not '0':
+					self.areaview.add_phantom((int (phantom_pos[0][0][0]),int (phantom_pos[0][1][0])))
+				if phantom_pos[1][2][0] is not '0':
+					self.areaview.add_phantom((int (phantom_pos[1][0][0]),int (phantom_pos[1][1][0])))
+
+
+	def automatic_mode_for_recovery_test (self):
+		# Automatic  mode : all beacons are used
+		self.rotate_beacons ()
+		trust = 0
+		select = random.randrange(1,4)
+		for b in self.areaview.area.beacons:
+			if b.id is select:
+				phantom_pos = self.call_algorithm(b.id,b.angle[1],1)
+				if phantom_pos[0][2][0] is not '0':
+					self.areaview.add_phantom((int (phantom_pos[0][0][0]),int (phantom_pos[0][1][0])))
+					trust += 1
+				if phantom_pos[1][2][0] is not '0':
+					self.areaview.add_phantom((int (phantom_pos[1][0][0]),int (phantom_pos[1][1][0])))
+					trust += 1
+				if trust != 0:
+					return trust
+				phantom_pos = self.call_algorithm(b.id,b.angle[2],2)
+				# Draw the computed position
+				if phantom_pos[0][2][0] is not '0':
+					print phantom_pos
+					self.areaview.add_phantom((int (phantom_pos[0][0][0]),int (phantom_pos[0][1][0])))
+					trust += 1
+				if phantom_pos[1][2][0] is not '0':
+					self.areaview.add_phantom((int (phantom_pos[1][0][0]),int (phantom_pos[1][1][0])))
+					trust += 1
+				return trust
 
 	def start (self) :
 		if self.mode.get() == "manual":
@@ -316,6 +385,51 @@ class beacon_simu (Frame):
 		else:
 			print "No mode selected"
 			return
+	def exit (self):
+		self.p.kill()
+		self.quit()
+
+	def recovery (self):
+		recovery = 0
+		self.clear_phantoms()
+		while recovery == 0:
+			recovery = self.automatic_mode_for_recovery_test()
+		#self.update()
+		#print self.areaview.area.phantoms
+		self.update()
+		for o in self.areaview.area.obstacles:
+			#print "obstacle"
+			#print "o.pos[0] = %d - self.areaview.area.phantoms[0][0] = %d" %(o.pos[0],self.areaview.area.phantoms[0][0])
+			dx1 = o.pos[0] - self.areaview.area.phantoms[0][0]
+			dy1 = o.pos[1] - self.areaview.area.phantoms[0][1]
+			dx2 = o.pos[0] - self.areaview.area.phantoms[1][0]
+			dy2 = o.pos[1] - self.areaview.area.phantoms[1][1]
+			total1 = dx1 * dx1 + dy1 * dy1
+			total2 = dx2 * dx2 + dy2 * dy2
+			x  = random.randrange(100,2700)
+			y = random.randrange(100,1700)
+			o.pos = (x,y)
+			self.total += 1	
+			if total1 < 90000 or total2 < 90000:
+				#print "1 trouve"
+				self.valeur_ok+=1
+			else:
+				#print "1 pas trouve"
+				self.valeur_ko+=1
+		print "#######################################"
+		print self.areaview.area.phantoms
+		print "OK  = %d" %(self.valeur_ok)
+		print "KO  = %d" %(self.valeur_ko)
+		print "Total = %d" %(self.total)
+		print "New position (%d,%d) (%d,%d)" %(self.areaview.area.obstacles[0].pos[0],self.areaview.area.obstacles[0].pos[1],self.areaview.area.obstacles[1].pos[0],self.areaview.area.obstacles[1].pos[1])
+		print "#######################################"
+		#time.sleep(10)
+		#self.clear_phantoms()
+		self.after (100,self.recovery)
+
+	
+
+
 
 if __name__ == '__main__':
 	app = beacon_simu ((0, 0), (3000, 2000))	

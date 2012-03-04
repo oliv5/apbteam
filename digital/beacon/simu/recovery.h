@@ -1,9 +1,7 @@
-#ifndef avrconfig_h
-#define avrconfig_h
-/* avrconfig.h - Path module configuration template. */
-/* avr.path - Path finding module. {{{
+/* recovery.h */
+/* Beacon recovery mode. {{{
  *
- * Copyright (C) 2008 Nicolas Schodet
+ * Copyright (C) 2012 Florent Duchon
  *
  * APBTeam:
  *        Web: http://apbteam.org/
@@ -25,15 +23,23 @@
  *
  * }}} */
 
-/* path - Path finding module. */
-/** Report path found for debug. */
-#define AC_PATH_REPORT defined (HOST)
-/** Report function name. */
-#define AC_PATH_REPORT_CALLBACK path_report
-/** Number of possible obstacles. */
-#define AC_PATH_OBSTACLES_NB 10
-/** Number of points per obstacle. */
-#define AC_PATH_OBSTACLES_POINTS_NB 8
+#ifndef _RECOVERY_H
+#define _RECOVERY_H
 
+#include "position.h"
 
-#endif /* avrconfig_h */
+#define MAX_POINT_RECOVERY  					500
+#define RECOVERY_TRICKY_THRESHOLD  			MAX_POINT_RECOVERY/3
+
+/* Status returns */
+typedef enum 
+{
+	RECOVERY_IN_PROGRESS,
+	RECOVERY_FINISHED,
+	RECOVERY_IGNORE_ANGLE_NEXT_TIME
+} TRecoveryStatus;
+
+/* This function is used to calculate all obstacle positions from sractch */
+TRecoveryStatus recovery(coord_s * new_point,opponent_s result[MAX_OBSTACLE]);
+
+#endif

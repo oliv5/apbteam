@@ -1,5 +1,5 @@
-/* beacon.c */
-/* Beacon Simulator Interface. {{{
+/* trust.c */
+/* Beacon Trust control. {{{
  *
  * Copyright (C) 2011 Florent Duchon
  *
@@ -23,54 +23,51 @@
  *
  * }}} */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
 #include "position.h"
+#include "trust.h"
+#include "debug.h"
 
-/* Globals Declaration */
 extern opponent_s opponent[MAX_OBSTACLE];
 
-int main (int argc, char **argv)
-{
-	char saisie[30];
-	char ret = 0;
-	int id = 0;
-	float angle = 0;
-	int angle_id = 0;
-	int i = 0;
-	/* Init global structures */
-  	init_struct();
 
-	while(1)
+/* This function returns the trust level */
+TTrustStatus trust_check_level(void)
+{
+	int i = 0;
+	for( i = 1; i <= MAX_OBSTACLE ; i++)
 	{
-		ret = fgets (saisie, sizeof saisie, stdin);
-		if(ret != NULL)
+		/* If at least one obstacle is under the trust threashold, we are not confident about its position */
+		DEBUG_TRUST("opponent[%d].trust == %d\n",i,opponent[i].trust);
+		if(opponent[i].trust < TRUST_THRESHOLD)
 		{
-			id = strtol (saisie, NULL, 10);
+ 			return TRUST_TOO_BAD;
 		}
-		ret = fgets (saisie, sizeof saisie, stdin);
-		if(ret != NULL)
-		{
-			angle = strtod (saisie, NULL);
-		}
-		ret = fgets (saisie, sizeof saisie, stdin);
-		if(ret != NULL)
-		{
-			angle_id = strtod (saisie, NULL);
-		}
-		
-  		update_position(id,angle_id,angle);
-		 
-		/* Return position to the simulator */
-		for(i=1;i<=MAX_OBSTACLE;i++)
-		{
-			printf("%d\n",(int)opponent[i].x);
-			printf("%d\n",(int)opponent[i].y);
-			printf("%d\n",(int)opponent[i].trust);
-		}
-		fflush(stdout);
 	}
-	return 0;
+	return TRUST_LEVEL_OK;
+}
+
+
+/* This function increases the trust level for a specifical obstacle */
+TTrustStatus trust_increase(int number)
+{
+	if(opponent[number].trust < TRUST_MAX)
+	{
+		opponent[number].trust++;
+	}
+	return TRUST_LEVEL_OK;
+}
+
+/* This function decreases the trust level for all obstacles */
+TTrustStatus trust_decrease(void)
+{
+	int i = 0;
+	for( i = 1; i <= MAX_OBSTACLE ; i++)
+	{
+		if(opponent[i].trust > TRUST_MIN)
+		{
+ 			opponent[i].trust--;
+		}
+	}
+	return TRUST_LEVEL_OK;
 }
 

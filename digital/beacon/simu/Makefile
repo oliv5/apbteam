@@ -1,8 +1,7 @@
 BASE = ../../avr
 HOST_PROGS = beacon
-beacon_SOURCES = beacon.c position.c
+beacon_SOURCES = beacon.c position.c formula.c recovery.c update.c trust.c
 MODULES = math/fixed utils
-CONFIGFILE = avrconfig.h
 # atmega8, atmega8535, atmega128...
 AVR_MCU = atmega128
 # -O2 : speed

@@ -1,7 +1,7 @@
-/* beacon.c */
-/* Beacon Simulator Interface. {{{
+/* update.c */
+/* Beacon udapte position mode. {{{
  *
- * Copyright (C) 2011 Florent Duchon
+ * Copyright (C) 2012 Florent Duchon
  *
  * APBTeam:
  *        Web: http://apbteam.org/
@@ -23,54 +23,41 @@
  *
  * }}} */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
 #include "position.h"
+#include "trust.h"
+#include "update.h"
+#include "debug.h"
 
 /* Globals Declaration */
 extern opponent_s opponent[MAX_OBSTACLE];
 
-int main (int argc, char **argv)
+/* This function checks is the given coord is a potential obstacle and updates the structure in consequence */
+TUpdateStatus update(coord_s * point)
 {
-	char saisie[30];
-	char ret = 0;
-	int id = 0;
-	float angle = 0;
-	int angle_id = 0;
-	int i = 0;
-	/* Init global structures */
-  	init_struct();
-
-	while(1)
+	int j = 0;
+	int dx = 0;
+	int dy = 0;
+	
+	/* Find if it's near a previous obstacle */
+	DEBUG_UPDATE("Check if ( %.4d ; %.4d ) exists\n",point->x,point->y); 
+	
+	for( j = 1; j <= MAX_OBSTACLE ; j++)
 	{
-		ret = fgets (saisie, sizeof saisie, stdin);
-		if(ret != NULL)
+		dx = opponent[j].x - point->x;
+		dy = opponent[j].y - point->y;
+		if (dx * dx + dy * dy < OBSTACLE_RADIUS * OBSTACLE_RADIUS)
 		{
-			id = strtol (saisie, NULL, 10);
+			DEBUG_UPDATE("Opponent found (%.4d ; %.4d)\n",opponent[j].x,opponent[j].y);
+			opponent[j].x = point->x;
+			opponent[j].y = point->y;
+			trust_increase(j);
+			return UPDATE_OBSTACLE_FOUND;
 		}
-		ret = fgets (saisie, sizeof saisie, stdin);
-		if(ret != NULL)
-		{
-			angle = strtod (saisie, NULL);
-		}
-		ret = fgets (saisie, sizeof saisie, stdin);
-		if(ret != NULL)
-		{
-			angle_id = strtod (saisie, NULL);
-		}
-		
-  		update_position(id,angle_id,angle);
-		 
-		/* Return position to the simulator */
-		for(i=1;i<=MAX_OBSTACLE;i++)
-		{
-			printf("%d\n",(int)opponent[i].x);
-			printf("%d\n",(int)opponent[i].y);
-			printf("%d\n",(int)opponent[i].trust);
-		}
-		fflush(stdout);
 	}
-	return 0;
+	
+	/* No obstacle found */
+	DEBUG_UPDATE("Opponent not found\n");
+	return UPDATE_OBSTACLE_NOT_FOUND;
 }
+
 

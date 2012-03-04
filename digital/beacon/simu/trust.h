@@ -1,5 +1,5 @@
-/* position.h */
-/* Beacon triangulation algorithms. {{{
+/* trust.h */
+/* Beacon Trust control {{{
  *
  * Copyright (C) 2011 Florent Duchon
  *
@@ -23,54 +23,28 @@
  *
  * }}} */
 
-#ifndef _POSITION_H
-#define _POSITION_H
+#ifndef _TRUST_H
+#define _TRUST_H
 
-#define MAX_OBSTACLE 		2
-#define MAX_BEACON			3
-#define MAX_TEMP_POSITION	MAX_OBSTACLE * 2
-#define OBSTACLE_RADIUS		100
-#define IGNORE_ANGLE			1000
+#define TRUST_MIN			0
+#define TRUST_THRESHOLD		30
+#define TRUST_MAX			100
 
 /* Status returns */
-typedef enum{
-	POSITION_NO_ERROR,
-	POSITION_IGNORE_ANGLE
-} TPositionStatus;
-
-/* Structures definition */
-
-/* Beacon Structure */
-typedef struct
+typedef enum
 {
-	int angleNumber;					
-	float angle[MAX_OBSTACLE+1];
-}beacon_s;
+	TRUST_LEVEL_OK,
+	TRUST_TOO_BAD
+} TTrustStatus;
 
-/* Obstacle structure */
-typedef struct
-{
-	int x;
-	int y;
-	int trust
-}opponent_s;
+/* This function returns the trust level */
+TTrustStatus trust_check_level(void);
 
-/* Coordinates structure */
-typedef struct
-{
-	int x;
-	int y;
-}coord_s;
+/* This function increases the trust level for a specifical obstacle */
+TTrustStatus trust_increase(int number);
 
-/* Recovery Structure */
-typedef struct
-{
-	int x;
-	int y;
-	int occurence;
-}recovery_s;
+/* This function decreases the trust level for all obstacles */
+TTrustStatus trust_decrease(void);
 
-/* This function is used to initialize all needed structures */
-void init_struct(void);
 
 #endif
