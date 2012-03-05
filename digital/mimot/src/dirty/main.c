@@ -31,13 +31,10 @@
 #include "modules/math/fixed/fixed.h"
 #include "io.h"
 
-#include "state.h"
-
-#include "counter.h"
-#include "pwm.h"
-#include "pos.h"
-#include "speed.h"
+#include "cs.h"
 #include "aux.h"
+
+#include "seq.h"
 
 #include "twi_proto.h"
 #include "eeprom.h"
@@ -88,12 +85,10 @@ main (int argc, char **argv)
     PORTB = 0xe0;
     PORTC = 0xfc;
     PORTD = 0x80;
-    pwm_init ();
     timer_init ();
-    counter_init ();
     uart0_init ();
     twi_proto_init ();
-    speed_init ();
+    cs_init ();
     aux_init ();
     eeprom_read_params ();
     proto_send0 ('z');
@@ -107,37 +102,42 @@ main (int argc, char **argv)
 static void
 main_loop (void)
 {
-    main_timer[5] = timer_read ();
-    timer_wait ();
-    /* Counter update. */
-    counter_update ();
-    main_timer[0] = timer_read ();
-    /* Position control. */
-    pos_update ();
-    main_timer[1] = timer_read ();
-    /* Pwm setup. */
-    pwm_update ();
-    main_timer[2] = timer_read ();
+    main_timer[3] = timer_read ();
     /* Compute absolute position. */
     aux_pos_update ();
+    main_timer[4] = timer_read ();
     /* Compute trajectory. */
     aux_traj_update ();
-    /* Speed control. */
-    speed_update ();
-    main_timer[3] = timer_read ();
+    /* Prepare control system. */
+    cs_update_prepare ();
+    main_timer[5] = timer_read ();
+    /* Wait for next cycle. */
+    timer_wait ();
+    /* Encoder update. */
+    encoder_update ();
+    main_timer[0] = timer_read ();
+    /* Control system update. */
+    cs_update ();
+    main_timer[1] = timer_read ();
+    /* Pwm setup. */
+    output_update ();
+    main_timer[2] = timer_read ();
+    /* Sequences. */
+    seq_update (&seq_aux[0], &cs_aux[0].state);
+    seq_update (&seq_aux[1], &cs_aux[1].state);
     /* Stats. */
     if (main_sequence_ack
-	&& (state_aux[0].sequence_ack != state_aux[0].sequence_finish
-	    || state_aux[1].sequence_ack != state_aux[1].sequence_finish)
+	&& (seq_aux[0].ack != seq_aux[0].finish
+	    || seq_aux[1].ack != seq_aux[1].finish)
 	&& !--main_sequence_ack_cpt)
       {
-	proto_send2b ('A', state_aux[0].sequence_finish,
-		      state_aux[1].sequence_finish);
+	//XXX here
+	proto_send2b ('A', seq_aux[0].finish, seq_aux[1].finish);
 	main_sequence_ack_cpt = main_sequence_ack;
       }
     if (main_stat_counter && !--main_stat_counter_cpt)
       {
-	proto_send2w ('C', counter_aux[0], counter_aux[1]);
+	proto_send2w ('C', encoder_aux[0].cur, encoder_aux[1].cur);
 	main_stat_counter_cpt = main_stat_counter;
       }
     if (main_stat_aux_pos && !--main_stat_aux_pos_cpt)
@@ -147,18 +147,19 @@ main_loop (void)
       }
     if (main_stat_speed && !--main_stat_speed_cpt)
       {
-	proto_send2b ('S', speed_aux[0].cur >> 8, speed_aux[1].cur >> 8);
+	proto_send2b ('S', cs_aux[0].speed.cur >> 8,
+		      cs_aux[1].speed.cur >> 8);
 	main_stat_speed_cpt = main_stat_speed;
       }
     if (main_stat_pos && !--main_stat_pos_cpt)
       {
-	proto_send4w ('P', pos_aux[0].e_old, pos_aux[0].i,
-		      pos_aux[1].e_old, pos_aux[1].i);
+	proto_send4w ('P', cs_aux[0].pos.last_error, cs_aux[0].pos.i,
+		      cs_aux[1].pos.last_error, cs_aux[1].pos.i);
 	main_stat_pos_cpt = main_stat_pos;
       }
     if (main_stat_pwm && !--main_stat_pwm_cpt)
       {
-	proto_send2w ('W', pwm_aux[0].cur, pwm_aux[1].cur);
+	proto_send2w ('W', output_aux[0].cur, output_aux[1].cur);
 	main_stat_pwm_cpt = main_stat_pwm;
       }
     if (main_stat_timer && !--main_stat_timer_cpt)
@@ -176,7 +177,6 @@ main_loop (void)
     while (uart0_poll ())
 	proto_accept (uart0_getc ());
     twi_proto_update ();
-    main_timer[4] = timer_read ();
 }
 
 /** Handle incoming messages. */
@@ -185,17 +185,20 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 {
     /* Many commands use the first argument as a selector. */
     struct aux_t *auxp = 0;
-    struct pwm_t *pwm = 0;
-    struct pos_t *pos = 0;
-    struct speed_t *speed = 0;
-    struct state_t *state = 0;
+    pos_control_t *pos = 0;
+    speed_control_t *speed = 0;
+    control_state_t *state = 0;
+    blocking_detection_t *bd = 0;
+    output_t *output = 0;
+    seq_t *seq = 0;
     if (args[0] < AC_ASSERV_AUX_NB)
       {
 	auxp = &aux[args[0]];
-	pwm = &pwm_aux[args[0]];
-	pos = &pos_aux[args[0]];
-	speed = &speed_aux[args[0]];
-	state = &state_aux[args[0]];
+	pos = &cs_aux[args[0]].pos;
+	speed = &cs_aux[args[0]].speed;
+	state = &cs_aux[args[0]].state;
+	output = &output_aux[args[0]];
+	seq = &seq_aux[args[0]];
       }
     /* Decode command. */
 #define c(cmd, size) (cmd << 8 | size)
@@ -208,49 +211,41 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
     /* Commands. */
       case c ('w', 0):
 	/* Set zero auxiliary pwm. */
-	pos_reset (&pos_aux[0]);
-	pos_reset (&pos_aux[1]);
-	state_aux[0].mode = MODE_PWM;
-	state_aux[1].mode = MODE_PWM;
-	pwm_set (&pwm_aux[0], 0);
-	pwm_set (&pwm_aux[1], 0);
+	output_set (&output_aux[0], 0);
+	output_set (&output_aux[1], 0);
+	control_state_set_mode (&cs_aux[0].state, CS_MODE_NONE, 0);
+	control_state_set_mode (&cs_aux[1].state, CS_MODE_NONE, 0);
 	break;
       case c ('w', 3):
 	/* Set auxiliary pwm.
 	 * - b: aux index.
 	 * - w: pwm. */
 	if (!auxp) { proto_send0 ('?'); return; }
-	pos_reset (pos);
-	state->mode = MODE_PWM;
-	pwm_set (pwm, v8_to_v16 (args[1], args[2]));
+	output_set (output, v8_to_v16 (args[1], args[2]));
+	control_state_set_mode (state, CS_MODE_NONE, 0);
 	break;
       case c ('c', 3):
 	/* Add to auxiliary position consign.
 	 * - b: aux index.
 	 * - w: consign offset. */
 	if (!auxp) { proto_send0 ('?'); return; }
-	state->mode = MODE_POS;
-	state->variant = 0;
 	pos->cons += v8_to_v16 (args[1], args[2]);
+	control_state_set_mode (state, CS_MODE_POS_CONTROL, 0);
 	break;
       case c ('s', 1):
 	/* Set auxiliary zero speed.
 	 * - b: aux index. */
 	if (!auxp) { proto_send0 ('?'); return; }
-	state->mode = MODE_SPEED;
-	state->variant = 0;
-	speed->use_pos = 0;
-	speed->cons = 0;
+	speed_control_set_speed (speed, 0);
+	control_state_set_mode (state, CS_MODE_SPEED_CONTROL, 0);
 	break;
       case c ('s', 2):
 	/* Set auxiliary speed.
 	 * - b: aux index.
 	 * - b: speed. */
 	if (!auxp) { proto_send0 ('?'); return; }
-	state->mode = MODE_SPEED;
-	state->variant = 0;
-	speed->use_pos = 0;
-	speed->cons = args[1] << 8;
+	speed_control_set_speed (speed, args[1]);
+	control_state_set_mode (state, CS_MODE_SPEED_CONTROL, 0);
 	break;
       case c ('s', 6):
 	/* Set auxiliary speed controlled position consign.
@@ -258,12 +253,12 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	 * - d: consign offset.
 	 * - b: sequence number. */
 	if (!auxp) { proto_send0 ('?'); return; }
-	if (args[5] == state->sequence)
+	if (!seq_start (seq, args[5]))
 	    break;
-	speed->use_pos = 1;
-	speed->pos_cons = pos->cons;
-	speed->pos_cons += v8_to_v32 (args[1], args[2], args[3], args[4]);
-	state_start (state, MODE_SPEED, args[5]);
+	speed_control_pos_offset (speed, v8_to_v32 (args[1], args[2], args[3],
+						    args[4]));
+	aux_traj_speed_start (auxp);
+	break;
 	break;
       case c ('y', 4):
 	/* Auxiliary go to position.
@@ -271,9 +266,9 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	 * - w: pos, i16.
 	 * - b: sequence number. */
 	if (!auxp) { proto_send0 ('?'); return; }
-	if (args[3] == state->sequence)
+	if (!seq_start (seq, args[3]))
 	    break;
-	aux_traj_goto_start (auxp, v8_to_v16 (args[1], args[2]), args[3]);
+	aux_traj_goto_start (auxp, v8_to_v16 (args[1], args[2]));
 	break;
       case c ('y', 5):
 	/* Auxiliary clamp.
@@ -282,10 +277,9 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	 * - w: clamping PWM.
 	 * - b: sequence number. */
 	if (!auxp) { proto_send0 ('?'); return; }
-	if (args[4] == state->sequence)
+	if (!seq_start (seq, args[4]))
 	    break;
-	aux_traj_clamp_start (auxp, args[1], v8_to_v16 (args[2], args[3]),
-			      args[4]);
+	aux_traj_clamp_start (auxp, args[1], v8_to_v16 (args[2], args[3]));
 	break;
       case c ('y', 6):
 	/* Auxiliary find zero.
@@ -295,21 +289,21 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	 * - w: reset position.
 	 * - b: sequence number. */
 	if (!auxp) { proto_send0 ('?'); return; }
-	if (args[5] == state->sequence)
+	if (!seq_start (seq, args[5]))
 	    break;
 	if (args[2])
 	    aux_traj_find_zero_start (auxp, args[1],
-				      v8_to_v16 (args[3], args[4]), args[5]);
+				      v8_to_v16 (args[3], args[4]));
 	else
 	    aux_traj_find_limit_start (auxp, args[1],
-				       v8_to_v16 (args[3], args[4]), args[5]);
+				       v8_to_v16 (args[3], args[4]));
 	break;
       case c ('a', 2):
 	/* Set all acknoledge.
 	 * - b: first auxiliary ack sequence number.
 	 * - b: second auxiliary ack sequence number. */
-	state_acknowledge (&state_aux[0], args[0]);
-	state_acknowledge (&state_aux[1], args[1]);
+	seq_acknowledge (&seq_aux[0], args[0]);
+	seq_acknowledge (&seq_aux[1], args[1]);
 	break;
     /* Stats.
      * - b: interval between stats. */
@@ -354,12 +348,14 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	      {
 	      case 0:
 	      case 1:
-		pos = &pos_aux[args[1]];
-		speed = &speed_aux[args[1]];
+		pos = &cs_aux[args[1]].pos;
+		speed = &cs_aux[args[1]].speed;
+		bd = &cs_aux[args[1]].blocking_detection;
 		break;
 	      default:
 		pos = 0;
 		speed = 0;
+		bd = 0;
 		break;
 	      }
 	    switch (c (args[0], size))
@@ -407,24 +403,31 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		 * - w: error limit.
 		 * - w: speed limit.
 		 * - b: counter limit. */
-		if (!pos) { proto_send0 ('?'); return; }
-		pos->blocked_error_limit = v8_to_v16 (args[2], args[3]);
-		pos->blocked_speed_limit = v8_to_v16 (args[4], args[5]);
-		pos->blocked_counter_limit = args[6];
+		if (!bd) { proto_send0 ('?'); return; }
+		bd->error_limit = v8_to_v16 (args[2], args[3]);
+		bd->speed_limit = v8_to_v16 (args[4], args[5]);
+		bd->counter_limit = args[6];
 		break;
 	      case c ('E', 3):
-		pos_e_sat = v8_to_v16 (args[1], args[2]);
+		cs_aux[0].pos.e_sat =
+		    cs_aux[1].pos.e_sat =
+		    v8_to_v16 (args[1], args[2]);
 		break;
 	      case c ('I', 3):
-		pos_i_sat = v8_to_v16 (args[1], args[2]);
+		cs_aux[0].pos.i_sat =
+		    cs_aux[1].pos.i_sat =
+		    v8_to_v16 (args[1], args[2]);
 		break;
 	      case c ('D', 3):
-		pos_d_sat = v8_to_v16 (args[1], args[2]);
+		cs_aux[0].pos.d_sat =
+		    cs_aux[1].pos.d_sat =
+		    v8_to_v16 (args[1], args[2]);
 		break;
 	      case c ('w', 2):
 		/* Set PWM direction.
-		 * - b: bits: 0000[aux1][aux0][right][left]. */
-		pwm_set_reverse (args[1]);
+		 * - b: bits: 000000[aux1][aux0]. */
+		output_set_reverse (&output_aux[0], (args[1] & 1) ? 1 : 0);
+		output_set_reverse (&output_aux[1], (args[1] & 2) ? 1 : 0);
 		break;
 	      case c ('E', 2):
 		/* Write to eeprom.
@@ -437,22 +440,23 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	      case c ('P', 1):
 		/* Print current settings. */
 		proto_send1b ('E', EEPROM_KEY);
-		proto_send2w ('a', speed_aux[0].acc, speed_aux[1].acc);
-		proto_send2b ('s', speed_aux[0].max, speed_aux[0].slow);
-		proto_send2b ('s', speed_aux[1].max, speed_aux[1].slow);
-		proto_send3w ('b', pos_aux[0].blocked_error_limit,
-			      pos_aux[0].blocked_speed_limit,
-			      pos_aux[0].blocked_counter_limit);
-		proto_send3w ('b', pos_aux[1].blocked_error_limit,
-			      pos_aux[1].blocked_speed_limit,
-			      pos_aux[1].blocked_counter_limit);
-		proto_send2w ('p', pos_aux[0].kp, pos_aux[1].kp);
-		proto_send2w ('i', pos_aux[0].ki, pos_aux[1].ki);
-		proto_send2w ('d', pos_aux[0].kd, pos_aux[1].kd);
-		proto_send1w ('E', pos_e_sat);
-		proto_send1w ('I', pos_i_sat);
-		proto_send1w ('D', pos_d_sat);
-		proto_send1b ('w', pwm_reverse);
+		proto_send1b ('w', (output_aux[0].reverse ? 1 : 0)
+			      | (output_aux[1].reverse ? 2 : 0));
+		break;
+	      case c ('P', 2):
+		/* Print current settings for selected control.
+		 * - b: index. */
+		proto_send1b ('E', EEPROM_KEY);
+		proto_send1w ('a', speed->acc);
+		proto_send2b ('s', speed->max, speed->slow);
+		proto_send3w ('b', bd->error_limit, bd->speed_limit,
+			      bd->counter_limit);
+		proto_send1w ('p', pos->kp);
+		proto_send1w ('i', pos->ki);
+		proto_send1w ('d', pos->kd);
+		proto_send1w ('E', pos->e_sat);
+		proto_send1w ('I', pos->i_sat);
+		proto_send1w ('D', pos->d_sat);
 		break;
 	      default:
 		proto_send0 ('?');

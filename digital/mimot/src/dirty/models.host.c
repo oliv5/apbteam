@@ -25,73 +25,45 @@
 #define _GNU_SOURCE 1 /* Need ISO C99 features as well. */
 #include "common.h"
 
-#include "motor_model.host.h"
 #include "models.host.h"
 #include "simu.host.h"
 
 #include <math.h>
 #include <string.h>
 
-/* Marcel clamp, with a Faulhaber 2342 and 23/1 3.71:1 gearbox model. */
-static const struct motor_def_t marcel_clamp_f2342_model =
-{
-    /* Motor characteristics. */
-    366 * (2*M_PI) / 60,/* Speed constant ((rad/s)/V). */
-    26.10 / 1000,	/* Torque constant (N.m/A). */
-    0,			/* Bearing friction (N.m/(rad/s)). */
-    7.10,		/* Terminal resistance (Ohm). */
-    0.265 / 1000,	/* Terminal inductance (H). */
-    24.0,		/* Maximum voltage (V). */
-    /* Gearbox characteristics. */
-    3.71,		/* Gearbox ratio. */
-    0.88,		/* Gearbox efficiency. */
-    /* Load characteristics. */
-    0.100 * 0.005 * 0.005,/* Load (kg.m^2). */
-    /* This is a pifometric estimation. */
-    /* Hardware limits. */
-    -INFINITY, +INFINITY,
-};
-
-/* Robospierre rotation motor, AMAX32GHP with 1:16 gearbox model. */
-static const struct motor_def_t robospierre_rotation_amax32ghp_model =
-{
-    /* Motor characteristics. */
-    269 * (2*M_PI) / 60,/* Speed constant ((rad/s)/V). */
-    25.44 / 1000,	/* Torque constant (N.m/A). */
-    0,			/* Bearing friction (N.m/(rad/s)). */
-    3.99,		/* Terminal resistance (Ohm). */
-    0.24 / 1000,	/* Terminal inductance (H). */
-    24.0,		/* Maximum voltage (V). */
-    /* Gearbox characteristics. */
-    16,			/* Gearbox ratio. */
-    0.75,		/* Gearbox efficiency. */
-    /* Load characteristics. */
-    0.200 * 0.010 * 0.010, /* Load (kg.m^2). */
-    /* This is a pifometric estimation. */
-    /* Hardware limits. */
-    -INFINITY, +INFINITY,
-};
-
 /* Marcel, APBTeam 2010. */
 static const struct robot_t marcel_robot =
 {
     /** Auxiliary motors, NULL if not present. */
-    { &marcel_clamp_f2342_model, &marcel_clamp_f2342_model },
+    { &motor_model_def_faulhaber_2342_x3_71,
+      &motor_model_def_faulhaber_2342_x3_71 },
+    /** Motors voltage (V). */
+    24.0,
     /** Number of steps for each auxiliary motor encoder. */
     { 256, 256 },
+    /** Load for auxiliary motors (kg.m^2). */
+    { 0.100 * 0.005 * 0.005, 0.100 * 0.005 * 0.005 },
     /** Sensor update function. */
     simu_sensor_update_marcel,
+    /** Initialisation function. */
+    NULL,
 };
 
 /* Robospierre, APBTeam 2011. */
 static const struct robot_t robospierre_robot =
 {
     /** Auxiliary motors, NULL if not present. */
-    { &marcel_clamp_f2342_model, &robospierre_rotation_amax32ghp_model },
+    { &motor_model_def_faulhaber_2342_x3_71, &motor_model_def_amax32ghp_x16 },
+    /** Motors voltage (V). */
+    24.0,
     /** Number of steps for each auxiliary motor encoder. */
     { 256, 250 },
+    /** Load for auxiliary motors (kg.m^2). */
+    { 0.100 * 0.005 * 0.005, 0.200 * 0.010 * 0.010 },
     /** Sensor update function. */
     simu_sensor_update_robospierre,
+    /** Initialisation function. */
+    NULL,
 };
 
 /* Table of models. */
@@ -120,7 +92,7 @@ models_get (const char *name)
 
 /** Initialise simulation models. */
 void
-models_init (const struct robot_t *robot, struct motor_t aux_motor[])
+models_init (const struct robot_t *robot, motor_model_t aux_motor[])
 {
     int i;
     if (aux_motor)
@@ -130,10 +102,13 @@ models_init (const struct robot_t *robot, struct motor_t aux_motor[])
 	    if (robot->aux_motor[i])
 	      {
 		aux_motor[i].m = *robot->aux_motor[i];
+		aux_motor[i].m.J = robot->aux_load[i];
 		aux_motor[i].h = ECHANT_PERIOD;
 		aux_motor[i].d = 1000;
 	      }
 	  }
       }
+    if (robot->init)
+	robot->init (robot, aux_motor);
 }
 

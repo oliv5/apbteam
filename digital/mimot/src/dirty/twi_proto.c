@@ -31,11 +31,6 @@
 #include "modules/twi/twi.h"
 #include "io.h"
 
-#include "state.h"
-
-#include "pwm.h"
-#include "pos.h"
-#include "speed.h"
 #include "aux.h"
 
 #ifdef HOST
@@ -76,10 +71,10 @@ twi_proto_update (void)
     u8 status_with_crc[8];
     u8 *status = &status_with_crc[1];
     status[0] = 0
-	| (state_aux[1].blocked << 3)
-	| (state_aux[1].finished << 2)
-	| (state_aux[0].blocked << 1)
-	| (state_aux[0].finished << 0);
+	| (control_state_is_blocked (&cs_aux[1].state) ? (1 << 3) : 0)
+	| (control_state_is_finished (&cs_aux[1].state) ? (1 << 2) : 0)
+	| (control_state_is_blocked (&cs_aux[0].state) ? (1 << 1) : 0)
+	| (control_state_is_finished (&cs_aux[0].state) ? (1 << 0) : 0);
     status[1] = PINC;
     status[2] = twi_proto.seq;
     status[3] = v16_to_v8 (aux[0].pos, 1);
@@ -119,15 +114,15 @@ twi_proto_callback (u8 *buf, u8 size)
 	/* Move the aux0.
 	 * - w: new position.
 	 * - b: speed. */
-	speed_aux[0].max = buf[4];
-	aux_traj_goto_start (&aux[0], v8_to_v16 (buf[2], buf[3]), 0);
+	cs_aux[0].speed.max = buf[4];
+	aux_traj_goto_start (&aux[0], v8_to_v16 (buf[2], buf[3]));
 	break;
       case c ('c', 3):
 	/* Move the aux1.
 	 * - w: new position.
 	 * - b: speed. */
-	speed_aux[1].max = buf[4];
-	aux_traj_goto_start (&aux[1], v8_to_v16 (buf[2], buf[3]), 0);
+	cs_aux[1].speed.max = buf[4];
+	aux_traj_goto_start (&aux[1], v8_to_v16 (buf[2], buf[3]));
 	break;
       case c ('B', 5):
 	/* Find the zero position.
@@ -139,10 +134,10 @@ twi_proto_callback (u8 *buf, u8 size)
 	  {
 	    if (buf[4])
 		aux_traj_find_zero_start (&aux[buf[2]], buf[3],
-					  v8_to_v16 (buf[5], buf[6]), 0);
+					  v8_to_v16 (buf[5], buf[6]));
 	    else
 		aux_traj_find_limit_start (&aux[buf[2]], buf[3],
-					   v8_to_v16 (buf[5], buf[6]), 0);
+					   v8_to_v16 (buf[5], buf[6]));
 	  }
 	else
 	    buf[0] = 0;
@@ -154,7 +149,7 @@ twi_proto_callback (u8 *buf, u8 size)
 	 * - w: claming PWM. */
 	if (buf[2] < AC_ASSERV_AUX_NB)
 	     aux_traj_clamp_start (&aux[buf[2]], buf[3],
-				   v8_to_v16 (buf[4], buf[5]), 0);
+				   v8_to_v16 (buf[4], buf[5]));
 	else
 	    buf[0] = 0;
 	break;
@@ -163,9 +158,8 @@ twi_proto_callback (u8 *buf, u8 size)
 	 * - b: aux index. */
 	if (buf[2] < AC_ASSERV_AUX_NB)
 	  {
-	    pos_reset (&pos_aux[buf[2]]);
-	    state_aux[buf[2]].mode = MODE_PWM;
-	    pwm_set (&pwm_aux[buf[2]], 0);
+	    output_set (&output_aux[buf[2]], 0);
+	    control_state_set_mode (&cs_aux[buf[2]].state, CS_MODE_NONE, 0);
 	  }
 	else
 	    buf[0] = 0;

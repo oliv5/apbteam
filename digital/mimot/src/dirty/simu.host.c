@@ -38,38 +38,24 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "pwm.h"
+#include "cs.h"
 #include "aux.h"
 
 #include "contacts.h"
 
-#include "motor_model.host.h"
 #include "models.host.h"
 
 /** Simulate some AVR regs. */
 uint8_t PORTB, PORTC, PORTD, PINC;
 
-/** Overall counter values. */
-uint16_t counter_aux[AC_ASSERV_AUX_NB];
-/** Counter differences since last update.
- * Maximum of 9 significant bits, sign included. */
-int16_t counter_aux_diff[AC_ASSERV_AUX_NB];
-
-/** PWM control states. */
-struct pwm_t pwm_aux[AC_ASSERV_AUX_NB] = {
-    PWM_INIT_FOR (pwm_aux0), PWM_INIT_FOR (pwm_aux1)
-};
-/** PWM reverse directions. */
-uint8_t pwm_reverse;
-
 /* Robot model. */
 const struct robot_t *simu_robot;
 
 /** Motor models. */
-struct motor_t simu_aux_model[AC_ASSERV_AUX_NB];
+motor_model_t simu_aux_model[AC_ASSERV_AUX_NB];
 
-/** Full counter values. */
-uint32_t simu_counter_aux[AC_ASSERV_AUX_NB];
+/** Full encoder values. */
+uint32_t simu_encoder_aux[AC_ASSERV_AUX_NB];
 
 /** Use mex. */
 int simu_mex;
@@ -169,8 +155,8 @@ simu_step (void)
     double old_aux_th[AC_ASSERV_AUX_NB];
     /* Convert pwm value into voltage. */
     for (i = 0; i < AC_ASSERV_AUX_NB; i++)
-	simu_aux_model[i].u = simu_aux_model[i].m.u_max
-	    * ((double) pwm_aux[i].cur / (PWM_MAX + 1));
+	simu_aux_model[i].u = simu_robot->u_max
+	    * ((double) output_aux[i].cur / (OUTPUT_MAX + 1));
     /* Make one step. */
     for (i = 0; i < AC_ASSERV_AUX_NB; i++)
       {
@@ -178,22 +164,22 @@ simu_step (void)
 	if (simu_robot->aux_motor[i])
 	    motor_model_step (&simu_aux_model[i]);
       }
-    /* Update auxiliary counter. */
+    /* Update auxiliary encoder. */
     for (i = 0; i < AC_ASSERV_AUX_NB; i++)
       {
 	if (simu_robot->aux_motor[i])
 	  {
-	    uint32_t counter_aux_new = simu_aux_model[i].th / (2*M_PI)
+	    uint32_t encoder_aux_new = simu_aux_model[i].th / (2*M_PI)
 		* simu_robot->aux_encoder_steps[i];
-	    counter_aux_diff[i] = counter_aux_new - simu_counter_aux[i];
-	    counter_aux[i] += counter_aux_diff[i];
-	    simu_counter_aux[i] = counter_aux_new;
+	    encoder_aux[i].diff = encoder_aux_new - simu_encoder_aux[i];
+	    encoder_aux[i].cur += encoder_aux[i].diff;
+	    simu_encoder_aux[i] = encoder_aux_new;
 	  }
 	else
 	  {
-	    counter_aux_diff[i] = 0;
-	    counter_aux[i] = 0;
-	    simu_counter_aux[i] = 0;
+	    encoder_aux[i].diff = 0;
+	    encoder_aux[i].cur = 0;
+	    simu_encoder_aux[i] = 0;
 	  }
       }
     /* Update sensors. */
@@ -264,30 +250,6 @@ timer_read (void)
     return 0;
 }
 
-/** Initialize the counters. */
-void
-counter_init (void)
-{
-}
-
-/** Update overall counter values and compute diffs. */
-void
-counter_update (void)
-{
-}
-
-/** Initialise PWM generator. */
-void
-pwm_init (void)
-{
-}
-
-/** Update the hardware PWM values. */
-void
-pwm_update (void)
-{
-}
-
 void
 eeprom_read_params (void)
 {
@@ -301,11 +263,5 @@ eeprom_write_params (void)
 void
 eeprom_clear_params (void)
 {
-}
-
-void
-pwm_set_reverse (uint8_t reverse)
-{
-    pwm_reverse = reverse;
 }
 

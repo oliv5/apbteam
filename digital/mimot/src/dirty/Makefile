@@ -1,10 +1,13 @@
 BASE = ../../../avr
 PROGS = dirty
-dirty_SOURCES = main.c timer.avr.c counter_ext.avr.c pwm.avr.c \
-		pwm_ocr.avr.c pos.c speed.c aux.c \
-		twi_proto.c eeprom.avr.c state.c \
-		simu.host.c motor_model.host.c models.host.c
-MODULES = proto uart utils math/fixed twi
+dirty_SOURCES = main.c timer.avr.c \
+		aux.c cs.c \
+		twi_proto.c eeprom.avr.c seq.c \
+		simu.host.c models.host.c
+MODULES = proto uart utils math/fixed twi \
+	  motor/encoder motor/encoder/ext motor/output motor/output/pwm_ocr \
+	  motor/control_system motor/speed_control motor/pos_control \
+	  motor/blocking_detection motor/motor_model
 CONFIGFILE = avrconfig.h
 # atmega8, atmega8535, atmega128...
 AVR_MCU = atmega32

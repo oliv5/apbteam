@@ -29,10 +29,7 @@
 
 #include <avr/eeprom.h>
 
-#include "counter.h"
-#include "pwm.h"
-#include "pos.h"
-#include "speed.h"
+#include "cs.h"
 
 #define EEPROM_START 0
 
@@ -49,29 +46,33 @@ eeprom_read_params (void)
     uint16_t *p16;
     if (eeprom_read_byte (p8++) != EEPROM_KEY)
 	return;
-    speed_aux[0].max = eeprom_read_byte (p8++);
-    speed_aux[1].max = eeprom_read_byte (p8++);
-    speed_aux[0].slow = eeprom_read_byte (p8++);
-    speed_aux[1].slow = eeprom_read_byte (p8++);
-    pwm_set_reverse (eeprom_read_byte (p8++));
+    cs_aux[0].speed.max = eeprom_read_byte (p8++);
+    cs_aux[1].speed.max = eeprom_read_byte (p8++);
+    cs_aux[0].speed.slow = eeprom_read_byte (p8++);
+    cs_aux[1].speed.slow = eeprom_read_byte (p8++);
+    output_set_reverse (&output_aux[0], eeprom_read_byte (p8++));
+    output_set_reverse (&output_aux[1], eeprom_read_byte (p8++));
     p16 = (uint16_t *) p8;
-    speed_aux[0].acc = eeprom_read_word (p16++);
-    speed_aux[1].acc = eeprom_read_word (p16++);
-    pos_aux[0].kp = eeprom_read_word (p16++);
-    pos_aux[1].kp = eeprom_read_word (p16++);
-    pos_aux[0].ki = eeprom_read_word (p16++);
-    pos_aux[1].ki = eeprom_read_word (p16++);
-    pos_aux[0].kd = eeprom_read_word (p16++);
-    pos_aux[1].kd = eeprom_read_word (p16++);
-    pos_aux[0].blocked_error_limit = eeprom_read_word (p16++);
-    pos_aux[0].blocked_speed_limit = eeprom_read_word (p16++);
-    pos_aux[0].blocked_counter_limit = eeprom_read_word (p16++);
-    pos_aux[1].blocked_error_limit = eeprom_read_word (p16++);
-    pos_aux[1].blocked_speed_limit = eeprom_read_word (p16++);
-    pos_aux[1].blocked_counter_limit = eeprom_read_word (p16++);
-    pos_e_sat = eeprom_read_word (p16++);
-    pos_i_sat = eeprom_read_word (p16++);
-    pos_d_sat = eeprom_read_word (p16++);
+    cs_aux[0].speed.acc = eeprom_read_word (p16++);
+    cs_aux[1].speed.acc = eeprom_read_word (p16++);
+    cs_aux[0].pos.kp = eeprom_read_word (p16++);
+    cs_aux[1].pos.kp = eeprom_read_word (p16++);
+    cs_aux[0].pos.ki = eeprom_read_word (p16++);
+    cs_aux[1].pos.ki = eeprom_read_word (p16++);
+    cs_aux[0].pos.kd = eeprom_read_word (p16++);
+    cs_aux[1].pos.kd = eeprom_read_word (p16++);
+    cs_aux[0].blocking_detection.error_limit = eeprom_read_word (p16++);
+    cs_aux[0].blocking_detection.speed_limit = eeprom_read_word (p16++);
+    cs_aux[0].blocking_detection.counter_limit = eeprom_read_word (p16++);
+    cs_aux[1].blocking_detection.error_limit = eeprom_read_word (p16++);
+    cs_aux[1].blocking_detection.speed_limit = eeprom_read_word (p16++);
+    cs_aux[1].blocking_detection.counter_limit = eeprom_read_word (p16++);
+    cs_aux[0].pos.e_sat = eeprom_read_word (p16++);
+    cs_aux[0].pos.i_sat = eeprom_read_word (p16++);
+    cs_aux[0].pos.d_sat = eeprom_read_word (p16++);
+    cs_aux[1].pos.e_sat = eeprom_read_word (p16++);
+    cs_aux[1].pos.i_sat = eeprom_read_word (p16++);
+    cs_aux[1].pos.d_sat = eeprom_read_word (p16++);
 }
 
 /* Write parameters to eeprom. */
@@ -81,29 +82,33 @@ eeprom_write_params (void)
     uint8_t *p8 = (uint8_t *) EEPROM_START;
     uint16_t *p16;
     eeprom_write_byte (p8++, EEPROM_KEY);
-    eeprom_write_byte (p8++, speed_aux[0].max);
-    eeprom_write_byte (p8++, speed_aux[1].max);
-    eeprom_write_byte (p8++, speed_aux[0].slow);
-    eeprom_write_byte (p8++, speed_aux[1].slow);
-    eeprom_write_byte (p8++, pwm_reverse);
+    eeprom_write_byte (p8++, cs_aux[0].speed.max);
+    eeprom_write_byte (p8++, cs_aux[1].speed.max);
+    eeprom_write_byte (p8++, cs_aux[0].speed.slow);
+    eeprom_write_byte (p8++, cs_aux[1].speed.slow);
+    eeprom_write_byte (p8++, output_aux[0].reverse);
+    eeprom_write_byte (p8++, output_aux[1].reverse);
     p16 = (uint16_t *) p8;
-    eeprom_write_word (p16++, speed_aux[0].acc);
-    eeprom_write_word (p16++, speed_aux[1].acc);
-    eeprom_write_word (p16++, pos_aux[0].kp);
-    eeprom_write_word (p16++, pos_aux[1].kp);
-    eeprom_write_word (p16++, pos_aux[0].ki);
-    eeprom_write_word (p16++, pos_aux[1].ki);
-    eeprom_write_word (p16++, pos_aux[0].kd);
-    eeprom_write_word (p16++, pos_aux[1].kd);
-    eeprom_write_word (p16++, pos_aux[0].blocked_error_limit);
-    eeprom_write_word (p16++, pos_aux[0].blocked_speed_limit);
-    eeprom_write_word (p16++, pos_aux[0].blocked_counter_limit);
-    eeprom_write_word (p16++, pos_aux[1].blocked_error_limit);
-    eeprom_write_word (p16++, pos_aux[1].blocked_speed_limit);
-    eeprom_write_word (p16++, pos_aux[1].blocked_counter_limit);
-    eeprom_write_word (p16++, pos_e_sat);
-    eeprom_write_word (p16++, pos_i_sat);
-    eeprom_write_word (p16++, pos_d_sat);
+    eeprom_write_word (p16++, cs_aux[0].speed.acc);
+    eeprom_write_word (p16++, cs_aux[1].speed.acc);
+    eeprom_write_word (p16++, cs_aux[0].pos.kp);
+    eeprom_write_word (p16++, cs_aux[1].pos.kp);
+    eeprom_write_word (p16++, cs_aux[0].pos.ki);
+    eeprom_write_word (p16++, cs_aux[1].pos.ki);
+    eeprom_write_word (p16++, cs_aux[0].pos.kd);
+    eeprom_write_word (p16++, cs_aux[1].pos.kd);
+    eeprom_write_word (p16++, cs_aux[0].blocking_detection.error_limit);
+    eeprom_write_word (p16++, cs_aux[0].blocking_detection.speed_limit);
+    eeprom_write_word (p16++, cs_aux[0].blocking_detection.counter_limit);
+    eeprom_write_word (p16++, cs_aux[1].blocking_detection.error_limit);
+    eeprom_write_word (p16++, cs_aux[1].blocking_detection.speed_limit);
+    eeprom_write_word (p16++, cs_aux[1].blocking_detection.counter_limit);
+    eeprom_write_word (p16++, cs_aux[0].pos.e_sat);
+    eeprom_write_word (p16++, cs_aux[0].pos.i_sat);
+    eeprom_write_word (p16++, cs_aux[0].pos.d_sat);
+    eeprom_write_word (p16++, cs_aux[1].pos.e_sat);
+    eeprom_write_word (p16++, cs_aux[1].pos.i_sat);
+    eeprom_write_word (p16++, cs_aux[1].pos.d_sat);
 }
 
 /* Clear eeprom parameters. */

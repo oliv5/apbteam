@@ -1,7 +1,9 @@
-/* pwm.avr.c - Handle all PWM generators. */
+#ifndef cs_h
+#define cs_h
+/* cs.h - Control system definition. */
 /* asserv - Position & speed motor control on AVR. {{{
  *
- * Copyright (C) 2005 Nicolas Schodet
+ * Copyright (C) 2011 Nicolas Schodet
  *
  * APBTeam:
  *        Web: http://apbteam.org/
@@ -11,7 +13,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -22,36 +24,20 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
-#include "common.h"
-#include "pwm.h"
-#include "pwm_ocr.avr.h"
+#include "modules/motor/control_system/control_system.h"
 
-/** PWM control states. */
-struct pwm_t pwm_aux[AC_ASSERV_AUX_NB] = {
-    PWM_INIT_FOR (pwm_aux0), PWM_INIT_FOR (pwm_aux1)
-};
-/** PWM reverse directions. */
-uint8_t pwm_reverse;
+extern encoder_t encoder_aux[AC_ASSERV_AUX_NB];
+extern output_t output_aux[AC_ASSERV_AUX_NB];
 
-/** Initialise PWM generators. */
+extern control_system_single_t cs_aux[AC_ASSERV_AUX_NB];
+
 void
-pwm_init (void)
-{
-    pwm_ocr_init ();
-}
+cs_init (void);
 
-/** Update the hardware PWM values. */
 void
-pwm_update (void)
-{
-    pwm_ocr_update ();
-}
+cs_update_prepare (void);
 
-/** Set which PWM is reversed. */
 void
-pwm_set_reverse (uint8_t reverse)
-{
-    pwm_reverse = reverse;
-    pwm_ocr_set_reverse (reverse);
-}
+cs_update (void);
 
+#endif /* cs_h */

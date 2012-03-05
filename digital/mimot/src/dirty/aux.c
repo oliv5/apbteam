@@ -28,13 +28,6 @@
 #include "modules/utils/utils.h"
 #include "io.h"
 
-#include "state.h"
-
-#include "counter.h"
-#include "pos.h"
-#include "speed.h"
-#include "pwm.h"
-
 #include "contacts.h"
 
 #ifdef HOST
@@ -47,6 +40,10 @@ struct aux_t aux[AC_ASSERV_AUX_NB];
 /** Trajectory modes. */
 enum
 {
+    /* Everything done. */
+    AUX_TRAJ_DONE,
+    /* Detect end of speed controled position control. */
+    AUX_TRAJ_SPEED,
     /* Goto position, with blocking detection. */
     AUX_TRAJ_GOTO,
     /* Goto position, try to unblock. */
@@ -61,23 +58,17 @@ enum
     AUX_TRAJ_FIND_LIMIT,
     /* Wait for mechanical elasticity. */
     AUX_TRAJ_FIND_LIMIT_WAIT,
-    /* Everything done. */
-    AUX_TRAJ_DONE,
 };
 
 /** Initialise motors states. */
 void
 aux_init (void)
 {
-    aux[0].state = &state_aux[0];
-    aux[0].speed = &speed_aux[0];
-    aux[0].pwm = &pwm_aux[0];
+    aux[0].cs = &cs_aux[0];
     aux[0].zero_pin = &IO_PIN (CONTACT_AUX0_ZERO_IO);
     aux[0].zero_bv = IO_BV (CONTACT_AUX0_ZERO_IO);
     aux[0].handle_blocking = 0;
-    aux[1].state = &state_aux[1];
-    aux[1].speed = &speed_aux[1];
-    aux[1].pwm = &pwm_aux[1];
+    aux[1].cs = &cs_aux[1];
     aux[1].zero_pin = &IO_PIN (CONTACT_AUX1_ZERO_IO);
     aux[1].zero_bv = IO_BV (CONTACT_AUX1_ZERO_IO);
     aux[1].handle_blocking = 0;
@@ -90,7 +81,28 @@ aux_pos_update (void)
     uint8_t i;
     /* Easy... */
     for (i = 0; i < AC_ASSERV_AUX_NB; i++)
-	aux[i].pos += counter_aux_diff[i];
+	aux[i].pos += aux[i].cs->encoder->diff;
+}
+
+/** Wait for zero speed mode. */
+void
+aux_traj_speed (struct aux_t *aux)
+{
+    if (aux->cs->speed.use_pos
+	&& aux->cs->speed.pos_cons == aux->cs->pos.cons)
+      {
+	control_state_finished (&aux->cs->state);
+	aux->traj_mode = AUX_TRAJ_DONE;
+      }
+}
+
+/** Start speed mode. */
+void
+aux_traj_speed_start (struct aux_t *aux)
+{
+    /* Speed setup should have been done yet. */
+    control_state_set_mode (&aux->cs->state, CS_MODE_TRAJ_CONTROL, 0);
+    aux->traj_mode = AUX_TRAJ_SPEED;
 }
 
 /** Goto position. */
@@ -100,43 +112,39 @@ aux_traj_goto (struct aux_t *aux)
     switch (aux->traj_mode)
       {
       case AUX_TRAJ_GOTO:
-	if (aux->speed->pos->blocked_counter
-	    > aux->speed->pos->blocked_counter_limit)
+	if (aux->cs->blocking_detection.blocked)
 	  {
 	    aux->traj_mode = AUX_TRAJ_GOTO_UNBLOCK;
-	    aux->speed->pos_cons = aux->speed->pos->cur;
-	    aux->speed->pos_cons -= 250;
+	    speed_control_pos_offset_from_here (&aux->cs->speed, -250);
 	    aux->wait = 225 / 2;
 	  }
-	else if (UTILS_ABS ((int32_t) (aux->speed->pos_cons -
-				       aux->speed->pos->cur)) < 300)
+	else if (UTILS_ABS ((int32_t) (aux->cs->speed.pos_cons
+				       - aux->cs->pos.cur)) < 300)
 	  {
 	    aux->traj_mode = AUX_TRAJ_DONE;
-	    aux->state->variant = 0;
-	    state_finish (aux->state);
+	    control_state_finished (&aux->cs->state);
 	  }
 	break;
       case AUX_TRAJ_GOTO_UNBLOCK:
 	if (!--aux->wait)
 	  {
 	    aux->traj_mode = AUX_TRAJ_GOTO;
-	    aux->speed->pos_cons = aux->goto_pos;
+	    speed_control_pos (&aux->cs->speed, aux->goto_pos);
 	  }
 	break;
       }
 }
 
 void
-aux_traj_goto_start (struct aux_t *aux, uint16_t pos, uint8_t seq)
+aux_traj_goto_start (struct aux_t *aux, uint16_t pos)
 {
     aux->traj_mode = AUX_TRAJ_GOTO;
-    aux->speed->use_pos = 1;
-    aux->speed->pos_cons = aux->speed->pos->cur;
-    aux->speed->pos_cons += (int16_t) (pos - aux->pos);
-    aux->goto_pos = aux->speed->pos_cons;
-    state_start (aux->state, MODE_TRAJ, seq);
-    if (aux->handle_blocking)
-	aux->state->variant = 4;
+    speed_control_pos_offset_from_here (&aux->cs->speed,
+					(int16_t) (pos - aux->pos));
+    aux->goto_pos = aux->cs->speed.pos_cons;
+    control_state_set_mode (&aux->cs->state, CS_MODE_TRAJ_CONTROL,
+			    aux->handle_blocking ? CS_MODE_BLOCKING_DETECTION
+			    : 0);
 }
 
 /** Speed control, then clamp. */
@@ -144,28 +152,23 @@ void
 aux_traj_clamp (struct aux_t *aux)
 {
     /* If blocking, stop control, clamp. */
-    if (aux->speed->pos->blocked_counter
-	> aux->speed->pos->blocked_counter_limit)
+    if (aux->cs->blocking_detection.blocked)
       {
-	state_finish (aux->state);
-	pos_reset (aux->speed->pos);
-	aux->speed->cur = 0;
-	aux->state->mode = MODE_PWM;
-	pwm_set (aux->pwm, aux->clampin_pwm);
+	control_state_set_mode (&aux->cs->state, CS_MODE_NONE, 0);
+	control_state_finished (&aux->cs->state);
+	output_set (aux->cs->output, aux->clampin_pwm);
 	aux->traj_mode = AUX_TRAJ_DONE;
       }
 }
 
 void
-aux_traj_clamp_start (struct aux_t *aux, int8_t speed, int16_t clampin_pwm,
-		      uint8_t seq)
+aux_traj_clamp_start (struct aux_t *aux, int8_t speed, int16_t clampin_pwm)
 {
     aux->traj_mode = AUX_TRAJ_CLAMP;
     aux->clampin_pwm = clampin_pwm;
-    aux->speed->use_pos = 0;
-    aux->speed->cons = speed << 8;
-    state_start (aux->state, MODE_TRAJ, seq);
-    aux->state->variant = 4;
+    speed_control_set_speed (&aux->cs->speed, speed);
+    control_state_set_mode (&aux->cs->state, CS_MODE_TRAJ_CONTROL,
+			    CS_MODE_BLOCKING_DETECTION);
 }
 
 /** Find zero mode. */
@@ -182,9 +185,8 @@ aux_traj_find_zero (struct aux_t *aux)
       case AUX_TRAJ_FIND_ZERO:
 	if (!zero)
 	  {
-	    aux->speed->cons = 0;
-	    aux->speed->cur = 0;
-	    state_finish (aux->state);
+	    speed_control_set_speed (&aux->cs->speed, 0);
+	    control_state_finished (&aux->cs->state);
 	    aux->pos = aux->reset_pos;
 	    aux->traj_mode = AUX_TRAJ_DONE;
 	  }
@@ -194,14 +196,12 @@ aux_traj_find_zero (struct aux_t *aux)
 
 /** Start find zero mode. */
 void
-aux_traj_find_zero_start (struct aux_t *aux, int8_t speed, int16_t reset_pos,
-			  uint8_t seq)
+aux_traj_find_zero_start (struct aux_t *aux, int8_t speed, int16_t reset_pos)
 {
     aux->traj_mode = AUX_TRAJ_FIND_ZERO_NOT;
-    aux->speed->use_pos = 0;
-    aux->speed->cons = speed << 8;
-    state_start (aux->state, MODE_TRAJ, seq);
     aux->reset_pos = reset_pos;
+    speed_control_set_speed (&aux->cs->speed, speed);
+    control_state_set_mode (&aux->cs->state, CS_MODE_TRAJ_CONTROL, 0);
 }
 
 /** Find limit mode. */
@@ -212,14 +212,12 @@ aux_traj_find_limit (struct aux_t *aux)
       {
       case AUX_TRAJ_FIND_LIMIT:
 	/* If blocking, limit is found. */
-	if (aux->speed->pos->blocked_counter
-	    > aux->speed->pos->blocked_counter_limit)
+	if (aux->cs->blocking_detection.blocked)
 	  {
-	    pos_reset (aux->speed->pos);
-	    aux->speed->cons = 0;
-	    aux->speed->cur = 0;
-	    aux->state->variant = 1;
-	    pwm_set (aux->pwm, 0);
+	    /* Disable all but traj control. */
+	    control_state_set_mode (&aux->cs->state, CS_MODE_TRAJ_CONTROL,
+				    CS_MODE_TRAJ_CONTROL - 1);
+	    output_set (aux->cs->output, 0);
 	    aux->traj_mode = AUX_TRAJ_FIND_LIMIT_WAIT;
 	    aux->wait = 3 * 225;
 	  }
@@ -227,7 +225,8 @@ aux_traj_find_limit (struct aux_t *aux)
       case AUX_TRAJ_FIND_LIMIT_WAIT:
 	if (!--aux->wait)
 	  {
-	    state_finish (aux->state);
+	    control_state_set_mode (&aux->cs->state, CS_MODE_NONE, 0);
+	    control_state_finished (&aux->cs->state);
 	    aux->pos = aux->reset_pos;
 	    aux->traj_mode = AUX_TRAJ_DONE;
 	  }
@@ -237,14 +236,12 @@ aux_traj_find_limit (struct aux_t *aux)
 
 /** Start find limit mode. */
 void
-aux_traj_find_limit_start (struct aux_t *aux, int8_t speed, int16_t reset_pos,
-			   uint8_t seq)
+aux_traj_find_limit_start (struct aux_t *aux, int8_t speed, int16_t reset_pos)
 {
     aux->traj_mode = AUX_TRAJ_FIND_LIMIT;
-    aux->speed->use_pos = 0;
-    aux->speed->cons = speed << 8;
-    state_start (aux->state, MODE_TRAJ, seq);
-    aux->state->variant = 4;
+    speed_control_set_speed (&aux->cs->speed, speed);
+    control_state_set_mode (&aux->cs->state, CS_MODE_TRAJ_CONTROL,
+			    CS_MODE_BLOCKING_DETECTION);
     aux->reset_pos = reset_pos;
 }
 
@@ -252,10 +249,13 @@ aux_traj_find_limit_start (struct aux_t *aux, int8_t speed, int16_t reset_pos,
 static void
 aux_traj_update_single (struct aux_t *aux)
 {
-    if (aux->state->mode >= MODE_TRAJ)
+    if (aux->cs->state.modes & CS_MODE_TRAJ_CONTROL)
       {
 	switch (aux->traj_mode)
 	  {
+	  case AUX_TRAJ_SPEED:
+	    aux_traj_speed (aux);
+	    break;
 	  case AUX_TRAJ_GOTO:
 	  case AUX_TRAJ_GOTO_UNBLOCK:
 	    aux_traj_goto (aux);

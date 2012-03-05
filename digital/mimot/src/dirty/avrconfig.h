@@ -115,4 +115,57 @@
 /** Slave transmission buffer size. */
 #define AC_TWI_SLAVE_SEND_BUFFER_SIZE 16
 
+/* motor/encoder - Encoder module. */
+/** Use external encoder module. */
+#define AC_ENCODER_USE_EXT 1
+
+/* motor/encoder/ext - External encoder module. */
+/** Number of encoders. */
+#define AC_ENCODER_EXT_NB 2
+/** Use external memory hardware interface. */
+#define AC_ENCODER_EXT_USE_XMEM 0
+/** If not using XMEM, address/data bus, see io_bus.h. */
+#define AC_ENCODER_EXT_AD_BUS A, 4, 0, B, 4, 0
+/** If not using XMEM, address latch enable IO. */
+#define AC_ENCODER_EXT_ALE_IO B, 4
+/** If not using XMEM, read enable IO, valid low. */
+#define AC_ENCODER_EXT_RD_IO D, 6
+/** Reverse flag for each encoder (1 to reverse direction). */
+#define AC_ENCODER_EXT_REVERSE 0, 1
+/** Right shift for all encoders to lower resolution. */
+#define AC_ENCODER_EXT_SHIFT 1
+/** For debug purpose only! */
+#define AC_ENCODER_EXT_EXPORT_READ 0
+
+/* motor/output - Output module. */
+/** Use Output Compare PWM output. */
+#define AC_OUTPUT_USE_PWM_OCR 1
+/** Use Motor Power PWM output. */
+#define AC_OUTPUT_USE_PWM_MP 0
+/** Define module and module index for each output. */
+#define AC_OUTPUT_LIST (pwm_ocr, 0), (pwm_ocr, 1)
+
+/* motor/output/pwm_ocr - Output Compare PWM output module. */
+/** For each output, define output parameters:
+ *
+ * (timer, ocr, pwm_io, dir_io[, brake_io])
+ *
+ * With:
+ *  - timer: timer number (ex: 1 for TIMER1)
+ *  - ocr: output compare (ex: A for output compare A)
+ *  - mode: compare output mode (ex: 2, see datasheet)
+ *  - pwm_io: corresponding io port (ex: B, 1)
+ *  - dir_io: io port used for direction (ex: B, 2)
+ *  - brake_io: optional io port used for brake (ex: B, 3)
+ */
+#define AC_OUTPUT_PWM_OCR_LIST \
+    (1, A, 2, D,5, D,3, A,4), \
+    (1, B, 2, D,4, D,2, A,5)
+/** Clock select for each used timer. */
+#define AC_OUTPUT_PWM_OCR_CS_1 0b0001
+/** Waveform Generation Mode for each used timer. */
+#define AC_OUTPUT_PWM_OCR_WGM_1 0b0011
+/** Offset added to PWM value to compensate for H-bridge weakness. */
+#define AC_OUTPUT_PWM_OCR_OFFSET 0x40
+
 #endif /* avrconfig_h */

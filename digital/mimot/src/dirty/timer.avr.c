@@ -25,9 +25,8 @@
 #include "common.h"
 
 #include "modules/utils/utils.h"
+#include "modules/motor/encoder/encoder.h"
 #include "io.h"
-
-#include "counter.h"
 
 /** Top timer value. */
 #define TIMER_TOP 255
@@ -58,7 +57,7 @@ timer_wait (void)
       {
 	while (TCNT0 < i * TIMER_STEP)
 	    ;
-	counter_update_step ();
+	encoder_update_step ();
       }
     /* Wait overflow. */
     while (!(TIFR & _BV (TOV0)))

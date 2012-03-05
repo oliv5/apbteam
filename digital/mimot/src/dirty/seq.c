@@ -1,9 +1,7 @@
-#ifndef speed_h
-#define speed_h
-/* speed.h */
+/* seq.c */
 /* asserv - Position & speed motor control on AVR. {{{
  *
- * Copyright (C) 2008 Nicolas Schodet
+ * Copyright (C) 2011 Nicolas Schodet
  *
  * APBTeam:
  *        Web: http://apbteam.org/
@@ -24,34 +22,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "common.h"
+#include "seq.h"
 
-/** Speed control state. */
-struct speed_t
-{
-    /** Controlled position. */
-    struct pos_t *pos;
-    /** Current speed, f8.8. */
-    int16_t cur;
-    /** Consign speed, f8.8. */
-    int16_t cons;
-    /** Maximum speed for position consign, u8. */
-    int8_t max;
-    /** Slow speed for position consign, u8. */
-    int8_t slow;
-    /** Acceleration, f8.8. */
-    int16_t acc;
-    /** Consign position. */
-    uint32_t pos_cons;
-    /** Whether to use the consign position (1) or not (0). */
-    uint8_t use_pos;
-};
+seq_t seq_aux[AC_ASSERV_AUX_NB];
 
-extern struct speed_t speed_aux[AC_ASSERV_AUX_NB];
-
-void
-speed_init (void);
-
-void
-speed_update (void);
-
-#endif /* speed_h */
