@@ -28,8 +28,11 @@ import math
 class TestSimuControl (TestSimu):
     """Interface with extra control."""
 
-    def __init__ (self, robot_class):
-        TestSimu.__init__ (self, robot_class)
+    def __init__ (self, robot_class, *args):
+        TestSimu.__init__ (self, robot_class, *args, color_switch = False)
+        self.io = self.robots[0].io
+        self.asserv = self.robots[0].asserv
+        self.mimot = self.robots[0].mimot
 
     def create_widgets (self):
         TestSimu.create_widgets (self)

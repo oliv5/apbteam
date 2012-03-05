@@ -49,7 +49,7 @@ class ObstacleWithBeacon (obstacle_view.RoundObstacle):
 class TestSimu (InterNode):
     """Interface, with simulated programs."""
 
-    def __init__ (self, robot_class, robot_nb = 1):
+    def __init__ (self, robot_class, robot_nb = 1, color_switch = True):
         # Hub.
         self.hub = mex.hub.Hub (min_clients = 1 + robot_class.client_nb
                 * robot_nb)
@@ -86,10 +86,11 @@ class TestSimu (InterNode):
             r.view = r.robot_view.Bag (self.table, self.actuator_view,
                     self.sensor_frame, r.model)
             # Color switch.
-            def change_color (r = r):
-                i = r.model.color_switch.state
-                r.asserv.set_simu_pos (*r.robot_start_pos[i]);
-            r.model.color_switch.register (change_color)
+            if color_switch:
+                def change_color (r = r):
+                    i = r.model.color_switch.state
+                    r.asserv.set_simu_pos (*r.robot_start_pos[i])
+                r.model.color_switch.register (change_color)
 
     def close (self):
         self.forked_hub.kill ()
