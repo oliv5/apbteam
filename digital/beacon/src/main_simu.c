@@ -22,6 +22,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#ifdef SIMULATOR
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -73,4 +74,4 @@ int main (int argc, char **argv)
 	}
 	return 0;
 }
-
+#endif //SIMULATOR
