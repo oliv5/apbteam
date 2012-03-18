@@ -26,12 +26,17 @@ simu:host
 avr:
 	for count in $(NUMBER); do\
 		$(MAKE) -C makefiles/ -f Makefile_$(CONFIG_NAME) clean BITCLOUD_PATH=$(BITCLOUD_PATH);\
-		$(MAKE) -C makefiles/ -f Makefile_$(CONFIG_NAME) all APP_NAME=Beacon_$$count BITCLOUD_PATH=$(BITCLOUD_PATH) LOL_NUMBER=$$count;\
+		$(MAKE) -C makefiles/ -f Makefile_$(CONFIG_NAME) all APP_NAME=beacon_$$count BITCLOUD_PATH=$(BITCLOUD_PATH) LOL_NUMBER=$$count;\
 	done;\
+
+flash:
+	avrdude -c stk500v2 -P /dev/ttyUSB1 -p atmega1281 -B3 -U flash:w:obj/beacon_$(TARGET).hex
 
 clean:
 	for count in $(NUMBER); do\
 		$(MAKE) -C makefiles/$(PROJECT_NAME) -f Makefile_$(CONFIG_NAME) clean APP_NAME=Beacon_$$count BITCLOUD_PATH=$(BITCLOUD_PATH);\
 	done;\
+	
+
 
 
