@@ -16,6 +16,16 @@ Then look at kernel messages to locate the new serial devices (/dev/ttyUSBx).
 If two functions are presents in the same firmware, two serial devices should
 be detected.
 
+To let udev do this automatically for you, you can add this to the file
+`/etc/udev/rules.d/70-apbteam.rules`:
+
+ SUBSYSTEM=="usb", ACTION=="add", ATTR{idVendor}=="03eb", ATTR{idProduct}=="204e", \
+     ATTR{manufacturer}=="APBTeam", MODE="0660", GROUP="plugdev", \
+     RUN+="/sbin/modprobe usbserial vendor=0x03eb product=0x204e"
+
+This will also automatically authorize the `plugdev` group to use the device
+without root access.
+
 Controlling the output
 ======================
 
