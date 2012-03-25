@@ -1,5 +1,5 @@
 /* init.c */
-/* robospierre - Eurobot 2011 AI. {{{
+/* ai - Robot Artificial Intelligence. {{{
  *
  * Copyright (C) 2011 Nicolas Schodet
  *
