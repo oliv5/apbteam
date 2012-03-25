@@ -30,6 +30,7 @@ class Bag:
 
     def __init__ (self, node, instance = 'robot0'):
         self.asserv = asserv.mex.Mex (node, '%s:asserv0' % instance)
-        self.io_hub = io_hub.mex.Mex (node, '%s:io0' % instance)
+        self.io_hub = io_hub.mex.Mex (node, '%s:io0' % instance,
+                pwm_nb = 6, contact_nb = 10, codebar = True)
         self.mimot = mimot.mex.Mex (node, '%s:mimot0' % instance)
 

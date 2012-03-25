@@ -23,6 +23,8 @@
 # }}}
 import proto, time
 
+__all__ = [ 'Proto', 'ProtoRobospierre' ]
+
 class Proto:
 
     def __init__ (self, file, time = time.time, **param):
@@ -47,6 +49,16 @@ class Proto:
     def goto (self, x, y, backward):
         self.proto.send ('m', 'hhB', x, y, backward)
 
+    def close (self):
+        self.reset ()
+        self.proto.wait (lambda: True)
+        self.proto.file.close ()
+
+    def fileno (self):
+        return self.proto.fileno ()
+
+class ProtoRobospierre (Proto):
+
     def clamp_move (self, pos):
         self.proto.send ('c', 'B', pos)
 
@@ -69,11 +81,4 @@ class Proto:
     def clamp_openclose (self, open_):
         self.proto.send ('d', 'BB', 0xff, (0, 1)[open_])
 
-    def close (self):
-        self.reset ()
-        self.proto.wait (lambda: True)
-        self.proto.file.close ()
-
-    def fileno (self):
-        return self.proto.fileno ()
 

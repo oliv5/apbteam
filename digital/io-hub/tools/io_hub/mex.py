@@ -28,10 +28,8 @@ import simu.mex.msg
 
 ADC_NB = 8
 
-PWM_NB = 6
 PWM_VALUE_MAX = 1024
 
-CONTACT_NB = 10
 CONTACT_INIT = 0xffffffff
 
 class Mex:
@@ -200,16 +198,20 @@ class Mex:
             self.pos[id] = p
             self.notify ()
 
-    def __init__ (self, node, instance = 'io-hub0'):
+    def __init__ (self, node, instance = 'io-hub0',
+            pwm_nb = 0, contact_nb = 0, codebar = False):
         self.adc = tuple (self.ADC (node, instance, i) for i in range (0, ADC_NB))
-        self.pwm = tuple (self.PWM () for i in range (0, PWM_NB))
-        self.__pwm_pack = self.PWM.Pack (node, instance, self.pwm)
-        self.__contact_pack = self.Contact.Pack (node, instance)
-        self.contact = tuple (self.Contact (self.__contact_pack, i)
-                for i in range (CONTACT_NB))
-        self.__codebar_pack = self.Codebar.Pack (node, instance)
-        self.codebar = tuple (self.Codebar (self.__codebar_pack, i)
-                for i in (0, 1))
+        if pwm_nb:
+            self.pwm = tuple (self.PWM () for i in range (0, pwm_nb))
+            self.__pwm_pack = self.PWM.Pack (node, instance, self.pwm)
+        if contact_nb:
+            self.__contact_pack = self.Contact.Pack (node, instance)
+            self.contact = tuple (self.Contact (self.__contact_pack, i)
+                    for i in range (contact_nb))
+        if codebar:
+            self.__codebar_pack = self.Codebar.Pack (node, instance)
+            self.codebar = tuple (self.Codebar (self.__codebar_pack, i)
+                    for i in (0, 1))
         self.path = self.Path (node, instance)
         self.pos_report = self.PosReport (node, instance)
 

@@ -1,2 +1,2 @@
-from io_hub import Proto
+from io_hub import *
 from mex import Mex

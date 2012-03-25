@@ -41,7 +41,7 @@ class Robot:
                 asserv.init.host['robospierre'])
         self.mimot = proto (mimot.Proto, mimot_cmd,
                 mimot.init.host['robospierre'])
-        self.io = proto (io_hub.Proto, io_hub_cmd,
+        self.io = proto (io_hub.ProtoRobospierre, io_hub_cmd,
                 io_hub.init.host['robospierre'])
         self.protos = (self.asserv, self.mimot, self.io)
 
