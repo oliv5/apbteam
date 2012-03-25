@@ -2,5 +2,7 @@
 host = {
         'robospierre': dict (
             ),
+        'guybrush': dict (
+            ),
         }
 target = host

@@ -23,7 +23,7 @@
 # }}}
 import proto, time
 
-__all__ = [ 'Proto', 'ProtoRobospierre' ]
+__all__ = [ 'Proto', 'ProtoRobospierre', 'ProtoGuybrush' ]
 
 class Proto:
 
@@ -81,4 +81,6 @@ class ProtoRobospierre (Proto):
     def clamp_openclose (self, open_):
         self.proto.send ('d', 'BB', 0xff, (0, 1)[open_])
 
+class ProtoGuybrush (Proto):
 
+    pass
