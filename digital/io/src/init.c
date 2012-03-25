@@ -33,7 +33,6 @@
 #include "bot.h"
 #include "switch.h"
 #include "chrono.h"
-#include "playground.h"
 #include "modules/trace/trace.h"
 #include "modules/path/path.h"
 

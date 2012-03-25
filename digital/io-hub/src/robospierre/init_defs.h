@@ -25,7 +25,7 @@
  *
  * }}} */
 
-#include "playground.h"
+#include "playground_2011.h"
 #include "bot.h"
 
 /** Parameters to push the first wall. */

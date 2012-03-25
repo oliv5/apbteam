@@ -31,11 +31,19 @@
  * angle depending of the current team color.
  */
 
+#ifndef EUROBOT
+#  error "Need EUROBOT define for playground"
+#endif
+
 /** Playground width, mm. */
 #define PG_WIDTH 3000
 
 /** Playground length, mm. */
-#define PG_LENGTH 2100
+#if EUROBOT >= 2012
+#  define PG_LENGTH 2000
+#else
+#  define PG_LENGTH 2100
+#endif
 
 /** Distance to playground borders for general movements, mm. */
 #define PG_BORDER_DISTANCE 250

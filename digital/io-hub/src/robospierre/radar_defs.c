@@ -26,7 +26,7 @@
 #include "radar.h"
 
 #include "modules/devices/usdist/usdist.h"
-#include "playground.h"
+#include "playground_2011.h"
 
 /** Define radar configuration. */
 struct radar_sensor_t radar_sensors[RADAR_SENSOR_NB] = {

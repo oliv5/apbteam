@@ -30,7 +30,7 @@
 #include "contact.h"
 #include "bot.h"
 #include "element.h"
-#include "playground.h"
+#include "playground_2011.h"
 
 #define FSM_NAME AI
 #include "fsm.h"

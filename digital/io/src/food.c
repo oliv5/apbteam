@@ -26,7 +26,7 @@
 #include "defs.h"
 #include "food.h"
 #include "bot.h"
-#include "playground.h"
+#include "playground_2010.h"
 
 #include "modules/utils/utils.h"
 #include "modules/math/geometry/distance.h"

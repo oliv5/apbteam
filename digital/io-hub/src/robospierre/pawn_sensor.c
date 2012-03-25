@@ -32,7 +32,7 @@
 #include "element.h"
 #include "clamp.h"
 #include "bot.h"
-#include "playground.h"
+#include "playground_2011.h"
 #include "codebar.h"
 #include "mimot.h"
 #include "main.h"

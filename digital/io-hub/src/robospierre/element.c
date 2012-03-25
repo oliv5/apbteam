@@ -32,7 +32,7 @@
 #include "chrono.h"
 #include "logistic.h"
 #include "bot.h"
-#include "playground.h"
+#include "playground_2011.h"
 
 /** Offset to be used when everything fail. */
 static uint8_t failure_offset_s;

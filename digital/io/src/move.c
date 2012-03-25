@@ -33,7 +33,7 @@
 #include "asserv.h"
 #include "main.h"
 #include "events.h"
-#include "playground.h"
+#include "playground_2010.h"
 #include "loader.h"
 #include "modules/path/path.h"
 #include "modules/utils/utils.h"

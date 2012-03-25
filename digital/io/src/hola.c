@@ -30,7 +30,7 @@
 #include "asserv.h"
 #include "mimot.h"
 #include "bot.h"
-#include "playground.h"
+#include "playground_2010.h"
 
 #include "modules/math/fixed/fixed.h"
 

@@ -26,7 +26,7 @@
 #include "defs.h"
 #include "path.h"
 #include "bot.h"
-#include "playground.h"
+#include "playground_2010.h"
 
 #include "food.h"
 

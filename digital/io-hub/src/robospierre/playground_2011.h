@@ -25,6 +25,8 @@
  *
  * }}} */
 
+#define EUROBOT 2011
+
 #include "playground.h"
 
 /** Width of a green zone. */

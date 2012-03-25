@@ -34,7 +34,7 @@
 #include "loader.h"
 #include "move.h"
 #include "chrono.h"
-#include "playground.h"
+#include "playground_2010.h"
 #include "bot.h"
 
 #include "modules/utils/utils.h"
