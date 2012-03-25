@@ -37,6 +37,7 @@ class TestSimuControl (TestSimu):
         self.io = self.robots[0].io
         self.asserv = self.robots[0].asserv
         self.mimot = self.robots[0].mimot
+        self.robot_model = self.robots[0].model
 
     def create_widgets (self):
         TestSimu.create_widgets (self)
