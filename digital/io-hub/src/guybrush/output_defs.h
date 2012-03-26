@@ -1,6 +1,6 @@
-#ifndef simu_host_h
-#define simu_host_h
-/* simu.host.h - Host simulation. */
+#ifndef output_defs_h
+#define output_defs_h
+/* output_defs.h */
 /* guybrush - Eurobot 2012 AI. {{{
  *
  * Copyright (C) 2012 Nicolas Schodet
@@ -24,23 +24,28 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
-#include "defs.h"
 
-#ifdef HOST
+#define OUTPUT_PNEUM_OPEN A, 6
+#define OUTPUT_UPPER_CLAMP_OPEN C, 1
+#define OUTPUT_UPPER_CLAMP_OUT C, 3
+#define OUTPUT_UPPER_CLAMP_IN C, 5
+#define OUTPUT_UPPER_CLAMP_DOWN C, 2
+#define OUTPUT_UPPER_CLAMP_UP C, 4
+#define OUTPUT_DOOR_OPEN C, 7
+#define OUTPUT_DOOR_CLOSE C, 6
+#define OUTPUT_LOWER_CLAMP_1_OPEN A, 5
+#define OUTPUT_LOWER_CLAMP_2_OPEN F, 5
 
-extern uint8_t PORTA, PORTC, PORTF, DDRA, DDRC, DDRF, PINA, PINE, PINF;
+#define OUTPUT_LIST \
+    OUTPUT (OUTPUT_PNEUM_OPEN, 0) \
+    OUTPUT (OUTPUT_UPPER_CLAMP_OPEN, 0) \
+    OUTPUT (OUTPUT_UPPER_CLAMP_OUT, 0) \
+    OUTPUT (OUTPUT_UPPER_CLAMP_IN, 0) \
+    OUTPUT (OUTPUT_UPPER_CLAMP_DOWN, 0) \
+    OUTPUT (OUTPUT_UPPER_CLAMP_UP, 0) \
+    OUTPUT (OUTPUT_DOOR_OPEN, 0) \
+    OUTPUT (OUTPUT_DOOR_CLOSE, 0) \
+    OUTPUT (OUTPUT_LOWER_CLAMP_1_OPEN, 0) \
+    OUTPUT (OUTPUT_LOWER_CLAMP_2_OPEN, 0) \
 
-/** Send general purpose positions to indicate computation results.
- * - pos: array of positions to report.
- * - pos_nb: number of elements in the array.
- * - id: identifier so that several unrelated positions could be reported. */
-void
-simu_send_pos_report (vect_t *pos, uint8_t pos_nb, uint8_t id);
-
-#else /* !defined (HOST) */
-
-#define simu_send_pos_report(pos, pos_nb, id) ((void) 0)
-
-#endif /* !defined (HOST) */
-
-#endif /* simu_host_h */
+#endif /* output_defs_h */

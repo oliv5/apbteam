@@ -23,6 +23,7 @@
  *
  * }}} */
 #include "common.h"
+#include "output.h"
 #include "simu.host.h"
 
 #include "modules/utils/utils.h"
@@ -33,7 +34,7 @@
 #include "io.h"
 
 /** AVR registers. */
-uint8_t PORTA, DDRA, PINA, PINE, PINF;
+uint8_t PORTA, PORTC, PORTF, DDRA, DDRC, DDRF, PINA, PINE, PINF;
 
 /** Message types. */
 uint8_t simu_mex_pos_report;
@@ -59,12 +60,14 @@ simu_init (void)
     mex_node_register (mtype, simu_adc_handle, 0);
     simu_mex_pos_report = mex_node_reservef ("%s:pos-report", mex_instance);
     simu_mex_path = mex_node_reservef ("%s:path", mex_instance);
+    output_host_init ();
 }
 
 /** Make a simulation step. */
 void
 simu_step (void)
 {
+    output_host_update ();
 }
 
 void

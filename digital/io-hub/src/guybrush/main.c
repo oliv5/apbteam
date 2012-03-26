@@ -39,6 +39,7 @@
 #include "twi_master.h"
 
 #include "contact.h"
+#include "output.h"
 #include "radar.h"
 
 #define FSM_NAME AI
@@ -99,6 +100,7 @@ main_init (void)
     twi_master_init ();
     /* IO modules. */
     contact_init ();
+    output_init ();
     usdist_init ();
     /* AI modules. */
     path_init ();
@@ -243,6 +245,23 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	break;
 	/* Stats commands.
 	 * - b: interval between stats. */
+      case c ('o', 5):
+	/* Set/clear outputs.
+	 * - 1d: mask.
+	 * - 1b: 01 to set, 00 to clear. */
+	  {
+	    uint32_t mask = v8_to_v32 (args[0], args[1], args[2], args[3]);
+	    if (args[4] == 0)
+		output_clear (mask);
+	    else if (args[4] == 1)
+		output_set (mask);
+	    else
+	      {
+		proto_send0 ('?');
+		return;
+	      }
+	  }
+	break;
       case c ('A', 1):
 	/* Position stats. */
 	main_stats_asserv_ = main_stats_asserv_cpt_ = args[0];

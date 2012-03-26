@@ -7,6 +7,7 @@ io_hub_SOURCES = main.c top.c \
 		 radar_defs.c radar.c path.c move.c \
 		 init.c fsm.host.c fsm_AI_gen.avr.c fsm_queue.c \
 		 contact.avr.c contact.host.c \
+		 output.c output.host.c \
 		 twi_master.c asserv.c mimot.c \
 		 chrono.c timer.avr.c simu.host.c
 # Modules needed for IO.
