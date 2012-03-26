@@ -119,6 +119,32 @@ class Mex:
                 m.push ('L', self.contacts)
                 self.node.send (m)
 
+    class Output (Observable):
+        """Simple output.
+
+        - state: True (1) or False (0).
+
+        """
+
+        def __init__ (self):
+            Observable.__init__ (self)
+            self.state = None
+
+        class Pack:
+            """Handle reception of several output for one message."""
+
+            def __init__ (self, node, instance, list):
+                self.__list = list
+                node.register (instance + ':output', self.__handle)
+
+            def __handle (self, msg):
+                mask, = msg.pop ('L')
+                for index, output in enumerate (self.__list):
+                    new = (False, True)[(mask >> index) & 1]
+                    if new != output.state:
+                        output.state = new
+                        output.notify ()
+
     class Codebar (Observable):
         """Codebar stub.
 
@@ -199,7 +225,7 @@ class Mex:
             self.notify ()
 
     def __init__ (self, node, instance = 'io-hub0',
-            pwm_nb = 0, contact_nb = 0, codebar = False):
+            pwm_nb = 0, contact_nb = 0, output_nb = 0, codebar = False):
         self.adc = tuple (self.ADC (node, instance, i) for i in range (0, ADC_NB))
         if pwm_nb:
             self.pwm = tuple (self.PWM () for i in range (0, pwm_nb))
@@ -208,6 +234,10 @@ class Mex:
             self.__contact_pack = self.Contact.Pack (node, instance)
             self.contact = tuple (self.Contact (self.__contact_pack, i)
                     for i in range (contact_nb))
+        if output_nb:
+            self.output = tuple (self.Output () for i in range (0, output_nb))
+            self.__output_pack = self.Output.Pack (node, instance,
+                    self.output)
         if codebar:
             self.__codebar_pack = self.Codebar.Pack (node, instance)
             self.codebar = tuple (self.Codebar (self.__codebar_pack, i)
