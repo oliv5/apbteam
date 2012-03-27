@@ -67,8 +67,6 @@ class Proto:
             'a1w': ('W', 3),
             }
 
-    _index = dict (t = ord ('t'), a = ord ('a'), a0 = 0, a1 = 1)
-
     class Position (Observable):
         """An observable position.  To be used with register_pos.
 
@@ -88,45 +86,46 @@ class Proto:
             self.angle = a
             self.notify ()
 
-    def __init__ (self, file, time = time.time, **param):
+    def __init__ (self, file, time = time.time, aux_nb = 2, **param):
         """Initialise communication and send parameters to asserv."""
         self.proto = proto.Proto (file, time, 0.1)
         self.async = False
         self.mseq = 0
         self.mseq_ack = 0
-        self.aseq = [ 0, 0 ]
-        self.aseq_ack = [ 0, 0 ]
-        self.proto.register ('A', 'BBB', self.__handle_ack)
+        self.aseq = [ 0 ] * aux_nb
+        self.aseq_ack = [ 0 ] * aux_nb
+        self.proto.register ('A', 'B' * (aux_nb + 1), self.__handle_ack)
         def make_handle (s):
             return lambda *args: self.__handle_stats (s, *args)
         for (s, f) in self.stats_format.iteritems ():
             self.proto.register (s, f, make_handle (s))
         self.stats_enabled = None
+        self.aux_nb = aux_nb
+        self._index = dict (t = ord ('t'), a = ord ('a'))
+        for i in xrange (aux_nb):
+            self._index['a%d' % i] = i
         self.param = dict (
                 scale = 1,
-                tkp = 0, tki = 0, tkd = 0,
-                ta = 1, tsm = 0, tss = 0,
-                tbe = 2048, tbs = 0x10, tbc = 20,
-                akp = 0, aki = 0, akd = 0,
-                aa = 1, asm = 0, ass = 0,
-                abe = 2048, abs = 0x10, abc = 20,
-                a0kp = 0, a0ki = 0, a0kd = 0,
-                a0a = 1, a0sm = 0, a0ss = 0,
-                a0be = 2048, a0bs = 0x10, a0bc = 20,
-                a1kp = 0, a1ki = 0, a1kd = 0,
-                a1a = 1, a1sm = 0, a1ss = 0,
-                a1be = 2048, a1bs = 0x10, a1bc = 20,
                 E = 1023, I = 1023, D = 1023,
                 c = 1, f = 0x1000,
                 l = 0x2000,
                 w = 0x00,
                 )
+        mparam = dict (
+                kp = 0, ki = 0, kd = 0,
+                a = 1, sm = 0, ss = 0,
+                be = 2048, bs = 0x10, bc = 20,
+                )
+        for m in self._index:
+            for k in mparam:
+                self.param[m + k] = mparam[k]
         self.param.update (param)
         self.send_param ()
 
     def stats (self, *stats_items, **options):
         """Activate stats.  Take a list of items to record, and an optional
         interval option."""
+        assert self.aux_nb == 2, 'not supported'
         interval = 1
         if 'interval' in options:
             interval = options['interval']
@@ -199,7 +198,7 @@ class Proto:
             self.proto.send ('s', 'llB', self._dist (offset), 0, self.mseq)
         elif w == 'a':
             self.mseq += 1
-            self.proto.send ('s', 'llB', 0, self.dist (offset), self.mseq)
+            self.proto.send ('s', 'llB', 0, self._dist (offset), self.mseq)
         else:
             i = self._index[w]
             self.aseq[i] += 1
@@ -301,7 +300,7 @@ class Proto:
             return int (round (x * (1 << 8)))
         def f824 (x):
             return int (round (x * (1 << 24)))
-        for m in ('t', 'a', 'a0', 'a1'):
+        for m in self._index:
             index = self._index [m]
             self.proto.send ('p', 'cBH', 'p', index, f88 (p[m + 'kp']))
             self.proto.send ('p', 'cBH', 'i', index, f88 (p[m + 'ki']))
@@ -333,12 +332,12 @@ class Proto:
                 self.stats_line = [ ]
                 self.stats_count += 1
 
-    def __handle_ack (self, mseq, a0seq, a1seq):
+    def __handle_ack (self, mseq, *aseq):
         """Record current acknowledge level and acknowledge reception."""
         self.mseq_ack = mseq & 0x7f
-        self.aseq_ack[0] = a0seq & 0x7f
-        self.aseq_ack[1] = a1seq & 0x7f
-        self.proto.send ('a', 'BBB', mseq, a0seq, a1seq)
+        for i in xrange (self.aux_nb):
+            self.aseq_ack[i] = aseq[i] & 0x7f
+        self.proto.send ('a', 'B' * (self.aux_nb + 1), mseq, *aseq)
 
     def __handle_pos (self, x, y, a):
         """Handle position report."""
@@ -361,9 +360,12 @@ class Proto:
 
     def finished (self):
         """Return True if movement commands have been acknowledged."""
-        return (self.mseq == self.mseq_ack
-                and self.aseq[0] == self.aseq_ack[0]
-                and self.aseq[1] == self.aseq_ack[1])
+        if self.mseq != self.mseq_ack:
+            return False
+        for i in xrange (self.aux_nb):
+            if self.aseq[i] != self.aseq_ack[i]:
+                return False
+        return True
 
     def free (self):
         """Coast motors."""
@@ -372,7 +374,8 @@ class Proto:
     def reset (self):
         """Coast all motors and reset asserv."""
         self.proto.send ('w')
-        self.proto.send ('W')
+        if self.aux_nb:
+            self.proto.send ('W')
         self.proto.send ('z')
         self.proto.send ('z')
 

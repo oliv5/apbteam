@@ -55,13 +55,14 @@ class Mex:
 
         """
 
-        def __init__ (self, node, instance):
+        def __init__ (self, node, instance, nb):
             Observable.__init__ (self)
             self.pwm = None
+            self.nb = nb
             node.register (instance + ':pwm', self.__handle)
 
         def __handle (self, msg):
-            self.pwm = msg.pop ('hhhh')
+            self.pwm = msg.pop ('h' * self.nb)
             self.notify ()
 
     class Aux (Observable):
@@ -88,9 +89,10 @@ class Mex:
                     aux.angle = float (angle) / 1024
                     aux.notify ()
 
-    def __init__ (self, node, instance = 'asserv0'):
+    def __init__ (self, node, instance = 'asserv0', aux_nb = 2):
         self.position = self.Position (node, instance)
-        self.pwm = self.PWM (node, instance)
-        self.aux = (self.Aux (), self.Aux ())
-        self.__aux_pack = self.Aux.Pack (node, instance, self.aux)
+        self.pwm = self.PWM (node, instance, 2 + aux_nb)
+        if aux_nb:
+            self.aux = (self.Aux (), self.Aux ())
+            self.__aux_pack = self.Aux.Pack (node, instance, self.aux)
 
