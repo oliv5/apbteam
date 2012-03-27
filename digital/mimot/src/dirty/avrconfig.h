@@ -86,8 +86,6 @@
 /* asserv. */
 /** Number of auxiliary motors. */
 #define AC_ASSERV_AUX_NB 2
-/** Use external counters. */
-#define AC_ASSERV_COUNTER_EXTERNAL 1
 /** TWI address. */
 #define AC_ASSERV_TWI_ADDRESS 6
 
