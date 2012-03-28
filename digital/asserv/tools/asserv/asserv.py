@@ -106,19 +106,22 @@ class Proto:
             self._index['a%d' % i] = i
         self.param = dict (
                 scale = 1,
-                E = 1023, I = 1023, D = 1023,
-                c = 1, f = 0x1000,
-                l = 0x2000,
-                w = 0x00,
+                e_sat = 1023, i_sat = 1023, d_sat = 1023,
+                encoder_right_correction = 1, footing = 0x1000,
+                angle_limit = 0x2000,
+                l_reverse = False, r_reverse = False,
                 )
         mparam = dict (
                 kp = 0, ki = 0, kd = 0,
-                a = 1, sm = 0, ss = 0,
-                be = 2048, bs = 0x10, bc = 20,
+                acc = 1, speed_max = 0, speed_slow = 0,
+                bd_error_limit = 2048, bd_speed_limit = 0x10,
+                bd_counter_limit = 20,
                 )
         for m in self._index:
             for k in mparam:
-                self.param[m + k] = mparam[k]
+                self.param[m + '_' + k] = mparam[k]
+        for i in xrange (aux_nb):
+            self.param['a%d_reverse' % i] = False
         self.param.update (param)
         self.send_param ()
 
@@ -302,20 +305,28 @@ class Proto:
             return int (round (x * (1 << 24)))
         for m in self._index:
             index = self._index [m]
-            self.proto.send ('p', 'cBH', 'p', index, f88 (p[m + 'kp']))
-            self.proto.send ('p', 'cBH', 'i', index, f88 (p[m + 'ki']))
-            self.proto.send ('p', 'cBH', 'd', index, f88 (p[m + 'kd']))
-            self.proto.send ('p', 'cBH', 'a', index, f88 (p[m + 'a']))
-            self.proto.send ('p', 'cBBB', 's', index, p[m + 'sm'], p[m + 'ss'])
-            self.proto.send ('p', 'cBHHB', 'b', index, p[m + 'be'],
-                    p[m + 'bs'], p[m + 'bc'])
-        self.proto.send ('p', 'cH', 'E', p['E'])
-        self.proto.send ('p', 'cH', 'I', p['I'])
-        self.proto.send ('p', 'cH', 'D', p['D'])
-        self.proto.send ('p', 'cL', 'c', f824 (p['c']))
-        self.proto.send ('p', 'cH', 'f', p['f'])
-        self.proto.send ('p', 'cH', 'l', p['l'])
-        self.proto.send ('p', 'cB', 'w', p['w'])
+            self.proto.send ('p', 'cBH', 'p', index, f88 (p[m + '_kp']))
+            self.proto.send ('p', 'cBH', 'i', index, f88 (p[m + '_ki']))
+            self.proto.send ('p', 'cBH', 'd', index, f88 (p[m + '_kd']))
+            self.proto.send ('p', 'cBH', 'a', index, f88 (p[m + '_acc']))
+            self.proto.send ('p', 'cBBB', 's', index, p[m + '_speed_max'],
+                    p[m + '_speed_slow'])
+            self.proto.send ('p', 'cBHHB', 'b', index,
+                    p[m + '_bd_error_limit'], p[m + '_bd_speed_limit'],
+                    p[m + '_bd_counter_limit'])
+        self.proto.send ('p', 'cH', 'E', p['e_sat'])
+        self.proto.send ('p', 'cH', 'I', p['i_sat'])
+        self.proto.send ('p', 'cH', 'D', p['d_sat'])
+        self.proto.send ('p', 'cL', 'c', f824 (p['encoder_right_correction']))
+        self.proto.send ('p', 'cH', 'f', p['footing'])
+        self.proto.send ('p', 'cH', 'l', p['angle_limit'])
+        output_index = [ 'l', 'r' ] + [ 'a%d' % i
+                for i in xrange (self.aux_nb) ]
+        reverse = 0
+        for i, m in enumerate (output_index):
+            if p[m + '_reverse']:
+                reverse |= 1 << i
+        self.proto.send ('p', 'cB', 'w', reverse)
 
     def write_eeprom (self):
         """Request an EEPROM write."""

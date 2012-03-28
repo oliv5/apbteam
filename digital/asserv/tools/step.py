@@ -4,7 +4,7 @@ import asserv
 from utils.init_proto import init_proto
 
 def step (name, offset, kp, ki, kd, plots, **param):
-    p = { name + 'kp': kp, name + 'ki': ki, name + 'kd': kd}
+    p = { name + '_kp': kp, name + '_ki': ki, name + '_kd': kd}
     p.update (param)
     a = init_proto (None, asserv.Proto, init = p)
     a.stats (*plots)

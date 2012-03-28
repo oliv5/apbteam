@@ -1,21 +1,21 @@
 """Default parameters for asserv."""
 target_marcel = dict (
-        a0kp = 4,
-        a0a = 16, a0sm = 0x60, a0ss = 0x10,
-        a0be = 256, a0bs = 0x18, a0bc = 5,
-        a1kp = 4,
-        a1a = 16, a1sm = 0x60, a1ss = 0x10,
-        a1be = 256, a1bs = 0x18, a1bc = 5,
-        E = 0x3ff, D = 0x1ff,
+        a0_kp = 4,
+        a0_acc = 16, a0_speed_max = 0x60, a0_speed_slow = 0x10,
+        a0_error_limit = 256, a0_bd_speed_limit = 0x18, a0_bd_counter_limit = 5,
+        a1_kp = 4,
+        a1_acc = 16, a1_speed_max = 0x60, a1_speed_slow = 0x10,
+        a1_error_limit = 256, a1_bd_speed_limit = 0x18, a1_bd_counter_limit = 5,
+        e_sat = 0x3ff, d_sat = 0x1ff,
         )
 target_robospierre = dict (
-        a0kp = 8, a0kd = 1,
-        a0a = 2, a0sm = 0x60, a0ss = 0x10,
-        a0be = 32, a0bs = 0x08, a0bc = 125,
-        a1kp = 4,
-        a1a = 0.5, a1sm = 0x30, a1ss = 0x08,
-        a1be = 64, a1bs = 0x08, a1bc = 5,
-        E = 0x3ff, D = 0x1ff,
+        a0_kp = 8, a0_kd = 1,
+        a0_acc = 2, a0_speed_max = 0x60, a0_speed_slow = 0x10,
+        a0_error_limit = 32, a0_bd_speed_limit = 0x08, a0_bd_counter_limit = 125,
+        a1_kp = 4,
+        a1_acc = 0.5, a1_speed_max = 0x30, a1_speed_slow = 0x08,
+        a1_error_limit = 64, a1_bd_speed_limit = 0x08, a1_bd_counter_limit = 5,
+        e_sat = 0x3ff, d_sat = 0x1ff,
         )
 target = {
         'marcel': target_marcel,
