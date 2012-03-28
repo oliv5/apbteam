@@ -39,6 +39,7 @@ cs_init (void)
     /* Initialise encoders. */
     encoder_init (0, &encoder_left);
     encoder_init (1, &encoder_right);
+    encoder_corrector_init (&encoder_right_corrector);
     encoder_init (2, &encoder_aux[0]);
     encoder_init (3, &encoder_aux[1]);
     /* Initialise outputs. */
