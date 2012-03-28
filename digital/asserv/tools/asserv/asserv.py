@@ -108,6 +108,7 @@ class Proto:
                 scale = 1,
                 e_sat = 1023, i_sat = 1023, d_sat = 1023,
                 encoder_right_correction = 1, footing = 0x1000,
+                eps = 500, aeps = 0x100,
                 angle_limit = 0x2000,
                 l_reverse = False, r_reverse = False,
                 )
@@ -319,6 +320,7 @@ class Proto:
         self.proto.send ('p', 'cH', 'D', p['d_sat'])
         self.proto.send ('p', 'cL', 'c', f824 (p['encoder_right_correction']))
         self.proto.send ('p', 'cH', 'f', p['footing'])
+        self.proto.send ('p', 'cHH', 'e', p['eps'], p['aeps'])
         self.proto.send ('p', 'cH', 'l', p['angle_limit'])
         output_index = [ 'l', 'r' ] + [ 'a%d' % i
                 for i in xrange (self.aux_nb) ]
