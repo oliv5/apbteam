@@ -49,17 +49,9 @@ class Robot (simu.inter.drawable.Drawable):
             self.trans_translate (self.pos)
             self.trans_rotate (self.angle)
             # Draw robot body.
-            self.draw_polygon ((0, 190), (150, 110), (95, 95), (55, 55),
-                    (40, -0), (55, -55), (95, -95), (150, -110), (0, -190),
-                    (-150, -110), (-95, -95), (-55, -55), (-40, -0),
-                    (-55, 55), (-95, 95), (-150, 110), (0, 190),
+            self.draw_polygon ((150, 171.5), (-80, 171.5), (-130, 121.5),
+                    (-130, -121.5), (-80, -171.5), (150, -171.5),
                     fill = COLOR_ROBOT)
-            self.draw_arc ((0, 0), 190, start = pi * 35 / 180,
-                    extent = pi * 110 / 180, style = 'chord',
-                    outline = COLOR_ROBOT, fill = COLOR_ROBOT)
-            self.draw_arc ((0, 0), 190, start = pi + pi * 35 / 180,
-                    extent = pi * 110 / 180, style = 'chord',
-                    outline = COLOR_ROBOT, fill = COLOR_ROBOT)
             # Draw Robot axis.
             self.draw_line ((-50, 0), (50, 0), fill = COLOR_AXES,
                     arrow = 'last')
