@@ -191,8 +191,10 @@ class Proto:
     def write_eeprom (self):
         """Request an EEPROM write."""
         self.proto.send ('p', 'cB', 'E', 1)
-        time.sleep (1)
+        old_timeout = self.proto.timeout
+        self.proto.timeout = 5
         self.wait (lambda: True)
+        self.proto.timeout = old_timeout
 
     def __handle_stats (self, stat, *args):
         """Record received stats."""
