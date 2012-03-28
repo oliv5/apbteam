@@ -446,6 +446,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	      case c ('P', 2):
 		/* Print current settings for selected control.
 		 * - b: index. */
+		if (!pos) { proto_send0 ('?'); return; }
 		proto_send2b ('E', EEPROM_KEY, eeprom_loaded);
 		proto_send1w ('a', speed->acc);
 		proto_send2b ('s', speed->max, speed->slow);
