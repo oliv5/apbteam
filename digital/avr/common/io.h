@@ -96,6 +96,7 @@ intr_restore (intr_flags_t flags) { }
  *   IO_GET (MY_IO) => (PINB & _BV (5))
  *   IO_SET (MY_IO) => PORTB |= _BV (5)
  *   IO_CLR (MY_IO) => PORTB &= ~_BV (5)
+ *   IO_TOGGLE (MY_IO) => PORTB ^= _BV (5)
  *   IO_OUTPUT (MY_IO) => DDRB |= _BV (5)
  *   IO_INPUT (MY_IO) => DDRB &= ~_BV (5)
  */
@@ -116,6 +117,8 @@ intr_restore (intr_flags_t flags) { }
 #define IO_SET_(p, n) IO_PORT_ (p, n) |= IO_BV_ (p, n)
 #define IO_CLR(io) IO_CLR_ (io)
 #define IO_CLR_(p, n) IO_PORT_ (p, n) &= ~IO_BV_ (p, n)
+#define IO_TOGGLE(io) IO_TOGGLE_ (io)
+#define IO_TOGGLE_(p, n) IO_PORT_ (p, n) ^= IO_BV_ (p, n)
 #define IO_OUTPUT(io) IO_OUTPUT_ (io)
 #define IO_OUTPUT_(p, n) IO_DDR_ (p, n) |= IO_BV_ (p, n)
 #define IO_INPUT(io) IO_INPUT_ (io)
