@@ -27,6 +27,7 @@ from simu.view.distance_sensor_us import DistanceSensorUS
 from simu.view.path import Path
 from simu.view.pos_report import PosReport
 from simu.robots.guybrush.view.robot import Robot
+from simu.robots.guybrush.view.clamps import ClampsSide
 
 class Bag:
 
@@ -37,6 +38,8 @@ class Bag:
         self.strat_switch = Switch (sensor_frame, model_bag.strat_switch,
                 'Strat')
         self.robot = Robot (table, model_bag.position)
+        self.clamps = ClampsSide (actuator_view.add_view (ClampsSide.width,
+            ClampsSide.height), model_bag.clamps)
         self.distance_sensor = [DistanceSensorUS (self.robot, ds)
                 for ds in model_bag.distance_sensor]
         self.path = Path (table, model_bag.path)

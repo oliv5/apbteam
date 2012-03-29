@@ -28,6 +28,10 @@ import math
 class TestSimuControl (TestSimu):
     """Interface with extra control."""
 
+    LOWER_CLAMP_1_OPEN = 1 << 8
+    LOWER_CLAMP_2_OPEN = 1 << 9
+    LOWER_CLAMP_ROTATION_STROKE = int (16 * 250)
+
     def __init__ (self, robot_class, *args):
         TestSimu.__init__ (self, robot_class, *args, color_switch = False)
         self.io = self.robots[0].io
@@ -40,6 +44,18 @@ class TestSimuControl (TestSimu):
         self.control_frame = Frame (self)
         self.control_frame.pack (side = 'left', before = self.table_view,
                 fill = 'y')
+        self.lower_clamp_1_open_button = Button (self.control_frame,
+                text = 'LClamp 1 open', padx = 0, pady = 0,
+                command = self.lower_clamp_1_open_command)
+        self.lower_clamp_1_open_button.pack ()
+        self.lower_clamp_2_open_button = Button (self.control_frame,
+                text = 'LClamp 2 open', padx = 0, pady = 0,
+                command = self.lower_clamp_2_open_command)
+        self.lower_clamp_2_open_button.pack ()
+        self.lower_clamp_rotate_button = Button (self.control_frame,
+                text = 'LClamp rotate', padx = 0, pady = 0,
+                command = self.lower_clamp_rotate_command)
+        self.lower_clamp_rotate_button.pack ()
         self.backward_var = IntVar ()
         self.backward_button = Checkbutton (self.control_frame,
                 text = 'Backward', variable = self.backward_var)
@@ -64,6 +80,15 @@ class TestSimuControl (TestSimu):
         if robot_pos is not None:
             a = math.atan2 (y - robot_pos[1], x - robot_pos[0])
             self.asserv.goto_angle (a)
+
+    def lower_clamp_1_open_command (self):
+        self.io.output (self.LOWER_CLAMP_1_OPEN, 'toggle')
+
+    def lower_clamp_2_open_command (self):
+        self.io.output (self.LOWER_CLAMP_2_OPEN, 'toggle')
+
+    def lower_clamp_rotate_command (self):
+        self.mimot.speed_pos ('a0', self.LOWER_CLAMP_ROTATION_STROKE / 2)
 
     def change_color (self, *dummy):
         pass

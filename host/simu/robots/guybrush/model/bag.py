@@ -25,6 +25,8 @@
 from simu.model.switch import Switch
 from simu.model.position import Position
 from simu.model.distance_sensor_sensopart import DistanceSensorSensopart
+from simu.model.pneumatic_cylinder import PneumaticCylinder
+from simu.robots.guybrush.model.clamps import Clamps
 from math import pi
 import random
 
@@ -37,6 +39,11 @@ class Bag:
         self.jack = Switch (link_bag.io_hub.contact[1], invert = True)
         self.strat_switch = Switch (link_bag.io_hub.contact[2], invert = True)
         self.position = Position (link_bag.asserv.position)
+        self.clamps = Clamps (table, self.position, link_bag.mimot.aux[0],
+                (PneumaticCylinder (None, link_bag.io_hub.output[8],
+                    scheduler, 0., 30., 150., 75., 30.),
+                PneumaticCylinder (None, link_bag.io_hub.output[9],
+                    scheduler, 0., 30., 150., 75., 30.)))
         self.distance_sensor = [
                 DistanceSensorSensopart (link_bag.io_hub.adc[0], scheduler, table,
                     (20, 20), pi * 10 / 180, (self.position, ), 2),
