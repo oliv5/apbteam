@@ -48,4 +48,7 @@ simu_sensor_update_marcel (void);
 void
 simu_sensor_update_robospierre (void);
 
+void
+simu_sensor_update_guybrush (void);
+
 #endif /* simu_host_h */

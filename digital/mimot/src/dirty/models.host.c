@@ -66,6 +66,23 @@ static const struct robot_t robospierre_robot =
     NULL,
 };
 
+/* Guybrush, APBTeam 2012. */
+static const struct robot_t guybrush_robot =
+{
+    /** Auxiliary motors, NULL if not present. */
+    { &motor_model_def_amax32ghp_x16, &motor_model_def_amax32ghp_x16 },
+    /** Motors voltage (V). */
+    24.0,
+    /** Number of steps for each auxiliary motor encoder. */
+    { 250, 250 },
+    /** Load for auxiliary motors (kg.m^2). */
+    { 1.000 * 0.05 * 0.05, 0.200 * 0.010 * 0.010 },
+    /** Sensor update function. */
+    simu_sensor_update_guybrush,
+    /** Initialisation function. */
+    NULL,
+};
+
 /* Table of models. */
 static const struct
 {
@@ -74,6 +91,7 @@ static const struct
 } models[] = {
       { "marcel", &marcel_robot },
       { "robospierre", &robospierre_robot },
+      { "guybrush", &guybrush_robot },
       { 0, 0 }
 };
 

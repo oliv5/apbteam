@@ -150,6 +150,12 @@ simu_sensor_update_robospierre (void)
 	PINC |= IO_BV (CONTACT_AUX0_ZERO_IO);
 }
 
+/** Update sensors for Guybrush. */
+void
+simu_sensor_update_guybrush (void)
+{
+}
+
 /** Do a simulation step. */
 static void
 simu_step (void)
