@@ -49,6 +49,12 @@ class Proto:
     def goto (self, x, y, backward):
         self.proto.send ('m', 'hhB', x, y, backward)
 
+    def output (self, mask, action):
+        m = { 'clear': 0, 'set': 1, 'toggle': 2 }
+        if action in m:
+            action = m[action]
+        self.proto.send ('o', 'Lb', mask, action)
+
     def close (self):
         self.reset ()
         self.proto.wait (lambda: True)
