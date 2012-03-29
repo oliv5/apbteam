@@ -60,3 +60,15 @@ output_clear (uint32_t clear)
 #undef OUTPUT
 }
 
+/** Toggle state of any number of output. */
+void
+output_toggle (uint32_t toggle)
+{
+#define OUTPUT(io, init) do { \
+    if (toggle & 1ul) IO_TOGGLE_ (io); \
+    toggle >>= 1; \
+} while (0); // <- do not copy this code unless you know why!
+    OUTPUT_LIST
+#undef OUTPUT
+}
+

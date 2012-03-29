@@ -246,15 +246,17 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	/* Stats commands.
 	 * - b: interval between stats. */
       case c ('o', 5):
-	/* Set/clear outputs.
+	/* Set/clear/toggle outputs.
 	 * - 1d: mask.
-	 * - 1b: 01 to set, 00 to clear. */
+	 * - 1b: 01 to set, 00 to clear, 02 to toggle. */
 	  {
 	    uint32_t mask = v8_to_v32 (args[0], args[1], args[2], args[3]);
 	    if (args[4] == 0)
 		output_clear (mask);
 	    else if (args[4] == 1)
 		output_set (mask);
+	    else if (args[4] == 2)
+		output_toggle (mask);
 	    else
 	      {
 		proto_send0 ('?');

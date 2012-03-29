@@ -44,6 +44,10 @@ output_set (uint32_t set);
 void
 output_clear (uint32_t clear);
 
+/** Toggle state of any number of output. */
+void
+output_toggle (uint32_t toggle);
+
 #ifdef HOST
 
 /** On host, initialise host part. */
