@@ -34,6 +34,7 @@ class Test (Drawable):
         self.draw_line ((20, 20), (25, 25), (80, 0), (0, 80), fill = 'green')
         self.draw_line ((20, 20), (25, 25), (80, 0), (0, 80), smooth = True)
         self.draw_circle ((40, -40), 10)
+        self.draw_oval ((40, -40), 10, 5)
         self.draw_arc ((-40, 0), 20, start = pi / 4, extent = pi / 2)
 
 class App (DrawableCanvas):

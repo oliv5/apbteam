@@ -22,7 +22,7 @@
 #
 # }}}
 """Drawable and DrawableCanvas."""
-from math import sqrt, degrees
+from math import sqrt, degrees, pi, cos, sin
 import simu.utils.trans_matrix
 import Tkinter
 
@@ -69,6 +69,22 @@ class Drawable:
         r = self.trans_apply_distance (r)
         return self.__onto.__draw_circle (p, r, **kw)
 
+    def __draw_oval (self, p, rx, ry, **kw):
+        v = [ ]
+        n = 8
+        sx = rx / cos (pi / n)
+        sy = ry / cos (pi / n)
+        for i in xrange (0, n):
+            a = i * 2 * pi / n
+            v.append ((p[0] + cos (a) * sx, p[1] + sin (a) * sy))
+        kw = kw.copy ()
+        if 'fill' not in kw:
+            kw['fill'] = ''
+        if 'outline' not in kw:
+            kw['outline'] = 'black'
+        kw['smooth'] = True
+        return self.__draw_polygon (*v, **kw)
+
     def __draw_arc (self, p, r, **kw):
         p = self.trans_apply (p)
         r = self.trans_apply_distance (r)
@@ -93,6 +109,11 @@ class Drawable:
     def draw_circle (self, p, r, **kw):
         """Draw a circle of the given radius centered on p."""
         self.__items.append (self.__draw_circle (p, r, **kw))
+
+    def draw_oval (self, p, rx, ry, **kw):
+        """Draw an oval of the given radii (rx along x, ry along y), centered
+        on p."""
+        self.__items.append (self.__draw_oval (p, rx, ry, **kw))
 
     def draw_arc (self, p, r, **kw):
         """Draw a arc of the given radius centered on p."""
