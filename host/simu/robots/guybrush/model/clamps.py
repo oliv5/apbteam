@@ -44,6 +44,6 @@ class Clamps (Observable):
             if c.pos is None:
                 self.lower_clamp_clamping[i] = None
             else:
-                self.lower_clamp_clamping[i] = (1.0
-                        - (c.pos - c.pos_in) / (c.pos_out - c.pos_in))
+                self.lower_clamp_clamping[i] = ((c.pos - c.pos_in)
+                        / (c.pos_out - c.pos_in))
         self.notify ()
