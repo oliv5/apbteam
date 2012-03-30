@@ -55,6 +55,11 @@ class ClampsSide (Drawable):
                 if c is not None:
                     self.draw_line ((7, -45), (7, -46 - c * 33),
                             (-28, -46 - c * 33))
+                    if self.model.lower_clamp_content[i]:
+                        e, y = self.model.lower_clamp_content[i][0]
+                        self.draw_rectangle ((7, -45 - c * 15),
+                                (7 - e.radius * 2, -49 - c * 15),
+                                fill = GREY)
                 if not i:
                     self.trans_rotate (pi)
             self.trans_pop ()
