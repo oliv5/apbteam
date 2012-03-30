@@ -134,8 +134,10 @@ def run (default_robot, test_class = TestSimu):
     else:
         parser.error ("unknown robot")
     app = test_class (robot, options.robot_nb)
-    app.mainloop ()
-    app.close ()
+    try:
+        app.mainloop ()
+    finally:
+        app.close ()
 
 if __name__ == '__main__':
     run ('marcel')
