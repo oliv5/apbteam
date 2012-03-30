@@ -28,7 +28,9 @@
 
 #ifdef HOST
 
-extern uint8_t PORTA, PORTC, PORTF, DDRA, DDRC, DDRF, PINA, PINE, PINF;
+extern uint8_t PORTA, PORTB, PORTC, PORTD, PORTF;
+extern uint8_t DDRA, DDRB, DDRC, DDRD, DDRF;
+extern uint8_t PINA, PINB, PINC, PIND, PINE, PINF;
 
 /** Send general purpose positions to indicate computation results.
  * - pos: array of positions to report.

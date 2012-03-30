@@ -34,7 +34,9 @@
 #include "io.h"
 
 /** AVR registers. */
-uint8_t PORTA, PORTC, PORTF, DDRA, DDRC, DDRF, PINA, PINE, PINF;
+uint8_t PORTA, PORTB, PORTC, PORTD, PORTF;
+uint8_t DDRA, DDRB, DDRC, DDRD, DDRF;
+uint8_t PINA, PINB, PINC, PIND, PINE, PINF;
 
 /** Message types. */
 uint8_t simu_mex_pos_report;
