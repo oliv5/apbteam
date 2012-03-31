@@ -60,7 +60,6 @@ output_clear (uint32_t clear)
 #undef OUTPUT
 }
 
-/** Toggle state of any number of output. */
 void
 output_toggle (uint32_t toggle)
 {
