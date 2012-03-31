@@ -29,12 +29,13 @@ from math import pi
 class Clamps (Observable):
 
     def __init__ (self, table, robot_position, lower_clamp_motor,
-            lower_clamp_cylinders):
+            lower_clamp_cylinders, lower_clamp_sensors):
         Observable.__init__ (self)
         self.table = table
         self.robot_position = robot_position
         self.lower_clamp_motor = lower_clamp_motor
         self.lower_clamp_cylinders = lower_clamp_cylinders
+        self.lower_clamp_sensors = lower_clamp_sensors
         self.lower_clamp_clamping = [ None, None ]
         self.lower_clamp_content = [ [ ], [ ] ]
         self.lower_clamp_motor.register (self.__lower_clamp_notified)
@@ -84,9 +85,16 @@ class Clamps (Observable):
                     for e, y in self.lower_clamp_content[top_clamp]])
                 self.lower_clamp_content[top_clamp] = [ ]
                 changed = True
-        # If something is found, there can be updates.
-        if changed:
-            pass
+        # Update sensors view.
+        old_state = self.lower_clamp_sensors[0].state
+        if floor_clamp is None:
+            new_state = True
+        else:
+            new_state = not self.lower_clamp_content[floor_clamp]
+        if new_state != old_state:
+            for s in self.lower_clamp_sensors:
+                s.state = new_state
+                s.notify ()
         return changed
 
     def __add_load (self, elements):

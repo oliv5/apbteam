@@ -43,7 +43,8 @@ class Bag:
                 (PneumaticCylinder (None, link_bag.io_hub.output[8],
                     scheduler, 0., 30., 150., 75., 30.),
                 PneumaticCylinder (None, link_bag.io_hub.output[9],
-                    scheduler, 0., 30., 150., 75., 30.)))
+                    scheduler, 0., 30., 150., 75., 30.)),
+                [ Switch (c) for c in link_bag.io_hub.contact[3:3+4] ])
         self.distance_sensor = [
                 DistanceSensorSensopart (link_bag.io_hub.adc[0], scheduler, table,
                     (20, 20), pi * 10 / 180, (self.position, ), 2),
