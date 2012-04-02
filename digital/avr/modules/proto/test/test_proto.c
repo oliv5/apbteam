@@ -52,6 +52,8 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	proto_send1b ('e', 0xf0);
 	proto_send2w ('l', 0x1234, 0x5678);
 	proto_send1d ('o', 0x12345678);
+	proto_sendb ('p', 1);
+	proto_sendb ('p', 1, 2, 3, 4);
 	  {
 	    volatile uint32_t i = 0x12345678;
 	    proto_send1d ('i', i);

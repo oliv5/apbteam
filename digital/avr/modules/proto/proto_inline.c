@@ -23,6 +23,17 @@
  *
  * }}} */
 #include "modules/utils/byte.h"
+#include "preproc.h"
+
+/** Send a command with n byte arguments. */
+#define proto_sendb(cmd, args...) \
+    PREPROC_PASTE (proto_send, PREPROC_NARG (args), b) (cmd, args)
+/** Send a command with n word arguments. */
+#define proto_sendw(cmd, args...) \
+    PREPROC_PASTE (proto_send, PREPROC_NARG (args), w) (cmd, args)
+/** Send a command with n double word arguments. */
+#define proto_sendd(cmd, args...) \
+    PREPROC_PASTE (proto_send, PREPROC_NARG (args), d) (cmd, args)
 
 /** Send a command with no argument. */
 extern inline void
