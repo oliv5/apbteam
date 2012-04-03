@@ -20,6 +20,7 @@ CONFIG_NAME = All_ZigBit_Atmega1281_Rf230_8Mhz_Gcc
 #CONFIG_NAME = Router_Sec_ZigBit_Atmega1281_Rf230_8Mhz_Gcc
 
 NUMBER:= 0 1 2 3
+DEV2 := 	0
 
 simu:host
 	python simulator.py
@@ -31,8 +32,8 @@ avr:
 	done;\
 
 flash:
+	../../dev2/tools/dev2ctl.py -s $(DEV2)
 	avrdude -c stk500v2 -P /dev/ttyUSB1 -p atmega1281 -B3 -U flash:w:obj/beacon_$(TARGET).hex
-	../../dev2/tools/dev2ctl.py -s 1
 
 clean:
 	for count in $(NUMBER); do\
