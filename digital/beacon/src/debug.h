@@ -26,7 +26,15 @@
 #define _DEBUG_H
 
 #include <stdio.h>
+#include "configuration.h"
 
+#define OPEN_USART            	HAL_OpenUsart
+#define CLOSE_USART           HAL_CloseUsart
+#define WRITE_USART          	HAL_WriteUsart
+#define READ_USART           	HAL_ReadUsart
+#define USART_CHANNEL    	APP_USART_CHANNEL
+  
+  
 // #define DEBUG_POSITION_ENABLE
 // #define DEBUG_UPDATE_ENABLE
 // #define DEBUG_RECOVERY_ENABLE
@@ -71,4 +79,12 @@
 	#define DEBUG_TRUST(f,s...) ((void)0)
 #endif
 
+/* This function initializes the USART interface for debugging on avr */
+void initSerialInterface(void);
+
+/* RX USART Callback */
+void usartRXCallback(uint16_t bytesToRead);
+
+/* This function sends data string via the USART interface */
+void uprintf(char *format, ...);
 #endif

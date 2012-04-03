@@ -1,4 +1,4 @@
-/* beacon.c */
+/* main_simu.c */
 /* Beacon Simulator Interface. {{{
  *
  * Copyright (C) 2011 Florent Duchon

@@ -2,61 +2,60 @@
 #define _CONFIGURATION_H_
 
 #include "apsCommon.h"
-//-----------------------------------------------
-// Disables board-specific peripherals support
-//-----------------------------------------------
-//#define APP_DISABLE_BSP 1
+#include <BoardConfig.h>
+#include <usart.h>
+
+/*----------------------------------------------- */
+/* Disables board-specific peripherals support */
+/*----------------------------------------------- */
 #define APP_DISABLE_BSP 1
 
-//-----------------------------------------------
-// Includes board-specific peripherals support in application.
-//-----------------------------------------------
-#include <BoardConfig.h>
+#define AC_FREQ 8000000
 
-#define APP_INTERFACE_USART 0x01
-#define APP_INTERFACE_VCP 0x02
-#define APP_INTERFACE_SPI 0x03
-#define APP_INTERFACE_UART 0x04
-#define APP_INTERFACE_USBFIFO 0x05
+/* -----------------------------------------------------------  	*/
+/* 			USART CONFIGURATION 				*/
+/* -----------------------------------------------------------  	*/
+#define APP_INTERFACE_USART 			0x01
+#define APP_INTERFACE_VCP 			0x02
+#define APP_INTERFACE_SPI 				0x03
+#define APP_INTERFACE_UART 			0x04
+#define APP_INTERFACE_USBFIFO 		0x05
+#define APP_USART_RX_BUFFER_SIZE          100 		/* Receive buffer size for USART. */
+#define APP_USART_TX_BUFFER_SIZE          100		/* Transmit buffer size for USART */
+#define APP_INTERFACE APP_INTERFACE_USART	/* Defines primary serial interface type to be used by application */
+#define APP_USART_CHANNEL USART_CHANNEL_1	/* Defines USART interface name to be used by application.*/
+
+/* -----------------------------------------------------------  	*/
+/* 			TWI  CONFIGURATION 				*/
+/* -----------------------------------------------------------  	*/
+#define AC_BEACON_TWI_ADDRESS 		10		/* TWI address */
+#define AC_TWI_DRIVER HARD					/* Driver to implement TWI: HARD, SOFT, or USI. */
+#define AC_TWI_NO_INTERRUPT 			0		/* Do not use interrupts. */	
+#define AC_TWI_FREQ 					100000	/* TWI frequency, should really be 100 kHz. */
+#define AC_TWI_SLAVE_ENABLE 			1		/* Enable slave part. */
+#define AC_TWI_MASTER_ENABLE 		0		/* Enable master part. */
+#define AC_TWI_SLAVE_POLLED 			1		/* Use polled slave mode: received data is stored in a buffer which can be polled using twi_slave_poll. */
+#undef AC_TWI_SLAVE_RECV					/* Slave reception callback to be defined by the user when not in polled mode. */
+#define AC_TWI_PULL_UP 				0		/* Use internal pull up. */
+#define AC_TWI_SLAVE_RECV_BUFFER_SIZE 16		/* Slave reception buffer size. */
+#define AC_TWI_SLAVE_SEND_BUFFER_SIZE 16		/* Slave transmission buffer size. */
 
 
-
-// Receive buffer size for USART.
-#define APP_USART_RX_BUFFER_SIZE          100
-// Transmit buffer size for USART.
-#define APP_USART_TX_BUFFER_SIZE          100
-
-#define AT25F2048  0x01
-#define AT45DB041  0x02
-#define AT25DF041A 0x03
-
-
-
-// Enables or disables APS Fragmentation support.
-#define APP_FRAGMENTATION 0
-//#define APP_FRAGMENTATION 1
-
-// Link failure detection functionality
-#define APP_DETECT_LINK_FAILURE 1
-//#define APP_DETECT_LINK_FAILURE 0
-
-// Enable this option if target board belongs to MNZB-EVBx family
-#define BSP_MNZB_EVB_SUPPORT 1
-//#define BSP_MNZB_EVB_SUPPORT 0
-
-// Defines primary serial interface type to be used by application.
-#define APP_INTERFACE APP_INTERFACE_USART
-
-// Defines USART interface name to be used by application.
-#define APP_USART_CHANNEL USART_CHANNEL_1
+/* -----------------------------------------------------------  	*/
+/* 			ZIGBEE  CONFIGURATION 			*/
+/* -----------------------------------------------------------  	*/
+#define AT25F2048  					0x01
+#define AT45DB041  					0x02
+#define AT25DF041A 					0x03
 
 
 
-
-#define APP_JOINING_INDICATION_PERIOD     500L // Period of blinking during starting network
-#define APP_ENDPOINT                      1    // Endpoint will be useed
-#define APP_PROFILE_ID                    1    // Profile Id will be used
-#define APP_CLUSTER_ID                    1    // Cluster Id will be used
+#define APP_FRAGMENTATION 			0		/* Enables or disables APS Fragmentation support. */
+#define APP_DETECT_LINK_FAILURE 		1		/* Enable or disable link failure detection */
+#define APP_ENDPOINT                      		1		/* Endpoint will be useed */
+#define APP_PROFILE_ID                    		1		/* Profile Id will be used */
+#define APP_CLUSTER_ID                    		1		/* Cluster Id will be used */
+#define APP_JOINING_INDICATION_PERIOD	500L	/* Period of blinking during starting network */
 
 
 
@@ -83,7 +82,7 @@
 // formed (for the coordinator) or joined (for a router or an end device). For a
 // router or an end device the parameter can equal 0 allowing them to join the
 // first suitable network that they discover.
-#define CS_EXT_PANID 0xAAAAAAAAAAAAAAAALL
+#define CS_EXT_PANID 0xAAAAAAAAAAAA1337LL
 
 // 64-bit Unique Identifier (UID) determining the device extended address. If this
 // value is 0 stack will try to read hardware UID from external UID or EEPROM chip.
@@ -136,7 +135,7 @@
 //  The parameter determines how many routers the device can have as children. Note
 // that the maximum number of end devices is equal to CS_MAX_CHILDREN_AMOUNT -
 // CS_MAX_CHILDREN_ROUTER_AMOUNT.
-#define CS_MAX_CHILDREN_ROUTER_AMOUNT 2
+#define CS_MAX_CHILDREN_ROUTER_AMOUNT 0
 
 // Network depht limits amount of hops that packet may travel in the network.
 // Actual maximum number of hops is network depth multiplied by 2.
@@ -154,7 +153,33 @@
 // perform any checkings of the network depth, neither when joining a network nor
 // when accepting other nodes as children. This allows forming long chains of
 // devices across considerable distances.
-#define CS_MAX_NETWORK_DEPTH 6
+#define CS_MAX_NETWORK_DEPTH 1
+
+// Maximum amount of records in the Neighbor Table.
+// 
+//  The parameter determines the size of the neighbor table which is used to store
+// beacon responses from nearby devices. The parameter puts an upper bound over the
+// amount of child devices possible for the node.
+#define CS_NEIB_TABLE_SIZE 10
+
+// Maximum amount of records in the network Route Table.
+// 
+//  The parameter sets the maximum number of records that can be kept in the NWK
+// route table. The table is used by NWK to store information about established
+// routes. Each table entry specifies the next-hop short address for a route from
+// the current node to a given destination node. The table is being filled
+// automatically during route discovery. An entry is added when a route is
+// discovered.
+#define CS_ROUTE_TABLE_SIZE 8
+
+// The parameter specifies the TX power of the transceiver device, is measured in
+// dBm(s). After the node has entered the network the value can only be changed via
+// the ZDO_SetTxPowerReq() function.
+// 
+//  Value range: depends on the hardware. Transmit power must be in the range from
+// -17 to 3 dBm for AT86RF231, AT86RF230 and AT86RF230B. For AT86RF212 transmit
+// power must be in the range from -11 to 11 dBm.
+#define CS_RF_TX_POWER 3
 
 //-----------------------------------------------
 //STANDARD_SECURITY_MODE
@@ -222,32 +247,6 @@
   // measured in milliseconds.
   #define CS_APS_SECURITY_TIMEOUT_PERIOD 10000
 #endif
-
-// Maximum amount of records in the Neighbor Table.
-// 
-//  The parameter determines the size of the neighbor table which is used to store
-// beacon responses from nearby devices. The parameter puts an upper bound over the
-// amount of child devices possible for the node.
-#define CS_NEIB_TABLE_SIZE 10
-
-// Maximum amount of records in the network Route Table.
-// 
-//  The parameter sets the maximum number of records that can be kept in the NWK
-// route table. The table is used by NWK to store information about established
-// routes. Each table entry specifies the next-hop short address for a route from
-// the current node to a given destination node. The table is being filled
-// automatically during route discovery. An entry is added when a route is
-// discovered.
-#define CS_ROUTE_TABLE_SIZE 8
-
-// The parameter specifies the TX power of the transceiver device, is measured in
-// dBm(s). After the node has entered the network the value can only be changed via
-// the ZDO_SetTxPowerReq() function.
-// 
-//  Value range: depends on the hardware. Transmit power must be in the range from
-// -17 to 3 dBm for AT86RF231, AT86RF230 and AT86RF230B. For AT86RF212 transmit
-// power must be in the range from -11 to 11 dBm.
-#define CS_RF_TX_POWER 3
 
 //-----------------------------------------------
 //APP_FRAGMENTATION == 1

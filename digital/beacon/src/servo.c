@@ -1,22 +1,38 @@
+/* servo.c */
+/* Beacon servomotor management. {{{
+ *
+ * Copyright (C) 2012 Florent Duchon
+ *
+ * APBTeam:
+ *        Web: http://apbteam.org/
+ *      Email: team AT apbteam DOT org
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ * }}} */
+
 #include <types.h>
-// #include <zdo.h>
-// #include <peer2peer.h>
 #include <irq.h>
-// #include <sensors.h>
-// #include <network.h>
-// #include <serialInterface.h>
-// #include <stdio.h>
 #include "servo.h" 
-// #include <debug.h>
 
 
-
-void init_timer_servo(void)
+/* This function initializes the timer used for servomotor signal generation */
+void SERVO_timer1_init(void)
 {
 
 	//Fpwm = f_IO / (prescaler * (1 + TOP)) = 7200 Hz. */
- 	
-
   	OCR1B = 210; 
   	OCR1A = 279;
 
@@ -46,32 +62,50 @@ void init_timer_servo(void)
 
 }
 
-void increase_angle_servo_1(void)
+/* This function increase by one unit the angle of the defined servo */
+void SERVO_angle_increase(int servo_id)
 {
-	OCR1A++;
-	//uprintf("Servo_1 : Angle increase = %d\r\n",OCR1A);
+	switch(servo_id)
+	{
+		case 1:
+			if(OCR1A < SERVO_1_ANGLE_MAX)
+			{
+				OCR1A++;
+			}
+			break;
+		case 2:
+			if(OCR1B < SERVO_2_ANGLE_MAX)
+			{
+				OCR1B++;
+			}
+			break;
+		default:
+			return;
+	}
 }
 
-void decrease_angle_servo_1(void)
+
+/* This function decrease by one unit the angle of the defined servo */
+void SERVO_angle_decrease(int servo_id)
 {
-	OCR1A--;
-	//uprintf("Servo_1 : Angle decreased = %d\r\n",OCR1A);
+	switch(servo_id)
+	{
+		case 1:
+			if(OCR1A > SERVO_1_ANGLE_MIN)
+			{
+				OCR1A--;
+			}
+			break;
+		case 2:
+			if(OCR1B > SERVO_2_ANGLE_MIN)
+			{
+				OCR1B--;
+			}
+			break;
+		default:
+			return;
+	}
 }
-
-void increase_angle_servo_2(void)
-{
-	OCR1B++;
-	//uprintf("Servo_2 : Angle increased = %d\r\n",OCR1B);
-}
-
-void decrease_angle_servo_2(void)
-{
-	OCR1B--;
-	//uprintf("Servo_2 : Angle decreased = %d\r\n",OCR1B);
-}
-
-
-
 
 SIGNAL (SIG_OVERFLOW1)
 {
