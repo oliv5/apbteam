@@ -52,7 +52,7 @@ typedef struct
 {
 	int x;
 	int y;
-	int trust
+	int trust;
 }opponent_s;
 
 /* Coordinates structure */

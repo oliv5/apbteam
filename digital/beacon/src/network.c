@@ -245,12 +245,12 @@ void send_data(uint8_t type, uint8_t data)
 	APS_DataReq(&config);
 }
 
-void send_angle(int angle_degree)
-{
+// void send_angle(int angle_degree)
+// {
 // 	zigbit_tx_buffer.message.data[0]=0x43;
 // 	zigbit_tx_buffer.message.data[1]=beacon_id;
 // 	zigbit_tx_buffer.message.data[2]=angle_degree;	
-}
+// }
 
 
 

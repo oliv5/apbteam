@@ -32,6 +32,7 @@
 #include "debug.h"
 #include "position.h"
 #include "led.h"
+#include "twi.h"
 
 // Application related parameters
 AppState_t appState = APP_INITIAL_STATE;  // application state
@@ -73,19 +74,20 @@ void APL_TaskHandler(void)
 						uprintf("DEVICE_TYPE_COORDINATOR init OK\n\r");
 					break;
 				case DEVICE_TYPE_END_DEVICE:
+						servo_timer1_init();
 						sensors_laser_init();
 						sensors_codewheel_init();
-						network_init();
+ 						network_init();
 						uprintf("DEVICE_TYPE_END_DEVICE init OK\n\r");
 					break;
 				default:
 					break;
 			}
-			appState = APP_NETWORK_JOINING_STATE;
-			SYS_PostTask(APL_TASK_ID);
+ 			appState = APP_NETWORK_JOINING_STATE;
+ 			SYS_PostTask(APL_TASK_ID);
 			break;
 		case APP_NETWORK_JOINING_STATE:
-    			network_start();
+     			network_start();
 			break;
 		case APP_NETWORK_LEAVING_STATE:
 			break;
