@@ -26,19 +26,27 @@
 #ifndef _SERVO_H
 #define _SERVO_H
 
-#define SERVO_1_ANGLE_MIN 	3000
-#define SERVO_1_ANGLE_MAX 	3000
-#define SERVO_2_ANGLE_MIN 	3000
-#define SERVO_2_ANGLE_MAX 	3000
+#define SERVO_1_ANGLE_INIT 	150
+#define SERVO_1_ANGLE_MIN 	69
+#define SERVO_1_ANGLE_MAX 	300
+#define SERVO_2_ANGLE_INIT 	150
+#define SERVO_2_ANGLE_MIN 	69
+#define SERVO_2_ANGLE_MAX 	300
 
+/* SERVO ID */
+typedef enum
+{
+	SERVO_1=1,
+	SERVO_2
+} TServo_ID;
 
 /* This function initializes the timer used for servomotor signal generation */
-void SERVO_timer1_init(void);
+void servo_timer1_init(void);
 
-/* This function increase by one unit the angle of the defined servo */
-void SERVO_angle_increase(int servo_id);
+/* This function increase by one unit the angle of the defined servo and returns "angle" value */
+int servo_angle_increase(TServo_ID servo_id);
 
-/* This function decrease by one unit the angle of the defined servo */
-void SERVO_angle_decrease(int servo_id);
+/* This function decrease by one unit the angle of the defined servo and returns "angle" value*/
+int servo_angle_decrease(TServo_ID servo_id);
 
 #endif
