@@ -51,7 +51,10 @@ INCLUDES = \
   -I$(BITCLOUD_PATH)/Components/MAC_PHY/MAC_HWI/include \
   -I$(BITCLOUD_PATH)/Components/MAC_PHY/MAC_HWD_PHY/include \
   -I$(BITCLOUD_PATH)/Components/MAC_PHY/MAC_HWD_PHY/RF230/PHY/include \
-  -I$(BITCLOUD_PATH)/Components/MAC_PHY/MAC_HWD_PHY/RF230/MAC_HWD/include 
+  -I$(BITCLOUD_PATH)/Components/MAC_PHY/MAC_HWD_PHY/RF230/MAC_HWD/include \
+  -I$(APB_AVR_PATH) \
+  -I$(APB_AVR_PATH)/common \
+  -I$(APB_AVR_PATH)/modules/twi
 
 LIBS = \
   $(BITCLOUD_PATH)/lib/libHAL_ZigBit_Atmega1281_8Mhz_Gcc.a \
@@ -66,7 +69,9 @@ SRCS = \
   $(BITCLOUD_PATH)/Components/BSP/MESHBEAN/src/bspTaskManager.c \
   $(BITCLOUD_PATH)/Components/ConfigServer/src/csPersistentMem.c \
   $(BITCLOUD_PATH)/Components/ConfigServer/src/csMem.c \
-  $(BITCLOUD_PATH)/Components/ConfigServer/src/configServer.c 
+  $(BITCLOUD_PATH)/Components/ConfigServer/src/configServer.c \
+  $(APB_AVR_PATH)/modules/twi/twi_hard.avr.c \
+  $(APB_AVR_PATH)/modules/twi/twi.c
 
 PREINCLUDE = MakerulesBc_All_Atmega1281_Rf230_Gcc.h
 
@@ -88,6 +93,9 @@ CFLAGS += $(INCLUDES)
 CFLAGS += -include $(PREINCLUDE)
 CFLAGS += -g
 
+# APB sources need to be compiled without this option in order to manage correctly APB inline functions
+APB_CFLAGS := $(filter-out -std=gnu99,$(CFLAGS))
+
 ASFLAGS = $(INCLUDES)
 ASFLAGS += $(filter -mmcu%,$(CFLAGS))
 
@@ -102,6 +110,7 @@ all: directories $(EXE_PATH)/$(APP_NAME).elf $(EXE_PATH)/$(APP_NAME).hex $(EXE_P
 
 $(OBJ_PATH)/%.o: $(SRCS)
 	$(CC) $(CFLAGS) $(filter %/$(subst .o,.c,$(notdir $@)), $(SRCS)) -o $@
+All_ZigBit_Atmega1281_Rf230_8Mhz_Gcc/Obj/twi_hard.avr.o: CFLAGS=$(APB_CFLAGS)
 
 
 $(EXE_PATH)/$(APP_NAME).elf: $(OBJS)
@@ -120,7 +129,7 @@ root_files:
 	cp -f $(EXE_PATH)/*.* ./../obj
 
 clean:
-	rm -rf $(CONFIG_NAME) ./../../$(APP_NAME).elf ./../../$(APP_NAME).hex ./../../$(APP_NAME).srec ./../../$(APP_NAME).bin
+	rm -rf $(CONFIG_NAME) ./../obj/$(APP_NAME).elf ./../obj/$(APP_NAME).hex ./../obj/$(APP_NAME).srec ./../obj/$(APP_NAME).bin
 
 directories:
 	@mkdir -p $(LIST_PATH)

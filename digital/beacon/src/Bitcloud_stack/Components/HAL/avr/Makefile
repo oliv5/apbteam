@@ -28,7 +28,7 @@ endif
 #### DEFINES FLAGS #######
 CFLAGS += -DHAL_USE_ADC
 CFLAGS += -DHAL_USE_EE_READY
-CFLAGS += -DHAL_USE_TWI
+# CFLAGS += -DHAL_USE_TWI
 CFLAGS += -DHAL_USE_TIMER4_COMPA
 CFLAGS += -DHAL_USE_EXT_HANDLER
 ifneq ($(HAL), AT90USB1287)
@@ -146,7 +146,7 @@ common_hwd +=  halAppClock
 common_hwd +=  halClkCtrl
 common_hwd +=  halUsart
 common_hwd +=  halIrq
-common_hwd +=  i2c
+# common_hwd +=  i2c
 common_hwd +=  halEeprom
 common_hwd +=  wdt
 common_hwd +=  halSleep
@@ -190,7 +190,7 @@ hwi += usart
 hwi += w1
 hwi += irq
 hwi += resetReason
-hwi += i2cPacket
+# hwi += i2cPacket
 hwi += eeprom
 hwi += timer
 hwi += adc

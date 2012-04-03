@@ -1,48 +1,48 @@
-/**************************************************************************//**
-\file Peer2Peer.c
+/* main_avr.c */
+/* Beacon State Machine & Main. {{{
+ *
+ * Copyright (C) 2012 Florent Duchon
+ *
+ * APBTeam:
+ *        Web: http://apbteam.org/
+ *      Email: team AT apbteam DOT org
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ * }}} */
 
-\brief Peer-2-peer sample application.
-
-\author
-Atmel Corporation: http://www.atmel.com \n
-Support email: avr@atmel.com
-
-Copyright (c) 2008 , Atmel Corporation. All rights reserved.
-Licensed under Atmel's Limited License Agreement (BitCloudTM).
-
-\internal
-History:
-14.10.09 A. Taradov - Added FIFO for received packets
-******************************************************************************/
-
-/******************************************************************************
-		Includes section
-******************************************************************************/
 #include <types.h>
-#include <configServer.h>
-#include <appTimer.h>
-#include <zdo.h>
+#include <util/delay.h>
 #include "configuration.h"
 #include "network.h"
-// #include <serialInterface.h>
-#include <irq.h>
 #include "sensors.h"
 #include "servo.h"
-#include <stdio.h>
 #include "debug.h"
 #include "position.h"
-#include <math.h>
-#include <util/delay.h>
-/******************************************************************************
-		Define(s) section
-******************************************************************************/
-
-/******************************************************************************
-		Variables section
-******************************************************************************/
+#include "led.h"
 
 // Application related parameters
 AppState_t appState = APP_INITIAL_STATE;  // application state
+
+#ifdef TYPE_COOR
+	DeviceType_t deviceType = DEVICE_TYPE_COORDINATOR;
+#else
+ 	DeviceType_t deviceType = DEVICE_TYPE_END_DEVICE;
+#endif
+
+	
 // int jack = 0;
 // status_s status;
 // extern int lost_packet;
@@ -53,71 +53,43 @@ AppState_t appState = APP_INITIAL_STATE;  // application state
 // extern APS_DataReq_t test;
 // extern buff_t buf_to_send;
 
-/***********************************************************************************
-		Implementation section
-***********************************************************************************/
-/**************************************************************************//**
-\brief Application task handler.
-
-\param  none.
-\return none.
-******************************************************************************/
-#ifdef TYPE_COOR
-	DeviceType_t deviceType = DEVICE_TYPE_COORDINATOR;
-#else
- 	DeviceType_t deviceType = DEVICE_TYPE_END_DEVICE;
-#endif
-int top = 0;
 void APL_TaskHandler(void)
 {
 	switch (appState)
 	{
-		case APP_INITIAL_STATE:                 // Node has initial state
+		case APP_INITIAL_STATE:
 			
-			/*D5/D6/D7 are configured in output */
-			DDRD = 0xE0;
-			/* Power on the led */
-			int temp=0;
-			for(temp=0;temp<3;temp++)
-			{
-				PORTD=0xE0;
-				_delay_ms(100);
-				PORTD=0;
-				_delay_ms(100);
-			}
+			/* Init Led */
+			init_led();
 			
-//  			initSerialInterface();          // Open USART
-
+			/* Init Serial Interface for debug */ 
+  			initSerialInterface();          
+			
 			switch(deviceType)
 			{
 				case DEVICE_TYPE_COORDINATOR:
-// 					error = init_twi();
-// 					initNetwork();
+						network_init();
+						twi_init(AC_BEACON_TWI_ADDRESS);
+						uprintf("DEVICE_TYPE_COORDINATOR init OK\n\r");
 					break;
 				case DEVICE_TYPE_END_DEVICE:
-// 					init_ILS();
-// 					control_motor_ms(100);
-// 					init_timer_servo();
-// 					initNetwork();
+						sensors_laser_init();
+						sensors_codewheel_init();
+						network_init();
+						uprintf("DEVICE_TYPE_END_DEVICE init OK\n\r");
 					break;
 				default:
 					break;
 			}
 			appState = APP_NETWORK_JOINING_STATE;
-			SYS_PostTask(APL_TASK_ID);      // Execute next step
+			SYS_PostTask(APL_TASK_ID);
 			break;
-
 		case APP_NETWORK_JOINING_STATE:
-//    			startNetwork();
+    			network_start();
 			break;
-			
 		case APP_NETWORK_LEAVING_STATE:
 			break;
 		case APP_NETWORK_JOINED_STATE:
-// 			if(jack == 1)
-// 			{
-// 				send_angle(angle);
-// 			}
 			break;
 		default:
 			break;
@@ -125,64 +97,13 @@ void APL_TaskHandler(void)
 }
 
 
-
-/**************************************************************************//**
-\brief Wakeup event handler (dummy).
-
-\param  none.
-\return none.
-******************************************************************************/
-void ZDO_WakeUpInd(void)
-{
-}
-
-
-#ifdef _BINDING_
-/***********************************************************************************
-Stub for ZDO Binding Indication
-
-Parameters:
-bindInd - indication
-
-Return:
-none
-
-***********************************************************************************/
-void ZDO_BindIndication(ZDO_BindInd_t *bindInd) 
-{
-(void)bindInd;
-}
-
-/***********************************************************************************
-Stub for ZDO Unbinding Indication
-
-Parameters:
-unbindInd - indication
-
-Return:
-none
-
-***********************************************************************************/
-void ZDO_UnbindIndication(ZDO_UnbindInd_t *unbindInd)
-{
-(void)unbindInd;
-}
-#endif //_BINDING_
-
-/**********************************************************************//**
-\brief Main - C program main start function
-
-\param none
-\return none
-**************************************************************************/
 int main(void)
 { 
-//    	init_timer3();
 	SYS_SysInit();
-//  	init_struct();
 	for(;;)
 	{
  		SYS_RunTask();
 	}
 }
-// eof peer2Peer.c
+
+
