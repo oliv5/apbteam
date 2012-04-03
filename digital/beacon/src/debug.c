@@ -22,10 +22,10 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
-
+#include <stdarg.h>
 #include "configuration.h"
 #include "debug.h"
-
+#include "servo.h"
 
 HAL_UsartDescriptor_t appUsartDescriptor;          			// USART descriptor (required by stack)
 uint8_t usartRxBuffer[APP_USART_RX_BUFFER_SIZE];   	// USART Rx buffer
@@ -55,18 +55,32 @@ uint8_t usartTxBuffer[APP_USART_TX_BUFFER_SIZE];   	// USART Tx buffer
 void usartRXCallback(uint16_t bytesToRead)
 {
 	uint8_t rxBuffer;
- 	READ_USART(&appUsartDescriptor,&rxBuffer,1);
+ 	READ_USART(&appUsartDescriptor,&rxBuffer,bytesToRead);
 	
 	switch(rxBuffer)
 	{
 		case 'o':
+			/* Increase servo 1 angle */
+			uprintf("SERVO_1 = %d\r\n",servo_angle_increase(SERVO_1));
+			break;
+		case 'l':
+			/* Decrease servo 1 angle */
+			uprintf("SERVO_1 = %d\r\n",servo_angle_decrease(SERVO_1));
+			break;
+		case 'p':
+			/* Increase servo 2 angle */
+			uprintf("SERVO_2 = %d\r\n",servo_angle_increase(SERVO_2));
+			break;
+		case 'm':
+			/* Decrease servo 2 angle */
+			uprintf("SERVO_2 = %d\r\n",servo_angle_decrease(SERVO_2));
 			break;
 		/* Default */
 		default :
 			uprintf(" ?? Unknown command ??\r\n");
 	}
 }
-#include <stdarg.h>
+
 /* This function sends data string via the USART interface */
 void uprintf(char *format, ...)
 {
