@@ -56,6 +56,7 @@
 # if defined (__AVR_ATmega32__)
 # elif defined (__AVR_ATmega64__)
 # elif defined (__AVR_ATmega128__)
+# elif defined (__AVR_ATmega1281__)
 # elif defined (__AVR_ATmega164P__)
 # elif defined (__AVR_AT90USB646__)
 # elif defined (__AVR_AT90USB647__)
