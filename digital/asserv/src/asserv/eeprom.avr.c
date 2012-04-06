@@ -156,11 +156,13 @@ eeprom_read_params (void)
 				   &cs_main.pos_alpha,
 				   &cs_main.blocking_detection_alpha,
 				   &output_right);
+#if AC_ASSERV_AUX_NB
 	for (i = 0; i < AC_ASSERV_AUX_NB; i++)
 	    eeprom_read_params_helper (&loaded, 2 + i, &cs_aux[i].speed,
 				       &cs_aux[i].pos,
 				       &cs_aux[i].blocking_detection,
 				       &output_aux[i]);
+#endif
 	postrack_set_footing (loaded.postrack_footing);
 	traj_eps = loaded.traj_eps;
 	traj_aeps = loaded.traj_aeps;
@@ -205,11 +207,13 @@ eeprom_write_params (void)
 				&cs_main.pos_alpha,
 				&cs_main.blocking_detection_alpha,
 				&output_right);
+#if AC_ASSERV_AUX_NB
     for (i = 0; i < AC_ASSERV_AUX_NB; i++)
 	eeprom_write_params_helper (&p, 2 + i, &cs_aux[i].speed,
 				    &cs_aux[i].pos,
 				    &cs_aux[i].blocking_detection,
 				    &output_aux[i]);
+#endif
     p.postrack_footing = postrack_footing;
     p.traj_eps = traj_eps;
     p.traj_aeps = traj_aeps;

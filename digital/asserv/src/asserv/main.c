@@ -58,8 +58,10 @@ uint8_t main_stat_counter, main_stat_counter_cpt;
 /** Report of position. */
 uint8_t main_stat_postrack, main_stat_postrack_cpt;
 
+#if AC_ASSERV_AUX_NB
 /** Report of auxiliary position. */
 uint8_t main_stat_aux_pos, main_stat_aux_pos_cpt;
+#endif
 
 /** Statistics about speed control. */
 uint8_t main_stat_speed, main_stat_speed_cpt;
@@ -67,8 +69,10 @@ uint8_t main_stat_speed, main_stat_speed_cpt;
 /** Statistics about shaft position control. */
 uint8_t main_stat_pos, main_stat_pos_cpt;
 
+#if AC_ASSERV_AUX_NB
 /** Statistics about auxiliary shaft position control. */
 uint8_t main_stat_pos_aux, main_stat_pos_aux_cpt;
+#endif
 
 /** Statistics about pwm values. */
 uint8_t main_stat_pwm, main_stat_pwm_cpt;
@@ -147,24 +151,25 @@ main_loop (void)
     main_timer[2] = timer_read ();
     /* Sequences. */
     seq_update (&seq_main, &cs_main.state);
+#if AC_ASSERV_AUX_NB
     seq_update (&seq_aux[0], &cs_aux[0].state);
     seq_update (&seq_aux[1], &cs_aux[1].state);
+#endif
     /* Stats. */
     if (main_sequence_ack
 	&& (seq_main.ack != seq_main.finish
-	    || seq_aux[0].ack != seq_aux[0].finish
-	    || seq_aux[1].ack != seq_aux[1].finish)
+	    || AUX_OR_0 (seq_aux[0].ack != seq_aux[0].finish
+			 || seq_aux[1].ack != seq_aux[1].finish))
 	&& !--main_sequence_ack_cpt)
       {
-	proto_send3b ('A', seq_main.finish,
-		      seq_aux[0].finish,
-		      seq_aux[1].finish);
+	proto_sendb ('A', seq_main.finish
+		     AUX_IF (, seq_aux[0].finish, seq_aux[1].finish));
 	main_sequence_ack_cpt = main_sequence_ack;
       }
     if (main_stat_counter && !--main_stat_counter_cpt)
       {
-	proto_send4w ('C', encoder_left.cur, encoder_right.cur,
-		      encoder_aux[0].cur, encoder_aux[1].cur);
+	proto_sendw ('C', encoder_left.cur, encoder_right.cur
+		     AUX_IF (, encoder_aux[0].cur, encoder_aux[1].cur));
 	main_stat_counter_cpt = main_stat_counter;
       }
     if (main_stat_postrack && !--main_stat_postrack_cpt)
@@ -172,17 +177,19 @@ main_loop (void)
 	proto_send3d ('X', postrack_x, postrack_y, postrack_a);
 	main_stat_postrack_cpt = main_stat_postrack;
       }
+#if AC_ASSERV_AUX_NB
     if (main_stat_aux_pos && !--main_stat_aux_pos_cpt)
       {
 	proto_send2w ('Y', aux[0].pos, aux[1].pos);
 	main_stat_aux_pos_cpt = main_stat_aux_pos;
       }
+#endif
     if (main_stat_speed && !--main_stat_speed_cpt)
       {
-	proto_send4b ('S', cs_main.speed_theta.cur >> 8,
-		      cs_main.speed_alpha.cur >> 8,
-		      cs_aux[0].speed.cur >> 8,
-		      cs_aux[1].speed.cur >> 8);
+	proto_sendb ('S', cs_main.speed_theta.cur >> 8,
+		     cs_main.speed_alpha.cur >> 8
+		     AUX_IF (, cs_aux[0].speed.cur >> 8,
+			     cs_aux[1].speed.cur >> 8));
 	main_stat_speed_cpt = main_stat_speed;
       }
     if (main_stat_pos && !--main_stat_pos_cpt)
@@ -193,6 +200,7 @@ main_loop (void)
 		      cs_main.pos_alpha.i);
 	main_stat_pos_cpt = main_stat_pos;
       }
+#if AC_ASSERV_AUX_NB
     if (main_stat_pos_aux && !--main_stat_pos_aux_cpt)
       {
 	proto_send4w ('Q', cs_aux[0].pos.last_error,
@@ -201,6 +209,7 @@ main_loop (void)
 		      cs_aux[1].pos.i);
 	main_stat_pos_aux_cpt = main_stat_pos_aux;
       }
+#endif
 #ifdef HOST
     if (main_simu && !--main_simu_cpt)
       {
@@ -212,8 +221,8 @@ main_loop (void)
 #endif /* HOST */
     if (main_stat_pwm && !--main_stat_pwm_cpt)
       {
-	proto_send4w ('W', output_left.cur, output_right.cur,
-		      output_aux[0].cur, output_aux[1].cur);
+	proto_sendw ('W', output_left.cur, output_right.cur
+		     AUX_IF (, output_aux[0].cur, output_aux[1].cur));
 	main_stat_pwm_cpt = main_stat_pwm;
       }
     if (main_stat_timer && !--main_stat_timer_cpt)
@@ -238,12 +247,13 @@ main_loop (void)
 void
 proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 {
-    /* Many commands use the first argument as a selector. */
-    struct aux_t *auxp = 0;
     pos_control_t *pos = 0;
     speed_control_t *speed = 0;
-    control_state_t *state = 0;
     blocking_detection_t *bd = 0;
+#if AC_ASSERV_AUX_NB
+    /* Many commands use the first argument as a selector. */
+    struct aux_t *auxp = 0;
+    control_state_t *state = 0;
     output_t *output = 0;
     seq_t *seq = 0;
     if (args[0] < AC_ASSERV_AUX_NB)
@@ -255,6 +265,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	output = &output_aux[args[0]];
 	seq = &seq_aux[args[0]];
       }
+#endif
     /* Decode command. */
 #define c(cmd, size) (cmd << 8 | size)
     switch (c (cmd, size))
@@ -270,6 +281,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	output_set (&output_right, 0);
 	control_state_set_mode (&cs_main.state, CS_MODE_NONE, 0);
 	break;
+#if AC_ASSERV_AUX_NB
       case c ('W', 0):
 	/* Set zero auxiliary pwm. */
 	output_set (&output_aux[0], 0);
@@ -277,6 +289,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	control_state_set_mode (&cs_aux[0].state, CS_MODE_NONE, 0);
 	control_state_set_mode (&cs_aux[1].state, CS_MODE_NONE, 0);
 	break;
+#endif
       case c ('w', 4):
 	/* Set pwm.
 	 * - w: left pwm.
@@ -285,6 +298,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	output_set (&output_right, v8_to_v16 (args[2], args[3]));
 	control_state_set_mode (&cs_main.state, CS_MODE_NONE, 0);
 	break;
+#if AC_ASSERV_AUX_NB
       case c ('W', 3):
 	/* Set auxiliary pwm.
 	 * - b: aux index.
@@ -293,6 +307,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	output_set (output, v8_to_v16 (args[1], args[2]));
 	control_state_set_mode (state, CS_MODE_NONE, 0);
 	break;
+#endif
       case c ('c', 4):
 	/* Add to position consign.
 	 * - w: theta consign offset.
@@ -301,6 +316,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	cs_main.pos_alpha.cons += v8_to_v16 (args[2], args[3]);
 	control_state_set_mode (&cs_main.state, CS_MODE_POS_CONTROL, 0);
 	break;
+#if AC_ASSERV_AUX_NB
       case c ('C', 3):
 	/* Add to auxiliary position consign.
 	 * - b: aux index.
@@ -309,6 +325,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	pos->cons += v8_to_v16 (args[1], args[2]);
 	control_state_set_mode (state, CS_MODE_POS_CONTROL, 0);
 	break;
+#endif
       case c ('s', 0):
 	/* Stop (set zero speed). */
 	speed_control_set_speed (&cs_main.speed_theta, 0);
@@ -323,6 +340,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	speed_control_set_speed (&cs_main.speed_alpha, args[1]);
 	control_state_set_mode (&cs_main.state, CS_MODE_SPEED_CONTROL, 0);
 	break;
+#if AC_ASSERV_AUX_NB
       case c ('S', 2):
 	/* Set auxiliary speed.
 	 * - b: aux index.
@@ -331,6 +349,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	speed_control_set_speed (speed, args[1]);
 	control_state_set_mode (state, CS_MODE_SPEED_CONTROL, 0);
 	break;
+#endif
       case c ('s', 9):
 	/* Set speed controlled position consign.
 	 * - d: theta consign offset.
@@ -366,6 +385,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	traj_angle_offset_start (v8_to_v32 (args[0], args[1], args[2],
 					    args[3]));
 	break;
+#if AC_ASSERV_AUX_NB
       case c ('S', 6):
 	/* Set auxiliary speed controlled position consign.
 	 * - b: aux index.
@@ -378,6 +398,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 						    args[4]));
 	aux_traj_speed_start (auxp);
 	break;
+#endif
       case c ('f', 2):
 	/* Go to the wall.
 	 * - b: 0: forward, 1: backward.
@@ -457,6 +478,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 			     v8_to_v32 (0, args[8], args[9], 0),
 			     args[10]);
 	break;
+#if AC_ASSERV_AUX_NB
       case c ('y', 4):
 	/* Auxiliary go to position.
 	 * - b: aux index.
@@ -488,6 +510,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	seq_acknowledge (&seq_aux[0], args[1]);
 	seq_acknowledge (&seq_aux[1], args[2]);
 	/* no break; */
+#endif
       case c ('a', 1):
 	/* Set main acknoledge.
 	 * - b: main ack sequence number. */
@@ -507,10 +530,12 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	/* Position stats. */
 	main_stat_postrack_cpt = main_stat_postrack = args[0];
 	break;
+#if AC_ASSERV_AUX_NB
       case c ('Y', 1):
 	/* Auxiliary position stats. */
 	main_stat_aux_pos_cpt = main_stat_aux_pos = args[0];
 	break;
+#endif
       case c ('S', 1):
 	/* Motor speed control stats. */
 	main_stat_speed_cpt = main_stat_speed = args[0];
@@ -519,10 +544,12 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	/* Motor position control stats. */
 	main_stat_pos_cpt = main_stat_pos = args[0];
 	break;
+#if AC_ASSERV_AUX_NB
       case c ('Q', 1):
 	/* Auxiliary motor position control stats. */
 	main_stat_pos_aux_cpt = main_stat_pos_aux = args[0];
 	break;
+#endif
       case c ('W', 1):
 	/* Pwm stats. */
 	main_stat_pwm_cpt = main_stat_pwm = args[0];
@@ -558,12 +585,14 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		speed = &cs_main.speed_alpha;
 		bd = &cs_main.blocking_detection_alpha;
 		break;
+#if AC_ASSERV_AUX_NB
 	      case 0:
 	      case 1:
 		pos = &cs_aux[args[1]].pos;
 		speed = &cs_aux[args[1]].speed;
 		bd = &cs_aux[args[1]].blocking_detection;
 		break;
+#endif
 	      default:
 		pos = 0;
 		speed = 0;
@@ -656,22 +685,28 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	      case c ('E', 3):
 		cs_main.pos_theta.e_sat =
 		    cs_main.pos_alpha.e_sat =
+#if AC_ASSERV_AUX_NB
 		    cs_aux[0].pos.e_sat =
 		    cs_aux[1].pos.e_sat =
+#endif
 		    v8_to_v16 (args[1], args[2]);
 		break;
 	      case c ('I', 3):
 		cs_main.pos_theta.i_sat =
 		    cs_main.pos_alpha.i_sat =
+#if AC_ASSERV_AUX_NB
 		    cs_aux[0].pos.i_sat =
 		    cs_aux[1].pos.i_sat =
+#endif
 		    v8_to_v16 (args[1], args[2]);
 		break;
 	      case c ('D', 3):
 		cs_main.pos_theta.d_sat =
 		    cs_main.pos_alpha.d_sat =
+#if AC_ASSERV_AUX_NB
 		    cs_aux[0].pos.d_sat =
 		    cs_aux[1].pos.d_sat =
+#endif
 		    v8_to_v16 (args[1], args[2]);
 		break;
 	      case c ('e', 5):
@@ -686,8 +721,10 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		 * - b: bits: 0000[aux1][aux0][right][left]. */
 		output_set_reverse (&output_left, (args[1] & 1) ? 1 : 0);
 		output_set_reverse (&output_right, (args[1] & 2) ? 1 : 0);
+#if AC_ASSERV_AUX_NB
 		output_set_reverse (&output_aux[0], (args[1] & 4) ? 1 : 0);
 		output_set_reverse (&output_aux[1], (args[1] & 8) ? 1 : 0);
+#endif
 		break;
 	      case c ('E', 2):
 		/* Write to eeprom.
@@ -706,8 +743,8 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		proto_send1w ('l', traj_angle_limit);
 		proto_send1b ('w', (output_left.reverse ? 1 : 0)
 			      | (output_right.reverse ? 2 : 0)
-			      | (output_aux[0].reverse ? 4 : 0)
-			      | (output_aux[1].reverse ? 8 : 0));
+			      | AUX_OR_0 ((output_aux[0].reverse ? 4 : 0)
+					  | (output_aux[1].reverse ? 8 : 0)));
 		break;
 	      case c ('P', 2):
 		/* Print current settings for selected control.

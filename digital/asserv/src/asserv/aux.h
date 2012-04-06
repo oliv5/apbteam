@@ -26,6 +26,11 @@
  * }}} */
 #include "cs.h"
 
+#if AC_ASSERV_AUX_NB
+
+# define AUX_IF(x...) x
+# define AUX_OR_0(x) (x)
+
 /** Auxiliary motor informations. */
 struct aux_t
 {
@@ -72,5 +77,27 @@ aux_traj_find_limit_start (struct aux_t *aux, int8_t speed);
 
 void
 aux_traj_update (void);
+
+#else /* !AC_ASSERV_AUX_NB */
+
+# define AUX_IF(x...)
+# define AUX_OR_0(x) 0
+
+extern inline void
+aux_init (void)
+{
+}
+
+extern inline void
+aux_pos_update (void)
+{
+}
+
+extern inline void
+aux_traj_update (void)
+{
+}
+
+#endif /* !AC_ASSERV_AUX_NB */
 
 #endif /* aux_h */

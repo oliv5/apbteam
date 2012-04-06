@@ -27,12 +27,16 @@
 #include "modules/motor/control_system/control_system.h"
 #include "modules/motor/encoder/encoder_corrector.h"
 
-extern encoder_t encoder_left, encoder_right, encoder_aux[AC_ASSERV_AUX_NB];
+extern encoder_t encoder_left, encoder_right;
 extern encoder_corrector_t encoder_right_corrector;
-extern output_t output_left, output_right, output_aux[AC_ASSERV_AUX_NB];
-
+extern output_t output_left, output_right;
 extern control_system_polar_t cs_main;
+
+#if AC_ASSERV_AUX_NB
+extern encoder_t encoder_aux[AC_ASSERV_AUX_NB];
+extern output_t output_aux[AC_ASSERV_AUX_NB];
 extern control_system_single_t cs_aux[AC_ASSERV_AUX_NB];
+#endif
 
 void
 cs_init (void);

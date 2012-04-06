@@ -27,5 +27,7 @@
 
 seq_t seq_main;
 
+#if AC_ASSERV_AUX_NB
 seq_t seq_aux[AC_ASSERV_AUX_NB];
+#endif
 

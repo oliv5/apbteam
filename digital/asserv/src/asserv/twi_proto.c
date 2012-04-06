@@ -72,13 +72,15 @@ twi_proto_update (void)
     while ((read_data = twi_slave_poll (buf, sizeof (buf))))
 	twi_proto_callback (buf, read_data);
     /* Update status. */
-    u8 status_with_crc[16];
+    u8 status_with_crc[12 + AC_ASSERV_AUX_NB * 2];
     u8 *status = &status_with_crc[1];
     status[0] = 0
+#if AC_ASSERV_AUX_NB
 	| (control_state_is_blocked (&cs_aux[1].state) ? (1 << 7) : 0)
 	| (control_state_is_finished (&cs_aux[1].state) ? (1 << 6) : 0)
 	| (control_state_is_blocked (&cs_aux[0].state) ? (1 << 5) : 0)
 	| (control_state_is_finished (&cs_aux[0].state) ? (1 << 4) : 0)
+#endif
 	| (cs_main.speed_theta.cur < 0 ? (1 << 3) : 0)
 	| (cs_main.speed_theta.cur > 0 ? (1 << 2) : 0)
 	| (control_state_is_blocked (&cs_main.state) ? (1 << 1) : 0)
@@ -93,10 +95,12 @@ twi_proto_update (void)
     status[8] = v32_to_v8 (postrack_y, 1);
     status[9] = v32_to_v8 (postrack_a, 2);
     status[10] = v32_to_v8 (postrack_a, 1);
+#if AC_ASSERV_AUX_NB
     status[11] = v16_to_v8 (aux[0].pos, 1);
     status[12] = v16_to_v8 (aux[0].pos, 0);
     status[13] = v16_to_v8 (aux[1].pos, 1);
     status[14] = v16_to_v8 (aux[1].pos, 0);
+#endif
     /* Compute CRC. */
     status_with_crc[0] = crc_compute (&status_with_crc[1],
                                       sizeof (status_with_crc) - 1);
@@ -213,6 +217,7 @@ twi_proto_callback (u8 *buf, u8 size)
 			     v8_to_v32 (0, buf[8], buf[9], 0),
 			     buf[10]);
 	break;
+#if AC_ASSERV_AUX_NB
       case c ('b', 3):
 	/* Move the aux0.
 	 * - w: new position.
@@ -249,6 +254,7 @@ twi_proto_callback (u8 *buf, u8 size)
 	else
 	    buf[0] = 0;
 	break;
+#endif
       case c ('p', x):
 	/* Set parameters. */
 	if (twi_proto_params (&buf[2], size - 2) != 0)

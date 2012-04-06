@@ -58,8 +58,10 @@ typedef struct seq_t seq_t;
 /** Main motors sequence state. */
 extern seq_t seq_main;
 
+#if AC_ASSERV_AUX_NB
 /** Auxiliary motor states. */
 extern seq_t seq_aux[AC_ASSERV_AUX_NB];
+#endif
 
 /** Start a new command execution, return non zero if this is a new
  * sequence. */

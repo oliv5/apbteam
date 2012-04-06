@@ -292,9 +292,11 @@ simu_step (void)
 	* ((double) output_left.cur / (OUTPUT_MAX + 1));
     simu_right_model.u = simu_robot->u_max
 	* ((double) output_right.cur / (OUTPUT_MAX + 1));
+#if AC_ASSERV_AUX_NB
     for (i = 0; i < AC_ASSERV_AUX_NB; i++)
 	simu_aux_model[i].u = simu_robot->u_max
 	    * ((double) output_aux[i].cur / (OUTPUT_MAX + 1));
+#endif
     /* Make one step. */
     old_left_th = simu_left_model.th;
     old_right_th = simu_right_model.th;
@@ -375,6 +377,7 @@ simu_step (void)
     encoder_right.diff = encoder_right_new - simu_encoder_right;
     encoder_right.cur += encoder_right.diff;
     simu_encoder_right = encoder_right_new;
+#if AC_ASSERV_AUX_NB
     /* Update auxiliary encoder. */
     for (i = 0; i < AC_ASSERV_AUX_NB; i++)
       {
@@ -393,6 +396,7 @@ simu_step (void)
 	    simu_encoder_aux[i] = 0;
 	  }
       }
+#endif
     /* Update sensors. */
     if (simu_robot->sensor_update)
 	simu_robot->sensor_update ();
@@ -432,8 +436,10 @@ simu_send (void)
       {
 	m = mex_msg_new (simu_mex_pwm);
 	mex_msg_push (m, "hh", output_left.cur, output_right.cur);
+#if AC_ASSERV_AUX_NB
 	for (i = 0; i < AC_ASSERV_AUX_NB; i++)
 	    mex_msg_push (m, "h", output_aux[i].cur);
+#endif
 	mex_node_send (m);
 	output_left_sent = output_left.cur;
 	output_right_sent = output_right.cur;
