@@ -27,10 +27,7 @@
 
 #include "modules/host/host.h"
 #include "modules/host/mex.h"
-#include "modules/utils/utils.h"
 #include "modules/math/fixed/fixed.h"
-
-#include "io.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -40,14 +37,11 @@
 #include <sys/time.h>
 
 #include "cs.h"
-#include "aux.h"
-
-#include AC_ASSERV_CONTACTS_H
 
 #include "models.host.h"
 
 /** Simulate some AVR regs. */
-uint8_t DDRF, PORTC, PORTD, PORTE, PORTF, PORTG, PINC;
+uint8_t DDRF, PORTB, PORTC, PORTD, PORTE, PORTF, PORTG, PINC;
 
 /** Index of loaded eeprom block. */
 int8_t eeprom_loaded = -1;
@@ -142,143 +136,13 @@ simu_pos_update (double dl, double dr, double footing)
 }
 
 /** Compute a robot point absolute position. */
-static void
+void
 simu_compute_absolute_position (double p_x, double p_y, double *x, double *y)
 {
     double c = cos (simu_pos_a);
     double s = sin (simu_pos_a);
     *x = simu_pos_x + c * p_x - s * p_y;
     *y = simu_pos_y + s * p_x + c * p_y;
-}
-
-/** Update sensors for Giboulee. */
-void
-simu_sensor_update_giboulee (void)
-{
-    /** Micro-switch sensors. */
-    static const double sensors[][2] =
-      {
-	  { -70.0, 200.0 },
-	  { -70.0, -200.0 },
-	  { 170.0, 0.0 },
-      };
-    static const uint8_t sensors_bit[] =
-      { IO_BV (CONTACT_BACK_LEFT_IO), IO_BV (CONTACT_BACK_RIGHT_IO),
-	IO_BV (CONTACT_CENTER_IO), };
-    static const double table_width = 3000.0, table_height = 2100.0;
-    PINC = 0;
-    unsigned int i;
-    double x, y;
-    for (i = 0; i < UTILS_COUNT (sensors); i++)
-      {
-	/* Compute absolute position. */
-	simu_compute_absolute_position (sensors[i][0], sensors[i][1], &x, &y);
-	if (x >= 0.0 && x < table_width && y >= 0.0 && y < table_height)
-	    PINC |= sensors_bit[i];
-      }
-    /** Top zero sensor. */
-    double aa;
-    for (i = 0; i < AC_ASSERV_AUX_NB; i++)
-      {
-	aa = simu_aux_model[i].th / simu_aux_model[i].m.i_G * 3;
-	if (!(cos (aa) > 0 && fabs (sin (aa)) * 80.0 < 7.5))
-	    *aux[i].zero_pin |= aux[i].zero_bv;
-      }
-}
-
-/** Update sensors for AquaJim. */
-void
-simu_sensor_update_aquajim (void)
-{
-    /** Micro-switch sensors. */
-    static const double sensors[][2] =
-      {
-	  { -150.0, 70.0 },
-	  { -150.0, -70.0 },
-	  { 150.0, 130.0 },
-	  { 150.0, -130.0 },
-	  { 150.0, 0.0 },
-      };
-    static const uint8_t sensors_bit[] =
-      { IO_BV (CONTACT_BACK_LEFT_IO), IO_BV (CONTACT_BACK_RIGHT_IO),
-	IO_BV (CONTACT_FRONT_LEFT_IO), IO_BV (CONTACT_FRONT_RIGHT_IO),
-	IO_BV (CONTACT_CENTER_IO), };
-    static const double table_width = 3000.0, table_height = 2100.0;
-    static const double center_zone_radius = 150.0;
-    PINC = 0;
-    unsigned int i;
-    double x, y, cx, cy, ds;
-    for (i = 0; i < UTILS_COUNT (sensors); i++)
-      {
-	/* Compute absolute position. */
-	simu_compute_absolute_position (sensors[i][0], sensors[i][1], &x, &y);
-	cx = table_width / 2 - x;
-	cy = table_height / 2 - y;
-	ds = cx * cx + cy * cy;
-	if (x >= 0.0 && x < table_width && y >= 0.0 && y < table_height
-	    && ds > center_zone_radius * center_zone_radius)
-	    PINC |= sensors_bit[i];
-      }
-    /** Top zero sensors. */
-    double aa = simu_aux_model[0].th / simu_aux_model[0].m.i_G
-	/* Almost open. */
-	+ 2 * M_PI / 6 / 10
-	/* Turn at the next hole. */
-	- 2 * M_PI / 3
-	/* Mechanical offset. */
-	+ 2 * M_PI * 0x43e / simu_robot->aux_encoder_steps[0] /
-	simu_aux_model[0].m.i_G;
-    double apos = aa / (2 * M_PI / 3);
-    if (apos - floor (apos) > 0.5)
-	PINC |= IO_BV (CONTACT_AUX0_ZERO_IO);
-    if (simu_aux_model[1].th >= 0)
-	PINC |= IO_BV (CONTACT_AUX1_ZERO_IO);
-}
-
-/** Update sensors for Marcel. */
-void
-simu_sensor_update_marcel (void)
-{
-    /** Micro-switch sensors. */
-    static const double sensors[][2] =
-      {
-	  { -160.0, 90.0 },
-	  { -160.0, -90.0 },
-	  { 120.0, 155.0 },
-	  { 120.0, -155.0 },
-      };
-    static const uint8_t sensors_bit[] =
-      { IO_BV (CONTACT_BACK_LEFT_IO), IO_BV (CONTACT_BACK_RIGHT_IO),
-	IO_BV (CONTACT_FRONT_LEFT_IO), IO_BV (CONTACT_FRONT_RIGHT_IO), };
-    static const double table_width = 3000.0, table_height = 2100.0;
-    static const double stand_x_min = 1500.0 - 759.5,
-		 stand_x_max = 1500.0 + 759.5, stand_y = 2100.0 - 522.0;
-    PINC = 0;
-    unsigned int i;
-    double x, y;
-    for (i = 0; i < UTILS_COUNT (sensors); i++)
-      {
-	/* Compute absolute position. */
-	simu_compute_absolute_position (sensors[i][0], sensors[i][1], &x, &y);
-	if (x >= 0.0 && x < table_width && y >= 0.0 && y < table_height
-	    && (x < stand_x_min || x >= stand_x_max || y < stand_y))
-	    PINC |= sensors_bit[i];
-      }
-    /** Top zero sensors. */
-    if (simu_aux_model[1].th < 0)
-	PINC |= IO_BV (CONTACT_AUX1_ZERO_IO);
-}
-
-/* Table test for Robospierre. */
-int
-simu_table_test_robospierre (double p_x, double p_y)
-{
-    static const double table_width = 3000.0, table_height = 2100.0;
-    double x, y;
-    simu_compute_absolute_position (p_x, p_y, &x, &y);
-    if (x < 0 || y < 0 || x >= table_width || y >= table_height)
-	return 0;
-    return 1;
 }
 
 /** Do a simulation step. */

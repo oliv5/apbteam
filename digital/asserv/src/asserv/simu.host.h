@@ -24,10 +24,16 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "models.host.h"
 
-extern uint8_t DDRF, PORTC, PORTD, PORTE, PORTF, PORTG, PINC;
+extern uint8_t DDRF, PORTB, PORTC, PORTD, PORTE, PORTF, PORTG, PINC;
 
 extern double simu_pos_x, simu_pos_y, simu_pos_a;
+
+extern motor_model_t simu_left_model, simu_right_model,
+       simu_aux_model[AC_ASSERV_AUX_NB];
+
+extern const struct robot_t *simu_robot;
 
 void
 timer_init (void);
@@ -39,15 +45,6 @@ uint8_t
 timer_read (void);
 
 void
-simu_sensor_update_giboulee (void);
-
-void
-simu_sensor_update_aquajim (void);
-
-void
-simu_sensor_update_marcel (void);
-
-int
-simu_table_test_robospierre (double p_x, double p_y);
+simu_compute_absolute_position (double p_x, double p_y, double *x, double *y);
 
 #endif /* simu_host_h */
