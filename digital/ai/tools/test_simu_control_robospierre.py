@@ -33,7 +33,8 @@ class TestSimuControl (TestSimu):
     ROTATION_STROKE = 0x233e
 
     def __init__ (self, robot_class, *args):
-        TestSimu.__init__ (self, robot_class, *args, color_switch = False)
+        TestSimu.__init__ (self, robot_class, *args,
+                color_switch_set_pos = True)
         self.io = self.robots[0].io
         self.asserv = self.robots[0].asserv
         self.mimot = self.robots[0].mimot
@@ -151,9 +152,6 @@ class TestSimuControl (TestSimu):
         else:
             order = 'drop_clear'
         self.io.drop (order)
-
-    def change_color (self, *dummy):
-        pass
 
 if __name__ == '__main__':
     run ('robospierre', TestSimuControl)

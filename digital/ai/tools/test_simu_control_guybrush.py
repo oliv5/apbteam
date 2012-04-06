@@ -33,7 +33,8 @@ class TestSimuControl (TestSimu):
     LOWER_CLAMP_ROTATION_STROKE = int (16 * 250)
 
     def __init__ (self, robot_class, *args):
-        TestSimu.__init__ (self, robot_class, *args, color_switch = False)
+        TestSimu.__init__ (self, robot_class, *args,
+                color_switch_set_pos = True)
         self.io = self.robots[0].io
         self.asserv = self.robots[0].asserv
         self.mimot = self.robots[0].mimot
@@ -89,9 +90,6 @@ class TestSimuControl (TestSimu):
 
     def lower_clamp_rotate_command (self):
         self.mimot.speed_pos ('a0', self.LOWER_CLAMP_ROTATION_STROKE / 2)
-
-    def change_color (self, *dummy):
-        pass
 
 if __name__ == '__main__':
     run ('guybrush', TestSimuControl)
