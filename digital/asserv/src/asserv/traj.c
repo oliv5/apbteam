@@ -154,16 +154,21 @@ traj_ftw (void)
     speed = cs_main.speed_theta.slow;
     if (!traj_backward)
       {
+#ifdef CONTACT_FRONT_LEFT_IO
 	left = !IO_GET (CONTACT_FRONT_LEFT_IO);
 	right = !IO_GET (CONTACT_FRONT_RIGHT_IO);
+#endif
       }
     else
       {
+#ifdef CONTACT_BACK_LEFT_IO
 	speed = -speed;
 	left = !IO_GET (CONTACT_BACK_LEFT_IO);
 	right = !IO_GET (CONTACT_BACK_RIGHT_IO);
+#endif
       }
     center = 0;
+#ifdef CONTACT_CENTER_IO
     if (traj_use_center)
       {
 	if (!IO_GET (CONTACT_CENTER_IO))
@@ -174,6 +179,7 @@ traj_ftw (void)
 		traj_center_delay--;
 	  }
       }
+#endif
     speed_control_set_speed (&cs_main.speed_theta, speed);
     speed_control_set_speed (&cs_main.speed_alpha, 0);
     if (!left && !right)
@@ -274,6 +280,7 @@ traj_ptw_start (uint8_t backward, int32_t init_x, int32_t init_y,
 static void
 traj_gtd (void)
 {
+#ifdef CONTACT_CENTER_IO
     int8_t speed;
     speed = cs_main.speed_theta.slow;
     if (IO_GET (CONTACT_CENTER_IO))
@@ -289,15 +296,18 @@ traj_gtd (void)
 	control_state_finished (&cs_main.state);
 	traj_mode = TRAJ_DONE;
       }
+#endif /* CONTACT_CENTER_IO */
 }
 
 /** Start go to the dispenser mode. */
 void
 traj_gtd_start (void)
 {
+#ifdef CONTACT_CENTER_IO
     traj_mode = TRAJ_GTD;
     control_state_set_mode (&cs_main.state, CS_MODE_TRAJ_CONTROL,
 			    CS_MODE_POS_CONTROL_ALPHA);
+#endif /* CONTACT_CENTER_IO */
 }
 
 /** Go to position mode. */
