@@ -132,4 +132,8 @@
 /** PWM setting. */
 #undef AC_IOHUB_PWM
 
+/* asserv. */
+/** Number of auxiliary motors. */
+#define AC_ASSERV_AUX_NB 2
+
 #endif /* avrconfig_h */

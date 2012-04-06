@@ -138,4 +138,8 @@
     PWM (3, B, C, 5, C, 3) \
     PWM (3, C, C, 4, C, 2)
 
+/* asserv. */
+/** Number of auxiliary motors. */
+#define AC_ASSERV_AUX_NB 2
+
 #endif /* avrconfig_h */

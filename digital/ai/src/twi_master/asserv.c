@@ -45,6 +45,7 @@ enum asserv_status_flag_e
     asserv_status_flag_move_forward = 2,
     /** Bot is moving backward (linear speed smaller than 0). */
     asserv_status_flag_move_backward = 3,
+#if AC_ASSERV_AUX_NB
     /** Motor0 movement finished with success. */
     asserv_status_flag_motor0_succeed = 4,
     /** Motor0 movement finished with failure. */
@@ -53,6 +54,7 @@ enum asserv_status_flag_e
     asserv_status_flag_motor1_succeed = 6,
     /** Motor1 movement finished with failure. */
     asserv_status_flag_motor1_failed = 7,
+#endif
 };
 typedef enum asserv_status_flag_e asserv_status_flag_e;
 
@@ -89,10 +91,12 @@ typedef struct asserv_struct_s
     uint8_t input_port;
     /** Bot position. */
     asserv_position_t position;
+#if AC_ASSERV_AUX_NB
     /** Motor0 position. */
     uint16_t motor0_position;
     /** Motor1 position. */
     uint16_t motor1_position;
+#endif
 } asserv_struct_s;
 
 /**
@@ -125,8 +129,10 @@ asserv_status_cb (uint8_t *status)
     asserv_status.position.x = v8_to_v32 (0, status[3], status[4], status[5]);
     asserv_status.position.y = v8_to_v32 (0, status[6], status[7], status[8]);
     asserv_status.position.a = v8_to_v16 (status[9], status[10]);
+#if AC_ASSERV_AUX_NB
     asserv_status.motor0_position = v8_to_v16 (status[11], status[12]);
     asserv_status.motor1_position = v8_to_v16 (status[13], status[14]);
+#endif
     /* Update moving direction. */
     if (asserv_get_moving_direction () != 0)
 	asserv_last_moving_direction = asserv_get_moving_direction ();
@@ -144,6 +150,8 @@ asserv_move_cmd_status (void)
     /* Otherwise, not finished nor failure */
     return none;
 }
+
+#if AC_ASSERV_AUX_NB
 
 asserv_status_e
 asserv_motor0_cmd_status (void)
@@ -171,6 +179,8 @@ asserv_motor1_cmd_status (void)
     return none;
 }
 
+#endif /* AC_ASSERV_AUX_NB */
+
 void
 asserv_get_position (position_t *current_position)
 {
@@ -182,6 +192,8 @@ asserv_get_position (position_t *current_position)
 					    asserv_scale);
     current_position->a = asserv_status.position.a;
 }
+
+#if AC_ASSERV_AUX_NB
 
 uint16_t
 asserv_get_motor0_position (void)
@@ -196,6 +208,8 @@ asserv_get_motor1_position (void)
     /* Return the position of the motor1 of the current status buffer */
     return asserv_status.motor1_position;
 }
+
+#endif /* AC_ASSERV_AUX_NB */
 
 uint8_t
 asserv_get_moving_direction (void)
@@ -322,6 +336,8 @@ asserv_push_the_wall (uint8_t backward, uint32_t init_x, uint32_t init_y,
     twi_master_send_buffer (10);
 }
 
+#if AC_ASSERV_AUX_NB
+
 void
 asserv_move_motor0_absolute (uint16_t position, uint8_t speed)
 {
@@ -343,6 +359,8 @@ asserv_move_motor1_absolute (uint16_t position, uint8_t speed)
     buffer[3] = speed;
     twi_master_send_buffer (4);
 }
+
+#endif /* AC_ASSERV_AUX_NB */
 
 void
 asserv_set_x_position (int32_t x)
@@ -433,6 +451,8 @@ asserv_goto (uint32_t x, uint32_t y, uint8_t backward)
     twi_master_send_buffer (8);
 }
 
+#if AC_ASSERV_AUX_NB
+
 void
 asserv_motor0_zero_position (int8_t speed)
 {
@@ -469,3 +489,4 @@ asserv_motor1_free (void)
     twi_master_send_buffer (2);
 }
 
+#endif /* AC_ASSERV_AUX_NB */

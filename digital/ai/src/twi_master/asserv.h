@@ -39,7 +39,7 @@
 #define ASSERV_TWI_ADDRESS 4
 
 /** Length of the status buffer (not including CRC). */
-#define ASSERV_STATUS_LENGTH 15
+#define ASSERV_STATUS_LENGTH (11 + AC_ASSERV_AUX_NB * 2)
 
 /** Use backward movements. */
 #define ASSERV_BACKWARD 1
@@ -79,6 +79,8 @@ typedef enum asserv_status_e
 asserv_status_e
 asserv_move_cmd_status (void);
 
+#if AC_ASSERV_AUX_NB
+
 /**
  * Is last motor0 class command has successfully ended?
  * This function is used to know the status of the last motor0 command. It
@@ -97,12 +99,16 @@ asserv_motor0_cmd_status (void);
 asserv_status_e
 asserv_motor1_cmd_status (void);
 
+#endif /* AC_ASSERV_AUX_NB */
+
 /**
  * Get the current position of the bot.
  * @param current_position the current position to update.
  */
 void
 asserv_get_position (position_t *current_position);
+
+#if AC_ASSERV_AUX_NB
 
 /**
  * Get the motor0 position.
@@ -117,6 +123,8 @@ asserv_get_motor0_position (void);
  */
 uint16_t
 asserv_get_motor1_position (void);
+
+#endif /* AC_ASSERV_AUX_NB */
 
 /**
  * Are we moving forward/backward?
@@ -204,6 +212,8 @@ void
 asserv_push_the_wall (uint8_t backward, uint32_t init_x, uint32_t init_y,
 		      uint16_t init_a);
 
+#if AC_ASSERV_AUX_NB
+
 /**
  * Move the motor0.
  * Motor0 class command.
@@ -225,6 +235,8 @@ asserv_move_motor0_absolute (uint16_t position, uint8_t speed);
  */
 void
 asserv_move_motor1_absolute (uint16_t position, uint8_t speed);
+
+#endif /* AC_ASSERV_AUX_NB */
 
 /**
  * Set current X position.
@@ -284,6 +296,8 @@ asserv_set_position (int32_t x, int32_t y, int16_t angle);
 void
 asserv_goto (uint32_t x, uint32_t y, uint8_t backward);
 
+#if AC_ASSERV_AUX_NB
+
 /** Reset the motor0 to the zero position. */
 void
 asserv_motor0_zero_position (int8_t speed);
@@ -299,5 +313,7 @@ asserv_motor0_free (void);
 /** Set PWM to zero for motor1. */
 void
 asserv_motor1_free (void);
+
+#endif /* AC_ASSERV_AUX_NB */
 
 #endif /* asserv_h */

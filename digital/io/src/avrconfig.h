@@ -138,6 +138,10 @@
 /** TWI address of the io board. */
 #define AC_IO_TWI_ADDRESS 2
 
+/* asserv. */
+/** Number of auxiliary motors. */
+#define AC_ASSERV_AUX_NB 2
+
 /* spi - SPI module. */
 /** Select driver: HARD, SOFT, or NONE. */
 #define AC_SPI0_DRIVER HARD
