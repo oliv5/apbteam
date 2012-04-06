@@ -134,6 +134,6 @@
 
 /* asserv. */
 /** Number of auxiliary motors. */
-#define AC_ASSERV_AUX_NB 2
+#define AC_ASSERV_AUX_NB 0
 
 #endif /* avrconfig_h */

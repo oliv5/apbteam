@@ -30,14 +30,14 @@ class Robot:
         def proto (proto_class, cmd, init):
             cmd = [ s.format (instance = instance) for s in cmd ]
             return proto_class (PopenIO (cmd), proto_time, **init)
-        asserv_cmd = ('../../asserv/src/asserv/asserv.host',
-                '-i{instance}:asserv0', '-m9', 'robospierre')
+        asserv_cmd = ('../../mimot/src/asserv/asserv.host',
+                '-i{instance}:asserv0', '-m9', 'guybrush')
         mimot_cmd = ('../../mimot/src/dirty/dirty.host',
                 '-i{instance}:mimot0', '-m9', 'guybrush')
         io_hub_cmd = ('../../io-hub/src/guybrush/io_hub.host',
                 '-i{instance}:io0')
         self.asserv = proto (asserv.Proto, asserv_cmd,
-                asserv.init.host['robospierre'])
+                asserv.init.host['guybrush'])
         self.mimot = proto (mimot.Proto, mimot_cmd,
                 mimot.init.host['guybrush'])
         self.io = proto (io_hub.ProtoGuybrush, io_hub_cmd,
