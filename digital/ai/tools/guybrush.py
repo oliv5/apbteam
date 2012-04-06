@@ -19,8 +19,8 @@ class Robot:
     import simu.robots.guybrush.view.bag as robot_view
 
     robot_start_pos = {
-            False: (300, 2000 - 200, math.radians (180)),
-            True: (3000 - 300, 2000 - 200, math.radians (0))
+            False: (250, 2000 - 250, math.radians (0)),
+            True: (3000 - 250, 2000 - 250, math.radians (180))
             }
 
     client_nb = 3
