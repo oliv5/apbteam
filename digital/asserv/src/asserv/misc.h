@@ -25,6 +25,15 @@
  *
  * }}} */
 
+#define MISC_SETUP do { \
+    /* Pull-ups. */ \
+    PORTC = 0xff; \
+    PORTD = 0xf0; \
+    PORTE = 0xff; \
+    PORTF = 0xfc; \
+    PORTG = 0x18; \
+} while (0)
+
 #define LED_SETUP do { \
     PORTF &= _BV (1) | _BV (0); \
     DDRF &= _BV (1) | _BV (0); \

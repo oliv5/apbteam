@@ -100,12 +100,7 @@ int
 main (int argc, char **argv)
 {
     avr_init (argc, argv);
-    /* Pull-ups. */
-    PORTC = 0xff;
-    PORTD = 0xf0;
-    PORTE = 0xff;
-    PORTF = 0xfc;
-    PORTG = 0x18;
+    MISC_SETUP;
     LED_SETUP;
     timer_init ();
     uart0_init ();
