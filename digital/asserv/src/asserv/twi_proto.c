@@ -31,8 +31,6 @@
 #include "modules/twi/twi.h"
 #include "io.h"
 
-#include "misc.h"
-
 #include "postrack.h"
 #include "traj.h"
 #include "aux.h"

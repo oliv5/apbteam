@@ -28,7 +28,7 @@
 #include "modules/utils/utils.h"
 #include "io.h"
 
-#include "contacts.h"
+#include AC_ASSERV_CONTACTS_H
 
 #ifdef HOST
 # include "simu.host.h"

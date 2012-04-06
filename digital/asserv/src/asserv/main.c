@@ -31,7 +31,7 @@
 #include "modules/math/fixed/fixed.h"
 #include "io.h"
 
-#include "misc.h"
+#include AC_ASSERV_MISC_H
 
 #include "cs.h"
 #include "postrack.h"

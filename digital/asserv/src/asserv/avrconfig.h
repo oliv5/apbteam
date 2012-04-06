@@ -88,6 +88,10 @@
 #define AC_ASSERV_AUX_NB 2
 /** TWI address. */
 #define AC_ASSERV_TWI_ADDRESS 4
+/** Header file misc.h. */
+#define AC_ASSERV_MISC_H "misc.h"
+/** Header file contacts.h. */
+#define AC_ASSERV_CONTACTS_H "contacts.h"
 
 /* twi - TWI module. */
 /** Driver to implement TWI: HARD, SOFT, or USI. */

@@ -35,7 +35,7 @@
 #include "cs.h"
 #include "postrack.h"
 
-#include "contacts.h"
+#include AC_ASSERV_CONTACTS_H
 
 #ifdef HOST
 # include "simu.host.h"

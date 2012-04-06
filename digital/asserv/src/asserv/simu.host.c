@@ -42,7 +42,7 @@
 #include "cs.h"
 #include "aux.h"
 
-#include "contacts.h"
+#include AC_ASSERV_CONTACTS_H
 
 #include "models.host.h"
 
