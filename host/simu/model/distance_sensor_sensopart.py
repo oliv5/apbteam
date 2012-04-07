@@ -95,8 +95,10 @@ class DistanceSensorSensopartRay (Observable, DistanceSensor):
         DistanceSensor.__init__ (self, *args)
 
     def evaluate (self):
+        old = self.distance
         # Compute real distance.
         DistanceSensor.evaluate (self)
         # Update observers.
-        self.notify ()
+        if self.distance != old:
+            self.notify ()
 
