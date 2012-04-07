@@ -28,6 +28,11 @@ import math
 class TestSimuControl (TestSimu):
     """Interface with extra control."""
 
+    UPPER_CLAMP_OPEN = 1 << 1
+    UPPER_CLAMP_OUT = 1 << 2
+    UPPER_CLAMP_IN = 1 << 3
+    UPPER_CLAMP_DOWN = 1 << 4
+    UPPER_CLAMP_UP = 1 << 5
     LOWER_CLAMP_1_OPEN = 1 << 8
     LOWER_CLAMP_2_OPEN = 1 << 9
     LOWER_CLAMP_ROTATION_STROKE = int (16 * 250)
@@ -39,24 +44,31 @@ class TestSimuControl (TestSimu):
         self.asserv = self.robots[0].asserv
         self.mimot = self.robots[0].mimot
         self.robot_model = self.robots[0].model
+        self.io.output (self.UPPER_CLAMP_UP, 'toggle')
+        self.io.output (self.UPPER_CLAMP_IN, 'toggle')
 
     def create_widgets (self):
         TestSimu.create_widgets (self)
         self.control_frame = Frame (self)
         self.control_frame.pack (side = 'left', before = self.table_view,
                 fill = 'y')
-        self.lower_clamp_1_open_button = Button (self.control_frame,
-                text = 'LClamp 1 open', padx = 0, pady = 0,
-                command = self.lower_clamp_1_open_command)
-        self.lower_clamp_1_open_button.pack ()
-        self.lower_clamp_2_open_button = Button (self.control_frame,
-                text = 'LClamp 2 open', padx = 0, pady = 0,
-                command = self.lower_clamp_2_open_command)
-        self.lower_clamp_2_open_button.pack ()
+        def out_button (name, toggle):
+            def command ():
+                self.io.output (toggle, 'toggle')
+            button = Button (self.control_frame, text = name,
+                    padx = 0, pady = 0, command = command)
+            button.pack ()
+        out_button ('LClamp 1 open', self.LOWER_CLAMP_1_OPEN)
+        out_button ('LClamp 2 open', self.LOWER_CLAMP_2_OPEN)
         self.lower_clamp_rotate_button = Button (self.control_frame,
                 text = 'LClamp rotate', padx = 0, pady = 0,
                 command = self.lower_clamp_rotate_command)
         self.lower_clamp_rotate_button.pack ()
+        out_button ('UClamp up/down',
+                self.UPPER_CLAMP_UP | self.UPPER_CLAMP_DOWN)
+        out_button ('UClamp in/out',
+                self.UPPER_CLAMP_IN | self.UPPER_CLAMP_OUT)
+        out_button ('UClamp open', self.UPPER_CLAMP_OPEN)
         self.backward_var = IntVar ()
         self.backward_button = Checkbutton (self.control_frame,
                 text = 'Backward', variable = self.backward_var)

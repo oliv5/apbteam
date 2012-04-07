@@ -39,12 +39,19 @@ class Bag:
         self.jack = Switch (link_bag.io_hub.contact[1], invert = True)
         self.strat_switch = Switch (link_bag.io_hub.contact[2], invert = True)
         self.position = Position (link_bag.asserv.position)
+        output = link_bag.io_hub.output
         self.clamps = Clamps (table, self.position, link_bag.mimot.aux[0],
-                (PneumaticCylinder (None, link_bag.io_hub.output[8],
-                    scheduler, 0., 30., 150., 75., 30.),
-                PneumaticCylinder (None, link_bag.io_hub.output[9],
-                    scheduler, 0., 30., 150., 75., 30.)),
-                [ Switch (c) for c in link_bag.io_hub.contact[3:3+4] ])
+                (PneumaticCylinder (None, output[8], scheduler,
+                    0., 30., 150., 75., 30.),
+                PneumaticCylinder (None, output[9], scheduler,
+                    0., 30., 150., 75., 30.)),
+                [ Switch (c) for c in link_bag.io_hub.contact[3:3+4] ],
+                PneumaticCylinder (output[4], output[5], scheduler,
+                    0., 1., 1., 1., 1.),
+                PneumaticCylinder (output[3], output[2], scheduler,
+                    0., 1., 1., 1., 0.),
+                PneumaticCylinder (None, output[1], scheduler,
+                    0., 30., 150., 75., 30.))
         self.distance_sensor = [
                 DistanceSensorSensopart (link_bag.io_hub.adc[0], scheduler, table,
                     (20, 20), pi * 10 / 180, (self.position, ), 2),

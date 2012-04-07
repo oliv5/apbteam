@@ -23,11 +23,13 @@
 # }}}
 """Guybrush robot view."""
 import simu.inter.drawable
-from math import pi, cos
-from simu.view.table_eurobot2012 import WHITE, BLACK
+from math import pi, cos, sin, radians
+from simu.view.table_eurobot2012 import WHITE, BLACK, YELLOW
 
 COLOR_ROBOT = '#000000'
 COLOR_AXES = '#202040'
+
+GREY = '#808080'
 
 class Robot (simu.inter.drawable.Drawable):
 
@@ -62,6 +64,43 @@ class Robot (simu.inter.drawable.Drawable):
                         self.draw_oval ((x, y), sx * e.radius, e.radius,
                                 fill = color)
                     sx = - sx
+            # Draw upper clamps.
+            ud = self.clamps_model.upper_clamp_up_down
+            c = self.clamps_model.upper_clamp_clamping
+            io = self.clamps_model.upper_clamp_in_out
+            if (ud is not None and c is not None and io is not None
+                    and ud > 0.1):
+                self.trans_push ()
+                # Approximation: map cylinder extension to angle.
+                cx = -cos (radians (ud * 75 + 87))
+                x = -40 + 188 * cx
+                self.trans_translate ((x, 0))
+                # Draw level 2 clamp.
+                for e, y, in self.clamps_model.upper_clamp_content:
+                    if e.level == 2:
+                        self.draw_rectangle ((15 * cx, 75), (85 * cx, -75),
+                                fill = YELLOW)
+                        self.draw_rectangle ((28 * cx, 62), (72 * cx, -62),
+                                fill = YELLOW)
+                        break
+                self.draw_line ((15 * cx, 80 - c * 10), (85 * cx, 80 - c * 10))
+                self.draw_line ((15 * cx, -80 + c * 10), (85 * cx, -80 + c * 10))
+                # Draw level 3 clamp.
+                for side in (1, -1):
+                    a = side * -0.61 * (1 - io)
+                    rx, ry = cos (a), sin (a)
+                    for e, y in self.clamps_model.upper_clamp_content:
+                        if e.level == 3 and y * side > 0:
+                            color = WHITE if e.value else BLACK
+                            y = 80 - y * side
+                            self.draw_oval ((rx * 72 + ry * y, ry * 72 + rx * y + side * 80),
+                                    e.radius * cx, e.radius, fill = color)
+                    self.trans_push ()
+                    self.trans_translate ((0, side * 80))
+                    self.trans_rotate (a)
+                    self.draw_rectangle ((12, -4 * side), (12 + 35, 43 * side), fill = GREY)
+                    self.trans_pop ()
+                self.trans_pop ()
             # Draw robot body.
             self.draw_polygon ((150, 171.5), (-80, 171.5), (-130, 121.5),
                     (-130, -121.5), (-80, -171.5), (150, -171.5),

@@ -29,7 +29,9 @@ from math import pi
 class Clamps (Observable):
 
     def __init__ (self, table, robot_position, lower_clamp_motor,
-            lower_clamp_cylinders, lower_clamp_sensors):
+            lower_clamp_cylinders, lower_clamp_sensors,
+            upper_clamp_up_down_cylinder, upper_clamp_in_out_cylinder,
+            upper_clamp_open_cylinder):
         Observable.__init__ (self)
         self.table = table
         self.robot_position = robot_position
@@ -38,9 +40,16 @@ class Clamps (Observable):
         self.lower_clamp_sensors = lower_clamp_sensors
         self.lower_clamp_clamping = [ None, None ]
         self.lower_clamp_content = [ [ ], [ ] ]
+        self.upper_clamp_up_down_cylinder = upper_clamp_up_down_cylinder
+        self.upper_clamp_in_out_cylinder = upper_clamp_in_out_cylinder
+        self.upper_clamp_open_cylinder = upper_clamp_open_cylinder
+        self.upper_clamp_content = [ ]
         self.lower_clamp_motor.register (self.__lower_clamp_notified)
         for c in self.lower_clamp_cylinders:
             c.register (self.__lower_clamp_notified)
+        self.upper_clamp_up_down_cylinder.register (self.__upper_clamp_notified)
+        self.upper_clamp_in_out_cylinder.register (self.__upper_clamp_notified)
+        self.upper_clamp_open_cylinder.register (self.__upper_clamp_notified)
         self.robot_position.register (self.__robot_position_notified)
 
     def __robot_position_notified (self):
@@ -56,6 +65,17 @@ class Clamps (Observable):
                 self.lower_clamp_clamping[i] = ((c.pos - c.pos_in)
                         / (c.pos_out - c.pos_in))
         self.__compute_lower_clamp ()
+        self.notify ()
+
+    def __upper_clamp_notified (self):
+        self.upper_clamp_up_down = 1 - self.upper_clamp_up_down_cylinder.pos # 1. is down.
+        self.upper_clamp_in_out = self.upper_clamp_in_out_cylinder.pos # 1. is out.
+        c = self.upper_clamp_open_cylinder
+        if c.pos is None:
+            self.upper_clamp_clamping = None
+        else:
+            self.upper_clamp_clamping = c.pos / c.pos_out
+        self.__compute_upper_clamp ()
         self.notify ()
 
     def __compute_lower_clamp (self):
@@ -97,6 +117,25 @@ class Clamps (Observable):
                 s.notify ()
         return changed
 
+    def __compute_upper_clamp (self):
+        """Compute all operations of upper clamps."""
+        if (self.upper_clamp_up_down is None
+                or self.upper_clamp_in_out is None
+                or self.upper_clamp_clamping is None):
+            return
+        if (self.upper_clamp_clamping < 0.1
+                and self.upper_clamp_up_down > 0.9):
+            # Examine elements in front of the robot.
+            for e, y in self.__get_upper_elements ():
+                self.upper_clamp_content.append ((e, y))
+                e.pos = None
+                e.notify ()
+        if (self.upper_clamp_clamping > 0.9
+                and self.upper_clamp_up_down < 0.1):
+            # Drop elements.
+            self.__add_load ([ e for e, y in self.upper_clamp_content])
+            self.upper_clamp_content = [ ]
+
     def __add_load (self, elements):
         """Add element list to load."""
         pass
@@ -118,6 +157,32 @@ class Clamps (Observable):
                 if (pos[0] > xoffset + o.radius - xmargin
                         and pos[0] < xoffset + o.radius + xmargin
                         and pos[1] > -ymargin and pos[1] < ymargin):
+                    yield (o, pos[1])
+
+    def __get_upper_elements (self):
+        """Return elements in front of the robot in the upper clamps, with its
+        y coordinate in the robot base."""
+        if self.robot_position.pos is None:
+            return
+        # Matrix to transform an obstacle position into robot coordinates.
+        m = self.__get_robot_matrix ()
+        # Look up elements.
+        xoffset = 150
+        xmargin = 20
+        ymargin2 = 20
+        ymargin3 = 171.5
+        for o in self.table.obstacles:
+            if o.level == 2 and o.pos is not None:
+                pos = m.apply (o.pos)
+                if (pos[0] > xoffset + 35 - xmargin
+                        and pos[0] < xoffset + 35 + xmargin
+                        and pos[1] > -ymargin2 and pos[1] < ymargin2):
+                    yield (o, 0)
+            if o.level == 3 and o.pos is not None:
+                pos = m.apply (o.pos)
+                if (pos[0] > xoffset + o.radius - xmargin
+                        and pos[0] < xoffset + o.radius + xmargin
+                        and pos[1] > -ymargin3 and pos[1] < ymargin3):
                     yield (o, pos[1])
 
     def __get_robot_matrix (self):

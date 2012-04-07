@@ -23,7 +23,8 @@
 # }}}
 """Guybrush clamps."""
 from simu.inter.drawable import Drawable
-from math import pi
+from math import pi, cos, sin, radians
+from simu.view.table_eurobot2012 import YELLOW
 
 GREY = '#808080'
 BLACK = '#000000'
@@ -62,4 +63,34 @@ class ClampsSide (Drawable):
                                 fill = GREY)
                 if not i:
                     self.trans_rotate (pi)
+            self.trans_pop ()
+        # Draw upper clamp.
+        ud = self.model.upper_clamp_up_down
+        c = self.model.upper_clamp_clamping
+        io = self.model.upper_clamp_in_out
+        if (ud is not None and c is not None and io is not None):
+            self.trans_push ()
+            # Approximation: map cylinder extension to angle.
+            a = radians (ud * 75 + 87)
+            x = 40 + 188 * cos (a)
+            y = 75 + 188 * sin (a)
+            self.trans_translate ((x, y))
+            self.trans_rotate ((1 - ud) * 0.5 * pi)
+            self.draw_line ((0, 56), (0, -25), fill = GREY)
+            # Draw level 2 clamp.
+            for e, y, in self.model.upper_clamp_content:
+                if e.level == 2:
+                    self.draw_polygon ((-15, -15), (-15 - 70, -15),
+                            (-15 - 13 - 44, -15 + 48.5),
+                            (-15 - 13, -15 + 48.8), fill = YELLOW,
+                            outline = BLACK)
+                    break
+            self.draw_line ((-15, -10 + c * 5), (-15 - 70, -10 + c * 5))
+            # Draw level 3 clamp.
+            for e, y in self.model.upper_clamp_content:
+                if e.level == 3:
+                    self.draw_rectangle ((-12 * io - e.radius * 2, 54),
+                            (-12 * io, 50), fill = GREY)
+            self.draw_line ((-12 * io - 35, 55), (-12 * io, 55),
+                    (-12 * io, 55 - c * 33), (-12 * io - 35, 55 - c * 33))
             self.trans_pop ()
