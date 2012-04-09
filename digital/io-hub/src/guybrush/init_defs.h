@@ -30,21 +30,21 @@
 
 /** Parameters to push the first wall. */
 #define INIT_FIRST_WALL_PUSH \
-    0, PG_X (BOT_FRONT_CONTACT_DIST_MM), 200, \
-    PG_A_DEG (180 + BOT_FRONT_CONTACT_ANGLE_ERROR_DEG)
+    ASSERV_BACKWARD, PG_X (BOT_BACK_CONTACT_DIST_MM), 250, \
+    PG_A_DEG (0 + BOT_BACK_CONTACT_ANGLE_ERROR_DEG)
 /** Parameters to go away from the first wall. */
-#define INIT_FIRST_WALL_AWAY -500
+#define INIT_FIRST_WALL_AWAY (250 - BOT_BACK_CONTACT_DIST_MM)
 /** Parameter to face the second wall. */
-#define INIT_SECOND_WALL_ANGLE PG_A_DEG (90)
+#define INIT_SECOND_WALL_ANGLE PG_A_DEG (-90)
 /** Parameters to push the second wall. */
 #define INIT_SECOND_WALL_PUSH \
-    0, -1, PG_Y (PG_LENGTH - BOT_FRONT_CONTACT_DIST_MM), -1
+    ASSERV_BACKWARD, -1, PG_Y (PG_LENGTH - BOT_BACK_CONTACT_DIST_MM), -1
 /** Parameters to go away from the second wall. */
-#define INIT_SECOND_WALL_AWAY -(200 - BOT_FRONT_CONTACT_DIST_MM)
+#define INIT_SECOND_WALL_AWAY (250 - BOT_BACK_CONTACT_DIST_MM)
 /** Parameter to face the start position. */
-#define INIT_START_POSITION_ANGLE PG_A_DEG (0)
+#undef INIT_START_POSITION_ANGLE
 /** Start position. */
 #define INIT_START_POSITION \
-    PG_X (200), PG_Y (PG_LENGTH - 200), PG_A_DEG (0), ASSERV_BACKWARD
+    PG_X (250), PG_Y (PG_LENGTH - 250), PG_A_DEG (0), ASSERV_REVERT_OK
 
 #endif /* init_defs_h */

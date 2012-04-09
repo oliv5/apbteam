@@ -37,14 +37,14 @@
 /** Distance from the robot axis to the front. */
 #define BOT_SIZE_FRONT 150
 /** Distance from the robot axis to the back. */
-#define BOT_SIZE_BACK 150
+#define BOT_SIZE_BACK 130
 /** Distance from the robot axis to the side. */
-#define BOT_SIZE_SIDE 190
+#define BOT_SIZE_SIDE 172
 
 /** Distance between the front contact point and the robot center. */
-#define BOT_FRONT_CONTACT_DIST_MM 150
+#define BOT_BACK_CONTACT_DIST_MM BOT_SIZE_BACK
 /** Angle error at the front contact point. */
-#define BOT_FRONT_CONTACT_ANGLE_ERROR_DEG 0
+#define BOT_BACK_CONTACT_ANGLE_ERROR_DEG 0
 
 /** Speed used for initialisation. */
 #ifdef HOST
