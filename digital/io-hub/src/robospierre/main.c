@@ -292,6 +292,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	  {
 	    vect_t position = { v8_to_v16 (args[0], args[1]),
 		v8_to_v16 (args[2], args[3]) };
+	    move_stop ();
 	    move_start_noangle (position, args[4], 0);
 	  }
 	break;
