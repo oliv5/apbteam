@@ -224,6 +224,15 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	output_set (output, v8_to_v16 (args[1], args[2]));
 	control_state_set_mode (state, CS_MODE_NONE, 0);
 	break;
+      case c ('b', 2):
+	/* Set brake and set zero auxiliary pwm.
+	 * - b: aux index.
+	 * - b: brake (1) or not (0). */
+	if (!auxp) { proto_send0 ('?'); return; }
+	output_brake (output, args[1]);
+	output_set (output, 0);
+	control_state_set_mode (state, CS_MODE_NONE, 0);
+	break;
       case c ('c', 3):
 	/* Add to auxiliary position consign.
 	 * - b: aux index.
