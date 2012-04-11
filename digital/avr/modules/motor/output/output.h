@@ -41,6 +41,8 @@ struct output_t
     int16_t max;
     /** Minimum value (dead zone). */
     int16_t min;
+    /** Engage brake if supported. */
+    uint8_t brake;
     /** Reverse this output. */
     uint8_t reverse;
 };
@@ -53,6 +55,13 @@ output_init (uint8_t index, output_t *output);
 /** Set output value. */
 void
 output_set (output_t *output, int16_t value);
+
+/** Engage or not brake. */
+extern inline void
+output_brake (output_t *output, uint8_t brake)
+{
+    output->brake = brake;
+}
 
 /** Set output reverse flag. */
 extern inline void

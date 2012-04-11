@@ -25,6 +25,10 @@ filter value (saturation with `max`, dead zone with `min`, optional negation
 if `reverse` is set) and store it for next update.  Each output hardware will
 reflect this value once `output_update` is called.
 
+You can engage of disengage brake using `output_brake` if the output hardware
+supports it.  Brake is always engaged once a non zero output value is
+requested.  It will also be updated once `output_update` is called.
+
 An output can be reversed by setting the `reverse` field before `output_init`
 is called or using `output_set_reverse` function.
 

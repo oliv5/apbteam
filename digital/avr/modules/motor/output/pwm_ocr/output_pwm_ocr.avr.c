@@ -165,8 +165,7 @@ output_pwm_ocr_update_output (uint8_t index, volatile uint16_t *ocr,
     else
       {
 	/* Brake is engaged on first non null value. */
-	if (brake_io_port)
-	    *brake_io_port |= _BV (brake_io_bit);
+	output_pwm_ocr[index].output->brake = 1;
 	/* Convert signed value to sign and absolute value. */
 	if (value < 0)
 	  {
@@ -178,6 +177,14 @@ output_pwm_ocr_update_output (uint8_t index, volatile uint16_t *ocr,
 	    *dir_io_port |= _BV (dir_io_bit);
 	    *ocr = value + AC_OUTPUT_PWM_OCR_OFFSET;
 	  }
+      }
+    /* Update brake. */
+    if (brake_io_port)
+      {
+	if (output_pwm_ocr[index].output->brake)
+	    *brake_io_port |= _BV (brake_io_bit);
+	else
+	    *brake_io_port &= ~_BV (brake_io_bit);
       }
 }
 
