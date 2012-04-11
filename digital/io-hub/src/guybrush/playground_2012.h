@@ -29,4 +29,10 @@
 
 #include "playground.h"
 
+/** X offset from the table center of a totem center. */
+#define PG_TOTEM_X_OFFSET_MM 400
+
+/** Totem width. */
+#define PG_TOTEM_WIDTH_MM 250
+
 #endif /* playground_2012_h */

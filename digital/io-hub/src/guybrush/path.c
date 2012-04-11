@@ -42,15 +42,26 @@
  * This year, due to the large number of obstacles, a grid like structure is
  * used for path finding on the playground.  The A* algorithm is used to find
  * path along nodes.
- *
- * TODO: this is a placeholder for the future algorithm.
  */
+
+/** Clearance between obstacle and robot center, only used for grid
+ * construction. */
+#define PATH_GRID_CLEARANCE_MM (70 + BOT_SIZE_RADIUS)
 
 /** Number of possible obstacles. */
 #define PATH_OBSTACLES_NB AC_PATH_OBSTACLES_NB
 
+/** Number of nodes in a column. */
+#define PATH_COLUMN_NODES_NB 5
+
+/** Number of columns. */
+#define PATH_COLUMNS_NB 5
+
+/** Number of nodes in the grid. */
+#define PATH_GRID_NODES_NB (PATH_COLUMNS_NB * PATH_COLUMN_NODES_NB)
+
 /** Number of fixed nodes. */
-#define PATH_FIXED_NODES_NB (1)
+#define PATH_FIXED_NODES_NB (PATH_GRID_NODES_NB)
 
 /** Number of nodes in search graph, last two nodes are destination and source
  * nodes. */
@@ -92,8 +103,53 @@ static struct path_t path;
 /** Static information on nodes. */
 static const struct path_node_t path_nodes[PATH_FIXED_NODES_NB] = {
     /* {{{ */
-      { 1 },
+      { 1 }, /* 0 column 0. */
+      { 1 }, /* 1 */
+      { 1 }, /* 2 */
+      { 1 }, /* 3 */
+      { 1 }, /* 4 */
+      { 1 }, /* 5 column 1. */
+      { 1 }, /* 6 */
+      { 0 }, /* 7 */
+      { 1 }, /* 8 */
+      { 1 }, /* 9 */
+      { 1 }, /* 10 column 2. */
+      { 1 }, /* 11 */
+      { 0 }, /* 12 */
+      { 1 }, /* 13 */
+      { 1 }, /* 14 */
+      { 1 }, /* 15 column 3. */
+      { 1 }, /* 16 */
+      { 0 }, /* 17 */
+      { 1 }, /* 18 */
+      { 1 }, /* 19 */
+      { 1 }, /* 20 column 4. */
+      { 1 }, /* 21 */
+      { 1 }, /* 22 */
+      { 1 }, /* 23 */
+      { 1 }, /* 24 */
     /* }}} */
+};
+
+/** Shortcut. */
+#define PATH_TOTEM_CLEAR_MM (PG_TOTEM_WIDTH_MM / 2 + PATH_GRID_CLEARANCE_MM)
+
+/** X position of columns. */
+static const uint16_t path_nodes_x[PATH_COLUMNS_NB] = {
+    PG_WIDTH / 2 - PG_TOTEM_X_OFFSET_MM - PATH_TOTEM_CLEAR_MM,
+    PG_WIDTH / 2 - PG_TOTEM_X_OFFSET_MM,
+    PG_WIDTH / 2,
+    PG_WIDTH / 2 + PG_TOTEM_X_OFFSET_MM,
+    PG_WIDTH / 2 + PG_TOTEM_X_OFFSET_MM + PATH_TOTEM_CLEAR_MM,
+};
+
+/** Y position of lines. */
+static const uint16_t path_nodes_y[PATH_COLUMN_NODES_NB] = {
+    PATH_GRID_CLEARANCE_MM,
+    PG_LENGTH / 2 - PATH_TOTEM_CLEAR_MM,
+    PG_LENGTH / 2,
+    PG_LENGTH / 2 + PATH_TOTEM_CLEAR_MM,
+    PG_LENGTH - PATH_GRID_CLEARANCE_MM,
 };
 
 /** Compute position of a node. */
@@ -103,9 +159,10 @@ path_pos (uint8_t node, vect_t *pos)
     assert (node < PATH_NODES_NB);
     if (node < PATH_FIXED_NODES_NB)
       {
-	/* Temporary nonsense node. */
-	pos->x = PG_WIDTH / 2;
-	pos->y = PG_LENGTH / 2;
+	uint8_t col = node / PATH_COLUMN_NODES_NB;
+	uint8_t line = node - col * PATH_COLUMN_NODES_NB;
+	pos->x = path_nodes_x[col];
+	pos->y = path_nodes_y[line];
       }
     else
       {
@@ -128,6 +185,18 @@ path_blocking (uint8_t a, uint8_t b, int16_t *dp)
 	escape_factor = path.escape_factor;
     path_pos (a, &va);
     path_pos (b, &vb);
+    /* Test for totems. */
+    if (!(((va.x <= PG_WIDTH / 2 - PG_TOTEM_X_OFFSET_MM - PATH_TOTEM_CLEAR_MM
+	    && vb.x <= PG_WIDTH / 2 - PG_TOTEM_X_OFFSET_MM - PATH_TOTEM_CLEAR_MM)
+	   || (va.x >= PG_WIDTH / 2 + PG_TOTEM_X_OFFSET_MM + PATH_TOTEM_CLEAR_MM
+	       && vb.x >= PG_WIDTH / 2 + PG_TOTEM_X_OFFSET_MM + PATH_TOTEM_CLEAR_MM)
+	   || (va.y <= PG_LENGTH / 2 - PATH_TOTEM_CLEAR_MM
+	       && vb.y <= PG_LENGTH / 2 - PATH_TOTEM_CLEAR_MM)
+	   || (va.y >= PG_LENGTH / 2 + PATH_TOTEM_CLEAR_MM
+	       && vb.y >= PG_LENGTH / 2 + PATH_TOTEM_CLEAR_MM))))
+      {
+	blocking = 1;
+      }
     /* Test for a blocking obstacle. */
     for (i = 0; i < PATH_OBSTACLES_NB && !blocking; i++)
       {
@@ -297,13 +366,49 @@ path_get_next (vect_t *p)
 	return 0;
 }
 
-/** Neighbors callback for fixed nodes. */
+/** Neighbors callback for nodes in grid. */
 static uint8_t
-path_astar_neighbor_callback_fixed (uint8_t node,
-				    struct astar_neighbor_t *neighbors)
+path_astar_neighbor_callback_grid (uint8_t node,
+				   struct astar_neighbor_t *neighbors)
 {
     uint8_t neighbors_nb = 0;
+    uint8_t i;
     int16_t d;
+    /* Add neighbors in all 8 directions. */
+    static const struct {
+	/** Column offset of this neighbor. */
+	int8_t column_offset;
+	/** Line offset of this neighbor. */
+	int8_t line_offset;
+    } star_n[] = {
+	  { 0, -1 }, /* N */
+	  { -1, -1 }, /* NW */
+	  { -1, 0 }, /* W */
+	  { -1, 1 }, /* SW */
+	  { 0, 1 }, /* S */
+	  { 1, 1 }, /* SE */
+	  { 1, 0 }, /* E */
+	  { 1, -1 }, /* NE */
+    };
+    uint8_t col = node / PATH_COLUMN_NODES_NB;
+    uint8_t line = node - col * PATH_COLUMN_NODES_NB;
+    for (i = 0; i < UTILS_COUNT (star_n); i++)
+      {
+	int8_t new_col = col + star_n[i].column_offset;
+	int8_t new_line = line + star_n[i].line_offset;
+	if (new_col >= 0 && new_col < PATH_COLUMNS_NB
+	    && new_line >= 0 && new_line < PATH_COLUMN_NODES_NB)
+	  {
+	    int8_t new_node = new_col * PATH_COLUMN_NODES_NB + new_line;
+	    uint8_t valid = path.valid[new_node];
+	    if (valid && !path_blocking (node, new_node, &d))
+	      {
+		neighbors[neighbors_nb].node = new_node;
+		neighbors[neighbors_nb].weight = d + 1;
+		neighbors_nb++;
+	      }
+	  }
+      }
     /* Check if direct path OK. */
     if (!path_blocking (node, PATH_SRC_NODE_INDEX, &d))
       {
@@ -366,7 +471,7 @@ path_astar_neighbor_callback (uint8_t node,
     DPRINTF ("neighbor %d\n", node);
 #endif
     if (node < PATH_FIXED_NODES_NB)
-	return path_astar_neighbor_callback_fixed (node, neighbors);
+	return path_astar_neighbor_callback_grid (node, neighbors);
     else
 	return path_astar_neighbor_callback_endpoints (node, neighbors);
 }
