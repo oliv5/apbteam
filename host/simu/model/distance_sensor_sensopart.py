@@ -46,16 +46,16 @@ class DistanceSensorSensopart (Observable):
     OMAX = 250 * 0.020
 
     def __init__ (self, link, scheduler, table, pos, angle, into = None,
-            level = 0):
+            level = 0, exclude = None):
         Observable.__init__ (self)
         self.rays = [ ]
         range = self.RANGE * self.QUALITY
         self.rays.append (DistanceSensorSensopartRay (table, pos, angle,
-            range, into, level))
+            range, into, level, exclude))
         for s in self.SECONDARY:
             for i in (-1, 1):
                 self.rays.append (DistanceSensorSensopartRay (table, pos,
-                    angle + s[0] * i, range * s[1], into, level))
+                    angle + s[0] * i, range * s[1], into, level, exclude))
         self.link = link
         self.scheduler = scheduler
         self.value = None

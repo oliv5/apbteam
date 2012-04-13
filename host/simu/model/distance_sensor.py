@@ -27,7 +27,8 @@ from simu.utils.trans_matrix import TransMatrix
 
 class DistanceSensor:
 
-    def __init__ (self, table, pos, angle, range, into = None, level = 0):
+    def __init__ (self, table, pos, angle, range, into = None, level = 0,
+            exclude = None):
         self.table = table
         self.pos = pos
         self.angle = angle
@@ -36,6 +37,7 @@ class DistanceSensor:
                 pos[1] + sin (angle) * range)
         self.into = into or ()
         self.level = level
+        self.exclude = exclude
         self.distance = None
 
     def evaluate (self):
@@ -51,7 +53,7 @@ class DistanceSensor:
         pos, target = m.apply (pos, target)
         # Find intersection.
         i = self.table.intersect (pos, target, level = self.level,
-                comp = lambda a, b: a < b)
+                comp = lambda a, b: a < b, exclude = self.exclude)
         if i is not None:
             self.distance = i.distance
         else:

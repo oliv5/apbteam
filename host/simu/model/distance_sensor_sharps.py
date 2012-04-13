@@ -32,10 +32,10 @@ class DistanceSensorSharps (Observable, DistanceSensor):
     B = 177.26
 
     def __init__ (self, link, scheduler, table, pos, angle, into = None,
-            level = 0):
+            level = 0, exclude = exclude):
         Observable.__init__ (self)
         DistanceSensor.__init__ (self, table, pos, angle, self.RANGE, into,
-                level)
+                level, exclude)
         self.link = link
         self.scheduler = scheduler
         self.value = None

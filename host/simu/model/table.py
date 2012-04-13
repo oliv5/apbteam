@@ -36,10 +36,11 @@ class Table (Observable):
         Observable.__init__ (self)
         self.obstacles = [ ]
 
-    def intersect (self, a, b, level = None, comp = None):
+    def intersect (self, a, b, level = None, comp = None, exclude = None):
         i = None
         for o in self.obstacles:
-            if level is None or level == o.level:
+            if ((level is None or level == o.level)
+                    and (exclude is None or not exclude (o))):
                 d = o.intersect (a, b)
                 if d is not None and (i is None or comp (d, i.distance)):
                     i = Intersect (o, d)
@@ -47,12 +48,13 @@ class Table (Observable):
                         return i
         return i
 
-    def nearest (self, pos, level = None, max = None):
+    def nearest (self, pos, level = None, max = None, exclude = None):
         """Return nearest object."""
         no = None
         nds = None
         for o in self.obstacles:
-            if o.pos is not None and (level is None or level == o.level):
+            if (o.pos is not None and (level is None or level == o.level)
+                    and (exclude is None or not exclude (o))):
                 ds = (pos[0] - o.pos[0]) ** 2 + (pos[1] - o.pos[1]) ** 2
                 if (max is None or ds < max ** 2) and (nds is None or ds < nds):
                     no = o
