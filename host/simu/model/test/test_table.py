@@ -25,6 +25,7 @@
 from simu.model.table import Table
 from simu.model.round_obstacle import RoundObstacle
 from simu.model.rectangular_obstacle import RectangularObstacle
+from simu.model.polygonal_obstacle import PolygonalObstacle
 from simu.inter.drawable import Drawable, DrawableCanvas
 from simu.utils.vector import vector
 from Tkinter import *
@@ -53,6 +54,13 @@ class Area (Drawable):
                 self.draw_circle ((0, 0), 0.2)
                 self.draw_rectangle ((o.dim[0] / 2, o.dim[1] / 2),
                         (-o.dim[0] / 2, -o.dim[1] / 2), fill = '')
+                self.trans_pop ()
+            elif isinstance (o, PolygonalObstacle):
+                self.trans_push ()
+                self.trans_translate (o.pos)
+                self.trans_rotate (o.angle)
+                self.draw_circle ((0, 0), 0.2)
+                self.draw_polygon (*o.points, fill = '', outline = 'black')
                 self.trans_pop ()
             else:
                 raise TypeError ("unknown obstacle")
@@ -140,6 +148,17 @@ class TestTable (Frame):
                 command = self.new_rectangular_obstacle)
         self.new_obstacle_rect_frame.configure (
                 labelwidget = self.new_obstacle_rect)
+        self.new_obstacle_poly_frame = LabelFrame (self.right_frame)
+        self.new_obstacle_poly_frame.pack (side = 'top', fill = 'x')
+        self.new_obstacle_scale = Scale (self.new_obstacle_poly_frame,
+                label = 'Scale', orient = 'horizontal', from_ = 0.5, to = 5,
+                resolution = 0.5)
+        self.new_obstacle_scale.pack (side = 'top')
+        self.new_obstacle_poly = Button (self.new_obstacle_poly_frame,
+                text = 'New polygonal obstacle',
+                command = self.new_polygonal_obstacle)
+        self.new_obstacle_poly_frame.configure (
+                labelwidget = self.new_obstacle_poly)
         self.area_view = AreaView (self)
         self.area_view.pack (expand = True, fill = 'both')
         self.area_view.bind ('<1>', self.click)
@@ -198,6 +217,16 @@ class TestTable (Frame):
     def new_rectangular_obstacle (self):
         o = RectangularObstacle ((float (self.new_obstacle_dim0.get ()),
             float (self.new_obstacle_dim1.get ())))
+        o.pos = (5, -5)
+        o.angle = 0
+        self.area_view.area.table.obstacles.append (o)
+        self.update ()
+
+    def new_polygonal_obstacle (self):
+        s = float (self.new_obstacle_scale.get ())
+        p = [ (s * x, s * y) for x, y in ((1, 1), (0.7, -0.7), (0, -0.2),
+            (-0.8, -0.7), (-1, 1.5)) ]
+        o = PolygonalObstacle (*p)
         o.pos = (5, -5)
         o.angle = 0
         self.area_view.area.table.obstacles.append (o)
