@@ -74,7 +74,7 @@ class Area (Drawable):
                         **kwargs)
                 if i is not None:
                     a, b = vector (self.a), vector (self.b)
-                    self.result = (b - a).unit () * i.distance
+                    self.result = a + (b - a).unit () * i.distance
             elif test == 'nearest':
                 n = self.table.nearest (self.b, **kwargs)
                 if n is not None:
