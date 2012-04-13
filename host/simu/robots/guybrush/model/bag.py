@@ -54,13 +54,13 @@ class Bag:
                     0., 30., 150., 75., 30.))
         self.distance_sensor = [
                 DistanceSensorSensopart (link_bag.io_hub.adc[0], scheduler, table,
-                    (20, 20), pi * 10 / 180, (self.position, ), 2),
+                    (20, 20), pi * 10 / 180, (self.position, ), 5),
                 DistanceSensorSensopart (link_bag.io_hub.adc[1], scheduler, table,
-                    (20, -20), -pi * 10 / 180, (self.position, ), 2),
+                    (20, -20), -pi * 10 / 180, (self.position, ), 5),
                 DistanceSensorSensopart (link_bag.io_hub.adc[2], scheduler, table,
-                    (-20, -20), pi + pi * 10 / 180, (self.position, ), 2),
+                    (-20, -20), pi + pi * 10 / 180, (self.position, ), 5),
                 DistanceSensorSensopart (link_bag.io_hub.adc[3], scheduler, table,
-                    (-20, 20), pi - pi * 10 / 180, (self.position, ), 2),
+                    (-20, 20), pi - pi * 10 / 180, (self.position, ), 5),
                 ]
         self.path = link_bag.io_hub.path
         self.pos_report = link_bag.io_hub.pos_report

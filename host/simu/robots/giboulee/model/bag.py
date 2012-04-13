@@ -39,15 +39,15 @@ class Bag:
         self.sorter = Sorter (link_bag.io.servo[0:5], link_bag.io.servo[5])
         self.distance_sensor = [
                 DistanceSensorSharps (link_bag.io.adc[0], scheduler, table,
-                    (150, 127), 0, (self.position, )),
+                    (150, 127), 0, (self.position, ), 4),
                 DistanceSensorSharps (link_bag.io.adc[1], scheduler, table,
-                    (150, 0), 0, (self.position, )),
+                    (150, 0), 0, (self.position, ), 4),
                 DistanceSensorSharps (link_bag.io.adc[2], scheduler, table,
-                    (150, -127), 0, (self.position, )),
+                    (150, -127), 0, (self.position, ), 4),
                 DistanceSensorSharps (link_bag.io.adc[3], scheduler, table,
-                    (-70, 100), pi, (self.position, )),
+                    (-70, 100), pi, (self.position, ), 4),
                 DistanceSensorSharps (link_bag.io.adc[4], scheduler, table,
-                    (-70, -100), pi, (self.position, )),
+                    (-70, -100), pi, (self.position, ), 4),
                 ]
         self.path = link_bag.io.path
 

@@ -46,15 +46,15 @@ class Bag:
                 (self.position,))
         self.distance_sensor = [
                 DistanceSensorSharps (link_bag.io.adc[0], scheduler, table,
-                    (50, 130), 0, (self.position, )),
+                    (50, 130), 0, (self.position, ), 4),
                 DistanceSensorSharps (link_bag.io.adc[1], scheduler, table,
-                    (50, -130), 0, (self.position, )),
+                    (50, -130), 0, (self.position, ), 4),
                 DistanceSensorSharps (link_bag.io.adc[2], scheduler, table,
-                    (50, 0), 0, (self.position, )),
+                    (50, 0), 0, (self.position, ), 4),
                 DistanceSensorSharps (link_bag.io.adc[3], scheduler, table,
-                    (0, 130), pi, (self.position, )),
+                    (0, 130), pi, (self.position, ), 4),
                 DistanceSensorSharps (link_bag.io.adc[4], scheduler, table,
-                    (0, -130), pi, (self.position, )),
+                    (0, -130), pi, (self.position, ), 4),
                 ]
         self.path = link_bag.io.path
 

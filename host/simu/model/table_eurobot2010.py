@@ -76,10 +76,10 @@ class Table (simu.model.table.Table):
                 (250 - 80 - 55, 70 + 75 + 50 + 100 + 75),
                 (250 - 55, 70 + 75 + 50 + 100 + 75 + 50))
         for pos in self.oranges_pos:
-            orange = RoundObstacle (50, 2)
+            orange = RoundObstacle (50, 5)
             orange.pos = (1500 - pos[0], 2100 - pos[1])
             self.oranges.append (orange)
-            orange = RoundObstacle (50, 2)
+            orange = RoundObstacle (50, 5)
             orange.pos = (1500 + pos[0], 2100 - pos[1])
             self.oranges.append (orange)
         # Add everything to obstacles.

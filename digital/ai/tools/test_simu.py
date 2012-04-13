@@ -73,9 +73,9 @@ class TestSimu (InterNode):
         self.table_model = robot_class.table_model.Table ()
         self.table = robot_class.table_view.Table (self.table_view,
                 self.table_model)
-        self.obstacle = obstacle_model.RoundObstacle (150)
+        self.obstacle = obstacle_model.RoundObstacle (150, 4)
         self.table_model.obstacles.append (self.obstacle)
-        self.obstacle_beacon = obstacle_model.RoundObstacle (40, 2)
+        self.obstacle_beacon = obstacle_model.RoundObstacle (40, 5)
         self.table_model.obstacles.append (self.obstacle_beacon)
         self.obstacle_view = ObstacleWithBeacon (self.table, self.obstacle,
                 self.obstacle_beacon)
