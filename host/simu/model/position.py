@@ -26,13 +26,19 @@ from utils.observable import Observable
 
 class Position (Observable):
 
-    def __init__ (self, link):
+    def __init__ (self, link, obstacles = None):
         Observable.__init__ (self)
         self.link = link
+        self.obstacles = obstacles or [ ]
         self.link.register (self.__notified)
 
     def __notified (self):
         self.pos = self.link.pos
         self.angle = self.link.angle
         self.notify ()
+        # Also update attached obstacles.
+        for o in self.obstacles:
+            o.pos = self.pos
+            o.angle = self.angle
+            o.notify ()
 
