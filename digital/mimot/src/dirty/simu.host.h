@@ -24,8 +24,11 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
+#include "models.host.h"
 
 extern uint8_t PORTB, PORTC, PORTD, PINC;
+
+extern motor_model_t simu_aux_model[AC_ASSERV_AUX_NB];
 
 void
 timer_init (void);
@@ -35,20 +38,5 @@ timer_wait (void);
 
 uint8_t
 timer_read (void);
-
-void
-simu_sensor_update_giboulee (void);
-
-void
-simu_sensor_update_aquajim (void);
-
-void
-simu_sensor_update_marcel (void);
-
-void
-simu_sensor_update_robospierre (void);
-
-void
-simu_sensor_update_guybrush (void);
 
 #endif /* simu_host_h */

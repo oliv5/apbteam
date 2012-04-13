@@ -28,10 +28,7 @@
 
 #include "modules/host/host.h"
 #include "modules/host/mex.h"
-#include "modules/utils/utils.h"
 #include "modules/math/fixed/fixed.h"
-
-#include "io.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -39,9 +36,6 @@
 #include <string.h>
 
 #include "cs.h"
-#include "aux.h"
-
-#include "contacts.h"
 
 #include "models.host.h"
 
@@ -133,27 +127,6 @@ simu_init (void)
 	exit (1);
       }
     models_init (simu_robot, simu_aux_model);
-}
-
-/** Update sensors for Marcel. */
-void
-simu_sensor_update_marcel (void)
-{
-}
-
-/** Update sensors for Robospierre. */
-void
-simu_sensor_update_robospierre (void)
-{
-    PINC = 0xf0;
-    if (simu_aux_model[0].th < 120.0 * 5.0 / 6.0 * simu_aux_model[0].m.i_G)
-	PINC |= IO_BV (CONTACT_AUX0_ZERO_IO);
-}
-
-/** Update sensors for Guybrush. */
-void
-simu_sensor_update_guybrush (void)
-{
 }
 
 /** Do a simulation step. */

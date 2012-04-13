@@ -25,11 +25,21 @@
 #define _GNU_SOURCE 1 /* Need ISO C99 features as well. */
 #include "common.h"
 
+#include "io.h"
+
 #include "models.host.h"
 #include "simu.host.h"
 
+#include "contacts.h"
+
 #include <math.h>
 #include <string.h>
+
+static void
+simu_sensor_update_robospierre (void);
+
+static void
+simu_sensor_update_guybrush (void);
 
 /* Marcel, APBTeam 2010. */
 static const struct robot_t marcel_robot =
@@ -44,7 +54,7 @@ static const struct robot_t marcel_robot =
     /** Load for auxiliary motors (kg.m^2). */
     { 0.100 * 0.005 * 0.005, 0.100 * 0.005 * 0.005 },
     /** Sensor update function. */
-    simu_sensor_update_marcel,
+    NULL,
     /** Initialisation function. */
     NULL,
 };
@@ -128,5 +138,20 @@ models_init (const struct robot_t *robot, motor_model_t aux_motor[])
       }
     if (robot->init)
 	robot->init (robot, aux_motor);
+}
+
+/** Update sensors for Robospierre. */
+static void
+simu_sensor_update_robospierre (void)
+{
+    PINC = 0xf0;
+    if (simu_aux_model[0].th < 120.0 * 5.0 / 6.0 * simu_aux_model[0].m.i_G)
+	PINC |= IO_BV (CONTACT_AUX0_ZERO_IO);
+}
+
+/** Update sensors for Guybrush. */
+static void
+simu_sensor_update_guybrush (void)
+{
 }
 
