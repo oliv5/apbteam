@@ -25,6 +25,7 @@
 from simu.model.switch import Switch
 from simu.model.position import Position
 from simu.robots.marcel.model.loader import Loader
+from simu.model.round_obstacle import RoundObstacle
 from simu.model.distance_sensor_sensopart import DistanceSensorSensopart
 from math import pi
 
@@ -34,19 +35,27 @@ class Bag:
         self.jack = Switch (link_bag.io.jack)
         self.color_switch = Switch (link_bag.io.color_switch)
         self.contact = [ Switch (contact) for contact in link_bag.io.contact ]
-        self.position = Position (link_bag.asserv.position)
+        self.beacon = RoundObstacle (40, 5)
+        table.obstacles.append (self.beacon)
+        self.position = Position (link_bag.asserv.position, [ self.beacon ])
         self.loader = Loader (table, self.position, link_bag.mimot.aux[0],
                 link_bag.mimot.aux[1], link_bag.asserv.aux[0],
                 link_bag.asserv.aux[1], link_bag.io.contact[0:2])
+        def distance_sensor_exclude (o):
+            return o is self.beacon
         self.distance_sensor = [
                 DistanceSensorSensopart (link_bag.io.adc[0], scheduler, table,
-                    (30 - 20, 0), 0, (self.position, ), 5),
+                    (30 - 20, 0), 0, (self.position, ), 5,
+                    distance_sensor_exclude),
                 DistanceSensorSensopart (link_bag.io.adc[1], scheduler, table,
-                    (20 - 20, 20), pi * 30 / 180, (self.position, ), 5),
+                    (20 - 20, 20), pi * 30 / 180, (self.position, ), 5,
+                    distance_sensor_exclude),
                 DistanceSensorSensopart (link_bag.io.adc[2], scheduler, table,
-                    (20 - 20, -20), -pi * 30 / 180, (self.position, ), 5),
+                    (20 - 20, -20), -pi * 30 / 180, (self.position, ), 5,
+                    distance_sensor_exclude),
                 DistanceSensorSensopart (link_bag.io.adc[3], scheduler, table,
-                    (-30 - 20, 0), pi, (self.position, ), 5),
+                    (-30 - 20, 0), pi, (self.position, ), 5,
+                    distance_sensor_exclude),
                 ]
         link_bag.io.adc[4].value = 0
         link_bag.io.adc[5].value = 0

@@ -24,6 +24,7 @@
 """Guybrush bag of models."""
 from simu.model.switch import Switch
 from simu.model.position import Position
+from simu.model.round_obstacle import RoundObstacle
 from simu.model.distance_sensor_sensopart import DistanceSensorSensopart
 from simu.model.pneumatic_cylinder import PneumaticCylinder
 from simu.robots.guybrush.model.clamps import Clamps
@@ -38,7 +39,9 @@ class Bag:
         self.color_switch.notify ()
         self.jack = Switch (link_bag.io_hub.contact[1], invert = True)
         self.strat_switch = Switch (link_bag.io_hub.contact[2], invert = True)
-        self.position = Position (link_bag.asserv.position)
+        self.beacon = RoundObstacle (40, 5)
+        table.obstacles.append (self.beacon)
+        self.position = Position (link_bag.asserv.position, [ self.beacon ])
         output = link_bag.io_hub.output
         self.clamps = Clamps (table, self.position, link_bag.mimot.aux[0],
                 (PneumaticCylinder (None, output[8], scheduler,
@@ -52,15 +55,21 @@ class Bag:
                     0., 1., 1., 1., 0.),
                 PneumaticCylinder (None, output[1], scheduler,
                     0., 30., 150., 75., 30.))
+        def distance_sensor_exclude (o):
+            return o is self.beacon
         self.distance_sensor = [
                 DistanceSensorSensopart (link_bag.io_hub.adc[0], scheduler, table,
-                    (20, 20), pi * 10 / 180, (self.position, ), 5),
+                    (20, 20), pi * 10 / 180, (self.position, ), 5,
+                    distance_sensor_exclude),
                 DistanceSensorSensopart (link_bag.io_hub.adc[1], scheduler, table,
-                    (20, -20), -pi * 10 / 180, (self.position, ), 5),
+                    (20, -20), -pi * 10 / 180, (self.position, ), 5,
+                    distance_sensor_exclude),
                 DistanceSensorSensopart (link_bag.io_hub.adc[2], scheduler, table,
-                    (-20, -20), pi + pi * 10 / 180, (self.position, ), 5),
+                    (-20, -20), pi + pi * 10 / 180, (self.position, ), 5,
+                    distance_sensor_exclude),
                 DistanceSensorSensopart (link_bag.io_hub.adc[3], scheduler, table,
-                    (-20, 20), pi - pi * 10 / 180, (self.position, ), 5),
+                    (-20, 20), pi - pi * 10 / 180, (self.position, ), 5,
+                    distance_sensor_exclude),
                 ]
         self.path = link_bag.io_hub.path
         self.pos_report = link_bag.io_hub.pos_report
