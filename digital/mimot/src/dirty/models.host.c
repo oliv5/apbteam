@@ -153,5 +153,12 @@ simu_sensor_update_robospierre (void)
 static void
 simu_sensor_update_guybrush (void)
 {
+    PINC = 0xf0;
+    double rem = fmod (simu_aux_model[0].th / simu_aux_model[0].m.i_G,
+		       2 * M_PI);
+    if (rem < 0.0)
+	rem += 2 * M_PI;
+    if (rem > 0.01)
+	PINC |= IO_BV (CONTACT_AUX0_ZERO_IO);
 }
 
