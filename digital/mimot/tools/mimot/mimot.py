@@ -163,6 +163,14 @@ class Proto:
 	self.proto.send ('y', 'BBhB', i, s, pwm, self.aseq[i])
         self.wait (self.finished, auto = True)
 
+    def find_zero (self, w, s, use_switch = True, reset_pos = 0):
+        """Find zero position."""
+        i = self._index[w]
+        self.aseq[i] += 1
+        self.proto.send ('y', 'BBBhB', i, s, 1 if use_switch else 0,
+                reset_pos, self.aseq[i])
+        self.wait (self.finished, auto = True)
+
     def send_param (self):
         """Send all parameters."""
         p = self.param
