@@ -223,7 +223,7 @@ asserv_push_the_wall (uint8_t backward, uint32_t init_x, uint32_t init_y,
  * @param speed speed of the movement.
  */
 void
-asserv_move_motor0_absolute (uint16_t position, uint8_t speed);
+asserv_move_motor0_absolute (uint16_t position, uint16_t speed);
 
 /**
  * Move the motor1.
@@ -234,7 +234,7 @@ asserv_move_motor0_absolute (uint16_t position, uint8_t speed);
  * @param speed speed of the movement.
  */
 void
-asserv_move_motor1_absolute (uint16_t position, uint8_t speed);
+asserv_move_motor1_absolute (uint16_t position, uint16_t speed);
 
 #endif /* AC_ASSERV_AUX_NB */
 
@@ -271,8 +271,8 @@ asserv_set_angle_position (int16_t angle);
  * @param angular_low angular low speed
  */
 void
-asserv_set_speed (uint8_t linear_high, uint8_t angular_high,
-		  uint8_t linear_low, uint8_t angular_low);
+asserv_set_speed (uint16_t linear_high, uint16_t angular_high,
+		  uint16_t linear_low, uint16_t angular_low);
 
 /**
  * Set the complete position of the bot.
@@ -300,11 +300,11 @@ asserv_goto (uint32_t x, uint32_t y, uint8_t backward);
 
 /** Reset the motor0 to the zero position. */
 void
-asserv_motor0_zero_position (int8_t speed);
+asserv_motor0_zero_position (int16_t speed);
 
 /** Reset the motor1 to the zero position. */
 void
-asserv_motor1_zero_position (int8_t speed);
+asserv_motor1_zero_position (int16_t speed);
 
 /** Set PWM to zero for motor0. */
 void

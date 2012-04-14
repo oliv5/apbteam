@@ -36,7 +36,7 @@ class Proto:
 
     stats_format = {
             'C': 'HH',
-            'S': 'bb',
+            'S': 'hh',
             'P': 'hhhh',
             'W': 'hh',
             }
@@ -140,7 +140,7 @@ class Proto:
 
     def speed (self, w, s):
         """Speed consign."""
-	self.proto.send ('s', 'Bb', self._index[w], s)
+	self.proto.send ('s', 'Bh', self._index[w], s)
 
     def speed_pos (self, w, offset):
         """Speed controlled position consign."""
@@ -160,14 +160,14 @@ class Proto:
         """Clamp (speed control, then open loop PWM)."""
 	i = self._index[w]
 	self.aseq[i] += 1
-	self.proto.send ('y', 'BBhB', i, s, pwm, self.aseq[i])
+	self.proto.send ('y', 'BHhB', i, s, pwm, self.aseq[i])
         self.wait (self.finished, auto = True)
 
     def find_zero (self, w, s, use_switch = True, reset_pos = 0):
         """Find zero position."""
         i = self._index[w]
         self.aseq[i] += 1
-        self.proto.send ('y', 'BBBhB', i, s, 1 if use_switch else 0,
+        self.proto.send ('y', 'BHBhB', i, s, 1 if use_switch else 0,
                 reset_pos, self.aseq[i])
         self.wait (self.finished, auto = True)
 
@@ -182,7 +182,7 @@ class Proto:
             self.proto.send ('p', 'cBH', 'i', index, f88 (p[m + '_ki']))
             self.proto.send ('p', 'cBH', 'd', index, f88 (p[m + '_kd']))
             self.proto.send ('p', 'cBH', 'a', index, f88 (p[m + '_acc']))
-            self.proto.send ('p', 'cBBB', 's', index, p[m + '_speed_max'],
+            self.proto.send ('p', 'cBHH', 's', index, p[m + '_speed_max'],
                     p[m + '_speed_slow'])
             self.proto.send ('p', 'cBHHB', 'b', index,
                     p[m + '_bd_error_limit'], p[m + '_bd_speed_limit'],

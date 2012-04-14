@@ -36,7 +36,7 @@ class Proto:
 
     stats_format = {
             'C': 'HHHH',
-            'S': 'bbbb',
+            'S': 'hhhh',
             'P': 'hhhh',
             'Q': 'hhhh',
             'W': 'hhhh',
@@ -189,11 +189,11 @@ class Proto:
     def speed (self, w, s):
         """Speed consign."""
         if w == 't':
-            self.proto.send ('s', 'bb', s, 0)
+            self.proto.send ('s', 'hh', s, 0)
         elif w == 'a':
-            self.proto.send ('s', 'bb', 0, s)
+            self.proto.send ('s', 'hh', 0, s)
         else:
-            self.proto.send ('S', 'Bb', self._index[w], s)
+            self.proto.send ('S', 'Bh', self._index[w], s)
 
     def speed_pos (self, w, offset):
         """Speed controlled position consign."""
@@ -310,7 +310,7 @@ class Proto:
             self.proto.send ('p', 'cBH', 'i', index, f88 (p[m + '_ki']))
             self.proto.send ('p', 'cBH', 'd', index, f88 (p[m + '_kd']))
             self.proto.send ('p', 'cBH', 'a', index, f88 (p[m + '_acc']))
-            self.proto.send ('p', 'cBBB', 's', index, p[m + '_speed_max'],
+            self.proto.send ('p', 'cBHH', 's', index, p[m + '_speed_max'],
                     p[m + '_speed_slow'])
             self.proto.send ('p', 'cBHHB', 'b', index,
                     p[m + '_bd_error_limit'], p[m + '_bd_speed_limit'],

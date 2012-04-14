@@ -48,9 +48,9 @@ struct eeprom_t
     /** Saved parameters. */
     uint32_t encoder_right_correction;
     struct {
-	uint8_t max;
-	uint8_t slow;
-	uint16_t acc;
+	uint16_t max;
+	uint16_t slow;
+	uint16_t acc_f;
     } speed[EEPROM_INDEX_NB];
     struct {
 	uint16_t kp;
@@ -99,7 +99,7 @@ eeprom_read_params_helper (struct eeprom_t *loaded, uint8_t index,
 {
     speed->max = loaded->speed[index].max;
     speed->slow = loaded->speed[index].slow;
-    speed->acc = loaded->speed[index].acc;
+    speed->acc_f = loaded->speed[index].acc_f;
     pos->kp = loaded->pos[index].kp;
     pos->ki = loaded->pos[index].ki;
     pos->kd = loaded->pos[index].kd;
@@ -177,7 +177,7 @@ eeprom_write_params_helper (struct eeprom_t *param, uint8_t index,
 {
     param->speed[index].max = speed->max;
     param->speed[index].slow = speed->slow;
-    param->speed[index].acc = speed->acc;
+    param->speed[index].acc_f = speed->acc_f;
     param->pos[index].kp = pos->kp;
     param->pos[index].ki = pos->ki;
     param->pos[index].kd = pos->kd;

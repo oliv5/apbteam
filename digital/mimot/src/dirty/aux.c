@@ -162,7 +162,7 @@ aux_traj_clamp (struct aux_t *aux)
 }
 
 void
-aux_traj_clamp_start (struct aux_t *aux, int8_t speed, int16_t clampin_pwm)
+aux_traj_clamp_start (struct aux_t *aux, int16_t speed, int16_t clampin_pwm)
 {
     aux->traj_mode = AUX_TRAJ_CLAMP;
     aux->clampin_pwm = clampin_pwm;
@@ -196,7 +196,7 @@ aux_traj_find_zero (struct aux_t *aux)
 
 /** Start find zero mode. */
 void
-aux_traj_find_zero_start (struct aux_t *aux, int8_t speed, int16_t reset_pos)
+aux_traj_find_zero_start (struct aux_t *aux, int16_t speed, int16_t reset_pos)
 {
     aux->traj_mode = AUX_TRAJ_FIND_ZERO_NOT;
     aux->reset_pos = reset_pos;
@@ -236,7 +236,7 @@ aux_traj_find_limit (struct aux_t *aux)
 
 /** Start find limit mode. */
 void
-aux_traj_find_limit_start (struct aux_t *aux, int8_t speed, int16_t reset_pos)
+aux_traj_find_limit_start (struct aux_t *aux, int16_t speed, int16_t reset_pos)
 {
     aux->traj_mode = AUX_TRAJ_FIND_LIMIT;
     speed_control_set_speed (&aux->cs->speed, speed);

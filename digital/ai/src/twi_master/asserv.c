@@ -339,25 +339,27 @@ asserv_push_the_wall (uint8_t backward, uint32_t init_x, uint32_t init_y,
 #if AC_ASSERV_AUX_NB
 
 void
-asserv_move_motor0_absolute (uint16_t position, uint8_t speed)
+asserv_move_motor0_absolute (uint16_t position, uint16_t speed)
 {
     uint8_t *buffer = twi_master_get_buffer (ASSERV_SLAVE);
     buffer[0] = 'b';
     buffer[1] = v16_to_v8 (position, 1);
     buffer[2] = v16_to_v8 (position, 0);
-    buffer[3] = speed;
-    twi_master_send_buffer (4);
+    buffer[3] = v16_to_v8 (speed, 1);
+    buffer[4] = v16_to_v8 (speed, 0);
+    twi_master_send_buffer (5);
 }
 
 void
-asserv_move_motor1_absolute (uint16_t position, uint8_t speed)
+asserv_move_motor1_absolute (uint16_t position, uint16_t speed)
 {
     uint8_t *buffer = twi_master_get_buffer (ASSERV_SLAVE);
     buffer[0] = 'c';
     buffer[1] = v16_to_v8 (position, 1);
     buffer[2] = v16_to_v8 (position, 0);
-    buffer[3] = speed;
-    twi_master_send_buffer (4);
+    buffer[3] = v16_to_v8 (speed, 1);
+    buffer[4] = v16_to_v8 (speed, 0);
+    twi_master_send_buffer (5);
 }
 
 #endif /* AC_ASSERV_AUX_NB */
@@ -400,17 +402,21 @@ asserv_set_angle_position (int16_t angle)
 }
 
 void
-asserv_set_speed (uint8_t linear_high, uint8_t angular_high,
-		  uint8_t linear_low, uint8_t angular_low)
+asserv_set_speed (uint16_t linear_high, uint16_t angular_high,
+		  uint16_t linear_low, uint16_t angular_low)
 {
     uint8_t *buffer = twi_master_get_buffer (ASSERV_SLAVE);
     buffer[0] = 'p';
     buffer[1] = 's';
-    buffer[2] = linear_high;
-    buffer[3] = angular_high;
-    buffer[4] = linear_low;
-    buffer[5] = angular_low;
-    twi_master_send_buffer (6);
+    buffer[2] = v16_to_v8 (linear_high, 1);
+    buffer[3] = v16_to_v8 (linear_high, 0);
+    buffer[4] = v16_to_v8 (angular_high, 1);
+    buffer[5] = v16_to_v8 (angular_high, 0);
+    buffer[6] = v16_to_v8 (linear_low, 1);
+    buffer[7] = v16_to_v8 (linear_low, 0);
+    buffer[8] = v16_to_v8 (angular_low, 1);
+    buffer[9] = v16_to_v8 (angular_low, 0);
+    twi_master_send_buffer (10);
 }
 
 void
@@ -454,21 +460,23 @@ asserv_goto (uint32_t x, uint32_t y, uint8_t backward)
 #if AC_ASSERV_AUX_NB
 
 void
-asserv_motor0_zero_position (int8_t speed)
+asserv_motor0_zero_position (int16_t speed)
 {
     uint8_t *buffer = twi_master_get_buffer (ASSERV_SLAVE);
     buffer[0] = 'B';
-    buffer[1] = speed;
-    twi_master_send_buffer (2);
+    buffer[1] = v16_to_v8 (speed, 1);
+    buffer[2] = v16_to_v8 (speed, 0);
+    twi_master_send_buffer (3);
 }
 
 void
-asserv_motor1_zero_position (int8_t speed)
+asserv_motor1_zero_position (int16_t speed)
 {
     uint8_t *buffer = twi_master_get_buffer (ASSERV_SLAVE);
     buffer[0] = 'C';
-    buffer[1] = speed;
-    twi_master_send_buffer (2);
+    buffer[1] = v16_to_v8 (speed, 1);
+    buffer[2] = v16_to_v8 (speed, 0);
+    twi_master_send_buffer (3);
 }
 
 void

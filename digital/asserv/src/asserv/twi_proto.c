@@ -79,8 +79,8 @@ twi_proto_update (void)
 	| (control_state_is_blocked (&cs_aux[0].state) ? (1 << 5) : 0)
 	| (control_state_is_finished (&cs_aux[0].state) ? (1 << 4) : 0)
 #endif
-	| (cs_main.speed_theta.cur < 0 ? (1 << 3) : 0)
-	| (cs_main.speed_theta.cur > 0 ? (1 << 2) : 0)
+	| (cs_main.speed_theta.cur_f < 0 ? (1 << 3) : 0)
+	| (cs_main.speed_theta.cur_f > 0 ? (1 << 2) : 0)
 	| (control_state_is_blocked (&cs_main.state) ? (1 << 1) : 0)
 	| (control_state_is_finished (&cs_main.state) ? (1 << 0) : 0);
     status[1] = PINC;
@@ -216,29 +216,29 @@ twi_proto_callback (u8 *buf, u8 size)
 			     buf[10]);
 	break;
 #if AC_ASSERV_AUX_NB
-      case c ('b', 3):
+      case c ('b', 4):
 	/* Move the aux0.
 	 * - w: new position.
-	 * - b: speed. */
-	cs_aux[0].speed.max = buf[4];
+	 * - w: speed. */
+	cs_aux[0].speed.max = v8_to_v16 (buf[4], buf[5]);
 	aux_traj_goto_start (&aux[0], v8_to_v16 (buf[2], buf[3]));
 	break;
-      case c ('B', 1):
+      case c ('B', 2):
 	/* Find the aux0 zero position.
-	 * - b: speed. */
-	aux_traj_find_limit_start (&aux[0], buf[2]);
+	 * - w: speed. */
+	aux_traj_find_limit_start (&aux[0], v8_to_v16 (buf[2], buf[3]));
 	break;
-      case c ('c', 3):
+      case c ('c', 4):
 	/* Move the aux1.
 	 * - w: new position.
-	 * - b: speed. */
-	cs_aux[1].speed.max = buf[4];
+	 * - w: speed. */
+	cs_aux[1].speed.max = v8_to_v16 (buf[4], buf[5]);
 	aux_traj_goto_start (&aux[1], v8_to_v16 (buf[2], buf[3]));
 	break;
-      case c ('C', 1):
+      case c ('C', 2):
 	/* Find the aux1 zero position.
-	 * - b: speed. */
-	aux_traj_find_zero_reverse_start (&aux[1], buf[2]);
+	 * - w: speed. */
+	aux_traj_find_zero_reverse_start (&aux[1], v8_to_v16 (buf[2], buf[3]));
 	break;
       case c ('r', 1):
 	/* Set aux zero pwm.
@@ -302,16 +302,16 @@ twi_proto_params (u8 *buf, u8 size)
 	    break;
 	  case 's':
 	    /* Set maximum and slow speed.
-	     * - b: theta max.
-	     * - b: alpha max.
-	     * - b: theta slow.
-	     * - b: alpha slow. */
-	    if (size < 4)
+	     * - w: theta max.
+	     * - w: alpha max.
+	     * - w: theta slow.
+	     * - w: alpha slow. */
+	    if (size < 8)
 		return 1;
-	    cs_main.speed_theta.max = buf[0];
-	    cs_main.speed_alpha.max = buf[1];
-	    cs_main.speed_theta.slow = buf[2];
-	    cs_main.speed_alpha.slow = buf[3];
+	    cs_main.speed_theta.max = v8_to_v16 (buf[0], buf[1]);
+	    cs_main.speed_alpha.max = v8_to_v16 (buf[2], buf[3]);
+	    cs_main.speed_theta.slow = v8_to_v16 (buf[4], buf[5]);
+	    cs_main.speed_alpha.slow = v8_to_v16 (buf[6], buf[7]);
 	    eat = 4;
 	    break;
 	  default:

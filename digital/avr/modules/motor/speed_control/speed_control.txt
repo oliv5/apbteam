@@ -13,7 +13,7 @@ too high.
 Usage
 =====
 
-The `max` and `acc` parameters should be set to maximum speed and maximum
+The `max` and `acc_f` parameters should be set to maximum speed and maximum
 acceleration.  Other fields should better be changed using the helper
 functions.
 

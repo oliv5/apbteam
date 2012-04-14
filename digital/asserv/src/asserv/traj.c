@@ -150,7 +150,7 @@ static void
 traj_ftw (void)
 {
     uint8_t left, center, right;
-    int8_t speed;
+    int16_t speed;
     speed = cs_main.speed_theta.slow;
     if (!traj_backward)
       {
@@ -260,7 +260,7 @@ void
 traj_ptw_start (uint8_t backward, int32_t init_x, int32_t init_y,
 		int32_t init_a)
 {
-    int8_t speed;
+    int16_t speed;
     traj_mode = TRAJ_PTW;
     traj_init_x = init_x;
     traj_init_y = init_y;
@@ -281,7 +281,7 @@ static void
 traj_gtd (void)
 {
 #ifdef CONTACT_CENTER_IO
-    int8_t speed;
+    int16_t speed;
     speed = cs_main.speed_theta.slow;
     if (IO_GET (CONTACT_CENTER_IO))
       {

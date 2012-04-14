@@ -159,7 +159,7 @@ aux_traj_find_zero (struct aux_t *aux)
       case AUX_TRAJ_FIND_ZERO_NOT_REVERSE:
 	if (zero)
 	  {
-	    aux->cs->speed.cons = -aux->cs->speed.cons;
+	    aux->cs->speed.cons_f = -aux->cs->speed.cons_f;
 	    aux->traj_mode = AUX_TRAJ_FIND_ZERO;
 	  }
 	break;
@@ -177,7 +177,7 @@ aux_traj_find_zero (struct aux_t *aux)
 
 /** Start find zero mode. */
 void
-aux_traj_find_zero_start (struct aux_t *aux, int8_t speed)
+aux_traj_find_zero_start (struct aux_t *aux, int16_t speed)
 {
     aux->traj_mode = AUX_TRAJ_FIND_ZERO_NOT;
     speed_control_set_speed (&aux->cs->speed, speed);
@@ -186,7 +186,7 @@ aux_traj_find_zero_start (struct aux_t *aux, int8_t speed)
 
 /** Start find zero reverse mode. */
 void
-aux_traj_find_zero_reverse_start (struct aux_t *aux, int8_t speed)
+aux_traj_find_zero_reverse_start (struct aux_t *aux, int16_t speed)
 {
     aux->traj_mode = AUX_TRAJ_FIND_ZERO_NOT_REVERSE;
     speed_control_set_speed (&aux->cs->speed, speed);
@@ -210,7 +210,7 @@ aux_traj_find_limit (struct aux_t *aux)
 
 /** Start find limit mode. */
 void
-aux_traj_find_limit_start (struct aux_t *aux, int8_t speed)
+aux_traj_find_limit_start (struct aux_t *aux, int16_t speed)
 {
     aux->traj_mode = AUX_TRAJ_FIND_LIMIT;
     speed_control_set_speed (&aux->cs->speed, speed);

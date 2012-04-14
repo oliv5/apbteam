@@ -33,44 +33,45 @@ static void
 speed_control_update_by_speed (speed_control_t *speed_control)
 {
     /* Update current speed (be careful of overflow!). */
-    if (speed_control->cons > speed_control->cur)
+    if (speed_control->cons_f > speed_control->cur_f)
       {
-	if ((uint16_t) (speed_control->cons - speed_control->cur)
-	    < (uint16_t) speed_control->acc)
-	    speed_control->cur = speed_control->cons;
+	if ((uint32_t) (speed_control->cons_f - speed_control->cur_f)
+	    < (uint32_t) speed_control->acc_f)
+	    speed_control->cur_f = speed_control->cons_f;
 	else
-	    speed_control->cur += speed_control->acc;
+	    speed_control->cur_f += speed_control->acc_f;
       }
     else
       {
-	if ((uint16_t) (speed_control->cur - speed_control->cons)
-	    < (uint16_t) speed_control->acc)
-	    speed_control->cur = speed_control->cons;
+	if ((uint32_t) (speed_control->cur_f - speed_control->cons_f)
+	    < (uint32_t) speed_control->acc_f)
+	    speed_control->cur_f = speed_control->cons_f;
 	else
-	    speed_control->cur -= speed_control->acc;
+	    speed_control->cur_f -= speed_control->acc_f;
       }
 }
 
 /** Compute maximum allowed speed according to: distance left, maximum speed,
  * current speed and acceleration. */
-static int16_t
-speed_control_compute_max_speed (int32_t d, int16_t cur, int16_t acc,
-				 int8_t max)
+static int32_t
+speed_control_compute_max_speed_f (int32_t d, int32_t cur_f, int16_t acc_f,
+				   int16_t max)
 {
     int16_t s;
+    int32_t s_f;
     /* Compute maximum speed in order to be able to brake in time.
      * The "+ 0xff" is to ceil result.
      * s = sqrt (2 * a * d) */
-    s = fixed_sqrt_ui32 ((2 * UTILS_ABS (d) * acc + 0xff) >> 8);
+    s = fixed_sqrt_ui32 ((2 * UTILS_ABS (d) * acc_f + 0xff) >> 8);
     /* Apply consign. */
     s = UTILS_MIN (max, s);
     /* Apply sign. */
     if (d < 0)
 	s = -s;
     /* Convert to f8.8 and check acceleration. */
-    s = s << 8;
-    UTILS_BOUND (s, cur - acc, cur + acc);
-    return s;
+    s_f = (int32_t) s << 8;
+    UTILS_BOUND (s_f, cur_f - acc_f, cur_f + acc_f);
+    return s_f;
 }
 
 /** Update current speed according to a position consign. */
@@ -79,8 +80,9 @@ speed_control_update_by_position (speed_control_t *speed_control,
 				  pos_control_t *pos_control)
 {
     int32_t diff = speed_control->pos_cons - pos_control->cons;
-    speed_control->cur = speed_control_compute_max_speed
-	(diff, speed_control->cur, speed_control->acc, speed_control->max);
+    speed_control->cur_f = speed_control_compute_max_speed_f
+	(diff, speed_control->cur_f, speed_control->acc_f,
+	 speed_control->max);
 }
 
 void
@@ -103,17 +105,17 @@ speed_control_update (speed_control_t *speed_control,
 	else
 	    speed_control_update_by_speed (speed_control);
 	/* Update shaft position. */
-	speed_control->pos_control->cons += speed_control->cur >> 8;
+	speed_control->pos_control->cons += speed_control->cur_f >> 8;
       }
     else
-	speed_control->cur = 0;
+	speed_control->cur_f = 0;
 }
 
 void
-speed_control_set_speed (speed_control_t *speed_control, int8_t speed)
+speed_control_set_speed (speed_control_t *speed_control, int16_t speed)
 {
     speed_control->use_pos = 0;
-    speed_control->cons = speed << 8;
+    speed_control->cons_f = speed << 8;
 }
 
 void
@@ -143,8 +145,8 @@ speed_control_hard_stop (speed_control_t *speed_control)
 {
     /* No future movement. */
     speed_control->use_pos = 0;
-    speed_control->cur = 0;
-    speed_control->cons = 0;
+    speed_control->cur_f = 0;
+    speed_control->cons_f = 0;
     /* Really stop right here, position control on the current point. */
     speed_control->pos_control->cons = speed_control->pos_control->cur;
 }

@@ -67,13 +67,13 @@ void
 aux_traj_goto_start (struct aux_t *aux, uint16_t pos);
 
 void
-aux_traj_find_zero_start (struct aux_t *aux, int8_t speed);
+aux_traj_find_zero_start (struct aux_t *aux, int16_t speed);
 
 void
-aux_traj_find_zero_reverse_start (struct aux_t *aux, int8_t speed);
+aux_traj_find_zero_reverse_start (struct aux_t *aux, int16_t speed);
 
 void
-aux_traj_find_limit_start (struct aux_t *aux, int8_t speed);
+aux_traj_find_limit_start (struct aux_t *aux, int16_t speed);
 
 void
 aux_traj_update (void);

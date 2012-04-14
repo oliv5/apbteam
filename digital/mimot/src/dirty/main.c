@@ -147,8 +147,8 @@ main_loop (void)
       }
     if (main_stat_speed && !--main_stat_speed_cpt)
       {
-	proto_send2b ('S', cs_aux[0].speed.cur >> 8,
-		      cs_aux[1].speed.cur >> 8);
+	proto_send2w ('S', cs_aux[0].speed.cur_f >> 8,
+		      cs_aux[1].speed.cur_f >> 8);
 	main_stat_speed_cpt = main_stat_speed;
       }
     if (main_stat_pos && !--main_stat_pos_cpt)
@@ -248,12 +248,12 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	speed_control_set_speed (speed, 0);
 	control_state_set_mode (state, CS_MODE_SPEED_CONTROL, 0);
 	break;
-      case c ('s', 2):
+      case c ('s', 3):
 	/* Set auxiliary speed.
 	 * - b: aux index.
-	 * - b: speed. */
+	 * - w: speed. */
 	if (!auxp) { proto_send0 ('?'); return; }
-	speed_control_set_speed (speed, args[1]);
+	speed_control_set_speed (speed, v8_to_v16 (args[1], args[2]));
 	control_state_set_mode (state, CS_MODE_SPEED_CONTROL, 0);
 	break;
       case c ('s', 6):
@@ -279,33 +279,34 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	    break;
 	aux_traj_goto_start (auxp, v8_to_v16 (args[1], args[2]));
 	break;
-      case c ('y', 5):
+      case c ('y', 6):
 	/* Auxiliary clamp.
 	 * - b: aux index.
-	 * - b: speed.
+	 * - w: speed.
 	 * - w: clamping PWM.
-	 * - b: sequence number. */
-	if (!auxp) { proto_send0 ('?'); return; }
-	if (!seq_start (seq, args[4]))
-	    break;
-	aux_traj_clamp_start (auxp, args[1], v8_to_v16 (args[2], args[3]));
-	break;
-      case c ('y', 6):
-	/* Auxiliary find zero.
-	 * - b: aux index.
-	 * - b: speed.
-	 * - b: use switch.
-	 * - w: reset position.
 	 * - b: sequence number. */
 	if (!auxp) { proto_send0 ('?'); return; }
 	if (!seq_start (seq, args[5]))
 	    break;
-	if (args[2])
-	    aux_traj_find_zero_start (auxp, args[1],
-				      v8_to_v16 (args[3], args[4]));
+	aux_traj_clamp_start (auxp, v8_to_v16 (args[1], args[2]),
+			      v8_to_v16 (args[3], args[4]));
+	break;
+      case c ('y', 7):
+	/* Auxiliary find zero.
+	 * - b: aux index.
+	 * - w: speed.
+	 * - b: use switch.
+	 * - w: reset position.
+	 * - b: sequence number. */
+	if (!auxp) { proto_send0 ('?'); return; }
+	if (!seq_start (seq, args[6]))
+	    break;
+	if (args[3])
+	    aux_traj_find_zero_start (auxp, v8_to_v16 (args[1], args[2]),
+				      v8_to_v16 (args[4], args[5]));
 	else
-	    aux_traj_find_limit_start (auxp, args[1],
-				       v8_to_v16 (args[3], args[4]));
+	    aux_traj_find_limit_start (auxp, v8_to_v16 (args[1], args[2]),
+				       v8_to_v16 (args[4], args[5]));
 	break;
       case c ('a', 2):
 	/* Set all acknoledge.
@@ -374,16 +375,16 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		 * - b: index.
 		 * - w: acceleration. */
 		if (!speed) { proto_send0 ('?'); return; }
-		speed->acc = v8_to_v16 (args[2], args[3]);
+		speed->acc_f = v8_to_v16 (args[2], args[3]);
 		break;
-	      case c ('s', 4):
+	      case c ('s', 6):
 		/* Set maximum and slow speed.
 		 * - b: index.
-		 * - b: max speed.
-		 * - b: slow speed. */
+		 * - w: max speed.
+		 * - w: slow speed. */
 		if (!speed) { proto_send0 ('?'); return; }
-		speed->max = args[2];
-		speed->slow = args[3];
+		speed->max = v8_to_v16 (args[2], args[3]);
+		speed->slow = v8_to_v16 (args[4], args[5]);
 		break;
 	      case c ('p', 4):
 		/* Set proportional coefficient.
@@ -457,8 +458,8 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		 * - b: index. */
 		if (!pos) { proto_send0 ('?'); return; }
 		proto_send2b ('E', EEPROM_KEY, eeprom_loaded);
-		proto_send1w ('a', speed->acc);
-		proto_send2b ('s', speed->max, speed->slow);
+		proto_send1w ('a', speed->acc_f);
+		proto_send2w ('s', speed->max, speed->slow);
 		proto_send3w ('b', bd->error_limit, bd->speed_limit,
 			      bd->counter_limit);
 		proto_send1w ('p', pos->kp);

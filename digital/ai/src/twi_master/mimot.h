@@ -82,37 +82,37 @@ mimot_set_motor1_position (uint16_t position);
 
 /** Move motor0 to absolute position in steps. */
 void
-mimot_move_motor0_absolute (uint16_t position, uint8_t speed);
+mimot_move_motor0_absolute (uint16_t position, uint16_t speed);
 
 /** Move motor1 to absolute position in steps. */
 void
-mimot_move_motor1_absolute (uint16_t position, uint8_t speed);
+mimot_move_motor1_absolute (uint16_t position, uint16_t speed);
 
 /** Reset motor0 to zero position. */
 void
-mimot_motor0_zero_position (int8_t speed);
+mimot_motor0_zero_position (int16_t speed);
 
 /** Reset motor1 to zero position. */
 void
-mimot_motor1_zero_position (int8_t speed);
+mimot_motor1_zero_position (int16_t speed);
 
 /** Find zero position. */
 void
-mimot_motor0_find_zero (int8_t speed, uint8_t use_switch,
+mimot_motor0_find_zero (int16_t speed, uint8_t use_switch,
 			uint16_t reset_position);
 
 /** Find zero position. */
 void
-mimot_motor1_find_zero (int8_t speed, uint8_t use_switch,
+mimot_motor1_find_zero (int16_t speed, uint8_t use_switch,
 			uint16_t reset_position);
 
 /** Clamp motor0. */
 void
-mimot_motor0_clamp (int8_t speed, int16_t pwm);
+mimot_motor0_clamp (int16_t speed, int16_t pwm);
 
 /** Clamp motor1. */
 void
-mimot_motor1_clamp (int8_t speed, int16_t pwm);
+mimot_motor1_clamp (int16_t speed, int16_t pwm);
 
 /** Free motor0. */
 void

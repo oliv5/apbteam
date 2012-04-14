@@ -30,20 +30,20 @@
 /** Speed control state. */
 struct speed_control_t
 {
-    /** Current speed, f8.8. */
-    int16_t cur;
+    /** Current speed, f16.8. */
+    int32_t cur_f;
     /** Whether to use the consign position (1) or not (0). */
     uint8_t use_pos;
-    /** Consign speed, f8.8. */
-    int16_t cons;
+    /** Consign speed, f16.8. */
+    int32_t cons_f;
     /** Consign position. */
     uint32_t pos_cons;
-    /** Maximum speed for position consign, u7. */
-    int8_t max;
-    /** Slow speed, deprecated, u7. */
-    int8_t slow;
+    /** Maximum speed for position consign, u15. */
+    int16_t max;
+    /** Slow speed, deprecated, u15. */
+    int16_t slow;
     /** Acceleration, f8.8. */
-    int16_t acc;
+    int16_t acc_f;
     /** Associated position control, to simplify function prototypes. */
     pos_control_t *pos_control;
 };
@@ -61,7 +61,7 @@ speed_control_update (speed_control_t *speed_control,
 
 /** Set speed consign. Accelerate to the given speed. */
 void
-speed_control_set_speed (speed_control_t *speed_control, int8_t speed);
+speed_control_set_speed (speed_control_t *speed_control, int16_t speed);
 
 /** Set position consign offset.  Move to a position measured from the current
  * controlled position (which may be different from the actual position),
