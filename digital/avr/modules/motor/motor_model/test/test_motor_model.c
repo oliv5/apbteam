@@ -1,5 +1,5 @@
 /* test_motor_model.c - Test DC motor model. */
-/* asserv - Position & speed motor control on AVR. {{{
+/* motor - Motor control module. {{{
  *
  * Copyright (C) 2006 Nicolas Schodet
  *
