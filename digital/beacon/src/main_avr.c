@@ -44,7 +44,23 @@ AppState_t appState = APP_INITIAL_STATE;  // application state
  	DeviceType_t deviceType = DEVICE_TYPE_END_DEVICE;
 #endif
 
+void twi_RXTX_update(void)
+{
+	uint8_t TXbuffer[AC_TWI_SLAVE_SEND_BUFFER_SIZE];
+	uint8_t RXbuffer[AC_TWI_SLAVE_RECV_BUFFER_SIZE];
+	uint8_t RXlen;
 	
+	/* data to be communicated to the master */
+	twi_slave_update (TXbuffer, sizeof (TXbuffer));
+	
+	/* Check for data. */
+	RXlen = twi_slave_poll (RXbuffer, AC_TWI_SLAVE_RECV_BUFFER_SIZE);
+	
+	/* data availlable */
+	if(RXlen != 0)
+	{
+	}
+}
 // int jack = 0;
 // status_s status;
 // extern int lost_packet;
@@ -57,6 +73,10 @@ AppState_t appState = APP_INITIAL_STATE;  // application state
 
 void APL_TaskHandler(void)
 {
+	if(deviceType == DEVICE_TYPE_COORDINATOR)
+	{
+		twi_RXTX_update();
+	}
 	switch (appState)
 	{
 		case APP_INITIAL_STATE:
@@ -97,6 +117,7 @@ void APL_TaskHandler(void)
 		default:
 			break;
 	}
+	SYS_PostTask(APL_TASK_ID);
 }
 
 
