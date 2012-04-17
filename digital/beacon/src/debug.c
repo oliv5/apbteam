@@ -83,8 +83,10 @@ void usartTXCallback(void)
 /* RX USART Callback */
 void usartRXCallback(uint16_t bytesToRead)
 {
-	uint8_t rxBuffer;
- 	READ_USART(&appUsartDescriptor,&rxBuffer,bytesToRead);
+	uint8_t rxBuffer;	
+	
+	/* Read RX buffer from HAL */
+	READ_USART(&appUsartDescriptor,&rxBuffer,bytesToRead);
 	
 	switch(rxBuffer)
 	{
