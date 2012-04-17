@@ -182,6 +182,8 @@ void debug_task(void)
  	uprintf("------------------------- debug TASK -------------------------\r\n");
 	uprintf("NWK : status = 0x%x\r\n",network_get_status());
 #ifdef TYPE_END
+ 	uprintf("[1] Scanning State = %d -- Value = %d\r\n",servo_get_state(SERVO_1),servo_get_value(SERVO_1));
+ 	uprintf("[2] Scanning State = %d -- Value = %d\r\n",servo_get_state(SERVO_2),servo_get_value(SERVO_2));
 	uprintf("CodeWheel = %d\r\n",sensors_codewheel_get_value());
 	uprintf("Calibration state = %d\r\n",calibration_get_state());
 #endif
