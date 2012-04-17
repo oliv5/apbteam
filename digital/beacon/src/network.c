@@ -135,7 +135,6 @@ void ZDO_StartNetworkConf(ZDO_StartNetworkConf_t* confirmInfo)
 	{
 //  		uprintf("CONNECTION FAILED. confirmInfo->status = %x\n\r",confirmInfo->status);
 	}
-	SYS_PostTask(APL_TASK_ID);
 }
 
 
@@ -154,7 +153,6 @@ void ZDO_MgmtNwkUpdateNotf(ZDO_MgmtNwkUpdateNotf_t *nwkParams)
 			APS_UnregisterEndpointReq(&unregEndpoint);
 			// try to rejoin the network
 			appState = APP_NETWORK_JOINING_STATE;
-			SYS_PostTask(APL_TASK_ID);
 			break;
 		}
 		case ZDO_NWK_UPDATE_STATUS:
@@ -237,7 +235,6 @@ void zdpLeaveResp(ZDO_ZdpResp_t *zdpResp)
 {
 	// Try to rejoin the network
 	appState = APP_NETWORK_JOINING_STATE;
-	SYS_PostTask(APL_TASK_ID);
 
 	(void)zdpResp;
 }

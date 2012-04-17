@@ -84,7 +84,6 @@ void APL_TaskHandler(void)
 					break;
 			}
  			appState = APP_NETWORK_JOINING_STATE;
- 			SYS_PostTask(APL_TASK_ID);
 			break;
 		case APP_NETWORK_JOINING_STATE:
      			network_start();
