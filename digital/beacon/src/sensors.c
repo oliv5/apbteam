@@ -56,7 +56,7 @@ void sensors_codewheel_init(void)
 }
 
 /* This function returns the wheel position */
-int sensors_codewheel_get_value(void)
+uint16_t sensors_codewheel_get_value(void)
 {
 	return TCNT3;
 }
@@ -70,7 +70,6 @@ void sensors_laser_irq_vector(void)
 
 /* IRQ vector for CodeWheel complete turn */
 ISR(TIMER3_COMPA_vect)
-ISR(TIMER3_OVF_vect)
 {
 	//Top tour ++
 }
