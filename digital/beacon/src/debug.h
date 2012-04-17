@@ -79,8 +79,22 @@
 	#define DEBUG_TRUST(f,s...) ((void)0)
 #endif
 
+typedef enum
+{
+	FREE,
+	BUSY
+} TUSART_bus_state;
+
+typedef enum
+{
+	EMPTY,
+	FILLED
+} TUSART_buffer_level;
 /* This function initializes the USART interface for debugging on avr */
 void initSerialInterface(void);
+
+/* TX USART Callback */
+void usartTXCallback(void);
 
 /* RX USART Callback */
 void usartRXCallback(uint16_t bytesToRead);

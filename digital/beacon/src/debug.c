@@ -23,6 +23,7 @@
  *
  * }}} */
 #include <stdarg.h>
+#include <string.h>
 #include "configuration.h"
 #include "debug.h"
 #include "servo.h"
@@ -30,6 +31,14 @@
 HAL_UsartDescriptor_t appUsartDescriptor;          			// USART descriptor (required by stack)
 uint8_t usartRxBuffer[APP_USART_RX_BUFFER_SIZE];   	// USART Rx buffer
 uint8_t usartTxBuffer[APP_USART_TX_BUFFER_SIZE];   	// USART Tx buffer
+
+TUSART_buffer_level TXbuffer_level = EMPTY;		// TX buffer state
+TUSART_bus_state TXbus_state = FREE;				// TX line state
+
+uint16_t start_offset = 0;							// Start offset for TX buffer
+uint16_t end_offset = 0;								// Stop offset for TX buffer
+
+
 
 /* This function initializes the USART interface for debugging on avr */
  void initSerialInterface(void)
@@ -45,11 +54,29 @@ uint8_t usartTxBuffer[APP_USART_TX_BUFFER_SIZE];   	// USART Tx buffer
 	appUsartDescriptor.txBuffer        	= NULL; // use callback mode
 	appUsartDescriptor.txBufferLength	= 0;
 	appUsartDescriptor.rxCallback      	= usartRXCallback;
-	appUsartDescriptor.txCallback      	= NULL;
+	appUsartDescriptor.txCallback      	= usartTXCallback;
 	appUsartDescriptor.flowControl     = USART_FLOW_CONTROL_NONE;
 	OPEN_USART(&appUsartDescriptor);
  }
 
+/* TX USART Callback */
+void usartTXCallback(void)
+{
+	/* If buffer is not empty continue to send via USART line */ 
+	if(TXbuffer_level != EMPTY)
+	{
+		WRITE_USART(&appUsartDescriptor,usartTxBuffer+start_offset,end_offset);
+		TXbuffer_level = FILLED;
+	}
+	else
+	{
+		/* Bus is free so reset variables and flags */
+		memset(usartTxBuffer,0,APP_USART_TX_BUFFER_SIZE);
+		start_offset = 0;
+		end_offset = 0;
+		TXbus_state = FREE;
+	}
+}
 
 /* RX USART Callback */
 void usartRXCallback(uint16_t bytesToRead)
@@ -86,7 +113,23 @@ void uprintf(char *format, ...)
 {
 	va_list args;
 	va_start(args,format);
-	vsprintf(usartTxBuffer,format,args);
-	WRITE_USART(&appUsartDescriptor,usartTxBuffer,strlen(usartTxBuffer));
+	
+	if(end_offset+strlen(format)+strlen(args) < APP_USART_TX_BUFFER_SIZE)
+	{
+		vsprintf(usartTxBuffer+end_offset,format,args);
+		end_offset = strlen(usartTxBuffer);
+		
+		/* Check if the bus is busy */
+		if(TXbus_state == FREE)
+		{
+			WRITE_USART(&appUsartDescriptor,usartTxBuffer+start_offset,end_offset);
+			start_offset = end_offset;
+			TXbus_state = BUSY;
+		}
+		else
+		{
+			TXbuffer_level = FILLED;
+		}
+	}
 	va_end(args);
 }
