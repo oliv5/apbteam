@@ -26,6 +26,7 @@
 #include <types.h>
 #include <util/delay.h>
 #include "configuration.h"
+#include "calibration.h"
 #include "network.h"
 #include "sensors.h"
 #include "servo.h"
@@ -74,7 +75,7 @@ void APL_TaskHandler(void)
 						uprintf("DEVICE_TYPE_COORDINATOR init OK\n\r");
 					break;
 				case DEVICE_TYPE_END_DEVICE:
-						servo_timer1_init();
+						servo_init();
 						sensors_laser_init();
 						sensors_codewheel_init();
 						sensors_laser_init();

@@ -26,6 +26,7 @@
 #include <string.h>
 #include <appTimer.h>
 #include "configuration.h"
+#include "calibration.h"
 #include "debug.h"
 #include "servo.h"
 #include "sensors.h"
@@ -33,6 +34,7 @@
 
 HAL_UsartDescriptor_t appUsartDescriptor;          			// USART descriptor (required by stack)
 HAL_AppTimer_t debugTimer;						// TIMER descripor used by the DEBUG task
+
 uint8_t usartRxBuffer[APP_USART_RX_BUFFER_SIZE];   	// USART Rx buffer
 uint8_t usartTxBuffer[APP_USART_TX_BUFFER_SIZE];   	// USART Tx buffer
 
@@ -117,6 +119,12 @@ void usartRXCallback(uint16_t bytesToRead)
 		case 'z':
 			sensors_codewheel_reset();
 			break;
+		case 'c':
+			calibration_start_stop_task();
+			break;
+		case 'q':
+			calibration_set_laser_flag(SET);
+			break;
 		/* Default */
 		default :
 			uprintf(" ?? Unknown command ??\r\n");
@@ -175,5 +183,6 @@ void debug_task(void)
 	uprintf("NWK : status = 0x%x\r\n",network_get_status());
 #ifdef TYPE_END
 	uprintf("CodeWheel = %d\r\n",sensors_codewheel_get_value());
+	uprintf("Calibration state = %d\r\n",calibration_get_state());
 #endif
 }
