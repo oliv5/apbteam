@@ -24,11 +24,13 @@
  * }}} */
 #include <stdarg.h>
 #include <string.h>
+#include <appTimer.h>
 #include "configuration.h"
 #include "debug.h"
 #include "servo.h"
 
 HAL_UsartDescriptor_t appUsartDescriptor;          			// USART descriptor (required by stack)
+HAL_AppTimer_t debugTimer;						// TIMER descripor used by the DEBUG task
 uint8_t usartRxBuffer[APP_USART_RX_BUFFER_SIZE];   	// USART Rx buffer
 uint8_t usartTxBuffer[APP_USART_TX_BUFFER_SIZE];   	// USART Tx buffer
 
@@ -102,6 +104,9 @@ void usartRXCallback(uint16_t bytesToRead)
 			/* Decrease servo 2 angle */
 			uprintf("SERVO_2 = %d\r\n",servo_angle_decrease(SERVO_2));
 			break;
+		case 'd':
+			debug_start_stop_task();
+			break;
 		/* Default */
 		default :
 			uprintf(" ?? Unknown command ??\r\n");
@@ -132,4 +137,29 @@ void uprintf(char *format, ...)
 		}
 	}
 	va_end(args);
+}
+
+/* This function starts the debug task */
+void debug_start_stop_task(void)
+{
+	static bool debug_task_running = 0;
+	if(debug_task_running == 0)
+	{
+		debugTimer.interval = DEBUG_TASK_PERIOD;
+		debugTimer.mode     = TIMER_REPEAT_MODE;
+		debugTimer.callback = debug_task;
+		HAL_StartAppTimer(&debugTimer);
+		debug_task_running = 1;
+	}
+	else
+	{
+		HAL_StopAppTimer(&debugTimer);
+		debug_task_running = 0;
+	}
+}
+
+/* Debug task callback */
+void debug_task(void)
+{
+ 	uprintf("------------------------- debug TASK -------------------------\r\n");
 }
