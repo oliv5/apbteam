@@ -51,6 +51,7 @@ void sensors_codewheel_init(void)
 	OCR3A = CODEWHEEL_CPR;
 	
 	/* Enable Interrupts */
+	TIMSK3 |= (1<<OCIE3A);
 	sei(); 
 }
 
@@ -68,6 +69,7 @@ void sensors_laser_irq_vector(void)
 }
 
 /* IRQ vector for CodeWheel complete turn */
+ISR(TIMER3_COMPA_vect)
 ISR(TIMER3_OVF_vect)
 {
 	//Top tour ++
