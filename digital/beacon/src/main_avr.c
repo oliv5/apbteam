@@ -28,10 +28,10 @@
 #include "configuration.h"
 #include "calibration.h"
 #include "network.h"
-#include "sensors.h"
-#include "servo.h"
-#include "debug.h"
 #include "position.h"
+#include "sensors.h"
+#include "debug.h"
+#include "servo.h"
 #include "led.h"
 #include "twi.h"
 
@@ -43,6 +43,7 @@ AppState_t appState = APP_INITIAL_STATE;  // application state
 #else
  	DeviceType_t deviceType = DEVICE_TYPE_END_DEVICE;
 #endif
+	
 
 void twi_RXTX_update(void)
 {
@@ -61,15 +62,6 @@ void twi_RXTX_update(void)
 	{
 	}
 }
-// int jack = 0;
-// status_s status;
-// extern int lost_packet;
-// extern unsigned int angle;
-/***********************************************************************************
-		Static functions declarations section
-***********************************************************************************/
-// extern APS_DataReq_t test;
-// extern buff_t buf_to_send;
 
 void APL_TaskHandler(void)
 {
@@ -92,15 +84,14 @@ void APL_TaskHandler(void)
 				case DEVICE_TYPE_COORDINATOR:
 						network_init();
 						twi_init(AC_BEACON_TWI_ADDRESS);
-						uprintf("DEVICE_TYPE_COORDINATOR init OK\n\r");
+						uprintf("COORDINATOR initialisation OK !\n\r");
 					break;
 				case DEVICE_TYPE_END_DEVICE:
 						servo_init();
-						sensors_laser_init();
 						sensors_codewheel_init();
 						sensors_laser_init();
  						network_init();
-						uprintf("DEVICE_TYPE_END_DEVICE init OK\n\r");
+						uprintf("LOL_%d initialisation OK !\n\r",CS_NWK_ADDR);
 					break;
 				default:
 					break;
@@ -108,7 +99,7 @@ void APL_TaskHandler(void)
  			appState = APP_NETWORK_JOINING_STATE;
 			break;
 		case APP_NETWORK_JOINING_STATE:
-     			network_start();
+        		network_start();
 			break;
 		case APP_NETWORK_LEAVING_STATE:
 			break;
@@ -119,7 +110,6 @@ void APL_TaskHandler(void)
 	}
 	SYS_PostTask(APL_TASK_ID);
 }
-
 
 int main(void)
 { 
