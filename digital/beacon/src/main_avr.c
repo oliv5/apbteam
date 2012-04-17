@@ -77,6 +77,7 @@ void APL_TaskHandler(void)
 						servo_timer1_init();
 						sensors_laser_init();
 						sensors_codewheel_init();
+						sensors_laser_init();
  						network_init();
 						uprintf("DEVICE_TYPE_END_DEVICE init OK\n\r");
 					break;

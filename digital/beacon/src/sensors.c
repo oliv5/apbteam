@@ -33,8 +33,11 @@
 
 /* This function initializes the laser pin input and associated interrupt */
 void sensors_laser_init(void)
-{
- 	HAL_RegisterIrq(IRQ_7,IRQ_RISING_EDGE,sensors_laser_irq_vector);
+{	
+	/* Configure Input compare interrupts for Laser Interrupt*/
+	TCCR3B |= (1<<ICNC3)|(1<<ICES3);
+	TIMSK3 |= (1<<ICIE3);
+	sei(); 
 }
 
 
@@ -55,6 +58,7 @@ void sensors_codewheel_init(void)
 	sei(); 
 }
 
+
 /* This function returns the wheel position */
 uint16_t sensors_codewheel_get_value(void)
 {
@@ -71,4 +75,10 @@ void sensors_codewheel_reset(void)
 ISR(TIMER3_COMPA_vect)
 {
 	//Top tour ++
+}
+
+/* IRQ vector for Laser Interrupt */
+ISR(TIMER3_CAPT_vect)
+{
+	// LASER
 }

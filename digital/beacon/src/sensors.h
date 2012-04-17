@@ -26,7 +26,7 @@
 #ifndef _SENSORS_H
 #define _SENSORS_H
 
-#define CODEWHEEL_CPR 500
+#define CODEWHEEL_CPR 499
 
 /* This function initializes the laser pin input and associated interrupt */
 void sensors_laser_init(void);
@@ -35,9 +35,9 @@ void sensors_laser_init(void);
 void sensors_codewheel_init(void);
 
 /* This function returns the wheel position */
-int sensors_codewheel_get_value(void);
+uint16_t sensors_codewheel_get_value(void);
 
-/* IRQ vector for Laser Interrupt */
-void sensors_laser_irq_vector(void);
+/* This function resets the wheel position */
+void sensors_codewheel_reset(void);
 
 #endif
