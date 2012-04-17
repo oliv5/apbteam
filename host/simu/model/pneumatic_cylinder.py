@@ -27,19 +27,22 @@ from utils.observable import Observable
 class PneumaticCylinder (Observable):
 
     def __init__ (self, link_in, link_out, scheduler,
-            pos_in, pos_out, speed_in, speed_out, init_pos):
+            pos_in, pos_out, speed_in, speed_out, init_pos,
+            switch_in = None, switch_out = None):
         """Cylinder parameters:
          - link_in, link_out: output conected to valve, if one is none, use
            simple effect.
          - pos_in, pos_out: maximum position in each direction (minimum and
            maximum length) (mm).
          - speed_in, speed_out: linear speed (mm/s).
-         - init_pos: initial position (mm)."""
+         - init_pos: initial position (mm).
+         - switch_in, switch_out: limit switch models if present."""
         Observable.__init__ (self)
         self.link_in, self.link_out = link_in, link_out
         self.scheduler = scheduler
         self.pos_in, self.pos_out = pos_in, pos_out
         self.speed_in, self.speed_out = speed_in, speed_out
+        self.switch_in, self.switch_out = switch_in, switch_out
         self.last_update = self.scheduler.date
         self.speed = 0
         self.pos = init_pos
@@ -88,4 +91,10 @@ class PneumaticCylinder (Observable):
             self.pos = self.pos_out
         if old_pos != self.pos:
             self.notify ()
+            if self.switch_in:
+                self.switch_in.state = self.pos == self.pos_in
+                self.switch_in.notify ()
+            if self.switch_out:
+                self.switch_out.state = self.pos == self.pos_out
+                self.switch_out.notify ()
 
