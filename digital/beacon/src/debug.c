@@ -28,6 +28,7 @@
 #include "configuration.h"
 #include "debug.h"
 #include "servo.h"
+#include "sensors.h"
 #include "network.h"
 
 HAL_UsartDescriptor_t appUsartDescriptor;          			// USART descriptor (required by stack)
@@ -107,8 +108,14 @@ void usartRXCallback(uint16_t bytesToRead)
 			/* Decrease servo 2 angle */
 			uprintf("SERVO_2 = %d\r\n",servo_angle_decrease(SERVO_2));
 			break;
+		case 'a':
+			uprintf("CodeWheel Value = %d\r\n",sensors_codewheel_get_value());
+			break;
 		case 'd':
 			debug_start_stop_task();
+			break;
+		case 'z':
+			sensors_codewheel_reset();
 			break;
 		/* Default */
 		default :
@@ -166,4 +173,7 @@ void debug_task(void)
 {
  	uprintf("------------------------- debug TASK -------------------------\r\n");
 	uprintf("NWK : status = 0x%x\r\n",network_get_status());
+#ifdef TYPE_END
+	uprintf("CodeWheel = %d\r\n",sensors_codewheel_get_value());
+#endif
 }

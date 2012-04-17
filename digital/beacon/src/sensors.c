@@ -24,10 +24,10 @@
  * }}} */
 
 #include <types.h>
-#include <irq.h>
+#include <avr/interrupt.h>
 #include "sensors.h"
-
-
+#include "debug.h"
+#include "led.h"
 
 /********************************************************/
 
@@ -61,11 +61,10 @@ uint16_t sensors_codewheel_get_value(void)
 	return TCNT3;
 }
 
-
-/* IRQ vector for Laser Interrupt */
-void sensors_laser_irq_vector(void)
+/* This function resets the wheel position */
+void sensors_codewheel_reset(void)
 {
-	//calculate and send value
+	TCNT3 = 0;
 }
 
 /* IRQ vector for CodeWheel complete turn */
