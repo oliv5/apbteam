@@ -42,6 +42,7 @@
 #include "contact.h"
 #include "output.h"
 #include "radar.h"
+#include "pressure.h"
 
 #define FSM_NAME AI
 #include "fsm.h"
@@ -78,6 +79,9 @@ static uint8_t main_stats_contact_, main_stats_contact_cpt_;
 
 /** US sensors stats counters. */
 static uint8_t main_stats_usdist_, main_stats_usdist_cpt_;
+
+/** Pressure stats counters. */
+static uint8_t main_stats_pressure_, main_stats_pressure_cpt_;
 
 /** Main initialisation. */
 static void
@@ -186,6 +190,7 @@ main_loop (void)
 	    move_obstacles_update ();
 	    simu_send_pos_report (main_obstacles_pos, main_obstacles_nb, 0);
 	  }
+	pressure_update ();
 	/* Update AI modules. */
 	path_decay ();
 	/* Only manage events if slaves are synchronised. */
@@ -212,6 +217,11 @@ main_loop (void)
 	    proto_send4w ('U', usdist_mm[0], usdist_mm[1], usdist_mm[2],
 			  usdist_mm[3]);
 	    main_stats_usdist_cpt_ = main_stats_usdist_;
+	  }
+	if (main_stats_pressure_ && !--main_stats_pressure_cpt_)
+	  {
+	    proto_send1w ('F', pressure_get ());
+	    main_stats_pressure_cpt_ = main_stats_pressure_;
 	  }
       }
 }
@@ -267,6 +277,11 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	      }
 	  }
 	break;
+      case c ('f', 2):
+	/* Set low pressure threshold.
+	 * 1w: sensor value, 1024 is full scale. */
+	pressure_set (v8_to_v16 (args[0], args[1]));
+	break;
 	/* Stats commands.
 	 * - b: interval between stats. */
       case c ('A', 1):
@@ -280,6 +295,10 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
       case c ('U', 1):
 	/* US sensors stats. */
 	main_stats_usdist_ = main_stats_usdist_cpt_ = args[0];
+	break;
+      case c ('F', 1):
+	/* Pressure stats. */
+	main_stats_pressure_ = main_stats_pressure_cpt_ = args[0];
 	break;
       default:
 	/* Unknown commands */

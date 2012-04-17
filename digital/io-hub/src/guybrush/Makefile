@@ -5,6 +5,7 @@ PROGS = io_hub
 # Sources to compile.
 io_hub_SOURCES = main.c top.c \
 		 radar_defs.c radar.c path.c move.c \
+		 pressure.c \
 		 init.c fsm.host.c fsm_AI_gen.avr.c fsm_queue.c \
 		 contact.avr.c contact.host.c \
 		 output.c output.host.c \
