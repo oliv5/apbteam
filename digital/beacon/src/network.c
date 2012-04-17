@@ -90,6 +90,11 @@ void network_start(void)
 	ZDO_StartNetworkReq(&networkParams);
 }
 
+/* This function returns the network status */
+uint16_t network_get_status(void)
+{
+	return appState;
+}
 
 /* ZDO_StartNetwork primitive confirmation callback */
 void ZDO_StartNetworkConf(ZDO_StartNetworkConf_t* confirmInfo)
@@ -128,7 +133,7 @@ void ZDO_StartNetworkConf(ZDO_StartNetworkConf_t* confirmInfo)
 	}
 	else
 	{
- 		uprintf("CONNECTION FAILED. confirmInfo->status = %x\n\r",confirmInfo->status);
+//  		uprintf("CONNECTION FAILED. confirmInfo->status = %x\n\r",confirmInfo->status);
 	}
 	SYS_PostTask(APL_TASK_ID);
 }

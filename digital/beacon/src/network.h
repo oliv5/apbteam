@@ -64,6 +64,10 @@ void ZDO_WakeUpInd(void);
 
 void network_init(void);
 void network_start(void);
+
+/* This function returns the network status */
+uint16_t network_get_status(void);
+
 void send_data(uint8_t type, uint8_t data);
 void send_angle(int angle_degree);
 void network_leave(void);

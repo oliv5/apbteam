@@ -28,6 +28,7 @@
 #include "configuration.h"
 #include "debug.h"
 #include "servo.h"
+#include "network.h"
 
 HAL_UsartDescriptor_t appUsartDescriptor;          			// USART descriptor (required by stack)
 HAL_AppTimer_t debugTimer;						// TIMER descripor used by the DEBUG task
@@ -164,4 +165,5 @@ void debug_start_stop_task(void)
 void debug_task(void)
 {
  	uprintf("------------------------- debug TASK -------------------------\r\n");
+	uprintf("NWK : status = 0x%x\r\n",network_get_status());
 }
