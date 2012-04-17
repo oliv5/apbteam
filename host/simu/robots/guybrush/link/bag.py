@@ -32,6 +32,6 @@ class Bag:
         self.asserv = asserv.mex.Mex (node, '%s:asserv0' % instance,
                 aux_nb = 0)
         self.io_hub = io_hub.mex.Mex (node, '%s:io0' % instance,
-                contact_nb = 7, output_nb = 10)
+                contact_nb = 13, output_nb = 10)
         self.mimot = mimot.mex.Mex (node, '%s:mimot0' % instance)
 
