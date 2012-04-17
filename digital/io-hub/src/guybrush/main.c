@@ -244,8 +244,6 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	mimot_motor1_free ();
 	asserv_free_motor ();
 	break;
-	/* Stats commands.
-	 * - b: interval between stats. */
       case c ('o', 5):
 	/* Set/clear/toggle outputs.
 	 * - 1d: mask.
@@ -265,6 +263,8 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	      }
 	  }
 	break;
+	/* Stats commands.
+	 * - b: interval between stats. */
       case c ('A', 1):
 	/* Position stats. */
 	main_stats_asserv_ = main_stats_asserv_cpt_ = args[0];
