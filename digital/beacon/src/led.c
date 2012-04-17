@@ -26,8 +26,6 @@
 #include <appTimer.h>
 #include "led.h"
 
-// Timer indicating starting network during network joining.
-// Also used as a delay timer between APS_DataConf and APS_DataReq.
 static HAL_AppTimer_t delayTimer;
 
 
