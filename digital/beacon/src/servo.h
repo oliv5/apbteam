@@ -26,27 +26,70 @@
 #ifndef _SERVO_H
 #define _SERVO_H
 
-#define SERVO_1_ANGLE_INIT 	150
-#define SERVO_1_ANGLE_MIN 	69
-#define SERVO_1_ANGLE_MAX 	300
-#define SERVO_2_ANGLE_INIT 	150
-#define SERVO_2_ANGLE_MIN 	69
-#define SERVO_2_ANGLE_MAX 	300
+
+#define SERVO_ANGLE_INIT 	200
+#define SERVO_ANGLE_MIN 	69
+#define SERVO_ANGLE_MAX 	200
+
+#define RISING			1
+#define FALLING			-1
 
 /* SERVO ID */
 typedef enum
 {
-	SERVO_1=1,
+	SERVO_1,
 	SERVO_2
 } TServo_ID;
+
+typedef enum
+{
+	SERVO_SCANNING_OFF,
+	SERVO_SCANNING_FAST_IN_PROGRESS,
+	SERVO_SCANNING_FAST_FINISHED,
+	SERVO_SCANNING_SLOW_IN_PROGRESS,
+	SERVO_SCANNING_SLOW_FINISHED
+} TServo_state;
+
+typedef struct
+{
+	TServo_ID id;
+	int16_t top;
+	int16_t bottom;
+	int scanning_sense;
+	TServo_state state;
+} servo_s;
+
+/* This function initializes the servo structures */
+void servo_structure_init(void);
+
+/* This function initializes low and high level modules for servos */
+void servo_init(void);
 
 /* This function initializes the timer used for servomotor signal generation */
 void servo_timer1_init(void);
 
-/* This function increase by one unit the angle of the defined servo and returns "angle" value */
-int servo_angle_increase(TServo_ID servo_id);
+/* This function increases by one unit the angle of the defined servo and returns "angle" value */
+int16_t servo_angle_increase(TServo_ID servo_id);
 
-/* This function decrease by one unit the angle of the defined servo and returns "angle" value*/
-int servo_angle_decrease(TServo_ID servo_id);
+/* This function decreases by one unit the angle of the defined servo and returns "angle" value */
+int16_t servo_angle_decrease(TServo_ID servo_id);
+
+/* This function returns the "angle" value of a defined servo */
+int16_t servo_get_value(TServo_ID servo_id);
+
+/* This function sets the "angle" value of a defined servo */
+int16_t servo_set_value(TServo_ID servo_id,int16_t value);
+
+/* This function returns the current state of a defined servo */
+TServo_state servo_get_state(TServo_ID servo_id);
+
+/* This function updates the state of a defined servo */
+void servo_set_state(TServo_ID servo_id,TServo_state state);
+
+/* This function returns the scanning sens of the defined servo */
+int8_t servo_get_scanning_sense(TServo_ID servo_id);
+
+/* This function inverses the scanning sense of the servo */
+void servo_inverse_scanning_sense(TServo_ID servo_id);
 
 #endif

@@ -28,13 +28,23 @@
 #include "servo.h" 
 #include "debug.h"
 
+servo_s servo1;
+servo_s servo2;
+
+/* This function initializes low and high level modules for servos */
+void servo_init(void)
+{
+	servo_timer1_init();
+	servo_structure_init();
+}
+
 /* This function initializes the timer used for servomotor signal generation */
 void servo_timer1_init(void)
 {
 
 	//Fpwm = f_IO / (prescaler * (1 + TOP)) = 7200 Hz. */
-  	OCR1B = SERVO_1_ANGLE_INIT; 
-  	OCR1A = SERVO_2_ANGLE_INIT;
+  	OCR1B = SERVO_ANGLE_INIT; 
+  	OCR1A = SERVO_ANGLE_INIT;
 
 	
 	/* Fast PWM 10bits with TOP=0x03FF */
@@ -59,27 +69,158 @@ void servo_timer1_init(void)
 
 	/* Enable Interrupts */
  	sei(); 
-
 }
 
-/* This function increase by one unit the angle of the defined servo and returns "angle" value */
-int servo_angle_increase(TServo_ID servo_id)
+
+/* This function initializes the servo structures */
+void servo_structure_init(void)
+{
+	/* Servo 1 init values */
+	servo1.id = SERVO_1;
+	servo1.state = SERVO_SCANNING_OFF;
+	servo1.top = 0;
+	servo1.bottom = 0;
+	servo1.scanning_sense = FALLING;
+	
+	/* Servo 2 init values */
+	servo2.id = SERVO_2;
+	servo2.state = SERVO_SCANNING_OFF;
+	servo2.top = 0;
+	servo2.bottom = 0;
+	servo2.scanning_sense = FALLING;
+}
+
+/* This function increases by one unit the angle of the defined servo and returns "angle" value */
+int16_t servo_angle_increase(TServo_ID servo_id)
 {
 	switch(servo_id)
 	{
 		case SERVO_1:
-			if(OCR1A < SERVO_1_ANGLE_MAX)
+			if(OCR1A < SERVO_ANGLE_MAX)
 			{
 				OCR1A++;
-				return OCR1A;
 			}
+			return OCR1A;
 			break;
 		case SERVO_2:
-			if(OCR1B < SERVO_2_ANGLE_MAX)
+			if(OCR1B < SERVO_ANGLE_MAX)
 			{
 				OCR1B++;
-				return OCR1B;
 			}
+			return OCR1B;
+			break;
+		default:
+			break;
+	}
+	return -1;
+}
+
+
+/* This function decreases by one unit the angle of the defined servo and returns "angle" value*/
+int16_t servo_angle_decrease(TServo_ID servo_id)
+{
+	switch(servo_id)
+	{
+		case SERVO_1:
+			if(OCR1A > SERVO_ANGLE_MIN)
+			{
+				OCR1A--;
+			}
+			return OCR1A;
+			break;
+		case SERVO_2:
+			if(OCR1B > SERVO_ANGLE_MIN)
+			{
+				OCR1B--;
+			}
+			return OCR1B;
+			break;
+		default:
+			break;
+	}
+	return -1;
+}
+
+/* This function returns the "angle" value of a defined servo */
+int16_t servo_get_value(TServo_ID servo_id)
+{
+	switch(servo_id)
+	{
+		case SERVO_1:
+			return OCR1A;
+			break;
+		case SERVO_2:
+			return OCR1B;
+			break;
+		default:
+			break;
+	}
+	return -1;
+}
+
+/* This function sets the "angle" value of a defined servo */
+int16_t servo_set_value(TServo_ID servo_id,int16_t value)
+{
+	if(value < SERVO_ANGLE_MIN)
+		value = SERVO_ANGLE_MIN;
+	else if(value > SERVO_ANGLE_MAX)
+		value = SERVO_ANGLE_MAX;
+	
+	switch(servo_id)
+	{
+		case SERVO_1:
+			OCR1A = value;
+			break;
+		case SERVO_2:
+			OCR1B= value;
+			break;
+		default:
+			break;
+	}
+	return value;
+}
+
+/* This function returns the current state of a defined servo */
+TServo_state servo_get_state(TServo_ID servo_id)
+{
+	switch(servo_id)
+	{
+		case SERVO_1:
+			return servo1.state;
+		case SERVO_2:
+			return servo2.state;
+		default:
+			break;
+	}
+	return -1;
+}
+
+/* This function updates the state of a defined servo */
+void servo_set_state(TServo_ID servo_id,TServo_state state)
+{
+	switch(servo_id)
+	{
+		case SERVO_1:
+			servo1.state = state;
+			break;
+		case SERVO_2:
+			servo2.state = state;
+			break;
+		default:
+			break;
+	}
+}
+
+/* This function returns the scanning sens of the defined servo */
+int8_t servo_get_scanning_sense(TServo_ID servo_id)
+{
+	switch(servo_id)
+	{
+		case SERVO_1:
+			return servo1.scanning_sense;
+			break;
+		case SERVO_2:
+			return servo2.scanning_sense;
 			break;
 		default:
 			break;
@@ -87,30 +228,20 @@ int servo_angle_increase(TServo_ID servo_id)
 	return 0;
 }
 
-
-/* This function decrease by one unit the angle of the defined servo and returns "angle" value*/
-int servo_angle_decrease(TServo_ID servo_id)
+/* This function inverses the scanning sense of the servo */
+void servo_inverse_scanning_sense(TServo_ID servo_id)
 {
 	switch(servo_id)
 	{
 		case SERVO_1:
-			if(OCR1A > SERVO_1_ANGLE_MIN)
-			{
-				OCR1A--;
-				return OCR1A;
-			}
+			servo1.scanning_sense *= -1;
 			break;
 		case SERVO_2:
-			if(OCR1B > SERVO_2_ANGLE_MIN)
-			{
-				OCR1B--;
-				return OCR1B;
-			}
+			servo1.scanning_sense *= -1;
 			break;
 		default:
 			break;
 	}
-	return 0;
 }
 
 SIGNAL (SIG_OVERFLOW1)
