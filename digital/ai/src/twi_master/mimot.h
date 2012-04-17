@@ -122,4 +122,8 @@ mimot_motor0_free (void);
 void
 mimot_motor1_free (void);
 
+/** Set raw output for motor. */
+void
+mimot_motor_output_set (uint8_t motor, int16_t pwm);
+
 #endif /* mimot_h */

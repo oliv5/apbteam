@@ -167,6 +167,18 @@ twi_proto_callback (u8 *buf, u8 size)
 	else
 	    buf[0] = 0;
 	break;
+      case c ('W', 3):
+	/* Set motor output.
+	 * - b: aux index.
+	 * - w: value. */
+	if (buf[2] < AC_ASSERV_AUX_NB)
+	  {
+	    output_set (&output_aux[buf[2]], v8_to_v16 (buf[3], buf[4]));
+	    control_state_set_mode (&cs_aux[buf[2]].state, CS_MODE_NONE, 0);
+	  }
+	else
+	    buf[0] = 0;
+	break;
       case c ('p', x):
 	/* Set parameters. */
 	if (twi_proto_params (&buf[2], size - 2) != 0)

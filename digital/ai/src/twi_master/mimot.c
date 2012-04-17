@@ -257,3 +257,14 @@ mimot_motor1_free (void)
     twi_master_send_buffer (2);
 }
 
+void
+mimot_motor_output_set (uint8_t motor, int16_t pwm)
+{
+    uint8_t *buffer = twi_master_get_buffer (MIMOT_SLAVE);
+    buffer[0] = 'W';
+    buffer[1] = motor;
+    buffer[2] = v16_to_v8 (pwm, 1);
+    buffer[3] = v16_to_v8 (pwm, 0);
+    twi_master_send_buffer (4);
+}
+
