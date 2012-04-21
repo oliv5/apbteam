@@ -27,7 +27,7 @@
 #include <appTimer.h>
 #include "configuration.h"
 #include "calibration.h"
-#include "debug.h"
+#include "debug_avr.h"
 #include "servo.h"
 #include "codewheel.h"
 #include "laser.h"

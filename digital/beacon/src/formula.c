@@ -24,7 +24,7 @@
  * }}} */
 
 #include <math.h>
-#include "debug.h"
+#include "debug_simu.h"
 #include "position.h"
 #include "formula.h"
 

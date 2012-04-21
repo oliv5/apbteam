@@ -31,7 +31,7 @@
 #include "network.h"
 #include "position.h"
 #include "laser.h"
-#include "debug.h"
+#include "debug_avr.h"
 #include "servo.h"
 #include "led.h"
 #include "twi.h"

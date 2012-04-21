@@ -27,7 +27,7 @@
 #include "position.h"
 #include "recovery.h"
 #include "trust.h"
-#include "debug.h"
+#include "debug_simu.h"
 
 /* This function is used to calculate all obstacle positions from sractch */
 TRecoveryStatus recovery(coord_s * new_point,opponent_s opp[MAX_OBSTACLE])

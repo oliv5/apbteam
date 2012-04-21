@@ -26,7 +26,7 @@
 #include "position.h"
 #include "trust.h"
 #include "update.h"
-#include "debug.h"
+#include "debug_simu.h"
 
 /* Globals Declaration */
 extern opponent_s opponent[MAX_OBSTACLE];

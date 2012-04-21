@@ -24,7 +24,7 @@
  * }}} */
 
 #include <appTimer.h>
-#include "debug.h"
+#include "debug_avr.h"
 #include "servo.h"
 #include "calibration.h"
 

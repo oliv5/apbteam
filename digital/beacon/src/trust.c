@@ -25,7 +25,7 @@
 
 #include "position.h"
 #include "trust.h"
-#include "debug.h"
+#include "debug_simu.h"
 
 extern opponent_s opponent[MAX_OBSTACLE];
 
