@@ -24,14 +24,16 @@
 """Guybrush clamps."""
 from utils.observable import Observable
 from simu.utils.trans_matrix import TransMatrix
+from simu.utils.vector import vector
 from math import pi
+import random
 
 class Clamps (Observable):
 
     def __init__ (self, table, robot_position, lower_clamp_motor,
             lower_clamp_cylinders, lower_clamp_sensors,
             upper_clamp_up_down_cylinder, upper_clamp_in_out_cylinder,
-            upper_clamp_open_cylinder):
+            upper_clamp_open_cylinder, door_cylinder):
         Observable.__init__ (self)
         self.table = table
         self.robot_position = robot_position
@@ -44,12 +46,15 @@ class Clamps (Observable):
         self.upper_clamp_in_out_cylinder = upper_clamp_in_out_cylinder
         self.upper_clamp_open_cylinder = upper_clamp_open_cylinder
         self.upper_clamp_content = [ ]
+        self.door_cylinder = door_cylinder
+        self.load = [ ]
         self.lower_clamp_motor.register (self.__lower_clamp_notified)
         for c in self.lower_clamp_cylinders:
             c.register (self.__lower_clamp_notified)
         self.upper_clamp_up_down_cylinder.register (self.__upper_clamp_notified)
         self.upper_clamp_in_out_cylinder.register (self.__upper_clamp_notified)
         self.upper_clamp_open_cylinder.register (self.__upper_clamp_notified)
+        self.door_cylinder.register (self.__door_notified)
         self.robot_position.register (self.__robot_position_notified)
 
     def __robot_position_notified (self):
@@ -76,6 +81,18 @@ class Clamps (Observable):
         else:
             self.upper_clamp_clamping = c.pos / c.pos_out
         self.__compute_upper_clamp ()
+        self.notify ()
+
+    def __door_notified (self):
+        self.door = self.door_cylinder.pos # 1. is open.
+        if self.door > 0.5 and self.load:
+            for e in self.load:
+                e.pos = (vector (self.robot_position.pos)
+                        - vector.polar (self.robot_position.angle
+                            + random.uniform (-pi/8, pi/8),
+                            200 + random.uniform (0, 70)))
+                e.notify ()
+            self.load = [ ]
         self.notify ()
 
     def __compute_lower_clamp (self):
@@ -138,7 +155,7 @@ class Clamps (Observable):
 
     def __add_load (self, elements):
         """Add element list to load."""
-        pass
+        self.load.extend (elements)
 
     def __get_floor_elements (self):
         """Return an elements in front of the robot, on the floor, with its y

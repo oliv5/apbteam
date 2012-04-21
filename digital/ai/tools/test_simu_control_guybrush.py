@@ -33,6 +33,8 @@ class TestSimuControl (TestSimu):
     UPPER_CLAMP_IN = 1 << 3
     UPPER_CLAMP_DOWN = 1 << 4
     UPPER_CLAMP_UP = 1 << 5
+    DOOR_OPEN = 1 << 6
+    DOOR_CLOSE = 1 << 7
     LOWER_CLAMP_1_OPEN = 1 << 8
     LOWER_CLAMP_2_OPEN = 1 << 9
     LOWER_CLAMP_ROTATION_STROKE = int (16 * 250)
@@ -46,6 +48,7 @@ class TestSimuControl (TestSimu):
         self.robot_model = self.robots[0].model
         self.io.output (self.UPPER_CLAMP_UP, 'toggle')
         self.io.output (self.UPPER_CLAMP_IN, 'toggle')
+        self.io.output (self.DOOR_CLOSE, 'toggle')
 
     def create_widgets (self):
         TestSimu.create_widgets (self)
@@ -69,6 +72,7 @@ class TestSimuControl (TestSimu):
         out_button ('UClamp in/out',
                 self.UPPER_CLAMP_IN | self.UPPER_CLAMP_OUT)
         out_button ('UClamp open', self.UPPER_CLAMP_OPEN)
+        out_button ('Door open', self.DOOR_OPEN | self.DOOR_CLOSE)
         self.backward_var = IntVar ()
         self.backward_button = Checkbutton (self.control_frame,
                 text = 'Backward', variable = self.backward_var)

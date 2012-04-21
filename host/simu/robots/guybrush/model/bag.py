@@ -55,7 +55,10 @@ class Bag:
                 PneumaticCylinder (output[3], output[2], scheduler,
                     0., 1., 1., 1., 0.),
                 PneumaticCylinder (None, output[1], scheduler,
-                    0., 30., 150., 75., 30.))
+                    0., 30., 150., 75., 30.),
+                PneumaticCylinder (output[7], output[6], scheduler,
+                    0., 1., 1., 1., 1., contact[7], contact[6])
+                )
         def distance_sensor_exclude (o):
             return o is self.beacon
         self.distance_sensor = [

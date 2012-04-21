@@ -24,7 +24,9 @@
 """Guybrush clamps."""
 from simu.inter.drawable import Drawable
 from math import pi, cos, sin, radians
-from simu.view.table_eurobot2012 import YELLOW
+from simu.view.table_eurobot2012 import WHITE, BLACK, YELLOW
+
+COIN_BLACK = BLACK
 
 GREY = '#808080'
 BLACK = '#000000'
@@ -44,6 +46,25 @@ class ClampsSide (Drawable):
         # Draw base from side.
         self.trans_translate ((50, -150))
         self.draw_line ((-93, 0), (130, 0), fill = GREY)
+        # Draw load.
+        self.trans_push ()
+        self.trans_translate ((60, 0))
+        for i, e in enumerate (self.model.load):
+            if e.value == 3:
+                self.draw_polygon ((-75, 0), (-75 + 13, 48.5),
+                        (75 - 13, 48.5), (75, 0), fill = YELLOW,
+                        outline = BLACK)
+            else:
+                color = WHITE if e.value else COIN_BLACK
+                self.draw_oval ((0, 15), 60, 15, fill = color)
+            self.trans_translate ((0, 15))
+        self.trans_pop ()
+        # Draw doors.
+        if self.model.door is not None:
+            a = self.model.door * 200
+            b = 100 + self.model.door * 100
+            self.draw_line ((130, a), (130, a + 100))
+            self.draw_line ((125, b), (125, b + 100))
         # Draw lower clamp.
         if self.model.lower_clamp_rotation is not None:
             self.trans_push ()
