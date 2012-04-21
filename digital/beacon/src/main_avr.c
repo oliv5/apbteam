@@ -92,6 +92,7 @@ void APL_TaskHandler(void)
 						codewheel_init();
 						laser_init();
  						network_init();
+						motor_init();
 						uprintf("LOL_%d initialisation OK !\n\r",CS_NWK_ADDR);
 					break;
 				default:
