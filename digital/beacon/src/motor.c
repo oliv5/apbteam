@@ -28,24 +28,24 @@
 /* This function initializes the motor control output */
 void motor_init(void)
 {
-	DDRB |= (1<<PB5);
+	DDRB |= (1<<PB7);
 }
 
 /* This function starts the motor rotation */
 void motor_start(void)
 {
-	PORTB |= (1<<PORTB5); 
+	PORTB |= (1<<PORTB7); 
 }
 
 /* This function stops the motor rotation */
 void motor_stop(void)
 {
-	PORTB &= ~(1<<PORTB5);
+	PORTB &= ~(1<<PORTB7);
 }
 
 TMotor_state motor_get_state(void)
 {
-	if(PORTB&(1<<PORTB5))
+	if(PORTB&(1<<PORTB7))
 		return MOTOR_IN_ROTATION;
 	else
 		return MOTOR_STOPPED;
