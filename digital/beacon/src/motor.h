@@ -44,4 +44,7 @@ void motor_stop(void);
 /* This function returns the motor state */
 TMotor_state motor_get_state(void);
 
+/* This function starts or stops the motor according to the current state */
+void motor_start_stop_control(void);
+
 #endif

@@ -50,3 +50,13 @@ TMotor_state motor_get_state(void)
 	else
 		return MOTOR_STOPPED;
 }
+
+/* This function starts or stops the motor according to the current state */
+void motor_start_stop_control(void)
+{
+
+	if(motor_get_state == MOTOR_IN_ROTATION)
+		motor_stop();
+	else
+		motor_start();
+}

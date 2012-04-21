@@ -32,6 +32,7 @@
 #include "codewheel.h"
 #include "laser.h"
 #include "network.h"
+#include "motor.h"
 
 HAL_UsartDescriptor_t appUsartDescriptor;          			// USART descriptor (required by stack)
 HAL_AppTimer_t debugTimer;						// TIMER descripor used by the DEBUG task
@@ -136,6 +137,9 @@ void usartRXCallback(uint16_t bytesToRead)
 			led_off(2);
 			led_off(3);
 			break;
+		case 't':
+			motor_start_stop_control();
+			break;
 		/* Default */
 		default :
 			uprintf(" ?? Unknown command ??\r\n");
@@ -222,5 +226,6 @@ void debug_task(void)
  	uprintf("[2] Scanning State = %d -- Value = %d\r\n",servo_get_state(SERVO_2),servo_get_value(SERVO_2));
 	uprintf("CodeWheel = %d\r\n",codewheel_get_value());
 	uprintf("Calibration state = %d\r\n",calibration_get_state());
+	uprintf("Motor state = %d\r\n",motor_get_state());
 #endif
 }
