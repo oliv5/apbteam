@@ -29,11 +29,13 @@
 #include "calibration.h"
 #include "debug.h"
 #include "servo.h"
-#include "sensors.h"
+#include "codewheel.h"
+#include "laser.h"
 #include "network.h"
 
 HAL_UsartDescriptor_t appUsartDescriptor;          			// USART descriptor (required by stack)
 HAL_AppTimer_t debugTimer;						// TIMER descripor used by the DEBUG task
+HAL_AppTimer_t wheelTimer;						// TIMER descripor used by the DEBUG task
 
 uint8_t usartRxBuffer[APP_USART_RX_BUFFER_SIZE];   	// USART Rx buffer
 uint8_t usartTxBuffer[APP_USART_TX_BUFFER_SIZE];   	// USART Tx buffer
@@ -111,19 +113,28 @@ void usartRXCallback(uint16_t bytesToRead)
 			uprintf("SERVO_2 = %d\r\n",servo_angle_decrease(SERVO_2));
 			break;
 		case 'a':
-			uprintf("CodeWheel Value = %d\r\n",sensors_codewheel_get_value());
+			uprintf("CodeWheel Value = %d\r\n",codewheel_get_value());
 			break;
 		case 'd':
 			debug_start_stop_task();
 			break;
 		case 'z':
-			sensors_codewheel_reset();
+			codewheel_reset();
 			break;
 		case 'c':
 			calibration_start_stop_task();
 			break;
 		case 'q':
 			calibration_set_laser_flag(SET);
+			break;
+		case 'w':
+// 			wheel_start_stop_task();
+// 			uprintf("TCNT3 = %d\r\n",TCNT3);
+			TIMSK3 &= ~(1<<OCIE3B);
+		case 'r':
+			led_off(1);
+			led_off(2);
+			led_off(3);
 			break;
 		/* Default */
 		default :
@@ -175,6 +186,31 @@ void debug_start_stop_task(void)
 		debug_task_running = 0;
 	}
 }
+void wheel_task(void)
+{
+	TCNT3++;
+}
+
+void wheel_start_stop_task(void)
+{
+	static bool wheel_task_running = 0;
+	if(wheel_task_running == 0)
+	{
+		led_on(2);
+		wheelTimer.interval = WHEEL_TASK_PERIOD;
+		wheelTimer.mode     = TIMER_REPEAT_MODE;
+		wheelTimer.callback = wheel_task;
+		HAL_StartAppTimer(&wheelTimer);
+		wheel_task_running = 1;
+	}
+	else
+	{
+		led_off(2);
+		HAL_StopAppTimer(&wheelTimer);
+		TCNT3=0;
+		wheel_task_running = 0;
+	}
+}
 
 /* Debug task callback */
 void debug_task(void)
@@ -184,7 +220,7 @@ void debug_task(void)
 #ifdef TYPE_END
  	uprintf("[1] Scanning State = %d -- Value = %d\r\n",servo_get_state(SERVO_1),servo_get_value(SERVO_1));
  	uprintf("[2] Scanning State = %d -- Value = %d\r\n",servo_get_state(SERVO_2),servo_get_value(SERVO_2));
-	uprintf("CodeWheel = %d\r\n",sensors_codewheel_get_value());
+	uprintf("CodeWheel = %d\r\n",codewheel_get_value());
 	uprintf("Calibration state = %d\r\n",calibration_get_state());
 #endif
 }

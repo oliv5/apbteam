@@ -27,9 +27,10 @@
 #include <util/delay.h>
 #include "configuration.h"
 #include "calibration.h"
+#include "codewheel.h"
 #include "network.h"
 #include "position.h"
-#include "sensors.h"
+#include "laser.h"
 #include "debug.h"
 #include "servo.h"
 #include "led.h"
@@ -88,8 +89,8 @@ void APL_TaskHandler(void)
 					break;
 				case DEVICE_TYPE_END_DEVICE:
 						servo_init();
-						sensors_codewheel_init();
-						sensors_laser_init();
+						codewheel_init();
+						laser_init();
  						network_init();
 						uprintf("LOL_%d initialisation OK !\n\r",CS_NWK_ADDR);
 					break;

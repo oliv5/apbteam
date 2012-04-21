@@ -1,5 +1,5 @@
-/* sensors.h */
-/* Beacon sensors management. {{{
+/* laser.h */
+/* laser sensor management. {{{
  *
  * Copyright (C) 2012 Florent Duchon
  *
@@ -23,21 +23,33 @@
  *
  * }}} */
 
-#ifndef _SENSORS_H
-#define _SENSORS_H
+#ifndef _LASER_H
+#define _LASER_H
 
-#define CODEWHEEL_CPR 499
+#define RISING_EDGE 			TCCR3B & (1<<ICES3)
+#define SENDING_ENGAGED 		TIMSK3&(1<<OCIE3B)
+#define LASER_SENDING_OFFSET 	10
+
+typedef enum
+{
+	LASER_FIRST_RISING_EDGE,
+	LASER_RISING_EDGE,
+	LASER_FALLING_EDGE
+} TLaser_edge_type;
 
 /* This function initializes the laser pin input and associated interrupt */
-void sensors_laser_init(void);
+void laser_init(void);
 
-/* This function initializes the codewheel optical sensors and associated interrupt */
-void sensors_codewheel_init(void);
+/* This function returns the edge type trigged by the AVR IC module*/
+TLaser_edge_type laser_get_edge_type(void);
 
-/* This function returns the wheel position */
-uint16_t sensors_codewheel_get_value(void);
+/* This function inverts the trigged edge of the AVR IC module */
+void laser_invert_IRQ_edge_trigger(void);
 
-/* This function resets the wheel position */
-void sensors_codewheel_reset(void);
+/* This function deactivates the angle sending */
+void laser_inhibit_angle_sending(void);
+
+/* This function configures the AVR OC3B interrupt that will send the angle LASER_SENDING_OFFSET after the latest rising edge */
+void laser_engage_angle_sending(uint16_t value);
 
 #endif

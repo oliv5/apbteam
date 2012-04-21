@@ -1,5 +1,5 @@
-/* sensors.c */
-/* Beacon sensors management. {{{
+/* codewheel.h */
+/* Codewheel sensors management. {{{
  *
  * Copyright (C) 2012 Florent Duchon
  *
@@ -23,62 +23,18 @@
  *
  * }}} */
 
-#include <types.h>
-#include <avr/interrupt.h>
-#include "sensors.h"
-#include "debug.h"
-#include "led.h"
+#ifndef _CODEWHEEL_H
+#define _CODEWHEEL_H
 
-/********************************************************/
-
-/* This function initializes the laser pin input and associated interrupt */
-void sensors_laser_init(void)
-{	
-	/* Configure Input compare interrupts for Laser Interrupt*/
-	TCCR3B |= (1<<ICNC3)|(1<<ICES3);
-	TIMSK3 |= (1<<ICIE3);
-	sei(); 
-}
-
+#define CODEWHEEL_CPR 499
 
 /* This function initializes the codewheel optical sensors and associated interrupt */
-void sensors_codewheel_init(void)
-{	
-	/* Select external clock on rising edge for timer 3 */
-	TCCR3B |= (1<<CS30)|(1<<CS31)|(1<<CS32);
-	
-	/* Use CTC mode */
-	TCCR3B |= (1<<WGM32);
-	
-	/* Define the compare value */
-	OCR3A = CODEWHEEL_CPR;
-	
-	/* Enable Interrupts */
-	TIMSK3 |= (1<<OCIE3A);
-	sei(); 
-}
-
+void codewheel_init(void);
 
 /* This function returns the wheel position */
-uint16_t sensors_codewheel_get_value(void)
-{
-	return TCNT3;
-}
+uint16_t codewheel_get_value(void);
 
 /* This function resets the wheel position */
-void sensors_codewheel_reset(void)
-{
-	TCNT3 = 0;
-}
+void codewheel_reset(void);
 
-/* IRQ vector for CodeWheel complete turn */
-ISR(TIMER3_COMPA_vect)
-{
-	//Top tour ++
-}
-
-/* IRQ vector for Laser Interrupt */
-ISR(TIMER3_CAPT_vect)
-{
-	// LASER
-}
+#endif

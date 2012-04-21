@@ -34,6 +34,7 @@
 #define READ_USART           		HAL_ReadUsart
 #define USART_CHANNEL    		APP_USART_CHANNEL
 #define DEBUG_TASK_PERIOD 	700L
+#define WHEEL_TASK_PERIOD 	1000L
 
 // #define DEBUG_POSITION_ENABLE
 // #define DEBUG_UPDATE_ENABLE
