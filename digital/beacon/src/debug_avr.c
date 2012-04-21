@@ -1,4 +1,4 @@
-/* debug.c */
+/* debug_avr.c */
 /* Beacon debug interface. {{{
  *
  * Copyright (C) 2012 Florent Duchon

@@ -1,5 +1,5 @@
-/* debug.h */
-/* Macro for debug traces. {{{
+/* debug_avr.h */
+/* Macro for debug traces for avr target. {{{
  *
  * Copyright (C) 2011 Florent Duchon
  *
