@@ -51,7 +51,7 @@ class Bag:
                     0., 30., 150., 75., 30.)),
                 contact[0:4],
                 PneumaticCylinder (output[4], output[5], scheduler,
-                    0., 1., 1., 1., 1., contact[5], contact[6]),
+                    0., 1., 1., 1., 1., contact[4], contact[5]),
                 PneumaticCylinder (output[3], output[2], scheduler,
                     0., 1., 1., 1., 0.),
                 PneumaticCylinder (None, output[1], scheduler,
