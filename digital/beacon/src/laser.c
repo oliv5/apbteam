@@ -27,6 +27,8 @@
 #include <avr/interrupt.h>
 #include "debug_avr.h"
 #include "laser.h"
+#include "servo.h"
+#include "codewheel.h"
 
 laser_s laser;
 
@@ -106,8 +108,11 @@ void laser_set_angle(uint16_t angle)
 /* Zigbee sending IRQ vector */
 ISR(TIMER3_COMPB_vect)
 {
-// 	TIMSK3 &= ~OCIE3B;
-// 	sei(); 
+	if(servo_get_state(SERVO_1) == SERVO_SCANNING_FAST_IN_PROGRESS)
+	{
+		codewheel_set_rebase_offset(laser_get_angle());
+		codewheel_set_state(CODEWHEEL_REQUEST_REBASE);
+	}
 }
 
 
