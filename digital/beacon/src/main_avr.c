@@ -99,10 +99,12 @@ void APL_TaskHandler(void)
 				default:
 					break;
 			}
- 			appState = APP_NETWORK_JOINING_STATE;
+ 			appState = APP_NETWORK_JOIN_REQUEST;
 			break;
+		case APP_NETWORK_JOIN_REQUEST:
+			network_start();
+			appState = APP_NETWORK_JOINING_STATE;
 		case APP_NETWORK_JOINING_STATE:
-        		network_start();
 			break;
 		case APP_NETWORK_LEAVING_STATE:
 			break;

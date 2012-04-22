@@ -342,6 +342,7 @@
 typedef enum
 {
   APP_INITIAL_STATE,                           // Initial state
+  APP_NETWORK_JOIN_REQUEST,
   APP_NETWORK_JOINING_STATE,                   // Attempting join the network
   APP_NETWORK_JOINED_STATE,                    // Successfully joined
   APP_NETWORK_LEAVING_STATE,                   // Leaving from the network
