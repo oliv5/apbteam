@@ -55,7 +55,7 @@ TMotor_state motor_get_state(void)
 void motor_start_stop_control(void)
 {
 
-	if(motor_get_state == MOTOR_IN_ROTATION)
+	if(motor_get_state() == MOTOR_IN_ROTATION)
 		motor_stop();
 	else
 		motor_start();
