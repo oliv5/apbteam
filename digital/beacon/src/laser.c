@@ -96,7 +96,7 @@ ISR(TIMER3_COMPB_vect)
 /* Laser IRQ vector */
 ISR(TIMER3_CAPT_vect)
 {
-	static uint16_t angle = 0;
+	static uint16_t virtual_angle = 0;
 	TLaser_edge_type current_edge;
 	
 	current_edge = laser_get_edge_type();
@@ -104,15 +104,21 @@ ISR(TIMER3_CAPT_vect)
 	switch(current_edge)
 	{
 		case LASER_FIRST_RISING_EDGE:
-			angle = ICR3;
+			virtual_angle = ICR3;
 			break;
 		case LASER_RISING_EDGE:
-			angle = (angle + ICR3) / 2;
 			/* Could be a bounce so inhibit the latest angle confirmation */
 			laser_inhibit_angle_confirmation();
+			/* Recompute the angle value */
+			virtual_angle = (virtual_angle + ICR3) / 2;
 			break;
 		case LASER_FALLING_EDGE:
-			angle = (angle + ICR3) / 2;
+			/* Recompute the angle value */
+			virtual_angle = (virtual_angle + ICR3) / 2;
+			
+			/* It's a falling edge so potentially current_angle could be a real one */
+			laser_set_angle(virtual_angle);
+			
 			/* Start virtual angle confirmation */
 			laser_engage_angle_confirmation(ICR3);
 			break;
