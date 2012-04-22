@@ -27,6 +27,9 @@
 
 #include "asserv.h"
 #include "mimot.h"
+#if AC_AI_TWI_MASTER_BEACON
+# include "beacon.h"
+#endif
 
 #include "modules/twi/twi.h"
 #include "modules/utils/utils.h"
@@ -100,6 +103,9 @@ struct twi_master_slave_t
 static struct twi_master_slave_t twi_master_slaves[] = {
       { ASSERV_TWI_ADDRESS, 0, ASSERV_STATUS_LENGTH, asserv_status_cb },
       { MIMOT_TWI_ADDRESS, 0, MIMOT_STATUS_LENGTH, mimot_status_cb },
+#if AC_AI_TWI_MASTER_BEACON
+      { BEACON_TWI_ADDRESS, 0, BEACON_STATUS_LENGTH, beacon_status_cb },
+#endif
 };
 
 /** Send first pending message if available. */

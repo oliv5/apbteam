@@ -18,6 +18,7 @@ DIRS = \
 	digital/asserv/src/asserv \
 	digital/mimot/src/asserv \
 	digital/mimot/src/dirty \
+	digital/beacon/src/stub \
 	digital/io/src \
 	digital/io-hub/src/robospierre \
 	digital/io-hub/src/guybrush
@@ -26,6 +27,7 @@ PYTHON_DIRS = \
 	digital/dev2/tools \
 	digital/asserv/tools \
 	digital/mimot/tools \
+	digital/beacon/tools \
 	digital/io/tools \
 	digital/io-hub/tools \
 	host

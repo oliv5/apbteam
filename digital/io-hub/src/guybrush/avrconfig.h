@@ -128,9 +128,15 @@
 
 /* io-hub - io/ai board. */
 /** TWI address of the io board. */
-#define AC_IO_TWI_ADDRESS 10
+#define AC_IO_TWI_ADDRESS 8
 /** PWM setting. */
 #undef AC_IOHUB_PWM
+/** Use beacon board. */
+#define AC_AI_TWI_MASTER_BEACON 1
+
+/* beacon. */
+/** Number of beacon positions. */
+#define AC_BEACON_POSITION_NB 2
 
 /* asserv. */
 /** Number of auxiliary motors. */

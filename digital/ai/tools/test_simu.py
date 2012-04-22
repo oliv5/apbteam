@@ -93,6 +93,9 @@ class TestSimu (InterNode):
                 if color_switch_set_pos:
                     r.asserv.set_pos (*r.robot_start_pos[i])
             r.model.color_switch.register (change_color)
+            # Beacon system.
+            if hasattr (r.link, 'beacon'):
+                r.link.beacon.position[0].register_to (self.obstacle)
 
     def close (self):
         self.forked_hub.kill ()

@@ -36,6 +36,7 @@
 
 #include "asserv.h"
 #include "mimot.h"
+#include "beacon.h"
 #include "twi_master.h"
 
 #include "contact.h"
@@ -97,6 +98,9 @@ main_init (void)
     /* TWI communications */
     asserv_init ();
     mimot_init ();
+#if AC_AI_TWI_MASTER_BEACON
+    beacon_init ();
+#endif
     twi_master_init ();
     /* IO modules. */
     contact_init ();

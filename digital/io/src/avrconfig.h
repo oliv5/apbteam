@@ -137,6 +137,8 @@
 /* io - io/ai board. */
 /** TWI address of the io board. */
 #define AC_IO_TWI_ADDRESS 2
+/** Use beacon board. */
+#define AC_AI_TWI_MASTER_BEACON 0
 
 /* asserv. */
 /** Number of auxiliary motors. */

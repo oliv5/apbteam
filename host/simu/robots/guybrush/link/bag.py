@@ -25,6 +25,7 @@
 import io_hub.mex
 import asserv.mex
 import mimot.mex
+import beacon.mex
 
 class Bag:
 
@@ -34,4 +35,5 @@ class Bag:
         self.io_hub = io_hub.mex.Mex (node, '%s:io0' % instance,
                 contact_nb = 13, output_nb = 10)
         self.mimot = mimot.mex.Mex (node, '%s:mimot0' % instance)
+        self.beacon = beacon.mex.Mex (node, '%s:beacon0' % instance)
 

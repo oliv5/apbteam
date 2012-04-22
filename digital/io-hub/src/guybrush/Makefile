@@ -8,7 +8,7 @@ io_hub_SOURCES = main.c top.c \
 		 init.c fsm.host.c fsm_AI_gen.avr.c fsm_queue.c \
 		 contact.avr.c contact.host.c \
 		 output.c output.host.c \
-		 twi_master.c asserv.c mimot.c \
+		 twi_master.c asserv.c mimot.c beacon.c \
 		 chrono.c timer.avr.c simu.host.c
 # Modules needed for IO.
 MODULES = proto uart twi utils \
