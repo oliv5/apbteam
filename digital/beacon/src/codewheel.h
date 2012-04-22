@@ -44,6 +44,8 @@ typedef struct
 /* This function initializes the codewheel optical sensors and associated interrupt */
 void codewheel_init(void);
 
+/* This function resets the wheel position */
+void codewheel_reset(void);
 
 /* This function returns the codewheel state */
 TCodewheel_state codewheel_get_state(void);
@@ -54,7 +56,10 @@ void codewheel_set_state(TCodewheel_state state);
 /* This function returns the wheel position */
 uint16_t codewheel_get_value(void);
 
-/* This function resets the wheel position */
-void codewheel_reset(void);
+/* This function returns the offset value */
+uint16_t codewheel_get_rebase_offset(void);
+
+/* This function saves the counter value used when a codewheel reset is requested */
+void codewheel_set_rebase_offset(uint16_t offset);
 
 #endif

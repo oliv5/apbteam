@@ -50,6 +50,12 @@ void codewheel_init(void)
 	sei(); 
 }
 
+/* This function resets the wheel position */
+void codewheel_reset(void)
+{
+	TCNT3 = 0;
+}
+
 /* This function returns the codewheel state */
 TCodewheel_state codewheel_get_state(void)
 {
@@ -68,13 +74,26 @@ uint16_t codewheel_get_value(void)
 	return TCNT3;
 }
 
-/* This function resets the wheel position */
-void codewheel_reset(void)
+/* This function returns the offset value */
+uint16_t codewheel_get_rebase_offset(void)
 {
-	TCNT3 = 0;
+	return codewheel.rebase_offset;
+}
+
+/* This function saves the counter value used when a codewheel reset is requested */
+void codewheel_set_rebase_offset(uint16_t offset)
+{
+	codewheel.rebase_offset = offset;
 }
 
 /* Codewheel complete turn IRQ vector for CodeWheel*/
 ISR(TIMER3_COMPA_vect)
 {
+	if(codewheel_get_state() == CODEWHEEL_REQUEST_REBASE)
+	{
+		OCR3A = codewheel_get_rebase_offset();
+		codewheel_set_state(CODEWHEEL_REBASED);
+	}	
+	else
+		OCR3A = CODEWHEEL_CPR;	
 }
