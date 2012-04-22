@@ -33,6 +33,9 @@ laser_s laser;
 /* This function initializes the laser pin input and associated interrupt */
 void laser_init(void)
 {	
+	/* Init laser structiure */
+	laser_set_angle(0);
+	
 	/* Configure Input compare interrupts for Laser Interrupt*/
 	TCCR3B |= (1<<ICNC3)|(1<<ICES3);
 	TIMSK3 |= (1<<ICIE3);
@@ -83,6 +86,20 @@ void laser_engage_angle_confirmation(uint16_t value)
 	OCR3A = value + LASER_CONFIRMATION_OFFSET;
 	TIMSK3 |= (1<<OCIE3B);
 	sei(); 
+}
+
+
+/* This function returns the angle value */
+uint16_t laser_get_angle(void)
+{
+	return laser.angle;
+}
+
+
+/* This function sets the angle value */
+void laser_set_angle(uint16_t angle)
+{
+	laser.angle = angle;
 }
 
 

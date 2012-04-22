@@ -57,4 +57,10 @@ void laser_inhibit_angle_confirmation(void);
 /* This function configures the AVR OC3B interrupt that will send the angle LASER_SENDING_OFFSET after the latest rising edge */
 void laser_engage_angle_confirmation(uint16_t value);
 
+/* This function returns the angle value */
+uint16_t laser_get_angle(void);
+
+/* This function sets the angle value */
+void laser_set_angle(uint16_t angle);
+
 #endif
