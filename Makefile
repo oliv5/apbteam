@@ -33,7 +33,7 @@ PYTHON_DIRS = \
 help:
 	@sed -n 's/^# \?//p' < Makefile
 
-all host:
+all host clean:
 	$(foreach dir,$(DIRS),$(MAKE) -C $(dir) $@ && ) true
 
 space :=
