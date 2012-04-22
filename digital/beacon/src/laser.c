@@ -69,7 +69,7 @@ void laser_invert_IRQ_edge_trigger(void)
 
 
 /* This function deactivates the angle sending */
-void laser_inhibit_angle_sending(void)
+void laser_inhibit_angle_confirmation(void)
 {
 	TIMSK3 &= ~(1<<OCIE3B);
 	sei(); 
@@ -77,9 +77,9 @@ void laser_inhibit_angle_sending(void)
 
 
 /* This function configures the AVR OC3B interrupt that will send the angle LASER_SENDING_OFFSET after the latest rising edge */
-void laser_engage_angle_sending(uint16_t value)
+void laser_engage_angle_confirmation(uint16_t value)
 {
-	OCR3A = value + LASER_SENDING_OFFSET;
+	OCR3A = value + LASER_CONFIRMATION_OFFSET;
 	TIMSK3 |= (1<<OCIE3B);
 	sei(); 
 }
@@ -107,12 +107,14 @@ ISR(TIMER3_CAPT_vect)
 			angle = ICR3;
 			break;
 		case LASER_RISING_EDGE:
-			laser_inhibit_angle_sending();
 			angle = (angle + ICR3) / 2;
+			/* Could be a bounce so inhibit the latest angle confirmation */
+			laser_inhibit_angle_confirmation();
 			break;
 		case LASER_FALLING_EDGE:
 			angle = (angle + ICR3) / 2;
-			laser_engage_angle_sending(ICR3);
+			/* Start virtual angle confirmation */
+			laser_engage_angle_confirmation(ICR3);
 			break;
 		default:
 			break;

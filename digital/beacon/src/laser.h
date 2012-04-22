@@ -28,7 +28,7 @@
 
 #define RISING_EDGE 			TCCR3B & (1<<ICES3)
 #define SENDING_ENGAGED 		TIMSK3&(1<<OCIE3B)
-#define LASER_SENDING_OFFSET 	10
+#define LASER_CONFIRMATION_OFFSET 	10
 
 typedef enum
 {
@@ -47,9 +47,9 @@ TLaser_edge_type laser_get_edge_type(void);
 void laser_invert_IRQ_edge_trigger(void);
 
 /* This function deactivates the angle sending */
-void laser_inhibit_angle_sending(void);
+void laser_inhibit_angle_confirmation(void);
 
 /* This function configures the AVR OC3B interrupt that will send the angle LASER_SENDING_OFFSET after the latest rising edge */
-void laser_engage_angle_sending(uint16_t value);
+void laser_engage_angle_confirmation(uint16_t value);
 
 #endif
