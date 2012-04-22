@@ -37,6 +37,11 @@ typedef enum
 	LASER_FALLING_EDGE
 } TLaser_edge_type;
 
+typedef struct
+{
+	uint16_t angle;
+} laser_s;
+
 /* This function initializes the laser pin input and associated interrupt */
 void laser_init(void);
 

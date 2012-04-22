@@ -28,6 +28,7 @@
 #include "debug_avr.h"
 #include "laser.h"
 
+laser_s laser;
 
 /* This function initializes the laser pin input and associated interrupt */
 void laser_init(void)
