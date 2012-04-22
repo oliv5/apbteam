@@ -28,8 +28,28 @@
 
 #define CODEWHEEL_CPR 499
 
+typedef enum
+{
+	CODEWHEEL_INIT,
+	CODEWHEEL_REQUEST_REBASE,
+	CODEWHEEL_REBASED
+} TCodewheel_state;
+
+typedef struct
+{
+	TCodewheel_state state;
+	uint16_t rebase_offset;
+} codewheel_s;
+
 /* This function initializes the codewheel optical sensors and associated interrupt */
 void codewheel_init(void);
+
+
+/* This function returns the codewheel state */
+TCodewheel_state codewheel_get_state(void);
+
+/* This function modify the codewheel state */
+void codewheel_set_state(TCodewheel_state state);
 
 /* This function returns the wheel position */
 uint16_t codewheel_get_value(void);

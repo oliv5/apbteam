@@ -28,10 +28,14 @@
 #include "debug_avr.h"
 #include "codewheel.h"
 
+codewheel_s codewheel;
 
 /* This function initializes the codewheel optical sensors and associated interrupt */
 void codewheel_init(void)
 {	
+	/* Set codewheel state*/
+	codewheel_set_state(CODEWHEEL_INIT);
+	
 	/* Select external clock on rising edge for timer 3 */
 	TCCR3B |= (1<<CS30)|(1<<CS31)|(1<<CS32);
 	
@@ -46,6 +50,17 @@ void codewheel_init(void)
 	sei(); 
 }
 
+/* This function returns the codewheel state */
+TCodewheel_state codewheel_get_state(void)
+{
+	return codewheel.state;
+}
+
+/* This function modify the codewheel state */
+void codewheel_set_state(TCodewheel_state state)
+{
+	codewheel.state = state;
+}
 
 /* This function returns the wheel position */
 uint16_t codewheel_get_value(void)
