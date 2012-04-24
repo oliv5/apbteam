@@ -60,16 +60,13 @@ void calibration_stop_task(void)
 /* This function starts or stops the calibration task depending on the current state */
 void calibration_start_stop_task(void)
 {
-	static bool task_step = 0;
-	if(task_step == 0)
+	if(calibration_get_state() != CALIBRATION_INIT)
 	{
-		calibration_start_task();
-		task_step = 1;
+		calibration_stop_task();
 	}
 	else
 	{
-		calibration_stop_task();
-		task_step = 0;
+		calibration_start_task();
 	}
 }
 
