@@ -221,6 +221,8 @@ void debug_task(void)
 {
  	uprintf("------------------------- debug TASK -------------------------\r\n");
 	uprintf("NWK : status = 0x%x\r\n",network_get_status());
+	uprintf("NWK : LQI = %d\r\n",network_get_lqi());
+	uprintf("NWK : RSSI = %d\r\n",network_get_rssi());
 #ifdef TYPE_END
  	uprintf("[1] Scanning State = %d -- Value = %d\r\n",servo_get_state(SERVO_1),servo_get_value(SERVO_1));
  	uprintf("[2] Scanning State = %d -- Value = %d\r\n",servo_get_state(SERVO_2),servo_get_value(SERVO_2));
