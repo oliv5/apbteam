@@ -273,7 +273,27 @@ void ZDO_UnbindIndication(ZDO_UnbindInd_t *unbindInd)
 	(void)unbindInd;
 }
 
+/* This function returns the LQI of the joined network */
+uint8_t network_get_lqi(void)
+{
+	ZDO_GetLqiRssi_t lqiRssi;
 
+	lqiRssi.nodeAddr = 0;
+	ZDO_GetLqiRssi(&lqiRssi);
+	
+	return lqiRssi.lqi;
+}
+
+/* This function returns the RSSI of the joined network */
+int8_t network_get_rssi(void)
+{
+	ZDO_GetLqiRssi_t lqiRssi;
+
+	lqiRssi.nodeAddr = 0;
+	ZDO_GetLqiRssi(&lqiRssi);
+	
+	return lqiRssi.rssi;
+}
 
 
   

@@ -74,6 +74,14 @@ void network_leave(void);
 /* Leave network response */
 void zdpLeaveResp(ZDO_ZdpResp_t *zdpResp);
 
+/* This function returns the LQI of the joined network */
+uint8_t network_get_lqi(void);
+
+/* This function returns the RSSI of the joined network */
+int8_t network_get_rssi(void);
+
+
+
 #endif // ifndef _NETWORK_H
 
 // eof network.h
