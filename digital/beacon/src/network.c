@@ -75,7 +75,7 @@ void network_init(void)
 	// Set the deviceType value to Config Server	
 	CS_WriteParameter(CS_DEVICE_TYPE_ID, &deviceType);
 
-	appState = APP_NETWORK_JOINING_STATE;
+	appState = APP_NETWORK_JOIN_REQUEST;
 }
 
 
@@ -134,6 +134,7 @@ void ZDO_StartNetworkConf(ZDO_StartNetworkConf_t* confirmInfo)
 	else
 	{
 //  		uprintf("CONNECTION FAILED. confirmInfo->status = %x\n\r",confirmInfo->status);
+		appState = APP_NETWORK_JOIN_REQUEST;
 	}
 }
 
@@ -152,7 +153,7 @@ void ZDO_MgmtNwkUpdateNotf(ZDO_MgmtNwkUpdateNotf_t *nwkParams)
 			unregEndpoint.endpoint = endpointParams.simpleDescriptor->endpoint;
 			APS_UnregisterEndpointReq(&unregEndpoint);
 			// try to rejoin the network
-			appState = APP_NETWORK_JOINING_STATE;
+			appState = APP_NETWORK_JOIN_REQUEST;
 			break;
 		}
 		case ZDO_NWK_UPDATE_STATUS:
@@ -234,7 +235,7 @@ void network_leave(void)
 void zdpLeaveResp(ZDO_ZdpResp_t *zdpResp)
 {
 	// Try to rejoin the network
-	appState = APP_NETWORK_JOINING_STATE;
+	appState = APP_NETWORK_JOIN_REQUEST;
 
 	(void)zdpResp;
 }
