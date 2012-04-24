@@ -25,8 +25,10 @@
 
 #include <appTimer.h>
 #include "debug_avr.h"
-#include "servo.h"
 #include "calibration.h"
+#include "servo.h"
+#include "motor.h"
+
 
 HAL_AppTimer_t calibrationTimer;		// TIMER descripor used by the DEBUG task
 calibration_s calibration;
@@ -48,6 +50,7 @@ void calibration_start_task(void)
 	calibrationTimer.callback = calibration_task;
 	calibration_init_structure();
 	servo_structure_init();
+	motor_start();
 	HAL_StartAppTimer(&calibrationTimer);
 }
 
@@ -55,6 +58,7 @@ void calibration_start_task(void)
 void calibration_stop_task(void)
 {
 	HAL_StopAppTimer(&calibrationTimer);
+	motor_stop();
 }
 
 /* This function starts or stops the calibration task depending on the current state */
