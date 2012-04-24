@@ -75,7 +75,7 @@ void usartTXCallback(void)
 	if(TXbuffer_level != EMPTY)
 	{
 		WRITE_USART(&appUsartDescriptor,usartTxBuffer+start_offset,end_offset);
-		TXbuffer_level = FILLED;
+		TXbuffer_level = EMPTY;
 	}
 	else
 	{
