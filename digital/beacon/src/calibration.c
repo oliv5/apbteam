@@ -174,6 +174,7 @@ void calibration_task(void)
 			}
 			break;
 		case SCANNING_STATE_CALIBRATED:
+			calibration_stop_task();
 			break;
 		default:
 			break;
