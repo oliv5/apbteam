@@ -45,7 +45,6 @@ extern AppState_t appState;
 extern DeviceType_t deviceType;
 
 
-static uint8_t retryCounter = 0;                // Data sending retries counter
 // Leave request, used for router to leave the network when communication was interrupted
 static ZDO_ZdpReq_t leaveReq;
 
@@ -101,8 +100,6 @@ void ZDO_StartNetworkConf(ZDO_StartNetworkConf_t* confirmInfo)
 {
 	if (confirmInfo->status == ZDO_SUCCESS_STATUS)
 	{
-		retryCounter = 0;
-		
 		appState = APP_NETWORK_JOINED_STATE;
 		
 		// Set application endpoint properties
@@ -134,81 +131,14 @@ void ZDO_StartNetworkConf(ZDO_StartNetworkConf_t* confirmInfo)
 	else
 	{
 //  		uprintf("CONNECTION FAILED. confirmInfo->status = %x\n\r",confirmInfo->status);
+		
+		/* if communication is failed, try to rejoin */
 		appState = APP_NETWORK_JOIN_REQUEST;
 	}
 }
 
 
-
-/* Update network status event handler */
-void ZDO_MgmtNwkUpdateNotf(ZDO_MgmtNwkUpdateNotf_t *nwkParams)
-{
-	switch (nwkParams->status)
-	{
-		case ZDO_NETWORK_STARTED_STATUS:
-			break;
-		case ZDO_NETWORK_LOST_STATUS:
-		{
-			APS_UnregisterEndpointReq_t unregEndpoint;
-			unregEndpoint.endpoint = endpointParams.simpleDescriptor->endpoint;
-			APS_UnregisterEndpointReq(&unregEndpoint);
-			// try to rejoin the network
-			appState = APP_NETWORK_JOIN_REQUEST;
-			break;
-		}
-		case ZDO_NWK_UPDATE_STATUS:
-			break;
-		default:
-			break;
-	}
-}
-
-
-
-/* brief Handler of aps data sent confirmation */
-void APS_DataConf(APS_DataConf_t* confInfo)
-{
-	if (APS_SUCCESS_STATUS != confInfo->status)
-	{
-		retryCounter++;
-		if (MAX_RETRIES_BEFORE_REJOIN == retryCounter)
-		{
-			network_leave();
-		}
-		else
-		{
-			// Data not delivered, resend.
-// 			send_data();
-		}
-		return;
-	}
-	retryCounter = 0;
-}
-
-
-/* APS data indication handler */
-void APS_DataIndication(APS_DataInd_t* indData)
-{
-	AppMessage_t *appMessage = (AppMessage_t *) indData->asdu;
-	// Data received indication
-	switch(appMessage->data[0])
-	{
-		case 0x42: // COMMANDE JACK
-// 			jack = appMessage->data[2];
-			break;
-		case 0x43: // Update ANGLE
-// 			beacon_number = appMessage->data[1];
-// 			angle_received = appMessage->data[2];
-// 			update_position(beacon_number,angle_received);
-			break;
-		default:
-			uprintf("Unknown data type received = %x\r\n",appMessage->data[0]);
-			break;
-	}
-}
-
-
-/* Leave network */
+/* This function quits the joined network */
 void network_leave(void)
 {
 	ZDO_MgmtLeaveReq_t *zdpLeaveReq = &leaveReq.req.reqPayload.mgmtLeaveReq;
@@ -241,26 +171,11 @@ void zdpLeaveResp(ZDO_ZdpResp_t *zdpResp)
 }
 
 
-void send_data(uint8_t type, uint8_t data)
-{
-	zigbit_tx_buffer.message.data[0]=type;
-	zigbit_tx_buffer.message.data[1]=data;
-	APS_DataReq(&config);
-}
-
-// void send_angle(int angle_degree)
-// {
-// 	zigbit_tx_buffer.message.data[0]=0x43;
-// 	zigbit_tx_buffer.message.data[1]=beacon_id;
-// 	zigbit_tx_buffer.message.data[2]=angle_degree;	
-// }
-
-
-
 /* Wakeup event handler (dummy) */
 void ZDO_WakeUpInd(void)
 {
 }
+
 
 /* Stub for ZDO Binding Indication */
 void ZDO_BindIndication(ZDO_BindInd_t *bindInd) 
@@ -268,11 +183,37 @@ void ZDO_BindIndication(ZDO_BindInd_t *bindInd)
 	(void)bindInd;
 }
 
+
 /* Stub for ZDO Unbinding Indication */
 void ZDO_UnbindIndication(ZDO_UnbindInd_t *unbindInd)
 {
 	(void)unbindInd;
 }
+
+/* Update network status event handler */
+void ZDO_MgmtNwkUpdateNotf(ZDO_MgmtNwkUpdateNotf_t *nwkParams)
+{
+	switch (nwkParams->status)
+	{
+		case ZDO_NETWORK_STARTED_STATUS:
+			break;
+		case ZDO_NETWORK_LOST_STATUS:
+		{
+			APS_UnregisterEndpointReq_t unregEndpoint;
+			unregEndpoint.endpoint = endpointParams.simpleDescriptor->endpoint;
+			APS_UnregisterEndpointReq(&unregEndpoint);
+			
+			// try to rejoin the network
+			appState = APP_NETWORK_JOIN_REQUEST;
+			break;
+		}
+		case ZDO_NWK_UPDATE_STATUS:
+			break;
+		default:
+			break;
+	}
+}
+
 
 /* This function returns the LQI of the joined network */
 uint8_t network_get_lqi(void)
@@ -284,6 +225,7 @@ uint8_t network_get_lqi(void)
 	
 	return lqiRssi.lqi;
 }
+
 
 /* This function returns the RSSI of the joined network */
 int8_t network_get_rssi(void)
@@ -297,4 +239,64 @@ int8_t network_get_rssi(void)
 }
 
 
-  
+/* This function must be used to send data through zigbee network */
+void network_send_data(TMessage_type type, uint8_t data)
+{
+	/* Message type*/
+	zigbit_tx_buffer.message.data[NETWORK_MSG_TYPE_FIELD] = type;
+	
+	/* Source address */
+	zigbit_tx_buffer.message.data[NETWORK_MSG_ADDR_FIELD] = CS_NWK_ADDR;
+	
+	/* Data */
+	zigbit_tx_buffer.message.data[NETWORK_MSG_DATA_FIELD] = data;
+	
+	/* Bitcloud sending request */
+	APS_DataReq(&config);
+}
+
+
+/* brief Handler of aps data sent confirmation */
+void APS_DataConf(APS_DataConf_t* confInfo)
+{
+	static int retryCounter = 0;
+	if (APS_SUCCESS_STATUS != confInfo->status)
+	{
+		retryCounter++;
+		if (MAX_RETRIES_BEFORE_REJOIN == retryCounter)
+		{
+			network_leave();
+		}
+		else
+		{
+			// Data not delivered, resend.
+			APS_DataReq(&config);
+		}
+		return;
+	}
+	retryCounter = 0;
+}
+
+
+/* APS data indication handler */
+void APS_DataIndication(APS_DataInd_t* indData)
+{
+	AppMessage_t *appMessage = (AppMessage_t *) indData->asdu;
+	
+	// Data received indication
+	switch(appMessage->data[NETWORK_MSG_TYPE_FIELD])
+	{
+		case NETWORK_JACK_STATE:
+			break;
+		case NETWORK_OPPONENT_NUMBER:
+			break;
+		case NETWORK_ANGLE_DEGREE:
+			
+			/* New angle is avaiiable, update position */
+// 			update_position(appMessage->data[NETWORK_MSG_ADDR_FIELD],appMessage->data[NETWORK_MSG_DATA_FIELD]);
+			break;
+		default:
+			uprintf("Unknown data type received = %x\r\n",appMessage->data[NETWORK_MSG_TYPE_FIELD]);
+			break;
+	}
+}
