@@ -33,6 +33,7 @@
 #include "laser.h"
 #include "network.h"
 #include "motor.h"
+#include "misc.h"
 
 HAL_UsartDescriptor_t appUsartDescriptor;          			// USART descriptor (required by stack)
 HAL_AppTimer_t debugTimer;						// TIMER descripor used by the DEBUG task
@@ -139,6 +140,9 @@ void usartRXCallback(uint16_t bytesToRead)
 			break;
 		case 't':
 			motor_start_stop_control();
+			break;
+		case 'j':
+			jack_on_off();
 			break;
 		/* Default */
 		default :
