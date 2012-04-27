@@ -28,7 +28,7 @@
 
 #define ECHANT_PERIOD (1.0 / (14745600.0 / 256 / 256))
 
-#define CORNERS_NB 4
+#define CORNERS_NB 5
 
 /** Define a robot and its peripherals.
  * Encoder characteristics are defined at gearbox output. */
