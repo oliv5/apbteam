@@ -98,12 +98,6 @@ class TestSimuControl (TestSimu):
             a = math.atan2 (y - robot_pos[1], x - robot_pos[0])
             self.asserv.goto_angle (a)
 
-    def lower_clamp_1_open_command (self):
-        self.io.output (self.LOWER_CLAMP_1_OPEN, 'toggle')
-
-    def lower_clamp_2_open_command (self):
-        self.io.output (self.LOWER_CLAMP_2_OPEN, 'toggle')
-
     def lower_clamp_rotate_command (self):
         self.mimot.speed_pos ('a0', self.LOWER_CLAMP_ROTATION_STROKE / 2)
 
