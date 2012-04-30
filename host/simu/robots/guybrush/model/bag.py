@@ -45,9 +45,9 @@ class Bag:
         output = link_bag.io_hub.output
         contact = [ Switch (c) for c in link_bag.io_hub.contact[3:] ]
         self.clamps = Clamps (table, self.position, link_bag.mimot.aux[0],
-                (PneumaticCylinder (None, output[8], scheduler,
+                (PneumaticCylinder (output[8], None, scheduler,
                     0., 30., 150., 75., 30.),
-                PneumaticCylinder (None, output[9], scheduler,
+                PneumaticCylinder (output[9], None, scheduler,
                     0., 30., 150., 75., 30.)),
                 contact[0:4],
                 PneumaticCylinder (output[4], output[5], scheduler,

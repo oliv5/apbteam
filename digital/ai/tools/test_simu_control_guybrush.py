@@ -35,8 +35,8 @@ class TestSimuControl (TestSimu):
     UPPER_CLAMP_UP = 1 << 5
     DOOR_OPEN = 1 << 6
     DOOR_CLOSE = 1 << 7
-    LOWER_CLAMP_1_OPEN = 1 << 8
-    LOWER_CLAMP_2_OPEN = 1 << 9
+    LOWER_CLAMP_1_CLOSE = 1 << 8
+    LOWER_CLAMP_2_CLOSE = 1 << 9
     LOWER_CLAMP_ROTATION_STROKE = int (16 * 250)
 
     def __init__ (self, robot_class, *args):
@@ -61,8 +61,8 @@ class TestSimuControl (TestSimu):
             button = Button (self.control_frame, text = name,
                     padx = 0, pady = 0, command = command)
             button.pack ()
-        out_button ('LClamp 1 open', self.LOWER_CLAMP_1_OPEN)
-        out_button ('LClamp 2 open', self.LOWER_CLAMP_2_OPEN)
+        out_button ('LClamp 1 open', self.LOWER_CLAMP_1_CLOSE)
+        out_button ('LClamp 2 open', self.LOWER_CLAMP_2_CLOSE)
         self.lower_clamp_rotate_button = Button (self.control_frame,
                 text = 'LClamp rotate', padx = 0, pady = 0,
                 command = self.lower_clamp_rotate_command)
