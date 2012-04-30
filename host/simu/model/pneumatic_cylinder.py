@@ -51,6 +51,7 @@ class PneumaticCylinder (Observable):
         if self.link_out:
             self.link_out.register (self.__notified)
         self.__timed_update ()
+        self.__update (init = True)
 
     def __notified (self):
         # Update position.
@@ -79,7 +80,7 @@ class PneumaticCylinder (Observable):
         self.scheduler.schedule (self.scheduler.date
                 + int (self.scheduler.tick * 0.1), self.__timed_update)
 
-    def __update (self):
+    def __update (self, init = False):
         delta_t = (float (self.scheduler.date - self.last_update) /
                 self.scheduler.tick)
         old_pos = self.pos
@@ -89,12 +90,12 @@ class PneumaticCylinder (Observable):
             self.pos = self.pos_in
         elif self.pos > self.pos_out:
             self.pos = self.pos_out
-        if old_pos != self.pos:
+        if old_pos != self.pos or init:
             self.notify ()
             if self.switch_in:
-                self.switch_in.state = self.pos == self.pos_in
+                self.switch_in.state = self.pos != self.pos_in
                 self.switch_in.notify ()
             if self.switch_out:
-                self.switch_out.state = self.pos == self.pos_out
+                self.switch_out.state = self.pos != self.pos_out
                 self.switch_out.notify ()
 
