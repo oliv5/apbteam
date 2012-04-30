@@ -25,18 +25,13 @@ from test_simu import TestSimu, run
 from Tkinter import *
 import math
 
+import simu.robots.guybrush.model.bag
+
+defs = simu.robots.guybrush.model.bag.Bag
+
 class TestSimuControl (TestSimu):
     """Interface with extra control."""
 
-    UPPER_CLAMP_OPEN = 1 << 1
-    UPPER_CLAMP_OUT = 1 << 2
-    UPPER_CLAMP_IN = 1 << 3
-    UPPER_CLAMP_DOWN = 1 << 4
-    UPPER_CLAMP_UP = 1 << 5
-    DOOR_OPEN = 1 << 6
-    DOOR_CLOSE = 1 << 7
-    LOWER_CLAMP_1_CLOSE = 1 << 8
-    LOWER_CLAMP_2_CLOSE = 1 << 9
     LOWER_CLAMP_ROTATION_STROKE = int (16 * 250)
 
     def __init__ (self, robot_class, *args):
@@ -46,9 +41,9 @@ class TestSimuControl (TestSimu):
         self.asserv = self.robots[0].asserv
         self.mimot = self.robots[0].mimot
         self.robot_model = self.robots[0].model
-        self.io.output (self.UPPER_CLAMP_UP, 'toggle')
-        self.io.output (self.UPPER_CLAMP_IN, 'toggle')
-        self.io.output (self.DOOR_CLOSE, 'toggle')
+        self.io.output (1 << defs.OUTPUT_UPPER_CLAMP_UP, 'toggle')
+        self.io.output (1 << defs.OUTPUT_UPPER_CLAMP_IN, 'toggle')
+        self.io.output (1 << defs.OUTPUT_DOOR_CLOSE, 'toggle')
 
     def create_widgets (self):
         TestSimu.create_widgets (self)
@@ -61,18 +56,25 @@ class TestSimuControl (TestSimu):
             button = Button (self.control_frame, text = name,
                     padx = 0, pady = 0, command = command)
             button.pack ()
-        out_button ('LClamp 1 open', self.LOWER_CLAMP_1_CLOSE)
-        out_button ('LClamp 2 open', self.LOWER_CLAMP_2_CLOSE)
+        out_button ('LClamp 1 open',
+                1 << defs.OUTPUT_LOWER_CLAMP_1_CLOSE)
+        out_button ('LClamp 2 open',
+                1 << defs.OUTPUT_LOWER_CLAMP_2_CLOSE)
         self.lower_clamp_rotate_button = Button (self.control_frame,
                 text = 'LClamp rotate', padx = 0, pady = 0,
                 command = self.lower_clamp_rotate_command)
         self.lower_clamp_rotate_button.pack ()
         out_button ('UClamp up/down',
-                self.UPPER_CLAMP_UP | self.UPPER_CLAMP_DOWN)
+                1 << defs.OUTPUT_UPPER_CLAMP_UP
+                | 1 << defs.OUTPUT_UPPER_CLAMP_DOWN)
         out_button ('UClamp in/out',
-                self.UPPER_CLAMP_IN | self.UPPER_CLAMP_OUT)
-        out_button ('UClamp open', self.UPPER_CLAMP_OPEN)
-        out_button ('Door open', self.DOOR_OPEN | self.DOOR_CLOSE)
+                1 << defs.OUTPUT_UPPER_CLAMP_IN
+                | 1 << defs.OUTPUT_UPPER_CLAMP_OUT)
+        out_button ('UClamp open',
+                1 << defs.OUTPUT_UPPER_CLAMP_OPEN)
+        out_button ('Door open',
+                1 << defs.OUTPUT_DOOR_OPEN
+                | 1 << defs.OUTPUT_DOOR_CLOSE)
         self.backward_var = IntVar ()
         self.backward_button = Checkbutton (self.control_frame,
                 text = 'Backward', variable = self.backward_var)

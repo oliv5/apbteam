@@ -33,6 +33,16 @@ import random
 
 class Bag:
 
+    OUTPUT_UPPER_CLAMP_OPEN = 1
+    OUTPUT_UPPER_CLAMP_OUT = 2
+    OUTPUT_UPPER_CLAMP_IN = 3
+    OUTPUT_UPPER_CLAMP_DOWN = 4
+    OUTPUT_UPPER_CLAMP_UP = 5
+    OUTPUT_DOOR_OPEN = 6
+    OUTPUT_DOOR_CLOSE = 7
+    OUTPUT_LOWER_CLAMP_1_CLOSE = 8
+    OUTPUT_LOWER_CLAMP_2_CLOSE = 9
+
     def __init__ (self, scheduler, table, link_bag):
         self.color_switch = Switch (link_bag.io_hub.contact[0], invert = True)
         self.color_switch.state = random.choice ((False, True))
@@ -45,18 +55,21 @@ class Bag:
         output = link_bag.io_hub.output
         contact = [ Switch (c) for c in link_bag.io_hub.contact[3:] ]
         self.clamps = Clamps (table, self.position, link_bag.mimot.aux[0],
-                (PneumaticCylinder (output[8], None, scheduler,
-                    0., 30., 150., 75., 30.),
-                PneumaticCylinder (output[9], None, scheduler,
-                    0., 30., 150., 75., 30.)),
+                (PneumaticCylinder (output[self.OUTPUT_LOWER_CLAMP_1_CLOSE],
+                    None, scheduler, 0., 30., 150., 75., 30.),
+                PneumaticCylinder (output[self.OUTPUT_LOWER_CLAMP_2_CLOSE],
+                    None, scheduler, 0., 30., 150., 75., 30.)),
                 contact[0:4],
-                PneumaticCylinder (output[4], output[5], scheduler,
+                PneumaticCylinder (output[self.OUTPUT_UPPER_CLAMP_DOWN],
+                    output[self.OUTPUT_UPPER_CLAMP_UP], scheduler,
                     0., 1., 1., 1., 1., contact[4], contact[5]),
-                PneumaticCylinder (output[3], output[2], scheduler,
+                PneumaticCylinder (output[self.OUTPUT_UPPER_CLAMP_IN],
+                    output[self.OUTPUT_UPPER_CLAMP_OUT], scheduler,
                     0., 1., 1., 1., 0.),
-                PneumaticCylinder (None, output[1], scheduler,
-                    0., 30., 150., 75., 30.),
-                PneumaticCylinder (output[7], output[6], scheduler,
+                PneumaticCylinder (None, output[self.OUTPUT_UPPER_CLAMP_OPEN],
+                    scheduler, 0., 30., 150., 75., 30.),
+                PneumaticCylinder (output[self.OUTPUT_DOOR_CLOSE],
+                    output[self.OUTPUT_DOOR_OPEN], scheduler,
                     0., 1., 1., 1., 1., contact[7], contact[6])
                 )
         def distance_sensor_exclude (o):
