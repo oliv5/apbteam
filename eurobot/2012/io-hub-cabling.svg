@@ -42,9 +42,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.94833331"
-     inkscape:cx="505.10215"
-     inkscape:cy="403.47542"
+     inkscape:zoom="0.67057292"
+     inkscape:cx="512"
+     inkscape:cy="384"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -948,7 +948,7 @@
            sodipodi:role="line"
            id="tspan2992"
            x="650"
-           y="742.36218">lower clamp 1 open</tspan></text>
+           y="742.36218">lower clamp 1 close</tspan></text>
       <text
          id="text2994"
          y="782.36218"
@@ -969,16 +969,6 @@
          d="m 610,862.36218 30,0"
          id="path3000"
          sodipodi:nodetypes="cc" />
-      <text
-         id="text3002"
-         y="822.36218"
-         x="650"
-         style="font-size:11px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:FreeSans;-inkscape-font-specification:FreeSans"
-         xml:space="preserve"><tspan
-           y="822.36218"
-           x="650"
-           id="tspan3004"
-           sodipodi:role="line">lower clamp sensor 3</tspan></text>
       <path
          sodipodi:nodetypes="cc"
          id="path3010"
@@ -1008,7 +998,7 @@
            y="762.36218"
            x="650"
            id="tspan3020"
-           sodipodi:role="line">lower clamp 2 open</tspan></text>
+           sodipodi:role="line">lower clamp 2 close</tspan></text>
       <text
          xml:space="preserve"
          style="font-size:11px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:FreeSans;-inkscape-font-specification:FreeSans"
@@ -1019,16 +1009,6 @@
            id="tspan3024"
            x="650"
            y="802.36218">lower clamp sensor 2</tspan></text>
-      <text
-         xml:space="preserve"
-         style="font-size:11px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:FreeSans;-inkscape-font-specification:FreeSans"
-         x="650"
-         y="842.36218"
-         id="text3026"><tspan
-           sodipodi:role="line"
-           id="tspan3028"
-           x="650"
-           y="842.36218">lower clamp sensor 4</tspan></text>
     </g>
     <path
        sodipodi:nodetypes="ccccc"
@@ -1051,18 +1031,18 @@
         <rect
            y="852.36218"
            x="350"
-           height="39.999996"
+           height="20.000061"
            width="30"
            id="rect3007"
            style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0" />
         <text
            sodipodi:linespacing="125%"
            id="text3009"
-           y="877.16418"
+           y="867.16418"
            x="361.14999"
            style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:FreeSans;-inkscape-font-specification:FreeSans"
            xml:space="preserve"><tspan
-             y="877.16418"
+             y="867.16418"
              x="361.14999"
              id="tspan3011"
              sodipodi:role="line">0</tspan></text>
@@ -1082,67 +1062,134 @@
            style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0"
            id="rect3017"
            width="30"
-           height="39.999996"
+           height="20.000061"
            x="350"
            y="892.36218" />
         <text
            xml:space="preserve"
            style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:FreeSans;-inkscape-font-specification:FreeSans"
-           x="361.85699"
-           y="917.3252"
+           x="361.185"
+           y="907.3252"
            id="text3019"
            sodipodi:linespacing="125%"><tspan
              sodipodi:role="line"
              id="tspan3021"
-             x="361.85699"
-             y="917.3252">1</tspan></text>
+             x="361.185"
+             y="907.3252">2</tspan></text>
         <rect
            y="932.36218"
            x="350"
-           height="39.999996"
+           height="20.000061"
            width="30"
            id="rect3023"
            style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0" />
         <text
            sodipodi:linespacing="125%"
            id="text3025"
-           y="957.3252"
-           x="361.185"
+           y="947.3252"
+           x="361.164"
            style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:FreeSans;-inkscape-font-specification:FreeSans"
            xml:space="preserve"><tspan
-             y="957.3252"
-             x="361.185"
+             y="947.3252"
+             x="361.164"
              id="tspan3027"
-             sodipodi:role="line">2</tspan></text>
+             sodipodi:role="line">4</tspan></text>
         <rect
            style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0"
            id="rect3029"
            width="30"
-           height="39.999996"
+           height="20.000061"
            x="350"
            y="972.36218" />
         <text
            xml:space="preserve"
            style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:FreeSans;-inkscape-font-specification:FreeSans"
-           x="361.23401"
-           y="997.16418"
+           x="361.108"
+           y="987.16418"
            id="text3031"
            sodipodi:linespacing="125%"><tspan
              sodipodi:role="line"
              id="tspan3033"
+             x="361.108"
+             y="987.16418">6</tspan></text>
+        <text
+           sodipodi:linespacing="125%"
+           id="text3030"
+           y="887.32526"
+           x="361.85699"
+           style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:FreeSans;-inkscape-font-specification:FreeSans"
+           xml:space="preserve"><tspan
+             y="887.32526"
+             x="361.85699"
+             id="tspan3032"
+             sodipodi:role="line">1</tspan></text>
+        <rect
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0"
+           id="rect3034"
+           width="30"
+           height="20.000061"
+           x="350"
+           y="872.36224" />
+        <rect
+           y="912.36218"
+           x="350"
+           height="20.000061"
+           width="30"
+           id="rect3036"
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0" />
+        <rect
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0"
+           id="rect3038"
+           width="30"
+           height="20.000061"
+           x="350"
+           y="952.36218" />
+        <rect
+           y="992.36218"
+           x="350"
+           height="20.000061"
+           width="30"
+           id="rect3040"
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0" />
+        <text
+           sodipodi:linespacing="125%"
+           id="text3046"
+           y="927.16418"
+           x="361.23401"
+           style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:FreeSans;-inkscape-font-specification:FreeSans"
+           xml:space="preserve"><tspan
+             y="927.16418"
              x="361.23401"
-             y="997.16418">3</tspan></text>
+             id="tspan3048"
+             sodipodi:role="line">3</tspan></text>
+        <text
+           xml:space="preserve"
+           style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:FreeSans;-inkscape-font-specification:FreeSans"
+           x="361.164"
+           y="967.16418"
+           id="text3050"
+           sodipodi:linespacing="125%"><tspan
+             sodipodi:role="line"
+             id="tspan3052"
+             x="361.164"
+             y="967.16418">5</tspan></text>
+        <text
+           sodipodi:linespacing="125%"
+           id="text3054"
+           y="1007.3252"
+           x="361.03799"
+           style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:FreeSans;-inkscape-font-specification:FreeSans"
+           xml:space="preserve"><tspan
+             y="1007.3252"
+             x="361.03799"
+             id="tspan3056"
+             sodipodi:role="line">7</tspan></text>
       </g>
       <path
          style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
          d="m 560,552.36224 30,0"
          id="path3035"
          sodipodi:nodetypes="cc" />
-      <path
-         sodipodi:nodetypes="cc"
-         id="path3037"
-         d="m 560,592.36224 30,0"
-         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
       <text
          xml:space="preserve"
          style="font-size:11px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:FreeSans;-inkscape-font-specification:FreeSans"
@@ -1239,5 +1286,45 @@
        id="path3080"
        d="m 320.42778,462.36218 0,20 420,0 0,80 30,0"
        style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <text
+       id="text3058"
+       y="540.36218"
+       x="170"
+       style="font-size:11px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:FreeSans;-inkscape-font-specification:FreeSans"
+       xml:space="preserve"><tspan
+         y="540.36218"
+         x="170"
+         id="tspan3060"
+         sodipodi:role="line">5V elec</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:11px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:FreeSans;-inkscape-font-specification:FreeSans"
+       x="170"
+       y="730.36218"
+       id="text3062"><tspan
+         sodipodi:role="line"
+         id="tspan3064"
+         x="170"
+         y="730.36218">24V indus</tspan></text>
+    <text
+       id="text3066"
+       y="540.36218"
+       x="500"
+       style="font-size:11px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:FreeSans;-inkscape-font-specification:FreeSans"
+       xml:space="preserve"><tspan
+         y="540.36218"
+         x="500"
+         id="tspan3068"
+         sodipodi:role="line">24V indus</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:11px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:FreeSans;-inkscape-font-specification:FreeSans"
+       x="500"
+       y="730.36218"
+       id="text3070"><tspan
+         sodipodi:role="line"
+         id="tspan3072"
+         x="500"
+         y="730.36218">24V indus</tspan></text>
   </g>
 </svg>
