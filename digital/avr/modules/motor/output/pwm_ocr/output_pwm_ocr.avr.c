@@ -144,7 +144,7 @@ output_pwm_ocr_init (uint8_t index, output_t *output)
 }
 
 /** Update a single output. */
-static inline void
+static inline __attribute__ ((__always_inline__)) void
 output_pwm_ocr_update_output (uint8_t index, volatile uint16_t *ocr,
 			      volatile uint8_t *dir_io_port,
 			      uint8_t dir_io_bit,
