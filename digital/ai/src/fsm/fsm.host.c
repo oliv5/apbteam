@@ -1349,13 +1349,17 @@ fsm_build_gen_avr_c (fsm_build_t *fsm, uint embedded_strings)
 	     fsm->name,
 	     fsm->name);
     fprintf (f, "\t\t{\n");
-    fprintf (f, "\t\t\tproto_send2b ('F', fsm_%s_active_states[i], e);\n",
+    fprintf (f, "\t\t\tfsm_%s_state_t old_state = fsm_%s_active_states[i];\n",
+	     fsm->name,
 	     fsm->name);
     fprintf (f, "\t\t\tfsm_%s_active_states[i] = fsm_%s_read_trans (e, "
              "fsm_%s_active_states[i])();\n",
              fsm->name,
              fsm->name,
              fsm->name);
+    fprintf (f, "\t\t\tproto_send3b ('F', old_state, e, "
+	     "fsm_%s_active_states[i]);\n",
+	     fsm->name);
     fprintf (f, "\t\t\thandled = 1;\n");
     if (fsm->timeouts != NULL)
       {
