@@ -71,6 +71,9 @@ vect_t main_obstacles_pos[2];
 /** Number of obstacles in main_obstacles_pos. */
 uint8_t main_obstacles_nb;
 
+/** FSM debug mode activated if 1, step authorized if 2. */
+uint8_t main_fsm_debug_mode;
+
 /** Asserv stats counters. */
 static uint8_t main_stats_asserv_, main_stats_asserv_cpt_;
 
@@ -130,6 +133,11 @@ main_event_to_fsm (void)
     do { if (FSM_HANDLE_TIMEOUT (fsm)) return; } while (0)
     /* Update FSM timeouts. */
     FSM_HANDLE_TIMEOUT_E (AI);
+    /* Abort if debuging. */
+    if (main_fsm_debug_mode == 1)
+	return;
+    if (main_fsm_debug_mode == 2)
+	main_fsm_debug_mode--;
     /* Motor status. */
     asserv_status_e robot_move_status, mimot_motor0_status,
 		    mimot_motor1_status;
@@ -240,6 +248,10 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
       case c ('j', 0):
 	/* Simulate jack insertion. */
 	fsm_queue_post_event (FSM_EVENT (AI, jack_inserted));
+	break;
+      case c ('f', 0):
+	/* Enter FSM debug mode, then step once. */
+	main_fsm_debug_mode = 2;
 	break;
       case c ('m', 5):
 	/* Go to position.

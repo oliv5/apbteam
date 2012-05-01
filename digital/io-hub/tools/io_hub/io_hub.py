@@ -40,6 +40,9 @@ class Proto:
         self.proto.send ('z')
         self.proto.send ('z')
 
+    def fsm_debug (self):
+        self.proto.send ('f')
+
     def pwm_set (self, index, value):
         self.proto.send ('w', 'Bh', index, value)
 

@@ -50,6 +50,8 @@ class TestSimuControl (TestSimu):
         self.control_frame = Frame (self)
         self.control_frame.pack (side = 'left', before = self.table_view,
                 fill = 'y')
+        Button (self.control_frame, text = 'FSM step', padx = 0, pady = 0,
+                command = self.fsm_debug).pack ()
         def out_button (name, toggle):
             def command ():
                 self.io.output (toggle, 'toggle')
@@ -85,6 +87,9 @@ class TestSimuControl (TestSimu):
         self.goto_button.pack ()
         self.table_view.bind ('<1>', self.move)
         self.table_view.bind ('<3>', self.orient)
+
+    def fsm_debug (self):
+        self.io.fsm_debug ()
 
     def move (self, ev):
         pos = self.table_view.screen_coord ((ev.x, ev.y))
