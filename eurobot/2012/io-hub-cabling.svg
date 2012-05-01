@@ -27,6 +27,13 @@
        inkscape:vp_z="744.09448 : 526.18109 : 1"
        inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
        id="perspective10" />
+    <inkscape:perspective
+       id="perspective3035"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -35,9 +42,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.67057292"
-     inkscape:cx="512"
-     inkscape:cy="384"
+     inkscape:zoom="0.94833331"
+     inkscape:cx="505.10215"
+     inkscape:cy="403.47542"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -474,16 +481,6 @@
          id="path3911"
          d="m 280,592.36224 30,0"
          style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
-      <text
-         id="text3917"
-         y="592.36224"
-         x="320"
-         style="font-size:11px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:FreeSans;-inkscape-font-specification:FreeSans"
-         xml:space="preserve"><tspan
-           y="592.36224"
-           x="320"
-           id="tspan3919"
-           sodipodi:role="line">pneumatic circuit open</tspan></text>
       <path
          sodipodi:nodetypes="cc"
          id="path3921"
@@ -823,6 +820,16 @@
            x="600"
            id="tspan3121"
            sodipodi:role="line">upper clamps up</tspan></text>
+      <text
+         id="text3917"
+         y="692.36224"
+         x="599.5722"
+         style="font-size:11px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:FreeSans;-inkscape-font-specification:FreeSans"
+         xml:space="preserve"><tspan
+           y="692.36224"
+           x="599.5722"
+           id="tspan3919"
+           sodipodi:role="line">pneumatic circuit open</tspan></text>
     </g>
     <g
        id="g3136"

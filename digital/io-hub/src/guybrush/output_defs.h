@@ -25,7 +25,7 @@
  *
  * }}} */
 
-#define OUTPUT_PNEUM_OPEN A, 5
+#define OUTPUT_PNEUM_OPEN C, 0
 #define OUTPUT_UPPER_CLAMP_OPEN C, 1
 #define OUTPUT_UPPER_CLAMP_OUT C, 3
 #define OUTPUT_UPPER_CLAMP_IN C, 5
