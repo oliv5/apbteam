@@ -102,6 +102,10 @@ main_init (void)
     /* Main timer */
     timer_init ();
     timer_wait ();
+    /* Send some debug aid in case of TWI synchronisation failure.
+     * If !Z is sent, but not !z, this means that a slave is missing or is not
+     * functioning. */
+    proto_send0 ('Z');
     /* TWI communications */
     asserv_init ();
     mimot_init ();
