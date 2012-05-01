@@ -27,6 +27,8 @@
 
 #include "modules/adc/adc.h"
 
+#include "modules/utils/utils.h"
+
 #include "output.h"
 #include "mimot.h"
 
