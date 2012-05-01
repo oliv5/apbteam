@@ -137,6 +137,10 @@
     PWM (3, A, C, 6, C, 7) \
     PWM (3, B, C, 5, C, 3) \
     PWM (3, C, C, 4, C, 2)
+/** Use asserv board. */
+#define AC_AI_TWI_MASTER_ASSERV 1
+/** Use mimot board. */
+#define AC_AI_TWI_MASTER_MIMOT 1
 /** Use beacon board. */
 #define AC_AI_TWI_MASTER_BEACON 0
 

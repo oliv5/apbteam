@@ -30,9 +30,6 @@
  * Provide interface to mimot board using the TWI protocol.
  */
 
-/** Slave number in the twi_master list. */
-#define MIMOT_SLAVE 1
-
 /** Mimot TWI address. */
 #define MIMOT_TWI_ADDRESS 6
 

@@ -49,6 +49,29 @@
  * transmission until the first command is acknowledged.
  */
 
+/** Slave identifiers. */
+enum {
+#if AC_AI_TWI_MASTER_ASSERV
+    TWI_MASTER_ID_ASSERV,
+#endif
+#if AC_AI_TWI_MASTER_MIMOT
+    TWI_MASTER_ID_MIMOT,
+#endif
+#if AC_AI_TWI_MASTER_BEACON
+    TWI_MASTER_ID_BEACON,
+#endif
+    TWI_MASTER_DISABLED = 127,
+#if !AC_AI_TWI_MASTER_ASSERV
+    TWI_MASTER_ID_ASSERV,
+#endif
+#if !AC_AI_TWI_MASTER_MIMOT
+    TWI_MASTER_ID_MIMOT,
+#endif
+#if !AC_AI_TWI_MASTER_BEACON
+    TWI_MASTER_ID_BEACON,
+#endif
+};
+
 /** Initialise module. */
 void
 twi_master_init (void);

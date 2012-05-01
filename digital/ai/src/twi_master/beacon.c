@@ -65,7 +65,7 @@ beacon_status_cb (uint8_t *status)
 void
 beacon_on (uint8_t on_off)
 {
-    uint8_t *buffer = twi_master_get_buffer (BEACON_SLAVE);
+    uint8_t *buffer = twi_master_get_buffer (TWI_MASTER_ID_BEACON);
     buffer[0] = on_off;
     twi_master_send_buffer (1);
 }

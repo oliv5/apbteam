@@ -32,9 +32,6 @@
  * board using a protocol over TWI communication.
  */
 
-/** Slave number in twi_master list. */
-#define ASSERV_SLAVE 0
-
 /** Asserv TWI address. */
 #define ASSERV_TWI_ADDRESS 4
 

@@ -25,8 +25,12 @@
 #include "common.h"
 #include "twi_master.h"
 
-#include "asserv.h"
-#include "mimot.h"
+#if AC_AI_TWI_MASTER_ASSERV
+# include "asserv.h"
+#endif
+#if AC_AI_TWI_MASTER_MIMOT
+# include "mimot.h"
+#endif
 #if AC_AI_TWI_MASTER_BEACON
 # include "beacon.h"
 #endif
@@ -101,8 +105,12 @@ struct twi_master_slave_t
 
 /** Information on all slaves. */
 static struct twi_master_slave_t twi_master_slaves[] = {
+#if AC_AI_TWI_MASTER_ASSERV
       { ASSERV_TWI_ADDRESS, 0, ASSERV_STATUS_LENGTH, asserv_status_cb },
+#endif
+#if AC_AI_TWI_MASTER_MIMOT
       { MIMOT_TWI_ADDRESS, 0, MIMOT_STATUS_LENGTH, mimot_status_cb },
+#endif
 #if AC_AI_TWI_MASTER_BEACON
       { BEACON_TWI_ADDRESS, 0, BEACON_STATUS_LENGTH, beacon_status_cb },
 #endif
@@ -197,6 +205,7 @@ twi_master_sync (void)
 uint8_t *
 twi_master_get_buffer (uint8_t slave)
 {
+    assert (slave < TWI_MASTER_DISABLED);
     assert (twi_master.pending_nb < TWI_MASTER_PENDING_MAX);
     struct twi_master_command_t *c =
 	&twi_master.pending[TWI_MASTER_PENDING_TAIL];

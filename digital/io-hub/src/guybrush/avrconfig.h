@@ -131,6 +131,10 @@
 #define AC_IO_TWI_ADDRESS 8
 /** PWM setting. */
 #undef AC_IOHUB_PWM
+/** Use asserv board. */
+#define AC_AI_TWI_MASTER_ASSERV 1
+/** Use mimot board. */
+#define AC_AI_TWI_MASTER_MIMOT 1
 /** Use beacon board. */
 #define AC_AI_TWI_MASTER_BEACON 1
 

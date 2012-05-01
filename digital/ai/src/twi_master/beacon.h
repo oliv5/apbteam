@@ -28,9 +28,6 @@
 
 /** Interface with beacon board using the TWI protocol. */
 
-/** Slave number in the twi_master list. */
-#define BEACON_SLAVE 2
-
 /** Beacon TWI address. */
 #define BEACON_TWI_ADDRESS 10
 
