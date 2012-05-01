@@ -30,8 +30,11 @@
 #include "output.h"
 #include "mimot.h"
 
+/** Maximum pressure. */
+#define PRESSURE_MAX 1000
+
 /** Hysteresis margin. */
-#define PRESSURE_MARGIN (1024 / 8)
+#define PRESSURE_MARGIN (PRESSURE_MAX / 16)
 
 /** Pressure sensor connected ADC. */
 #define PRESSURE_SENSOR_ADC 4
@@ -129,6 +132,7 @@ pressure_update (void)
 void
 pressure_set (uint16_t low)
 {
+    low = UTILS_MIN (low, PRESSURE_MAX - PRESSURE_MARGIN);
     pressure.low = low;
     pressure.high = low + PRESSURE_MARGIN;
 }
