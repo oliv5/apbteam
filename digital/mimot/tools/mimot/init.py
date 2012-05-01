@@ -18,8 +18,8 @@ target_robospierre = dict (
         e_sat = 0x3ff, d_sat = 0x1ff,
         )
 target_guybrush = dict (
-        a0_kp = 1, a0_kd = 16,
-        a0_acc = 4, a0_speed_max = 0x20, a0_speed_slow = 0x02,
+        a0_kp = 12, a0_kd = 32,
+        a0_acc = 1, a0_speed_max = 0x20, a0_speed_slow = 0x02,
         a0_error_limit = 32, a0_bd_speed_limit = 0x08, a0_bd_counter_limit = 125,
         e_sat = 0x3ff, d_sat = 0x1ff,
         )
