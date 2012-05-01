@@ -121,7 +121,7 @@ output_pwm_ocr_init_hardware (void)
 	    | PREPROC_PASTE (timer_com_, timer); \
 	PREPROC_PASTE (TCCR, timer, B) = \
 	    WGM_BIT (timer, 2) | WGM_BIT (timer, 3) \
-	    | PREPROC_PASTE (AC_OUTPUT_PWM_OCR_CS_, timer); \
+	    | PREPROC_PASTE (AC_OUTPUT_PWM_OCR_CS_, timer);
 	PREPROC_FOR (INIT_TIMER, SUPPORTED_TIMERS);
 #undef WGM_BIT
 #undef INIT_TIMER
