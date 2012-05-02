@@ -155,6 +155,8 @@ class Clamps (Observable):
 
     def __add_load (self, elements):
         """Add element list to load."""
+        for e in elements:
+            e.level = 1
         self.load.extend (elements)
 
     def __get_floor_elements (self):

@@ -90,4 +90,9 @@ class Table (simu.model.table.Table):
         # Add everything to obstacles.
         self.obstacles += self.coins
         self.obstacles += self.gold_bars
+        # Add totem as obstacles.
+        for i in (-1, 1):
+            o = RectangularObstacle ((250, 250), 3)
+            o.pos = (1500 + i * 400, 1000)
+            self.obstacles.append (o)
 

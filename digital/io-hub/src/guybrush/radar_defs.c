@@ -30,10 +30,14 @@
 
 /** Define radar configuration. */
 struct radar_sensor_t radar_sensors[RADAR_SENSOR_NB] = {
-      { &usdist_mm[0], { 20, 20 }, G_ANGLE_UF016_DEG (10) },
-      { &usdist_mm[1], { 20, -20 }, G_ANGLE_UF016_DEG (-10) },
-      { &usdist_mm[2], { -20, -20 }, G_ANGLE_UF016_DEG (180 + 10) },
-      { &usdist_mm[3], { -20, 20 }, G_ANGLE_UF016_DEG (180 - 10) },
+#define RADAR_SENSOR_FRONT 0
+      { &usdist_mm[0], { 120, 0 }, G_ANGLE_UF016_DEG (0) },
+#define RADAR_SENSOR_LEFT 1
+      { &usdist_mm[1], { 120, 160 }, G_ANGLE_UF016_DEG (0) },
+#define RADAR_SENSOR_RIGHT 2
+      { &usdist_mm[2], { 120, -160 }, G_ANGLE_UF016_DEG (0) },
+#define RADAR_SENSOR_BACK 3
+      { &usdist_mm[3], { -130, 0 }, G_ANGLE_UF016_DEG (180) },
 };
 
 /** Define exclusion area (considered as invalid point). */
@@ -41,6 +45,13 @@ uint8_t
 radar_valid (vect_t p, uint8_t sensor)
 {
     return p.x >= RADAR_MARGIN_MM && p.x < PG_WIDTH - RADAR_MARGIN_MM
-	&& p.y >= RADAR_MARGIN_MM && p.y < PG_LENGTH - RADAR_MARGIN_MM;
+	&& p.y >= RADAR_MARGIN_MM && p.y < PG_LENGTH - RADAR_MARGIN_MM
+	&& (sensor == RADAR_SENSOR_FRONT || sensor == RADAR_SENSOR_BACK
+	    || !(p.y >= PG_TOTEM_Y - PG_TOTEM_WIDTH_MM / 2 - RADAR_MARGIN_MM
+		 && p.y < PG_TOTEM_Y + PG_TOTEM_WIDTH_MM / 2 + RADAR_MARGIN_MM
+		 && ((p.x >= PG_TOTEM_LEFT_X - PG_TOTEM_WIDTH_MM / 2 - RADAR_MARGIN_MM
+		      && p.x < PG_TOTEM_LEFT_X + PG_TOTEM_WIDTH_MM / 2 + RADAR_MARGIN_MM)
+		     || (p.x >= PG_TOTEM_RIGHT_X - PG_TOTEM_WIDTH_MM / 2 - RADAR_MARGIN_MM
+			 && p.x < PG_TOTEM_RIGHT_X + PG_TOTEM_WIDTH_MM / 2 + RADAR_MARGIN_MM))));
 }
 
