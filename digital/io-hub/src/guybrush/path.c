@@ -45,10 +45,6 @@
  * path along nodes.
  */
 
-/** Clearance between obstacle and robot center, only used for grid
- * construction. */
-#define PATH_GRID_CLEARANCE_MM (70 + BOT_SIZE_RADIUS)
-
 /** Number of possible obstacles. */
 #define PATH_OBSTACLES_NB AC_PATH_OBSTACLES_NB
 
@@ -131,9 +127,6 @@ static const struct path_node_t path_nodes[PATH_FIXED_NODES_NB] = {
       { 1 }, /* 24 */
     /* }}} */
 };
-
-/** Shortcut. */
-#define PATH_TOTEM_CLEAR_MM (PG_TOTEM_WIDTH_MM / 2 + PATH_GRID_CLEARANCE_MM)
 
 /** X position of columns. */
 static const uint16_t path_nodes_x[PATH_COLUMNS_NB] = {

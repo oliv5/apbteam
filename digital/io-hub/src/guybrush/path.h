@@ -32,6 +32,13 @@
 /** Infinite validity for an obstacle. */
 #define PATH_OBSTACLE_VALID_ALWAYS 0xffff
 
+/** Clearance between obstacle and robot center, only used for grid
+ * construction. */
+#define PATH_GRID_CLEARANCE_MM (70 + BOT_SIZE_RADIUS)
+
+/** Shortcut. */
+#define PATH_TOTEM_CLEAR_MM (PG_TOTEM_WIDTH_MM / 2 + PATH_GRID_CLEARANCE_MM)
+
 /** Obstacle. */
 struct path_obstacle_t
 {

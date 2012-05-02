@@ -3,7 +3,7 @@ BASE = ../../../avr
 # Name of the program to build.
 PROGS = io_hub
 # Sources to compile.
-io_hub_SOURCES = main.c top.c \
+io_hub_SOURCES = main.c top.c strat.c \
 		 radar_defs.c radar.c path.c move.c \
 		 pressure.c \
 		 init.c fsm.host.c fsm_AI_gen.avr.c fsm_queue.c \
