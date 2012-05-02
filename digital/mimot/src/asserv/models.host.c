@@ -159,7 +159,8 @@ simu_table_test_guybrush (double p_x, double p_y)
 	return 0;
     /* Boats. */
     double bx = 325 + (400 - 325) * y / 1500. + 22;
-    if ((x < bx || x >= 3000 - bx) && y < 740)
+    if (((x >= bx - 40 && x < bx) || (x >= 3000 - bx && x < 3000 - bx + 40))
+	&& y < 740)
 	return 0;
     return 1;
 }
