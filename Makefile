@@ -14,14 +14,18 @@
 #  eval $(make env)
 #
 
-DIRS = \
-	digital/asserv/src/asserv \
+DIRS_2012 = \
 	digital/mimot/src/asserv \
 	digital/mimot/src/dirty \
 	digital/beacon/src/stub \
+	digital/io-hub/src/guybrush
+
+DIRS = $(sort \
+	digital/asserv/src/asserv \
 	digital/io/src \
 	digital/io-hub/src/robospierre \
-	digital/io-hub/src/guybrush
+	$(DIRS_2012) \
+	)
 
 PYTHON_DIRS = \
 	digital/dev2/tools \
@@ -32,11 +36,16 @@ PYTHON_DIRS = \
 	digital/io-hub/tools \
 	host
 
+default: $(if $(APBTEAM_DEFAULT),$(APBTEAM_DEFAULT),help)
+
 help:
 	@sed -n 's/^# \?//p' < Makefile
 
 all host clean:
 	$(foreach dir,$(DIRS),$(MAKE) -C $(dir) $@ && ) true
+
+all.% host.% clean.%:
+	$(foreach dir,$(DIRS_$*),$(MAKE) -C $(dir) $(@:.$*=) && ) true
 
 space :=
 space +=
