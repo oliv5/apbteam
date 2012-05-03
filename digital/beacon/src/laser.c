@@ -117,7 +117,7 @@ ISR(TIMER3_COMPB_vect)
 {
 	if(servo_get_state(SERVO_1) == SERVO_SCANNING_FAST_IN_PROGRESS)
 	{
-		codewheel_set_rebase_offset(laser_get_angle());
+		codewheel_set_rebase_offset(laser_get_angle_raw());
 		codewheel_set_state(CODEWHEEL_REQUEST_REBASE);
 	}
 }
