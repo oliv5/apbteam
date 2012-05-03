@@ -31,6 +31,11 @@
 #define SERVO_ANGLE_MIN 	69
 #define SERVO_ANGLE_MAX 	200
 
+#define SERVO_1_ANGLE_POSITION 			0
+#define SERVO_2_ANGLE_POSITION 			90
+#define SERVO_ANGLE_POSITION_TOLERANCE 	2
+
+
 #define RISING			1
 #define FALLING			-1
 
