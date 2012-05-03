@@ -134,9 +134,7 @@ void usartRXCallback(uint16_t bytesToRead)
 // 			uprintf("TCNT3 = %d\r\n",TCNT3);
 			TIMSK3 &= ~(1<<OCIE3B);
 		case 'r':
-			led_off(1);
-			led_off(2);
-			led_off(3);
+			reset_avr();
 			break;
 		case 't':
 			motor_start_stop_control();
