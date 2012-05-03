@@ -95,6 +95,7 @@ void APL_TaskHandler(void)
  						network_init();
 						motor_init();
 						uprintf("LOL_%d initialisation OK !\n\r",CS_NWK_ADDR);
+						calibration_start_task();
 					break;
 				default:
 					break;
