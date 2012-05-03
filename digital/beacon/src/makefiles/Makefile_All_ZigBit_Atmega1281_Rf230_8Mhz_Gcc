@@ -57,7 +57,7 @@ INCLUDES = \
   -I$(APB_AVR_PATH)/modules/twi
 
 LIBS = \
-  $(BITCLOUD_PATH)/lib/libHAL_ZigBit_Atmega1281_8Mhz_Gcc.a \
+  $(BITCLOUD_PATH)/lib/libHAL_ZigBit_Atmega1281_8Mhz_Gcc_Amp.a \
   $(BITCLOUD_PATH)/lib/libBc_All_Atmega1281_Rf230_Gcc.a \
   $(BITCLOUD_PATH)/lib/WdtInitatmega1281_Gcc.o 
 

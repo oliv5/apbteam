@@ -55,8 +55,8 @@ ifeq ($(PLATFORM), PLATFORM_ZIGBIT)
   HAL_TINY_UID = FALSE
 
   # Defines whether HAL controls amplifier or not.
-  HAL_USE_AMPLIFIER = FALSE
-  #HAL_USE_AMPLIFIER = TRUE
+  #HAL_USE_AMPLIFIER = FALSE
+  HAL_USE_AMPLIFIER = TRUE
   
 endif # PLATFORM_ZIGBIT
 
