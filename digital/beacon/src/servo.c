@@ -237,7 +237,7 @@ void servo_inverse_scanning_sense(TServo_ID servo_id)
 			servo1.scanning_sense *= -1;
 			break;
 		case SERVO_2:
-			servo1.scanning_sense *= -1;
+			servo2.scanning_sense *= -1;
 			break;
 		default:
 			break;
