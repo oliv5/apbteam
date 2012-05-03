@@ -91,14 +91,21 @@ void laser_engage_angle_confirmation(uint16_t value)
 }
 
 
-/* This function returns the angle value */
-uint16_t laser_get_angle(void)
+/* This function returns the angle value in raw format */
+uint16_t laser_get_angle_raw(void)
 {
+	uprintf("valeur de laser_get_angle_raw() = %d\r\n",laser.angle);
 	return laser.angle;
 }
 
+/* This function returns the angle value in degree */
+float laser_get_angle_degree(void)
+{
+	return codewheel_convert_angle_raw2degrees(laser.angle);
+}
 
-/* This function sets the angle value */
+
+/* This function sets the angle value in raw format */
 void laser_set_angle(uint16_t angle)
 {
 	laser.angle = angle;
