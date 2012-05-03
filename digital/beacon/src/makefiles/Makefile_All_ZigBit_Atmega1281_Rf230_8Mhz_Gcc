@@ -103,6 +103,7 @@ LD = $(CC)
 LINKER_FLAGS = -Wl,-Map=$(LIST_PATH)/$(APP_NAME).map -Wl,--gc-sections
 LINKER_FLAGS += -Wl,--script=./../atmega1281.ld
 LINKER_FLAGS += $(filter -mmcu%,$(CFLAGS))
+LINKER_FLAGS += -Wl,-u,vfprintf -lprintf_flt -lm
 
 .PHONY: all directories clean size root_files
 
