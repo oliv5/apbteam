@@ -71,7 +71,18 @@ vect_t main_obstacles_pos[2];
 /** Number of obstacles in main_obstacles_pos. */
 uint8_t main_obstacles_nb;
 
-/** FSM debug mode activated if 1, step authorized if 2. */
+/** FSM debug mode. */
+enum
+{
+    /** Normal run mode. */
+    MAIN_FSM_DEBUG_RUN,
+    /** Stop, do not handle any event. */
+    MAIN_FSM_DEBUG_STOP,
+    /** Step one event then stop. */
+    MAIN_FSM_DEBUG_STEP,
+};
+
+/** Current FSM debug mode. */
 uint8_t main_fsm_debug_mode;
 
 /** Asserv stats counters. */
@@ -124,24 +135,19 @@ main_init (void)
 }
 
 /** Main events management. */
-void
+uint8_t
 main_event_to_fsm (void)
 {
     /* If an event is handled, stop generating any other event, because a
      * transition may have invalidated the current robot state. */
 #define FSM_HANDLE_E(fsm, event) \
-    do { if (FSM_HANDLE (fsm, event)) return; } while (0)
+    do { if (FSM_HANDLE (fsm, event)) return 1; } while (0)
 #define FSM_HANDLE_VAR_E(fsm, event) \
-    do { if (FSM_HANDLE_VAR (fsm, event)) return; } while (0)
+    do { if (FSM_HANDLE_VAR (fsm, event)) return 1; } while (0)
 #define FSM_HANDLE_TIMEOUT_E(fsm) \
-    do { if (FSM_HANDLE_TIMEOUT (fsm)) return; } while (0)
+    do { if (FSM_HANDLE_TIMEOUT (fsm)) return 1; } while (0)
     /* Update FSM timeouts. */
     FSM_HANDLE_TIMEOUT_E (AI);
-    /* Abort if debuging. */
-    if (main_fsm_debug_mode == 1)
-	return;
-    if (main_fsm_debug_mode == 2)
-	main_fsm_debug_mode--;
     /* Motor status. */
     asserv_status_e robot_move_status, mimot_motor0_status,
 		    mimot_motor1_status;
@@ -169,7 +175,9 @@ main_event_to_fsm (void)
       }
     /* Check obstables. */
     if (move_check_obstacles ())
-	return;
+	return 1;
+    /* No event handled. */
+    return 0;
 }
 
 /** Main (and infinite) loop. */
@@ -206,8 +214,12 @@ main_loop (void)
 	/* Update AI modules. */
 	path_decay ();
 	/* Only manage events if slaves are synchronised. */
-	if (twi_master_sync ())
-	    main_event_to_fsm ();
+	if (twi_master_sync () && main_fsm_debug_mode != MAIN_FSM_DEBUG_STOP)
+	  {
+	    if (main_event_to_fsm ()
+		&& main_fsm_debug_mode == MAIN_FSM_DEBUG_STEP)
+		main_fsm_debug_mode = MAIN_FSM_DEBUG_STOP;
+	  }
 	/* Send stats if requested. */
 	if (main_stats_asserv_ && !--main_stats_asserv_cpt_)
 	  {
@@ -255,7 +267,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	break;
       case c ('f', 0):
 	/* Enter FSM debug mode, then step once. */
-	main_fsm_debug_mode = 2;
+	main_fsm_debug_mode = MAIN_FSM_DEBUG_STEP;
 	break;
       case c ('m', 5):
 	/* Go to position.
