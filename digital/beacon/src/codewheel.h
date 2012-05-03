@@ -62,4 +62,7 @@ uint16_t codewheel_get_rebase_offset(void);
 /* This function saves the counter value used when a codewheel reset is requested */
 void codewheel_set_rebase_offset(uint16_t offset);
 
+/* This function converts the angle value from row format to degrees */
+float codewheel_convert_angle_raw2degrees(uint16_t raw_value);
+
 #endif

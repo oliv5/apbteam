@@ -86,6 +86,12 @@ void codewheel_set_rebase_offset(uint16_t offset)
 	codewheel.rebase_offset = offset;
 }
 
+/* This function converts the angle value from row format to degrees */
+float codewheel_convert_angle_raw2degrees(uint16_t raw_value)
+{
+	return  (float)raw_value*(float)360/(float)CODEWHEEL_CPR;
+}
+
 /* Codewheel complete turn IRQ vector for CodeWheel*/
 ISR(TIMER3_COMPA_vect)
 {
