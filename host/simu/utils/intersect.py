@@ -50,24 +50,24 @@ def segment_segment (a, b, c, d):
     # v = -----------------------------------------
     #     (xb - xa) (yd - yc) - (xd - xc) (yb - ya)
     #
-    # u = (vac . vcd.normal()) / (vab . vcd.normal())
-    # v = (vac . vab.normal()) / (vab . vcd.normal())
+    # u = (vac.normal() . vcd) / (vab.normal() . vcd)
+    # v = (vac.normal() . vab) / (vab.normal() . vcd)
     #
-    # If vab . vcd.normal () is 0, AB and CD are parallel.
+    # If vab.normal() . vcd is 0, AB and CD are parallel.
     vab = b - a
     vcd = d - c
     vac = c - a
     # Cannot test for 0 because we are using float, cannot test for a very
     # small number because we do not know what is small enough, therefore,
     # compare with numerator.
-    den = vab * vcd.normal ()
-    unum = vac * vcd.normal ()
+    den = vab.normal () * vcd
+    unum = vac.normal () * vcd
     if abs (den) <= 1e-6 * abs (unum):
         return None
     else:
         u = unum / den
         if u >= 0 and u <= 1:
-            v = vac * vab.normal () / den
+            v = vac.normal () * vab / den
             if v >= 0 and v <= 1:
                 return u * vab.norm ()
     return None
