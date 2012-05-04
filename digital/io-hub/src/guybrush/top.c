@@ -38,6 +38,8 @@
 #include "strat.h"
 #include "path.h"
 
+#include "output_defs.h"
+
 /*
  * Here is the top FSM.  This FSM is suppose to give life to the robot with an
  * impression of intelligence... Well...
@@ -48,6 +50,7 @@ FSM_INIT
 FSM_STATES (
 	    /* Initial state. */
 	    TOP_START,
+
 	    /* Going to a collect position above or below a totem. */
 	    TOP_TOTEM_GOING,
 	    /* Approaching a totem. */
@@ -55,7 +58,12 @@ FSM_STATES (
 	    /* Pushing until full contact. */
 	    TOP_TOTEM_PUSHING,
 	    /* Going back after totem has been emptied. */
-	    TOP_TOTEM_GOING_BACK)
+	    TOP_TOTEM_GOING_BACK,
+
+	    /* Going to an unload position. */
+	    TOP_UNLOAD_GOING,
+	    /* Unloading, waiting for elements to fall. */
+	    TOP_UNLOADING)
 
 FSM_START_WITH (TOP_START)
 
@@ -80,6 +88,16 @@ top_go_totem (void)
     move_start (pos, 0);
 }
 
+/** Go unload. */
+static void
+top_go_unload (void)
+{
+    position_t pos;
+    pos.v = top.decision_pos;
+    pos.a = PG_A_DEG (70);
+    move_start (pos, 0);
+}
+
 /** Call strat to make a decision, apply it and return the decision to go to
  * the next state. */
 static uint8_t
@@ -91,18 +109,35 @@ top_decision (void)
       case STRAT_DECISION_TOTEM:
 	top_go_totem ();
 	break;
+      case STRAT_DECISION_UNLOAD:
+	top_go_unload ();
+	break;
       default:
 	assert (0);
       }
     return decision;
 }
 
-FSM_TRANS (TOP_START, init_start_round, TOP_TOTEM_GOING)
+#define RETURN_TOP_DECISION_SWITCH(state, event) do { \
+    switch (top_decision ()) \
+      { \
+      default: assert (0); \
+      case STRAT_DECISION_TOTEM: \
+	return FSM_NEXT (state, event, totem); \
+      case STRAT_DECISION_UNLOAD: \
+	return FSM_NEXT (state, event, unload); \
+      } \
+} while (0)
+
+FSM_TRANS (TOP_START, init_start_round,
+	   totem, TOP_TOTEM_GOING,
+	   unload, TOP_UNLOAD_GOING)
 {
     strat_init ();
-    top_decision ();
-    return FSM_NEXT (TOP_START, init_start_round);
+    RETURN_TOP_DECISION_SWITCH (TOP_START, init_start_round);
 }
+
+/** TOTEM */
 
 FSM_TRANS (TOP_TOTEM_GOING, move_success, TOP_TOTEM_APPROACHING)
 {
@@ -124,9 +159,29 @@ FSM_TRANS (TOP_TOTEM_PUSHING, robot_move_success, TOP_TOTEM_GOING_BACK)
     return FSM_NEXT (TOP_TOTEM_PUSHING, robot_move_success);
 }
 
-FSM_TRANS (TOP_TOTEM_GOING_BACK, move_success, TOP_TOTEM_GOING)
+FSM_TRANS (TOP_TOTEM_GOING_BACK, move_success,
+	   totem, TOP_TOTEM_GOING,
+	   unload, TOP_UNLOAD_GOING)
 {
-    top_decision ();
-    return FSM_NEXT (TOP_TOTEM_GOING_BACK, move_success);
+    RETURN_TOP_DECISION_SWITCH (TOP_TOTEM_GOING_BACK, move_success);
+}
+
+/** UNLOAD */
+
+FSM_TRANS (TOP_UNLOAD_GOING, move_success, TOP_UNLOADING)
+{
+    IO_SET (OUTPUT_DOOR_OPEN);
+    IO_CLR (OUTPUT_DOOR_CLOSE);
+    return FSM_NEXT (TOP_UNLOAD_GOING, move_success);
+}
+
+FSM_TRANS_TIMEOUT (TOP_UNLOADING, 250,
+		   totem, TOP_TOTEM_GOING,
+		   unload, TOP_UNLOAD_GOING)
+{
+    strat_success ();
+    IO_CLR (OUTPUT_DOOR_OPEN);
+    IO_SET (OUTPUT_DOOR_CLOSE);
+    RETURN_TOP_DECISION_SWITCH (TOP_UNLOADING, TOP_UNLOADING_TIMEOUT);
 }
 

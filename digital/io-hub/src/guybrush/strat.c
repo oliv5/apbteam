@@ -79,6 +79,8 @@ struct strat_t
     uint8_t last_decision;
     /** Place of last decision. */
     uint8_t last_place;
+    /** Robot content estimation. */
+    uint8_t load;
     /** Places information. */
     struct strat_place_dyn_t place[STRAT_PLACE_NB];
 };
@@ -97,6 +99,13 @@ uint8_t
 strat_decision (vect_t *pos)
 {
     uint8_t i;
+    if (strat.load > 1)
+      {
+	strat.last_decision = STRAT_DECISION_UNLOAD;
+	pos->x = PG_X (BOT_SIZE_RADIUS + 30);
+	pos->y = PG_Y (PG_LENGTH / 2);
+	return strat.last_decision;
+      }
     for (i = 0; i < STRAT_PLACE_NB; i++)
       {
 	if (strat.place[i].valid)
@@ -114,7 +123,17 @@ strat_decision (vect_t *pos)
 void
 strat_success (void)
 {
-    assert (strat.last_decision != (uint8_t) -1);
-    strat.place[strat.last_place].valid = 0;
+    switch (strat.last_decision)
+      {
+      case STRAT_DECISION_TOTEM:
+	strat.place[strat.last_place].valid = 0;
+	strat.load++;
+	break;
+      case STRAT_DECISION_UNLOAD:
+	strat.load = 0;
+	break;
+      default:
+	assert (0);
+      }
 }
 
