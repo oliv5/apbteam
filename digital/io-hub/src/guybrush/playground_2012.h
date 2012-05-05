@@ -35,9 +35,22 @@
 /** Totem width. */
 #define PG_TOTEM_WIDTH_MM 250
 
+/** Totem diagonal length. */
+#define PG_TOTEM_DIAG_MM 353
+
 /** Totems position. */
 #define PG_TOTEM_LEFT_X (PG_WIDTH / 2 - PG_TOTEM_X_OFFSET_MM)
 #define PG_TOTEM_RIGHT_X (PG_WIDTH / 2 + PG_TOTEM_X_OFFSET_MM)
 #define PG_TOTEM_Y (PG_LENGTH / 2)
+
+/** Ships holds. */
+#define PG_HOLD_SOUTH_X 325
+#define PG_HOLD_SOUTH_Y 325
+#define PG_HOLD_NORTH_X 362
+#define PG_HOLD_NORTH_Y 740
+
+/** Captain rooms. */
+#define PG_CAPTAIN_ROOM_WIDTH_MM 400
+#define PG_CAPTAIN_ROOM_LENGTH_MM 500
 
 #endif /* playground_2012_h */

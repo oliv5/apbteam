@@ -31,6 +31,7 @@
 #include "modules/path/astar/astar.h"
 #include "modules/utils/utils.h"
 #include "modules/math/geometry/distance.h"
+#include "modules/math/geometry/intersection.h"
 
 #define PATH_DEBUG 0
 
@@ -186,16 +187,46 @@ path_blocking (uint8_t a, uint8_t b, int16_t *dp)
     path_pos (a, &va);
     path_pos (b, &vb);
     /* Test for totems. */
-    if (!(((va.x <= PG_WIDTH / 2 - PG_TOTEM_X_OFFSET_MM - PATH_TOTEM_CLEAR_MM
-	    && vb.x <= PG_WIDTH / 2 - PG_TOTEM_X_OFFSET_MM - PATH_TOTEM_CLEAR_MM)
-	   || (va.x >= PG_WIDTH / 2 + PG_TOTEM_X_OFFSET_MM + PATH_TOTEM_CLEAR_MM
-	       && vb.x >= PG_WIDTH / 2 + PG_TOTEM_X_OFFSET_MM + PATH_TOTEM_CLEAR_MM)
-	   || (va.y <= PG_LENGTH / 2 - PATH_TOTEM_CLEAR_MM
-	       && vb.y <= PG_LENGTH / 2 - PATH_TOTEM_CLEAR_MM)
-	   || (va.y >= PG_LENGTH / 2 + PATH_TOTEM_CLEAR_MM
-	       && vb.y >= PG_LENGTH / 2 + PATH_TOTEM_CLEAR_MM))))
+    static const vect_t totems[] = {
+	  { PG_TOTEM_LEFT_X, PG_TOTEM_Y },
+	  { PG_TOTEM_RIGHT_X, PG_TOTEM_Y },
+    };
+    for (i = 0; i < UTILS_COUNT (totems) && !blocking; i++)
       {
-	blocking = 1;
+	uint16_t d = distance_segment_point (&va, &vb, &totems[i]);
+	if (d < PG_TOTEM_DIAG_MM / 2 + BOT_SIZE_RADIUS)
+	    blocking = 1;
+      }
+    /* Test for ships. */
+    static const vect_t ships_segments[][2] = {
+	  { { PG_HOLD_SOUTH_X + BOT_SIZE_RADIUS, PG_HOLD_SOUTH_Y },
+	    { PG_HOLD_NORTH_X + BOT_SIZE_RADIUS, PG_HOLD_NORTH_Y } },
+	  { { PG_MIRROR_X (PG_HOLD_SOUTH_X + BOT_SIZE_RADIUS), PG_HOLD_SOUTH_Y },
+	    { PG_MIRROR_X (PG_HOLD_NORTH_X + BOT_SIZE_RADIUS), PG_HOLD_NORTH_Y } },
+	  { { 0, PG_LENGTH - PG_CAPTAIN_ROOM_LENGTH_MM - BOT_SIZE_RADIUS },
+	    { PG_CAPTAIN_ROOM_WIDTH_MM,
+	      PG_LENGTH - PG_CAPTAIN_ROOM_LENGTH_MM - BOT_SIZE_RADIUS } },
+	  { { PG_MIRROR_X (0), PG_LENGTH - PG_CAPTAIN_ROOM_LENGTH_MM - BOT_SIZE_RADIUS },
+	    { PG_MIRROR_X (PG_CAPTAIN_ROOM_WIDTH_MM),
+	      PG_LENGTH - PG_CAPTAIN_ROOM_LENGTH_MM - BOT_SIZE_RADIUS } },
+    };
+    static const vect_t ships_angles[] = {
+	  { PG_HOLD_NORTH_X, PG_HOLD_NORTH_Y },
+	  { PG_MIRROR_X (PG_HOLD_NORTH_X), PG_HOLD_NORTH_Y },
+	  { PG_CAPTAIN_ROOM_WIDTH_MM, PG_LENGTH - PG_CAPTAIN_ROOM_LENGTH_MM },
+	  { PG_MIRROR_X (PG_CAPTAIN_ROOM_WIDTH_MM), PG_LENGTH - PG_CAPTAIN_ROOM_LENGTH_MM },
+    };
+    for (i = 0; i < UTILS_COUNT (ships_segments) && !blocking; i++)
+      {
+	if (intersection_segment_segment (&va, &vb, &ships_segments[i][0],
+					  &ships_segments[i][1]))
+	    blocking = 1;
+      }
+    for (i = 0; i < UTILS_COUNT (ships_angles) && !blocking; i++)
+      {
+	uint16_t d = distance_segment_point (&va, &vb, &ships_angles[i]);
+	if (d < BOT_SIZE_RADIUS)
+	    blocking = 1;
       }
     /* Test for a blocking obstacle. */
     for (i = 0; i < PATH_OBSTACLES_NB && !blocking; i++)
