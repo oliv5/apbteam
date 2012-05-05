@@ -245,6 +245,7 @@ test_intersection (void)
     vect_t v02 = { 0, 20 };
     vect_t v20 = { 20, 0 };
     vect_t v22 = { 20, 20 };
+    vect_t v11 = { 10, 10 };
     vect_t v44 = { 40, 40 };
     test (intersection_segment_segment (&v00, &v22, &v20, &v02) == 1);
     test (intersection_segment_segment (&v00, &v22, &v02, &v20) == 1);
@@ -255,6 +256,8 @@ test_intersection (void)
     test (intersection_segment_segment (&v22, &v44, &v02, &v20) == 0);
     test (intersection_segment_segment (&v00, &v44, &v02, &v20) == 1);
     test (intersection_segment_segment (&v44, &v00, &v02, &v20) == 1);
+    test (intersection_segment_segment (&v44, &v00, &v11, &v20) == 0);
+    test (intersection_segment_segment (&v44, &v00, &v20, &v11) == 0);
     vect_t poly[] = { { 10, 0 }, { 0, 10 }, { -10, 0 }, { 0, -10 } };
     vect_t a = { 20, 10 };
     vect_t b = { 10, 20 };

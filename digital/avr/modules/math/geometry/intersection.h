@@ -31,7 +31,8 @@
  * - a, b: first line segment vertices.
  * - c, d: second line segment vertices.
  *
- * If AB and CD are parallel, consider there is no intersection. */
+ * If AB and CD are parallel or if a vertice is exactly on the other segment,
+ * consider there is no intersection. */
 uint8_t
 intersection_segment_segment (const vect_t *a, const vect_t *b,
 			      const vect_t *c, const vect_t *d);

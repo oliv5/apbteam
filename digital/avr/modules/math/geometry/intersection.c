@@ -25,18 +25,21 @@
 #include "common.h"
 #include "intersection.h"
 
-/** Compare a and b to determine if a / b is in [0:1].  Return non zero if
+/** Compare a and b to determine if a / b is in ]0:1[.  Return non zero if
  * true. */
 static uint8_t
 intersection_div_is_in_0_1 (int32_t a, int32_t b)
 {
+    assert (b != 0);
     /* Test sign, a / b < 0 if different. */
-    if ((a >> 31) ^ (b >> 31))
+    if ((a ^ b) & 0x80000000)
+	return 0;
+    else if (a == 0)
 	return 0;
     else if (a > 0)
-	return a <= b;
+	return a < b;
     else
-	return a >= b;
+	return a > b;
 }
 
 uint8_t
