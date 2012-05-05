@@ -240,6 +240,7 @@ test_distance (void)
 void
 test_intersection (void)
 {
+    uint8_t i;
     vect_t v00 = { 0, 0 };
     vect_t v02 = { 0, 20 };
     vect_t v20 = { 20, 0 };
@@ -254,6 +255,18 @@ test_intersection (void)
     test (intersection_segment_segment (&v22, &v44, &v02, &v20) == 0);
     test (intersection_segment_segment (&v00, &v44, &v02, &v20) == 1);
     test (intersection_segment_segment (&v44, &v00, &v02, &v20) == 1);
+    vect_t poly[] = { { 10, 0 }, { 0, 10 }, { -10, 0 }, { 0, -10 } };
+    vect_t a = { 20, 10 };
+    vect_t b = { 10, 20 };
+    vect_t o = { 0, 0 };
+    for (i = 0; i < 8; i++)
+      {
+	test (intersection_segment_poly (&a, &b, poly, UTILS_COUNT (poly)) == 0);
+	test (intersection_segment_poly (&o, &a, poly, UTILS_COUNT (poly)) == 1);
+	test (intersection_segment_poly (&o, &b, poly, UTILS_COUNT (poly)) == 1);
+	vect_rotate_uf016 (&a, G_ANGLE_UF016_DEG (45));
+	vect_rotate_uf016 (&b, G_ANGLE_UF016_DEG (45));
+      }
 }
 
 int

@@ -85,3 +85,20 @@ intersection_segment_segment (const vect_t *a, const vect_t *b,
 	  }
       }
 }
+
+uint8_t
+intersection_segment_poly (const vect_t *a, const vect_t *b,
+			   const vect_t *poly, uint8_t poly_size)
+{
+    uint8_t i;
+    assert (poly_size > 0);
+    for (i = 0; i < poly_size - 1; i++)
+      {
+	if (intersection_segment_segment (a, b, &poly[i], &poly[i + 1]))
+	    return 1;
+      }
+    if (intersection_segment_segment (a, b, &poly[i], &poly[0]))
+	return 1;
+    return 0;
+}
+

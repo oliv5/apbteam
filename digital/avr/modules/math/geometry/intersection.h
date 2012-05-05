@@ -36,4 +36,13 @@ uint8_t
 intersection_segment_segment (const vect_t *a, const vect_t *b,
 			      const vect_t *c, const vect_t *d);
 
+/** Test intersection between a line segment and any line segment defining a
+ * polygon.  Return non zero if they intersect.
+ * - a, b: line segment vertices.
+ * - poly: array of polygon vertices.
+ * - poly_size: number of polygon vertices. */
+uint8_t
+intersection_segment_poly (const vect_t *a, const vect_t *b,
+			   const vect_t *poly, uint8_t poly_size);
+
 #endif /* intersection_h */
