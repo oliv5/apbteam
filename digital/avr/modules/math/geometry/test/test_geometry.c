@@ -26,6 +26,7 @@
 #include "modules/math/geometry/geometry.h"
 #include "modules/math/geometry/vect.h"
 #include "modules/math/geometry/distance.h"
+#include "modules/math/geometry/intersection.h"
 
 #include "modules/utils/utils.h"
 #include "modules/uart/uart.h"
@@ -236,6 +237,25 @@ test_distance (void)
     test (d == 670);
 }
 
+void
+test_intersection (void)
+{
+    vect_t v00 = { 0, 0 };
+    vect_t v02 = { 0, 20 };
+    vect_t v20 = { 20, 0 };
+    vect_t v22 = { 20, 20 };
+    vect_t v44 = { 40, 40 };
+    test (intersection_segment_segment (&v00, &v22, &v20, &v02) == 1);
+    test (intersection_segment_segment (&v00, &v22, &v02, &v20) == 1);
+    test (intersection_segment_segment (&v22, &v00, &v20, &v02) == 1);
+    test (intersection_segment_segment (&v22, &v00, &v02, &v20) == 1);
+    test (intersection_segment_segment (&v00, &v22, &v00, &v22) == 0);
+    test (intersection_segment_segment (&v00, &v22, &v00, &v44) == 0);
+    test (intersection_segment_segment (&v22, &v44, &v02, &v20) == 0);
+    test (intersection_segment_segment (&v00, &v44, &v02, &v20) == 1);
+    test (intersection_segment_segment (&v44, &v00, &v02, &v20) == 1);
+}
+
 int
 main (void)
 {
@@ -243,6 +263,7 @@ main (void)
     test_geometry ();
     test_vect ();
     test_distance ();
+    test_intersection ();
     uart0_putc ('o');
     uart0_putc ('k');
     uart0_putc ('\n');
