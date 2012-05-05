@@ -48,8 +48,11 @@
 /** Distance to playground borders for general movements, mm. */
 #define PG_BORDER_DISTANCE 250
 
+/** Return mirror X coordinate, using a horizontal symmetry. */
+#define PG_MIRROR_X(x) (PG_WIDTH - (x))
+
 /** Return X coordinate, applying symmetry according to team color. */
-#define PG_X(x) (team_color ? (x) : PG_WIDTH - (x))
+#define PG_X(x) (team_color ? (x) : PG_MIRROR_X (x))
 
 /** Same as PG_Y, but for Y coordinate.  Actually nothing is done, there is no
  * symmetry. */
