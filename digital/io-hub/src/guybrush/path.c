@@ -136,19 +136,19 @@ static const struct path_node_t path_nodes[PATH_FIXED_NODES_NB] = {
 
 /** X position of columns. */
 static const uint16_t path_nodes_x[PATH_COLUMNS_NB] = {
-    PG_WIDTH / 2 - PG_TOTEM_X_OFFSET_MM - PATH_TOTEM_CLEAR_MM,
-    PG_WIDTH / 2 - PG_TOTEM_X_OFFSET_MM,
+    PG_TOTEM_LEFT_X - PATH_TOTEM_CLEAR_MM,
+    PG_TOTEM_LEFT_X,
     PG_WIDTH / 2,
-    PG_WIDTH / 2 + PG_TOTEM_X_OFFSET_MM,
-    PG_WIDTH / 2 + PG_TOTEM_X_OFFSET_MM + PATH_TOTEM_CLEAR_MM,
+    PG_TOTEM_RIGHT_X,
+    PG_TOTEM_RIGHT_X + PATH_TOTEM_CLEAR_MM,
 };
 
 /** Y position of lines. */
 static const uint16_t path_nodes_y[PATH_COLUMN_NODES_NB] = {
     PATH_GRID_CLEARANCE_MM,
-    PG_LENGTH / 2 - PATH_TOTEM_CLEAR_MM,
-    PG_LENGTH / 2,
-    PG_LENGTH / 2 + PATH_TOTEM_CLEAR_MM,
+    PG_TOTEM_Y - PATH_TOTEM_CLEAR_MM,
+    PG_TOTEM_Y,
+    PG_TOTEM_Y + PATH_TOTEM_CLEAR_MM,
     PG_LENGTH - PATH_GRID_CLEARANCE_MM,
 };
 

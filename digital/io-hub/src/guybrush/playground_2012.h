@@ -35,4 +35,9 @@
 /** Totem width. */
 #define PG_TOTEM_WIDTH_MM 250
 
+/** Totems position. */
+#define PG_TOTEM_LEFT_X (PG_WIDTH / 2 - PG_TOTEM_X_OFFSET_MM)
+#define PG_TOTEM_RIGHT_X (PG_WIDTH / 2 + PG_TOTEM_X_OFFSET_MM)
+#define PG_TOTEM_Y (PG_LENGTH / 2)
+
 #endif /* playground_2012_h */
