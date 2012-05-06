@@ -168,7 +168,7 @@ class Clamps (Observable):
         m = self.__get_robot_matrix ()
         # Look up elements.
         xoffset = 117 - 6
-        xmargin = 20
+        xmargin = 25
         ymargin = 171.5 - 60
         for o in self.table.obstacles:
             if o.level == 1 and o.value <= 1 and o.pos is not None:
