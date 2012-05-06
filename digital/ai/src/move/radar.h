@@ -93,4 +93,8 @@ uint8_t
 radar_blocking (const vect_t *robot_pos, const vect_t *dest_pos,
 		const vect_t *obs_pos, uint8_t obs_nb);
 
+/** Define exclusion area (considered as invalid point). */
+uint8_t
+radar_valid (vect_t p, uint8_t sensor);
+
 #endif /* radar_h */

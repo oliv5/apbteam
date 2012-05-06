@@ -42,7 +42,7 @@ struct radar_sensor_t radar_sensors[RADAR_SENSOR_NB] = {
 
 /** Define exclusion area (considered as invalid point). */
 uint8_t
-radar_valid (vect_t p)
+radar_valid (vect_t p, uint8_t sensor)
 {
     return p.x >= RADAR_MARGIN_MM && p.x < PG_WIDTH - RADAR_MARGIN_MM
 	&& p.y >= RADAR_MARGIN_MM && p.y < PG_LENGTH - RADAR_MARGIN_MM

@@ -38,9 +38,6 @@
 /** Define radar configuration. */
 extern struct radar_sensor_t radar_sensors[RADAR_SENSOR_NB];
 
-uint8_t
-radar_valid (vect_t p);
-
 /** Compute the center position from several radars sensors, return 1 if
  * any. */
 static uint8_t
@@ -89,7 +86,7 @@ radar_update (const position_t *robot_pos, vect_t *obs_pos)
 	    vect_from_polar_uf016 (&ray, dist_mm[i],
 				   robot_pos->a + radar_sensors[i].a);
 	    vect_translate (&hit[i], &ray);
-	    valid[i] = radar_valid (hit[i]);
+	    valid[i] = radar_valid (hit[i], i);
 	    vect_from_polar_uf016 (&ray, RADAR_OBSTACLE_EDGE_RADIUS_MM,
 				   robot_pos->a + radar_sensors[i].a);
 	    vect_translate (&hit[i], &ray);
