@@ -37,7 +37,10 @@ fsm_AI_gen.h: io.host
 	./$< --gen
 	mv fsm_AI_gen.c fsm_AI_gen.avr.c
 
-events.h events.host.c: trace.trc
+events.h events.host.c: trace.trc $(BASE)/../../tools/trace/lib/parser.py
 	PYTHONPATH=$(BASE)/../../host python $(BASE)/../../tools/trace/trace.py -t create -i $< -o
+
+$(BASE)/../../tools/trace/lib/parser.py: $(BASE)/../../tools/trace/lib/parser.g
+	yapps $<
 
 main.c: events.h
