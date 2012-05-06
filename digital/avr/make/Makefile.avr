@@ -19,6 +19,11 @@ endif
 AVR_COMPILE.S := $(AVR_CC) $(AVR_ASFLAGS) $(AVR_CPPFLAGS) -c
 AVR_LINK.o := $(AVR_CC) $(AVR_CFLAGS) $(AVR_LDFLAGS)
 
+AVRDUDE := avrdude
+AVRDUDE_PROGRAMMER ?= stk500v2
+AVRDUDE_PORT ?= /dev/ttyUSB1
+AVR_PROGRAM ?= $(AVRDUDE) -c $(AVRDUDE_PROGRAMMER) -P $(AVRDUDE_PORT) -p $(AVR_MCU) -U flash:w:$<
+
 # Main rules.
 
 avr: elf lst hex size
@@ -26,7 +31,7 @@ avr: elf lst hex size
 simu: simuelf
 
 .PHONY: avr simu clean.avr clean.simu elf simuelf lst \
-	text hex srec bin eeprom ehex esrec ebin
+	text hex srec bin eeprom ehex esrec ebin program
 
 # General rules.
 
@@ -124,6 +129,18 @@ esrec: $(AVR_PROGS:%=%_eeprom.srec)
 
 %_eeprom.bin: %.avr.elf
 	$(AVR_OBJCOPY) -j .eeprom --change-section-lma .eeprom=0 -O binary $< $@
+
+# Rules for programming AVR.
+
+ifeq ($(words $(AVR_PROGS)),1)
+program: $(AVR_PROGS:%=%.program)
+else
+program:
+	@echo Several programs, choose which one to program with "make name.program".
+endif
+
+%.program: %.hex
+	$(AVR_PROGRAM)
 
 # Cleaning.
 
