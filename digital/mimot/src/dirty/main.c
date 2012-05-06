@@ -191,7 +191,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
     blocking_detection_t *bd = 0;
     output_t *output = 0;
     seq_t *seq = 0;
-    if (args[0] < AC_ASSERV_AUX_NB)
+    if (size && args[0] < AC_ASSERV_AUX_NB)
       {
 	auxp = &aux[args[0]];
 	pos = &cs_aux[args[0]].pos;
