@@ -60,6 +60,15 @@ FSM_STATES (
 	    /* Going back after totem has been emptied. */
 	    TOP_TOTEM_GOING_BACK,
 
+	    /* Going to push a bottle. */
+	    TOP_BOTTLE_GOING,
+	    /* Approaching the button. */
+	    TOP_BOTTLE_APPROACHING,
+	    /* Push the button. */
+	    TOP_BOTTLE_PUSHING,
+	    /* Going back after a bottle has been pushed. */
+	    TOP_BOTTLE_GOING_BACK,
+
 	    /* Going to an unload position. */
 	    TOP_UNLOAD_GOING,
 	    /* Unloading, waiting for elements to fall. */
@@ -88,6 +97,16 @@ top_go_totem (void)
     move_start (pos, 0);
 }
 
+/** Go push a bottle button. */
+static void
+top_go_bottle (void)
+{
+    position_t pos;
+    pos.v = top.decision_pos;
+    pos.a = POSITION_A_DEG (90);
+    move_start (pos, 0);
+}
+
 /** Go unload. */
 static void
 top_go_unload (void)
@@ -109,6 +128,9 @@ top_decision (void)
       case STRAT_DECISION_TOTEM:
 	top_go_totem ();
 	break;
+      case STRAT_DECISION_BOTTLE:
+	top_go_bottle ();
+	break;
       case STRAT_DECISION_UNLOAD:
 	top_go_unload ();
 	break;
@@ -124,6 +146,8 @@ top_decision (void)
       default: assert (0); \
       case STRAT_DECISION_TOTEM: \
 	return FSM_NEXT (state, event, totem); \
+      case STRAT_DECISION_BOTTLE: \
+	return FSM_NEXT (state, event, bottle); \
       case STRAT_DECISION_UNLOAD: \
 	return FSM_NEXT (state, event, unload); \
       } \
@@ -131,6 +155,7 @@ top_decision (void)
 
 FSM_TRANS (TOP_START, init_start_round,
 	   totem, TOP_TOTEM_GOING,
+	   bottle, TOP_BOTTLE_GOING,
 	   unload, TOP_UNLOAD_GOING)
 {
     strat_init ();
@@ -161,9 +186,40 @@ FSM_TRANS (TOP_TOTEM_PUSHING, robot_move_success, TOP_TOTEM_GOING_BACK)
 
 FSM_TRANS (TOP_TOTEM_GOING_BACK, move_success,
 	   totem, TOP_TOTEM_GOING,
+	   bottle, TOP_BOTTLE_GOING,
 	   unload, TOP_UNLOAD_GOING)
 {
     RETURN_TOP_DECISION_SWITCH (TOP_TOTEM_GOING_BACK, move_success);
+}
+
+/** BOTTLE */
+
+FSM_TRANS (TOP_BOTTLE_GOING, move_success, TOP_BOTTLE_APPROACHING)
+{
+    asserv_move_linearly (-(BOT_SIZE_RADIUS + 70 - BOT_SIZE_BACK - 22 - 30));
+    return FSM_NEXT (TOP_BOTTLE_GOING, move_success);
+}
+
+FSM_TRANS (TOP_BOTTLE_APPROACHING, robot_move_success, TOP_BOTTLE_PUSHING)
+{
+    asserv_push_the_wall (ASSERV_BACKWARD, -1, -1, -1);
+    return FSM_NEXT (TOP_BOTTLE_APPROACHING, robot_move_success);
+}
+
+FSM_TRANS (TOP_BOTTLE_PUSHING, robot_move_success, TOP_BOTTLE_GOING_BACK)
+{
+    asserv_stop_motor ();
+    strat_success ();
+    move_start_noangle (top.decision_pos, 0, 0);
+    return FSM_NEXT (TOP_BOTTLE_PUSHING, robot_move_success);
+}
+
+FSM_TRANS (TOP_BOTTLE_GOING_BACK, move_success,
+	   totem, TOP_TOTEM_GOING,
+	   bottle, TOP_BOTTLE_GOING,
+	   unload, TOP_UNLOAD_GOING)
+{
+    RETURN_TOP_DECISION_SWITCH (TOP_BOTTLE_GOING_BACK, move_success);
 }
 
 /** UNLOAD */
@@ -177,6 +233,7 @@ FSM_TRANS (TOP_UNLOAD_GOING, move_success, TOP_UNLOADING)
 
 FSM_TRANS_TIMEOUT (TOP_UNLOADING, 250,
 		   totem, TOP_TOTEM_GOING,
+		   bottle, TOP_BOTTLE_GOING,
 		   unload, TOP_UNLOAD_GOING)
 {
     strat_success ();

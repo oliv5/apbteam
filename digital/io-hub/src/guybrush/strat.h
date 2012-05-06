@@ -30,6 +30,8 @@ enum
 {
     /** Go collect items on a totem side. */
     STRAT_DECISION_TOTEM,
+    /** Go push a bottle button. */
+    STRAT_DECISION_BOTTLE,
     /** Go unload everything in our boat. */
     STRAT_DECISION_UNLOAD,
 };

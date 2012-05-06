@@ -40,6 +40,11 @@ enum
     STRAT_PLACE_TOTEM1,
     STRAT_PLACE_TOTEM2,
     STRAT_PLACE_TOTEM3,
+    /** Message in a bottle. */
+    STRAT_PLACE_BOTTLE0,
+    STRAT_PLACE_BOTTLE1,
+    STRAT_PLACE_BOTTLE2,
+    STRAT_PLACE_BOTTLE3,
     /** Number of places, should be last. */
     STRAT_PLACE_NB
 };
@@ -63,6 +68,10 @@ static const struct strat_place_t strat_place[STRAT_PLACE_NB] = {
 	  PG_LENGTH / 2 - PATH_TOTEM_CLEAR_MM }, 100, STRAT_DECISION_TOTEM },
       { { PG_WIDTH / 2 + PG_TOTEM_X_OFFSET_MM,
 	  PG_LENGTH / 2 - PATH_TOTEM_CLEAR_MM }, 100, STRAT_DECISION_TOTEM },
+      { { PG_BOTTLE0_X, BOT_SIZE_RADIUS + 70 }, 100, STRAT_DECISION_BOTTLE },
+      { { PG_BOTTLE1_X, BOT_SIZE_RADIUS + 70 }, 100, STRAT_DECISION_BOTTLE },
+      { { PG_BOTTLE2_X, BOT_SIZE_RADIUS + 70 }, 100, STRAT_DECISION_BOTTLE },
+      { { PG_BOTTLE3_X, BOT_SIZE_RADIUS + 70 }, 100, STRAT_DECISION_BOTTLE },
 };
 
 /** Place dynamic information. */
@@ -93,6 +102,16 @@ strat_init (void)
     strat.last_decision = -1;
     for (i = 0; i < STRAT_PLACE_NB; i++)
 	strat.place[i].valid = 1;
+    if (team_color)
+      {
+	strat.place[STRAT_PLACE_BOTTLE1].valid = 0;
+	strat.place[STRAT_PLACE_BOTTLE3].valid = 0;
+      }
+    else
+      {
+	strat.place[STRAT_PLACE_BOTTLE0].valid = 0;
+	strat.place[STRAT_PLACE_BOTTLE2].valid = 0;
+      }
 }
 
 uint8_t
@@ -126,8 +145,10 @@ strat_success (void)
     switch (strat.last_decision)
       {
       case STRAT_DECISION_TOTEM:
-	strat.place[strat.last_place].valid = 0;
 	strat.load++;
+	/* no break; */
+      case STRAT_DECISION_BOTTLE:
+	strat.place[strat.last_place].valid = 0;
 	break;
       case STRAT_DECISION_UNLOAD:
 	strat.load = 0;
