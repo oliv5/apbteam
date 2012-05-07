@@ -333,6 +333,42 @@ path_decay (void)
       }
 }
 
+/** Remove useless nodes (colinear nodes). */
+static void
+path_optimize (void)
+{
+    uint8_t cur = path.get, next, next2;
+    vect_t curp, nextp, next2p;
+    path_pos (cur, &curp);
+    next = path.astar_nodes[cur].prev;
+    if (next == 0xff || next == PATH_DST_NODE_INDEX)
+	return;
+    path_pos (next, &nextp);
+    /* Look at three points, if they are aligned, remove the center point. */
+    while (1)
+      {
+	/* Nodes: cur ---> next ---> next2.  Do not be fooled by the "prev"
+	 * name, astar is feed backward. */
+	next2 = path.astar_nodes[next].prev;
+	if (next2 == 0xff || next2 == PATH_DST_NODE_INDEX)
+	    break;
+	path_pos (next2, &next2p);
+	vect_t vnp = nextp; vect_sub (&vnp, &curp);
+	vect_t vn2p = next2p; vect_sub (&vn2p, &curp);
+	if (vect_normal_dot_product (&vnp, &vn2p) == 0)
+	  {
+	    path.astar_nodes[cur].prev = path.astar_nodes[next].prev;
+	  }
+	else
+	  {
+	    cur = next;
+	    curp = nextp;
+	  }
+	next = next2;
+	nextp = next2p;
+      }
+}
+
 void
 path_update (void)
 {
@@ -340,6 +376,8 @@ path_update (void)
     path.found = astar (path.astar_nodes, PATH_NODES_NB, PATH_DST_NODE_INDEX,
 			PATH_SRC_NODE_INDEX);
     path.get = PATH_SRC_NODE_INDEX;
+    if (path.found)
+	path_optimize ();
 #if AC_PATH_REPORT
     if (path.found)
       {
@@ -359,31 +397,10 @@ path_get_next (vect_t *p)
 {
     if (path.found)
       {
-	assert (path.get != PATH_DST_NODE_INDEX);
-	uint8_t prev = path.get;
-	vect_t pp;
-	path_pos (prev, &pp);
+	assert (path.get != PATH_DST_NODE_INDEX && path.get < PATH_NODES_NB);
 	uint8_t next = path.astar_nodes[path.get].prev;
 	path.get = next;
 	path_pos (next, p);
-	while (next != 0xff)
-	  {
-	    /* Try to remove useless points. */
-	    uint8_t next = path.astar_nodes[path.get].prev;
-	    if (next == 0xff || next == PATH_DST_NODE_INDEX)
-		break;
-	    vect_t np;
-	    path_pos (next, &np);
-	    vect_t vnp = np; vect_sub (&vnp, &pp);
-	    vect_t vp = *p; vect_sub (&vp, &pp);
-	    if (vect_normal_dot_product (&vp, &vnp) == 0)
-	      {
-		path.get = next;
-		*p = np;
-	      }
-	    else
-		break;
-	  }
 	return 1;
       }
     else
