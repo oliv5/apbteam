@@ -80,12 +80,14 @@ FSM_STATES (
     FOLD_UPPER_SET,
     OPEN_UPPER_CLAMPS,
     REARRANGE_CD_CLAMP,
-    BOTOM_CLAMP_BACK
+    BOTTOM_CLAMP_BACK
     )
 
 FSM_EVENTS (
     /* coin detected in the clamp */
     coin_detected,
+    /*signal sent to the top fsm when taking a coin*/
+    taking_coin,
     /* Lower clamp rotation motor success. */
     lower_clamp_rotation_success,
     /* Lower clamp rotation motor failure. */
@@ -216,6 +218,7 @@ FSM_TRANS (CLAMP_INIT_READY,init_start_round, CLAMP_GOING_IDLE)
 FSM_TRANS (CLAMP_GOING_IDLE, lower_clamp_rotation_success, CLAMP_IDLE)
 {
     /*Going back to the idle position, ready for showtime.*/
+    fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
     return FSM_NEXT (CLAMP_GOING_IDLE, lower_clamp_rotation_success);
 }
 
@@ -242,6 +245,7 @@ FSM_TRANS (CLAMP_IDLE, coin_detected, CLAMP_TAKE_COIN)
     {
         IO_SET(OUTPUT_LOWER_CLAMP_2_CLOSE);
     }
+    fsm_queue_post_event (FSM_EVENT (AI, taking_coin));
     return FSM_NEXT (CLAMP_IDLE, coin_detected);
 }
 
@@ -277,7 +281,7 @@ FSM_TRANS_TIMEOUT (CLAMP_TURN_HALF_WAY, TIMEOUT_DROP_CD, CLAMP_DROP_CD)
 
 FSM_TRANS (CLAMP_DROP_CD,lower_clamp_rotation_success,CLAMP_IDLE)
 {
-    /*Nothing to do, just waiting to be in IDLE state again*/
+    fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
     return FSM_NEXT (CLAMP_DROP_CD,lower_clamp_rotation_success);
 }
 
@@ -430,4 +434,10 @@ FSM_TRANS_TIMEOUT (OPEN_UPPER_CLAMPS, TIMEOUT_OPEN_CLAMPS, CLAMP_TURN_HALF_WAY)
     fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
     return FSM_NEXT_TIMEOUT (OPEN_UPPER_CLAMPS);
 }
+/*---------------------------------------------------------------------------------*/
+/*Parts of the FSM that goes back to idle after receiving the stop approach signal */
+/*---------------------------------------------------------------------------------*/
+
+
+
 
