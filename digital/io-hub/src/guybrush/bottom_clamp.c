@@ -106,7 +106,7 @@ FSM_EVENTS (
      )
 
 
-FSM_START_WITH (CLAMP_IDLE)
+FSM_START_WITH (CLAMP_START)
 
 /*-------------------------------------
          TIMEOUT DEFINITION
@@ -238,7 +238,7 @@ FSM_TRANS (CLAMP_IDLE, coin_detected, CLAMP_TAKE_COIN)
         IO_SET (OUTPUT_LOWER_CLAMP_1_CLOSE);
     }
     /*If the clamp 2 is ready*/
-    else                       
+    else             
     {
         IO_SET(OUTPUT_LOWER_CLAMP_2_CLOSE);
     }
@@ -361,7 +361,7 @@ FSM_TRANS (READY_TO_EMPTY_TREE, empty_tree, CLOSE_ALL_CLAMPS)
 {
     /*Closgin bottom clamp. */
     IO_SET (OUTPUT_LOWER_CLAMP_1_CLOSE);
-    /*We need to close both clamp to have an easier turn around. */  
+    /*We need to close both clamp to have an easier turn around. */
     IO_SET (OUTPUT_LOWER_CLAMP_2_CLOSE);
 
 
