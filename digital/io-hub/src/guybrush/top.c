@@ -30,6 +30,7 @@
 
 #define FSM_NAME AI
 #include "fsm.h"
+#include "fsm_queue.h"
 
 #include "move.h"
 #include "chrono.h"
@@ -53,12 +54,18 @@ FSM_STATES (
 
 	    /* Going to a collect position above or below a totem. */
 	    TOP_TOTEM_GOING,
+	    /* Put clamps down. */
+	    TOP_TOTEM_CLAMP_DOWNING,
 	    /* Approaching a totem. */
 	    TOP_TOTEM_APPROACHING,
+	    /* Emptying tree. */
+	    TOP_TOTEM_EMPTYING,
 	    /* Pushing until full contact. */
 	    TOP_TOTEM_PUSHING,
 	    /* Going back after totem has been emptied. */
 	    TOP_TOTEM_GOING_BACK,
+	    /* Put clamps up. */
+	    TOP_TOTEM_CLAMP_UPPING,
 
 	    /* Going to push a bottle. */
 	    TOP_BOTTLE_GOING,
@@ -164,10 +171,16 @@ FSM_TRANS (TOP_START, init_start_round,
 
 /** TOTEM */
 
-FSM_TRANS (TOP_TOTEM_GOING, move_success, TOP_TOTEM_APPROACHING)
+FSM_TRANS (TOP_TOTEM_GOING, move_success, TOP_TOTEM_CLAMP_DOWNING)
+{
+    fsm_queue_post_event (FSM_EVENT (AI, tree_detected));
+    return FSM_NEXT (TOP_TOTEM_GOING, move_success);
+}
+
+FSM_TRANS (TOP_TOTEM_CLAMP_DOWNING, clamps_ready, TOP_TOTEM_APPROACHING)
 {
     asserv_move_linearly (PATH_GRID_CLEARANCE_MM - BOT_SIZE_FRONT - 30);
-    return FSM_NEXT (TOP_TOTEM_GOING, move_success);
+    return FSM_NEXT (TOP_TOTEM_CLAMP_DOWNING, clamps_ready);
 }
 
 FSM_TRANS (TOP_TOTEM_APPROACHING, robot_move_success, TOP_TOTEM_PUSHING)
@@ -176,20 +189,32 @@ FSM_TRANS (TOP_TOTEM_APPROACHING, robot_move_success, TOP_TOTEM_PUSHING)
     return FSM_NEXT (TOP_TOTEM_APPROACHING, robot_move_success);
 }
 
-FSM_TRANS (TOP_TOTEM_PUSHING, robot_move_success, TOP_TOTEM_GOING_BACK)
+FSM_TRANS (TOP_TOTEM_PUSHING, robot_move_success, TOP_TOTEM_EMPTYING)
 {
     asserv_stop_motor ();
-    strat_success ();
-    move_start_noangle (top.decision_pos, ASSERV_BACKWARD, 0);
+    fsm_queue_post_event (FSM_EVENT (AI, empty_tree));
     return FSM_NEXT (TOP_TOTEM_PUSHING, robot_move_success);
 }
 
-FSM_TRANS (TOP_TOTEM_GOING_BACK, move_success,
+FSM_TRANS (TOP_TOTEM_EMPTYING, clamps_ready, TOP_TOTEM_GOING_BACK)
+{
+    strat_success ();
+    move_start_noangle (top.decision_pos, ASSERV_BACKWARD, 0);
+    return FSM_NEXT (TOP_TOTEM_EMPTYING, clamps_ready);
+}
+
+FSM_TRANS (TOP_TOTEM_GOING_BACK, move_success, TOP_TOTEM_CLAMP_UPPING)
+{
+    fsm_queue_post_event (FSM_EVENT (AI, robot_is_back));
+    return FSM_NEXT (TOP_TOTEM_GOING_BACK, move_success);
+}
+
+FSM_TRANS (TOP_TOTEM_CLAMP_UPPING, clamps_ready,
 	   totem, TOP_TOTEM_GOING,
 	   bottle, TOP_BOTTLE_GOING,
 	   unload, TOP_UNLOAD_GOING)
 {
-    RETURN_TOP_DECISION_SWITCH (TOP_TOTEM_GOING_BACK, move_success);
+    RETURN_TOP_DECISION_SWITCH (TOP_TOTEM_CLAMP_UPPING, clamps_ready);
 }
 
 /** BOTTLE */
