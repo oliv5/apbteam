@@ -161,9 +161,7 @@ struct clamp_t clamp_global;
 FSM_TRANS (CLAMP_START, init_actuators, CLAMP_INIT_OPEN)
 {
     /* Opening the 2 clamps. */
-    ctx.clamp_1_open = 1;
     IO_CLR (OUTPUT_LOWER_CLAMP_1_CLOSE);
-    ctx.clamp_2_open = 1;
     IO_CLR (OUTPUT_LOWER_CLAMP_2_CLOSE);
     /* recentrage the middle clamp. */
     IO_SET (OUTPUT_UPPER_CLAMP_OUT);
@@ -236,13 +234,13 @@ FSM_TRANS (CLAMP_IDLE, coin_detected, CLAMP_TAKE_COIN)
 {
     if (ctx.clamp_1_down)
     {
-        IO_SET (OUTPUT_LOWER_CLAMP_1_CLOSE);       //close it
-        ctx.clamp_1_open = 0;
+        /*Close it.*/
+        IO_SET (OUTPUT_LOWER_CLAMP_1_CLOSE);
     }
-    else                                 // if the clamp 2 is ready
+    /*If the clamp 2 is ready*/
+    else                       
     {
         IO_SET(OUTPUT_LOWER_CLAMP_2_CLOSE);
-        ctx.clamp_2_open = 0;
     }
     return FSM_NEXT (CLAMP_IDLE, coin_detected);
 }
@@ -259,20 +257,18 @@ FSM_TRANS_TIMEOUT (CLAMP_TAKE_COIN, TIMEOUT_CLOSE_CLAMPS, CLAMP_TURN_HALF_WAY)
 
 FSM_TRANS_TIMEOUT (CLAMP_TURN_HALF_WAY, TIMEOUT_DROP_CD, CLAMP_DROP_CD)
 {
-    /*If the clamp 1 is closed.*/
-    if (!ctx.clamp_1_open)           
+    /*If the clamp 1 has the CD.*/
+    if (ctx.clamp_1_down)
     {     
-        /*Open it.*/        
-        IO_CLR (OUTPUT_LOWER_CLAMP_1_CLOSE);    
-        ctx.clamp_1_open = 1;
+        /*Open it.*/
+        IO_CLR (OUTPUT_LOWER_CLAMP_1_CLOSE);
         /*Clamp 1 is now up (clamp 2 is down).*/
-        ctx.clamp_1_down = 0;       
+        ctx.clamp_1_down = 0;
     }
     /*If the clamp 2 is closed. */
     else       
     {
         IO_CLR (OUTPUT_LOWER_CLAMP_2_CLOSE);
-        ctx.clamp_2_open = 1;
         /*Clamp 1 is now down (clamp 2 is up). */
         ctx.clamp_1_down = 1;            
     }
@@ -325,7 +321,7 @@ FSM_TRANS (BOTTOM_CLAMP_HIDE_POS, lower_clamp_rotation_success, UNFOLD_UPPER_SET
 
 FSM_TRANS (BOTTOM_CLAMP_HIDE_POS, lower_clamp_rotation_failure, CLAMP_BLOCKED)
 {
-    /*The clamp is blocked somehow*/
+    /*The clamp is blocked somehow.*/
     clamp_blocked();
     return FSM_NEXT (BOTTOM_CLAMP_HIDE_POS, lower_clamp_rotation_failure);
 }
@@ -333,13 +329,13 @@ FSM_TRANS (BOTTOM_CLAMP_HIDE_POS, lower_clamp_rotation_failure, CLAMP_BLOCKED)
 
 FSM_TRANS (UNFOLD_UPPER_SET, upper_set_down, BOTTOM_CLAMP_READY)
 {
-    /*putting the bottom clamp back to ready*/
+    /*Putting the bottom clamp back to ready.*/
     int move_needed;
     move_needed = BACK_TO_READY_TREE * 250;    
     ctx.pos_current += move_needed;
     mimot_move_motor0_absolute (ctx.pos_current, SPEED_ROTATION);
 
-    /*opening the top clamp*/
+    /*Opening the top clamp.*/
      IO_SET (OUTPUT_UPPER_CLAMP_OPEN);
 
     return FSM_NEXT (UNFOLD_UPPER_SET, upper_set_down);
@@ -356,26 +352,23 @@ FSM_TRANS (BOTTOM_CLAMP_READY, lower_clamp_rotation_success, READY_TO_EMPTY_TREE
 
 FSM_TRANS (BOTTOM_CLAMP_READY, lower_clamp_rotation_failure, CLAMP_BLOCKED)
 {
-    /*The clamp is blocked somehow*/
+    /*The clamp is blocked somehow.*/
     clamp_blocked();
     return FSM_NEXT (BOTTOM_CLAMP_HIDE_POS, lower_clamp_rotation_failure);
 }
 
 FSM_TRANS (READY_TO_EMPTY_TREE, empty_tree, CLOSE_ALL_CLAMPS)
 {
-    /*Closgin bottom clamp*/
+    /*Closgin bottom clamp. */
     IO_SET (OUTPUT_LOWER_CLAMP_1_CLOSE);
-    ctx.clamp_1_open=0;
-    //
-    /*(We need to close both clamp to have an easier turn around) */  
+    /*We need to close both clamp to have an easier turn around. */  
     IO_SET (OUTPUT_LOWER_CLAMP_2_CLOSE);
-    ctx.clamp_2_open=0;
 
 
-    /*closing upper & middle clamps*/
+    /*Closing upper & middle clamps.*/
     IO_CLR (OUTPUT_UPPER_CLAMP_OPEN);
 
-
+    fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
     return FSM_NEXT (READY_TO_EMPTY_TREE, empty_tree);
 
 }
@@ -394,7 +387,7 @@ FSM_TRANS(CLOSE_ALL_CLAMPS, robot_is_back,REARRANGE_CD)
 
 FSM_TRANS_TIMEOUT (REARRANGE_CD, TIMEOUT_RECENTRAGE, BOTTOM_CLAMP_HIDE_POS2)
 {
-    /*Hidding the clamp inside the robot*/
+    /*Hidding the clamp inside the robot.*/
     int move_needed;
     move_needed = HIDE_POS_TREE_2 * 250;
     ctx.pos_current += move_needed;
@@ -427,14 +420,14 @@ FSM_TRANS (FOLD_UPPER_SET, upper_set_up, OPEN_UPPER_CLAMPS)
 FSM_TRANS_TIMEOUT (OPEN_UPPER_CLAMPS, TIMEOUT_OPEN_CLAMPS, CLAMP_TURN_HALF_WAY)
 {
     IO_SET (OUTPUT_UPPER_CLAMP_OPEN);
-    /*we reopen clamp 2*/
+    /*We reopen clamp 2.*/
     IO_CLR (OUTPUT_LOWER_CLAMP_2_CLOSE);
     ctx.clamp_2_open = 1;
     int move_needed;
     move_needed = (HALF_TURN-HIDE_POS_TREE_2) * 250;
     ctx.pos_current += move_needed;
     mimot_move_motor0_absolute (ctx.pos_current, SPEED_ROTATION);
+    fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
     return FSM_NEXT_TIMEOUT (OPEN_UPPER_CLAMPS);
-    
 }
 
