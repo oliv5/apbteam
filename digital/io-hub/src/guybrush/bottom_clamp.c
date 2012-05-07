@@ -72,6 +72,7 @@ FSM_STATES (
     BOTTOM_CLAMP_HIDE_POS,
     UNFOLD_UPPER_SET,
     BOTTOM_CLAMP_READY,
+    FINISH_BOTTOM_CLAMP_READY,
     READY_TO_EMPTY_TREE,
     CLOSE_ALL_CLAMPS,
     REARRANGE_CD,
@@ -127,7 +128,8 @@ FSM_START_WITH (CLAMP_START)
 #define HALF_TURN 8
 #define HIDE_POS_TREE 3
 #define HIDE_POS_TREE_2 1
-#define BACK_TO_READY_TREE 16-HIDE_POS_TREE
+#define BACK_TO_READY_TREE HALF_TURN-HIDE_POS_TREE
+#define BACK_TO_READY_TREE_2 HALF_TURN-HIDE_POS_TREE_2
 #define SPEED_ROTATION 0x20
 /*-------------------------------------
          Clamp context
@@ -138,6 +140,8 @@ struct clamp_t
     int pos_current;
     /* Clamp_1 is low, which means, it is ready to take a coin*/
     uint8_t clamp_1_down;
+    /** True we are stopping the tree approach. */
+    uint8_t stop_tree_approach;
     /** True if clamp 1 is open. */
     uint8_t clamp_1_open;
     /** True if clamp 2 is open. */
@@ -428,7 +432,15 @@ FSM_TRANS_TIMEOUT (OPEN_UPPER_CLAMPS, TIMEOUT_OPEN_CLAMPS, CLAMP_TURN_HALF_WAY)
     IO_CLR (OUTPUT_LOWER_CLAMP_2_CLOSE);
     ctx.clamp_2_open = 1;
     int move_needed;
-    move_needed = (HALF_TURN-HIDE_POS_TREE_2) * 250;
+     if (ctx.stop_tree_approach)
+    {
+        move_needed = BACK_TO_READY_TREE * 250;
+    }
+    else
+    {
+        move_needed = (BACK_TO_READY_TREE_2) * 250;
+    }
+    ctx.stop_tree_approach = 0;
     ctx.pos_current += move_needed;
     mimot_move_motor0_absolute (ctx.pos_current, SPEED_ROTATION);
     fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
@@ -437,6 +449,55 @@ FSM_TRANS_TIMEOUT (OPEN_UPPER_CLAMPS, TIMEOUT_OPEN_CLAMPS, CLAMP_TURN_HALF_WAY)
 /*---------------------------------------------------------------------------------*/
 /*Parts of the FSM that goes back to idle after receiving the stop approach signal */
 /*---------------------------------------------------------------------------------*/
+FSM_TRANS (BOTTOM_CLAMP_HIDE_POS,stop_tree_approach,BOTTOM_CLAMP_BACK)
+{
+    /*Putting the clamp back to take coin*/
+    int move_needed;
+    move_needed=BACK_TO_READY_TREE * 250;          
+    ctx.pos_current+=move_needed;
+    mimot_move_motor0_absolute(ctx.pos_current,SPEED_ROTATION);
+    return FSM_NEXT(BOTTOM_CLAMP_HIDE_POS,stop_tree_approach);
+    
+}
+
+FSM_TRANS (BOTTOM_CLAMP_BACK,lower_clamp_rotation_success,CLAMP_IDLE)
+{
+    fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
+    return FSM_NEXT(BOTTOM_CLAMP_BACK,lower_clamp_rotation_success);
+    
+}
+
+FSM_TRANS (BOTTOM_CLAMP_BACK,lower_clamp_rotation_failure,CLAMP_BLOCKED)
+{
+    clamp_blocked();
+    return FSM_NEXT(BOTTOM_CLAMP_BACK,lower_clamp_rotation_failure);
+    
+}
+
+FSM_TRANS (UNFOLD_UPPER_SET, stop_tree_approach,RELEASE_ASSERV)
+{
+    ctx.stop_tree_approach = 1;
+    return FSM_NEXT (UNFOLD_UPPER_SET, stop_tree_approach);
+
+}
+
+FSM_TRANS (BOTTOM_CLAMP_READY, stop_tree_approach,FINISH_BOTTOM_CLAMP_READY)
+{
+    return FSM_NEXT (BOTTOM_CLAMP_READY, stop_tree_approach);
+
+}
+FSM_TRANS (FINISH_BOTTOM_CLAMP_READY, lower_clamp_rotation_success,REARRANGE_CD)
+{
+    return FSM_NEXT (FINISH_BOTTOM_CLAMP_READY, lower_clamp_rotation_success);
+
+}
+
+FSM_TRANS (READY_TO_EMPTY_TREE, stop_tree_approach, REARRANGE_CD)
+{
+    return FSM_NEXT (READY_TO_EMPTY_TREE, stop_tree_approach);
+}
+
+
 
 
 
