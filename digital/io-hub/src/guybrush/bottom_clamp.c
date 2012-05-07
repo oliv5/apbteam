@@ -142,10 +142,6 @@ struct clamp_t
     uint8_t clamp_1_down;
     /** True we are stopping the tree approach. */
     uint8_t stop_tree_approach;
-    /** True if clamp 1 is open. */
-    uint8_t clamp_1_open;
-    /** True if clamp 2 is open. */
-    uint8_t clamp_2_open;
 };
 
 
@@ -430,7 +426,6 @@ FSM_TRANS_TIMEOUT (OPEN_UPPER_CLAMPS, TIMEOUT_OPEN_CLAMPS, CLAMP_TURN_HALF_WAY)
     IO_SET (OUTPUT_UPPER_CLAMP_OPEN);
     /*We reopen clamp 2.*/
     IO_CLR (OUTPUT_LOWER_CLAMP_2_CLOSE);
-    ctx.clamp_2_open = 1;
     int move_needed;
      if (ctx.stop_tree_approach)
     {
