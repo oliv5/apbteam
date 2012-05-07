@@ -122,6 +122,10 @@ isp_proto_accept (uint8_t *data, uint16_t len)
 	  case ISP_PROTO_PARAM_SCK_DURATION:
 	    isp_proto_sck_duration = data[2];
 	    break;
+	  case ISP_PROTO_PARAM_RESET_POLARITY:
+	    if (data[2] != 1)
+		status = ISP_PROTO_STATUS_CMD_FAILED;
+	    break;
 	  default:
 	    status = ISP_PROTO_STATUS_CMD_FAILED;
 	    break;
@@ -135,6 +139,9 @@ isp_proto_accept (uint8_t *data, uint16_t len)
 	  {
 	  case ISP_PROTO_PARAM_SCK_DURATION:
 	    data[2] = isp_proto_sck_duration;
+	    break;
+	  case ISP_PROTO_PARAM_RESET_POLARITY:
+	    data[2] = 1;
 	    break;
 	  case ISP_PROTO_PARAM_BUILD_NUMBER_LOW:
 	    data[2] = v16_to_v8 (AC_ISP_PROTO_BUILD_NUMBER, 0);
