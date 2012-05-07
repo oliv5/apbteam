@@ -73,10 +73,11 @@ class ClampsSide (Drawable):
             self.draw_polygon ((6, -45), (28, 45), (-6, 45), (-28, -45),
                     outline = BLACK, fill = GREY)
             for i in (0, 1):
+                color=['RED','BLACK']
                 c = self.model.lower_clamp_clamping[i]
                 if c is not None:
                     self.draw_line ((7, -45), (7, -46 - c * 33),
-                            (-28, -46 - c * 33))
+                            (-28, -46 - c * 33), fill=color[i])
                     if self.model.lower_clamp_content[i]:
                         e, y = self.model.lower_clamp_content[i][0]
                         self.draw_rectangle ((7, -45 - c * 15),
