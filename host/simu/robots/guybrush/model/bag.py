@@ -59,7 +59,7 @@ class Bag:
                     None, scheduler, 0., 30., 150., 75., 30.),
                 PneumaticCylinder (output[self.OUTPUT_LOWER_CLAMP_2_CLOSE],
                     None, scheduler, 0., 30., 150., 75., 30.)),
-                contact[0:4],
+                contact[0:4], contact[10],
                 PneumaticCylinder (output[self.OUTPUT_UPPER_CLAMP_DOWN],
                     output[self.OUTPUT_UPPER_CLAMP_UP], scheduler,
                     0., 1., 1., 1., 1., contact[4], contact[5]),

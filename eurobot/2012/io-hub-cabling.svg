@@ -1009,6 +1009,16 @@
            id="tspan3024"
            x="650"
            y="802.36218">lower clamp sensor 2</tspan></text>
+      <text
+         id="text3043"
+         y="862.36218"
+         x="649.5722"
+         style="font-size:11px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:FreeSans;-inkscape-font-specification:FreeSans"
+         xml:space="preserve"><tspan
+           y="862.36218"
+           x="649.5722"
+           id="tspan3045"
+           sodipodi:role="line">lower clamp zero</tspan></text>
     </g>
     <path
        sodipodi:nodetypes="ccccc"

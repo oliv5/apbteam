@@ -31,7 +31,7 @@ import random
 class Clamps (Observable):
 
     def __init__ (self, table, robot_position, lower_clamp_motor,
-            lower_clamp_cylinders, lower_clamp_sensors,
+            lower_clamp_cylinders, lower_clamp_sensors, lower_clamp_zero,
             upper_clamp_up_down_cylinder, upper_clamp_in_out_cylinder,
             upper_clamp_open_cylinder, door_cylinder):
         Observable.__init__ (self)
@@ -40,6 +40,7 @@ class Clamps (Observable):
         self.lower_clamp_motor = lower_clamp_motor
         self.lower_clamp_cylinders = lower_clamp_cylinders
         self.lower_clamp_sensors = lower_clamp_sensors
+        self.lower_clamp_zero = lower_clamp_zero
         self.lower_clamp_clamping = [ None, None ]
         self.lower_clamp_content = [ [ ], [ ] ]
         self.upper_clamp_up_down_cylinder = upper_clamp_up_down_cylinder
@@ -132,6 +133,12 @@ class Clamps (Observable):
             for s in self.lower_clamp_sensors:
                 s.state = new_state
                 s.notify ()
+        old_state = self.lower_clamp_zero.state
+        new_state = (rot_mod >= pi * 1.45 and rot_mod < pi * 1.55
+                and self.lower_clamp_clamping[0])
+        if new_state != old_state:
+            self.lower_clamp_zero.state = new_state
+            self.lower_clamp_zero.notify ()
         return changed
 
     def __compute_upper_clamp (self):
