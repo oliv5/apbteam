@@ -197,7 +197,7 @@ class Clamps (Observable):
                         and pos[0] < xoffset + 35 + xmargin
                         and pos[1] > -ymargin2 and pos[1] < ymargin2):
                     yield (o, 0)
-            if o.level == 3 and o.pos is not None:
+            if o.level == 3 and hasattr (o, 'value') and o.pos is not None:
                 pos = m.apply (o.pos)
                 if (pos[0] > xoffset + o.radius - xmargin
                         and pos[0] < xoffset + o.radius + xmargin
