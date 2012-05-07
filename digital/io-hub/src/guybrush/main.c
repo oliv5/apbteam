@@ -158,11 +158,24 @@ main_event_to_fsm (void)
 	FSM_HANDLE_E (AI, robot_move_success);
     else if (robot_move_status == failure)
 	FSM_HANDLE_E (AI, robot_move_failure);
+    if (mimot_motor0_status == success)
+	FSM_HANDLE_E (AI, lower_clamp_rotation_success);
+    else if (mimot_motor0_status == failure)
+	FSM_HANDLE_E (AI, lower_clamp_rotation_failure);
+    if (!IO_GET (CONTACT_LOWER_CLAMP_SENSOR_1)
+	|| !IO_GET (CONTACT_LOWER_CLAMP_SENSOR_2)
+	|| !IO_GET (CONTACT_LOWER_CLAMP_SENSOR_3)
+	|| !IO_GET (CONTACT_LOWER_CLAMP_SENSOR_4))
+	FSM_HANDLE_E (AI, coin_detected);
     /* Jack. */
     if (!contact_get_jack ())
 	FSM_HANDLE_E (AI, jack_inserted);
     else
 	FSM_HANDLE_E (AI, jack_removed);
+    if (!IO_GET(CONTACT_UPPER_CLAMP_DOWN))
+	FSM_HANDLE_E (AI,upper_set_down);
+    if (!IO_GET(CONTACT_UPPER_CLAMP_UP))
+	FSM_HANDLE_E (AI,upper_set_up);
     /* Events from the event queue. */
     if (fsm_queue_poll ())
       {
@@ -269,6 +282,26 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	/* Enter FSM debug mode, then step once. */
 	main_fsm_debug_mode = MAIN_FSM_DEBUG_STEP;
 	break;
+      case c ('t',0):
+	/* Simulate tree detection. */
+	fsm_queue_post_event (FSM_EVENT (AI, tree_detected));
+	break;
+      case c ('s',0):
+	/* Simulate stop tree approach. */
+	fsm_queue_post_event (FSM_EVENT (AI, stop_tree_approach));
+	break;
+      case c ('e',0):
+	/* Simulate the empty tree command. */
+	fsm_queue_post_event (FSM_EVENT (AI, empty_tree));
+	break;
+      case c ('r',0):
+	/* Simulate the robot_is_back command. */
+	fsm_queue_post_event (FSM_EVENT (AI, robot_is_back));
+	break;
+      case c ('c',0):
+	/* Simulate the coin detected command. */
+	fsm_queue_post_event (FSM_EVENT (AI, coin_detected));
+	break;
       case c ('m', 5):
 	/* Go to position.
 	 * - 2w: x, y.
@@ -282,9 +315,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	break;
       case c ('w', 0):
 	/* Disable all motor control. */
-	mimot_motor0_free ();
-	mimot_motor1_free ();
-	asserv_free_motor ();
+	mimot_reset();
 	break;
       case c ('o', 5):
 	/* Set/clear/toggle outputs.

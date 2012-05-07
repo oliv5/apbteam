@@ -92,4 +92,11 @@ class ProtoRobospierre (Proto):
 
 class ProtoGuybrush (Proto):
 
-    pass
+    def tree_detected(self):
+        self.proto.send('t')
+    def stop_tree_approach(self):
+        self.proto.send('s')
+    def empty_tree(self):
+        self.proto.send('e')
+    def robot_is_back(self):
+        self.proto.send('r')

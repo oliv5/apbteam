@@ -77,6 +77,22 @@ class TestSimuControl (TestSimu):
         out_button ('Door open',
                 1 << defs.OUTPUT_DOOR_OPEN
                 | 1 << defs.OUTPUT_DOOR_CLOSE)
+        self.tree_detected_button = Button (self.control_frame,
+                text = 'Tree Detected', padx = 0, pady = 0,
+                command = self.tree_detected)
+        self.tree_detected_button.pack()
+        self.stop_tree_approach_button = Button (self.control_frame,
+                text = 'Stop tree approach', padx = 0, pady = 0,
+                command = self.stop_tree_approach)
+        self.stop_tree_approach_button.pack()
+        self.empty_tree_button = Button (self.control_frame,
+                text = 'Empty Tree', padx = 0, pady = 0,
+                command = self.empty_tree)
+        self.empty_tree_button.pack()
+        self.robot_is_back_button = Button (self.control_frame,
+                text = 'Robot is back', padx = 0, pady = 0,
+                command = self.robot_is_back)
+        self.robot_is_back_button.pack()
         self.backward_var = IntVar ()
         self.backward_button = Checkbutton (self.control_frame,
                 text = 'Backward', variable = self.backward_var)
@@ -106,7 +122,19 @@ class TestSimuControl (TestSimu):
             self.asserv.goto_angle (a)
 
     def lower_clamp_rotate_command (self):
-        self.mimot.speed_pos ('a0', self.LOWER_CLAMP_ROTATION_STROKE / 2)
+        self.mimot.speed_pos ('a0', self.LOWER_CLAMP_ROTATION_STROKE / 2)     
+
+    def tree_detected(self):
+        self.io.tree_detected()
+
+    def stop_tree_approach(self):
+        self.io.stop_tree_approach()
+
+    def empty_tree(self):
+        self.io.empty_tree()
+
+    def robot_is_back(self):
+        self.io.robot_is_back()
 
 if __name__ == '__main__':
     run ('guybrush', TestSimuControl)
