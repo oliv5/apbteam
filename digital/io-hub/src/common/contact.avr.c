@@ -45,9 +45,9 @@ void
 contact_init (void)
 {
     /* Pull-up. */
-#define CONTACT(io) IO_SET_ (io);
-    CONTACT (CONTACT_COLOR);
-    CONTACT (CONTACT_JACK);
+#define CONTACT(io, pullup) if (pullup) IO_SET_ (io);
+    CONTACT (CONTACT_COLOR, 1);
+    CONTACT (CONTACT_JACK, 1);
     CONTACT_LIST
 #undef CONTACT
     /* Default to jack out. */
@@ -86,12 +86,12 @@ uint32_t
 contact_all (void)
 {
     uint32_t contacts = 0, bit = 1;
-#define CONTACT(io) do { \
+#define CONTACT(io, pullup) do { \
     contacts |= (IO_GET_ (io) ? bit : 0); \
     bit <<= 1; \
 } while (0);
-    CONTACT (CONTACT_COLOR);
-    CONTACT (CONTACT_JACK);
+    CONTACT (CONTACT_COLOR, 1);
+    CONTACT (CONTACT_JACK, 1);
     CONTACT_LIST
 #undef CONTACT
     return contacts;

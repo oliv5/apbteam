@@ -52,7 +52,7 @@ contact_handle (void *user, mex_msg_t *msg)
     ctx.color_state = (contacts & 1) ? TEAM_COLOR_LEFT : TEAM_COLOR_RIGHT;
     ctx.jack_state = (contacts & 2) ? 1 : 0;
     contacts >>= 2;
-#define CONTACT(io) do { \
+#define CONTACT(io, pullup) do { \
     if (contacts & 1) \
 	IO_PIN_ (io) |= IO_BV_ (io); \
     else \
