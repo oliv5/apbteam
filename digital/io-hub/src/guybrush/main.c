@@ -97,6 +97,15 @@ static uint8_t main_stats_usdist_, main_stats_usdist_cpt_;
 /** Pressure stats counters. */
 static uint8_t main_stats_pressure_, main_stats_pressure_cpt_;
 
+/** Clamp zero stats. */
+static uint8_t main_stats_clamp_zero_;
+
+/** Clamp zero stats: last sensor value. */
+static uint8_t main_stats_clamp_zero_last_io_;
+
+/** Clamp zero stats: last position. */
+static uint16_t main_stats_clamp_zero_last_position_;
+
 /** Main initialisation. */
 static void
 main_init (void)
@@ -260,6 +269,19 @@ main_loop (void)
 	    proto_send1w ('F', pressure_get ());
 	    main_stats_pressure_cpt_ = main_stats_pressure_;
 	  }
+	if (main_stats_clamp_zero_
+	    && IO_GET (CONTACT_LOWER_CLAMP_ZERO)
+	    != main_stats_clamp_zero_last_io_)
+	  {
+	    main_stats_clamp_zero_last_io_ = IO_GET (CONTACT_LOWER_CLAMP_ZERO);
+	    if (main_stats_clamp_zero_last_io_)
+	      {
+		uint16_t new_pos = mimot_get_motor0_position ();
+		proto_send1w ('Z', new_pos
+			      - main_stats_clamp_zero_last_position_);
+		main_stats_clamp_zero_last_position_ = new_pos;
+	      }
+	  }
       }
 }
 
@@ -358,6 +380,10 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
       case c ('F', 1):
 	/* Pressure stats. */
 	main_stats_pressure_ = main_stats_pressure_cpt_ = args[0];
+	break;
+      case c ('Z', 1):
+	/* Clamp zero stat. */
+	main_stats_clamp_zero_ = args[0];
 	break;
       default:
 	/* Unknown commands */
