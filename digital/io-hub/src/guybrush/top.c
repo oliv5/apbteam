@@ -53,6 +53,8 @@ FSM_STATES (
 
 	    /* Going to a collect position above or below a totem. */
 	    TOP_TOTEM_GOING,
+	    /* Waiting clamp FSM to put clamps down. */
+	    TOP_TOTEM_CLAMP_WAITING,
 	    /* Put clamps down. */
 	    TOP_TOTEM_CLAMP_DOWNING,
 	    /* Approaching a totem. */
@@ -170,10 +172,25 @@ FSM_TRANS (TOP_START, init_start_round,
 
 /** TOTEM */
 
-FSM_TRANS (TOP_TOTEM_GOING, move_success, TOP_TOTEM_CLAMP_DOWNING)
+FSM_TRANS (TOP_TOTEM_GOING, move_success,
+	   wait, TOP_TOTEM_CLAMP_WAITING,
+	   ready, TOP_TOTEM_CLAMP_DOWNING)
+{
+    if (!FSM_CAN_HANDLE (AI, tree_detected))
+      {
+	return FSM_NEXT (TOP_TOTEM_GOING, move_success, wait);
+      }
+    else
+      {
+	FSM_HANDLE (AI, tree_detected);
+	return FSM_NEXT (TOP_TOTEM_GOING, move_success, ready);
+      }
+}
+
+FSM_TRANS (TOP_TOTEM_CLAMP_WAITING, clamps_ready, TOP_TOTEM_CLAMP_DOWNING)
 {
     FSM_HANDLE (AI, tree_detected);
-    return FSM_NEXT (TOP_TOTEM_GOING, move_success);
+    return FSM_NEXT (TOP_TOTEM_CLAMP_WAITING, clamps_ready);
 }
 
 FSM_TRANS (TOP_TOTEM_CLAMP_DOWNING, clamps_ready, TOP_TOTEM_APPROACHING)
