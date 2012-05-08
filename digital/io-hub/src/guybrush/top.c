@@ -30,7 +30,6 @@
 
 #define FSM_NAME AI
 #include "fsm.h"
-#include "fsm_queue.h"
 
 #include "move.h"
 #include "chrono.h"
@@ -173,7 +172,7 @@ FSM_TRANS (TOP_START, init_start_round,
 
 FSM_TRANS (TOP_TOTEM_GOING, move_success, TOP_TOTEM_CLAMP_DOWNING)
 {
-    fsm_queue_post_event (FSM_EVENT (AI, tree_detected));
+    FSM_HANDLE (AI, tree_detected);
     return FSM_NEXT (TOP_TOTEM_GOING, move_success);
 }
 
@@ -192,7 +191,7 @@ FSM_TRANS (TOP_TOTEM_APPROACHING, robot_move_success, TOP_TOTEM_PUSHING)
 FSM_TRANS (TOP_TOTEM_PUSHING, robot_move_success, TOP_TOTEM_EMPTYING)
 {
     asserv_stop_motor ();
-    fsm_queue_post_event (FSM_EVENT (AI, empty_tree));
+    FSM_HANDLE (AI, empty_tree);
     return FSM_NEXT (TOP_TOTEM_PUSHING, robot_move_success);
 }
 
@@ -205,7 +204,7 @@ FSM_TRANS (TOP_TOTEM_EMPTYING, clamps_ready, TOP_TOTEM_GOING_BACK)
 
 FSM_TRANS (TOP_TOTEM_GOING_BACK, move_success, TOP_TOTEM_CLAMP_UPPING)
 {
-    fsm_queue_post_event (FSM_EVENT (AI, robot_is_back));
+    FSM_HANDLE (AI, robot_is_back);
     return FSM_NEXT (TOP_TOTEM_GOING_BACK, move_success);
 }
 
