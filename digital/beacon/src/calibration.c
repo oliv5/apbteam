@@ -122,7 +122,7 @@ void calibration_task(void)
 				calibration_set_laser_flag(CLEAR);
 				
 				/* Laser detected the aim, reset the servo with the previous value and update the servo status */
-				servo_set_value(servo,servo_get_value(servo)+FAST_SCANNING_OFFSET);
+				servo_set_value(servo,servo_get_value(servo)+servo_get_scanning_sense(servo)*FAST_SCANNING_OFFSET);
 				servo_set_state(servo,SERVO_SCANNING_FAST_FINISHED);
 				
 				if((servo_get_state(SERVO_1) == SERVO_SCANNING_FAST_FINISHED) && (servo_get_state(SERVO_2) == SERVO_SCANNING_FAST_FINISHED))
