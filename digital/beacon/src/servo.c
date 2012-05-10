@@ -80,7 +80,7 @@ void servo_structure_init(void)
 	servo1.state = SERVO_SCANNING_OFF;
 	servo1.top = 0;
 	servo1.bottom = 0;
-	servo1.scanning_sense = FALLING;
+	servo1.scanning_sense = RISING;
 	
 	/* Servo 2 init values */
 	servo2.id = SERVO_2;
