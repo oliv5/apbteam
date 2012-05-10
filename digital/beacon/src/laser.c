@@ -186,6 +186,8 @@ ISR(TIMER3_CAPT_vect)
 			
 			/* Recompute the angle value */
 			virtual_angle = (virtual_angle + ICR3) / 2;
+			/* UseI ICR3 for now*/
+			virtual_angle = ICR3;
 			
 			/* It's a falling edge so potentially current_angle could be a real one */
 			laser_set_angle(virtual_angle);
