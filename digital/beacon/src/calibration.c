@@ -59,6 +59,7 @@ void calibration_stop_task(void)
 {
 	HAL_StopAppTimer(&calibrationTimer);
 	motor_stop();
+	calibration.state = CALIBRATION_INIT;
 }
 
 /* This function starts or stops the calibration task depending on the current state */
