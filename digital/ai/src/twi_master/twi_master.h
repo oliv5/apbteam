@@ -88,4 +88,9 @@ twi_master_get_buffer (uint8_t slave);
 void
 twi_master_send_buffer (uint8_t length);
 
+/** Send previously got buffer without acknowledgement, can not be mixed with
+ * twi_master_send_buffer for a same slave! */
+void
+twi_master_send_transient_buffer (uint8_t length);
+
 #endif /* twi_master_h */
