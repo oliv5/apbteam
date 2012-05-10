@@ -284,6 +284,7 @@ void APS_DataConf(APS_DataConf_t* confInfo)
 /* APS data indication handler */
 void APS_DataIndication(APS_DataInd_t* indData)
 {
+	uint16_t angle = 0;
 	AppMessage_t *appMessage = (AppMessage_t *) indData->asdu;
 	
 	// Data received indication
@@ -293,8 +294,8 @@ void APS_DataIndication(APS_DataInd_t* indData)
 			break;
 		case NETWORK_OPPONENT_NUMBER:
 			break;
-		case NETWORK_ANGLE_DEGREE:
-			
+		case NETWORK_ANGLE_RAW:
+			angle = codewheel_convert_angle_raw2degrees((appMessage->data[NETWORK_MSG_DATA_MSB_FIELD]<<8) + appMessage->data[NETWORK_MSG_DATA_LSB_FIELD]);
 			/* New angle is avaiiable, update position */
 // 			update_position(appMessage->data[NETWORK_MSG_ADDR_FIELD],appMessage->data[NETWORK_MSG_DATA_FIELD]);
 			break;
