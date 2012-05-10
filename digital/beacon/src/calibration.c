@@ -143,7 +143,7 @@ void calibration_task(void)
 			{
 				/* Nothing appended, update the state and continue scanning */
 				calibration_scanning(servo);
-				servo_set_state(servo,SERVO_SCANNING_FAST_IN_PROGRESS);
+				servo_set_state(servo,SERVO_SCANNING_SLOW_IN_PROGRESS);
 			}
 			else
 			{
