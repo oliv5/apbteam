@@ -37,6 +37,8 @@ class PopenIO:
 
     def read (self, *args):
         buf = self.fin.read (*args).replace ('\n', '\r')
+        if not buf:
+            raise EOFError
         return buf
 
     def write (self, *args):

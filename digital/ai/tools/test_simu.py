@@ -66,8 +66,14 @@ class TestSimu (InterNode):
             for prog in r.protos:
                 prog.async = True
                 def prog_read (f, mask, prog = prog):
-                    prog.proto.read ()
-                    prog.proto.sync ()
+                    try:
+                        prog.proto.read ()
+                        prog.proto.sync ()
+                    except EOFError:
+                        print "Connection closed"
+                        self.tk.deletefilehandler (prog)
+                        self.play_var.set (0)
+                        self.play ()
                 self.tk.createfilehandler (prog, READABLE, prog_read)
         # Add table.
         self.table_model = robot_class.table_model.Table ()
