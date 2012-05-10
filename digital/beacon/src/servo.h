@@ -26,8 +26,6 @@
 #ifndef _SERVO_H
 #define _SERVO_H
 
-
-#define SERVO_ANGLE_INIT 	200
 #define SERVO_ANGLE_MIN 	69
 #define SERVO_ANGLE_MAX 	200
 

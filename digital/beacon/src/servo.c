@@ -43,8 +43,8 @@ void servo_timer1_init(void)
 {
 
 	//Fpwm = f_IO / (prescaler * (1 + TOP)) = 7200 Hz. */
-  	OCR1B = SERVO_ANGLE_INIT; 
-  	OCR1A = SERVO_ANGLE_INIT;
+  	OCR1B = SERVO_ANGLE_MAX; 
+  	OCR1A = SERVO_ANGLE_MIN;
 
 	
 	/* Fast PWM 10bits with TOP=0x03FF */
