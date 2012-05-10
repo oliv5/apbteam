@@ -55,7 +55,8 @@ typedef enum
 {
 	NETWORK_MSG_TYPE_FIELD,
 	NETWORK_MSG_ADDR_FIELD,
-	NETWORK_MSG_DATA_FIELD
+	NETWORK_MSG_DATA_MSB_FIELD,
+	NETWORK_MSG_DATA_LSB_FIELD
 } TMessage_field;
 
 /* This function intializes network parameters */
@@ -92,7 +93,7 @@ uint8_t network_get_lqi(void);
 int8_t network_get_rssi(void);
 
 /* This function must be used to send data through zigbee network */
-void network_send_data(TMessage_type type, uint8_t data);
+void network_send_data(TMessage_type type, uint16_t data);
 
 /* brief Handler of aps data sent confirmation */
 void APS_DataConf(APS_DataConf_t* confInfo);
