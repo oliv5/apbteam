@@ -36,6 +36,10 @@ struct beacon_t
     vect_t position[AC_BEACON_POSITION_NB];
     /** Obstacles trust. */
     uint8_t trust[AC_BEACON_POSITION_NB];
+    /** To send: beacon system powered. */
+    uint8_t on;
+    /** To send: number of robots. */
+    uint8_t robot_nb;
 };
 struct beacon_t beacon;
 
@@ -45,6 +49,8 @@ beacon_init (void)
     uint8_t i;
     for (i = 0; i < AC_BEACON_POSITION_NB; i++)
 	beacon.trust[i] = 0;
+    beacon.on = 0;
+    beacon.robot_nb = 0;
 }
 
 void
@@ -65,9 +71,26 @@ beacon_status_cb (uint8_t *status)
 void
 beacon_on (uint8_t on_off)
 {
+    beacon.on = on_off;
+}
+
+void
+beacon_robot_nb (uint8_t robot_nb)
+{
+    beacon.robot_nb = robot_nb;
+}
+
+void
+beacon_send_position (vect_t *position)
+{
     uint8_t *buffer = twi_master_get_buffer (TWI_MASTER_ID_BEACON);
-    buffer[0] = on_off;
-    twi_master_send_buffer (1);
+    buffer[0] = beacon.on;
+    buffer[1] = beacon.robot_nb;
+    buffer[2] = v16_to_v8 (position->x, 1);
+    buffer[3] = v16_to_v8 (position->x, 0);
+    buffer[4] = v16_to_v8 (position->y, 1);
+    buffer[5] = v16_to_v8 (position->y, 0);
+    twi_master_send_transient_buffer (6);
 }
 
 uint8_t

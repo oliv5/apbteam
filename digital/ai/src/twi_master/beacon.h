@@ -47,6 +47,14 @@ beacon_status_cb (uint8_t *status);
 void
 beacon_on (uint8_t on_off);
 
+/** Communicate the number of opponent robots. */
+void
+beacon_robot_nb (uint8_t robot_nb);
+
+/** Send my position, along with other informations. */
+void
+beacon_send_position (vect_t *position);
+
 /** Get a detected position, return trust (0 for invalid, 100 for full
  * trust). */
 uint8_t

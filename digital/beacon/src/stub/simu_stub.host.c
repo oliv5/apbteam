@@ -43,6 +43,10 @@ struct position_t simu_positions[2];
 
 uint8_t simu_seq;
 
+uint8_t simu_recv_jack;
+uint8_t simu_recv_robot_nb;
+struct position_t simu_recv_robot_position;
+
 static void
 simu_twi_proto_poll (void)
 {
@@ -56,9 +60,13 @@ simu_twi_proto_poll (void)
 	    continue;
 	if (recv_buf[1] == simu_seq)
 	    continue;
-	if (recv_size != 3)
+	if (recv_size != 8)
 	    continue;
 	simu_seq = recv_buf[1];
+	simu_recv_jack = recv_buf[2];
+	simu_recv_robot_nb = recv_buf[3];
+	simu_recv_robot_position.x = v8_to_v16 (recv_buf[4], recv_buf[5]);
+	simu_recv_robot_position.y = v8_to_v16 (recv_buf[6], recv_buf[7]);
       }
 }
 
