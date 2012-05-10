@@ -96,9 +96,9 @@ int16_t servo_angle_increase(TServo_ID servo_id)
 	switch(servo_id)
 	{
 		case SERVO_1:
-			if(OCR1A < SERVO_ANGLE_MAX)
+			if(OCR1A > SERVO_ANGLE_MIN)
 			{
-				OCR1A++;
+				OCR1A--;
 			}
 			return OCR1A;
 			break;
@@ -122,9 +122,9 @@ int16_t servo_angle_decrease(TServo_ID servo_id)
 	switch(servo_id)
 	{
 		case SERVO_1:
-			if(OCR1A > SERVO_ANGLE_MIN)
+			if(OCR1A < SERVO_ANGLE_MAX)
 			{
-				OCR1A--;
+				OCR1A++;
 			}
 			return OCR1A;
 			break;
