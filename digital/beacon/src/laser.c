@@ -115,10 +115,31 @@ void laser_set_angle(uint16_t angle)
 /* Zigbee sending IRQ vector */
 ISR(TIMER3_COMPB_vect)
 {
-	if(servo_get_state(SERVO_1) == SERVO_SCANNING_FAST_IN_PROGRESS)
+	if(calibration_get_state() != SCANNING_STATE_CALIBRATED)
 	{
-		codewheel_set_rebase_offset(laser_get_angle_raw());
-		codewheel_set_state(CODEWHEEL_REQUEST_REBASE);
+		if(codewheel_get_state() == CODEWHEEL_INIT)
+		{
+			codewheel_set_rebase_offset(laser_get_angle_raw());
+			codewheel_set_state(CODEWHEEL_REQUEST_REBASE);
+			calibration_set_laser_flag(SET);
+		}
+		else
+		{
+			/* If mire 1 is spotted */
+			if(((laser_get_angle_degree() <= SERVO_1_ANGLE_POSITION + SERVO_ANGLE_POSITION_TOLERANCE) && (laser_get_angle_degree() >= 360 - SERVO_ANGLE_POSITION_TOLERANCE)) && ((servo_get_state(SERVO_1) == SERVO_SCANNING_FAST_IN_PROGRESS) || (servo_get_state(SERVO_1) == SERVO_SCANNING_SLOW_IN_PROGRESS)))
+			{
+				calibration_set_laser_flag(SET);
+			}
+			/* If mire 2 is spotted */
+			else if(((laser_get_angle_degree() <= SERVO_2_ANGLE_POSITION + SERVO_ANGLE_POSITION_TOLERANCE) && (laser_get_angle_degree() >= SERVO_2_ANGLE_POSITION - SERVO_ANGLE_POSITION_TOLERANCE)) && ((servo_get_state(SERVO_2) == SERVO_SCANNING_FAST_IN_PROGRESS) || (servo_get_state(SERVO_2) == SERVO_SCANNING_SLOW_IN_PROGRESS)))
+			{
+				calibration_set_laser_flag(SET);
+			}
+		}
+	}
+	else
+	{
+		// TODO: Send  angle
 	}
 	
 	/* Disable the interrupt */
