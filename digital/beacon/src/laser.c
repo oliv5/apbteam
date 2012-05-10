@@ -131,6 +131,9 @@ ISR(TIMER3_CAPT_vect)
 	
 	/* Check which kind of edge triggered the interrupt */
 	current_edge = laser_get_edge_type();
+
+	/* Could be a bounce so inhibit the latest angle confirmation */
+	laser_inhibit_angle_confirmation();
 	
 	switch(current_edge)
 	{
@@ -141,9 +144,6 @@ ISR(TIMER3_CAPT_vect)
 			
 		/* Common rising edge of a reflector  */
 		case LASER_RISING_EDGE:
-			
-			/* Could be a bounce so inhibit the latest angle confirmation */
-			laser_inhibit_angle_confirmation();
 			
 			/* Recompute the angle value */
 			virtual_angle = (virtual_angle + ICR3) / 2;
