@@ -129,10 +129,6 @@ void usartRXCallback(uint16_t bytesToRead)
 		case 'q':
 			calibration_set_laser_flag(SET);
 			break;
-		case 'w':
-// 			wheel_start_stop_task();
-// 			uprintf("TCNT3 = %d\r\n",TCNT3);
-			TIMSK3 &= ~(1<<OCIE3B);
 		case 'r':
 			reset_avr();
 			break;
@@ -190,31 +186,6 @@ void debug_start_stop_task(void)
 	{
 		HAL_StopAppTimer(&debugTimer);
 		debug_task_running = 0;
-	}
-}
-void wheel_task(void)
-{
-	TCNT3++;
-}
-
-void wheel_start_stop_task(void)
-{
-	static bool wheel_task_running = 0;
-	if(wheel_task_running == 0)
-	{
-		led_on(2);
-		wheelTimer.interval = WHEEL_TASK_PERIOD;
-		wheelTimer.mode     = TIMER_REPEAT_MODE;
-		wheelTimer.callback = wheel_task;
-		HAL_StartAppTimer(&wheelTimer);
-		wheel_task_running = 1;
-	}
-	else
-	{
-		led_off(2);
-		HAL_StopAppTimer(&wheelTimer);
-		TCNT3=0;
-		wheel_task_running = 0;
 	}
 }
 
