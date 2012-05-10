@@ -222,14 +222,19 @@ void wheel_start_stop_task(void)
 void debug_task(void)
 {
  	uprintf("------------------------- debug TASK -------------------------\r\n");
-	uprintf("NWK : status = 0x%x\r\n",network_get_status());
-	uprintf("NWK : LQI = %d\r\n",network_get_lqi());
-	uprintf("NWK : RSSI = %d\r\n",network_get_rssi());
+	uprintf("## Network\r\n");
+	uprintf("Status : 0x%x - ",network_get_status());
+	uprintf("LQI = %d - ",network_get_lqi());
+	uprintf("RSSI = %d - \r\n",network_get_rssi());
 #ifdef TYPE_END
- 	uprintf("[1] Scanning State = %d -- Value = %d\r\n",servo_get_state(SERVO_1),servo_get_value(SERVO_1));
- 	uprintf("[2] Scanning State = %d -- Value = %d\r\n",servo_get_state(SERVO_2),servo_get_value(SERVO_2));
-	uprintf("CodeWheel = %d\r\n",codewheel_get_value());
-	uprintf("Calibration state = %d\r\n",calibration_get_state());
-	uprintf("Motor state = %d\r\n",motor_get_state());
+	uprintf("## Servo\r\n");
+ 	uprintf("State : [1]=%d [2]=%d - ",servo_get_state(SERVO_1),servo_get_state(SERVO_2));
+ 	uprintf("Value : [1]=%d [2]=%d\r\n",servo_get_value(SERVO_1),servo_get_value(SERVO_2));
+	uprintf("## Codewheel\r\n");
+	uprintf("Raw = %d - Degree = %f\r\n",codewheel_get_value(),codewheel_convert_angle_raw2degrees(codewheel_get_value()));
+	uprintf("## Calibration\r\n");
+	uprintf("State : %d\r\n",calibration_get_state());
+	uprintf("## Calibration\r\n");
+	uprintf("State : %d\r\n",motor_get_state());
 #endif
 }
