@@ -120,6 +120,9 @@ ISR(TIMER3_COMPB_vect)
 		codewheel_set_rebase_offset(laser_get_angle_raw());
 		codewheel_set_state(CODEWHEEL_REQUEST_REBASE);
 	}
+	
+	/* Disable the interrupt */
+	laser_inhibit_angle_confirmation();
 }
 
 
