@@ -45,7 +45,7 @@
 
 /** Ships holds. */
 #define PG_HOLD_SOUTH_X 325
-#define PG_HOLD_SOUTH_Y 325
+#define PG_HOLD_SOUTH_Y 0
 #define PG_HOLD_NORTH_X 362
 #define PG_HOLD_NORTH_Y 740
 
