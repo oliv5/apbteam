@@ -187,6 +187,45 @@ path_pos (uint8_t node, vect_t *pos)
       }
 }
 
+/** Static obstacles. */
+static const vect_t path_blocking_segment[][2] = {
+    /* Ship holds. */
+      { { PG_HOLD_SOUTH_X + BOT_SIZE_RADIUS, PG_HOLD_SOUTH_Y },
+	{ PG_HOLD_NORTH_X + BOT_SIZE_RADIUS, PG_HOLD_NORTH_Y } },
+      { { PG_MIRROR_X (PG_HOLD_SOUTH_X + BOT_SIZE_RADIUS), PG_HOLD_SOUTH_Y },
+	{ PG_MIRROR_X (PG_HOLD_NORTH_X + BOT_SIZE_RADIUS), PG_HOLD_NORTH_Y } },
+    /* Ship captain rooms. */
+      { { 0, PG_LENGTH - PG_CAPTAIN_ROOM_LENGTH_MM - BOT_SIZE_RADIUS },
+	{ PG_CAPTAIN_ROOM_WIDTH_MM,
+	  PG_LENGTH - PG_CAPTAIN_ROOM_LENGTH_MM - BOT_SIZE_RADIUS } },
+      { { PG_MIRROR_X (0), PG_LENGTH - PG_CAPTAIN_ROOM_LENGTH_MM - BOT_SIZE_RADIUS },
+	{ PG_MIRROR_X (PG_CAPTAIN_ROOM_WIDTH_MM),
+	  PG_LENGTH - PG_CAPTAIN_ROOM_LENGTH_MM - BOT_SIZE_RADIUS } },
+};
+struct path_blocking_point_t
+{
+    vect_t pos;
+    uint16_t radius;
+};
+static const struct path_blocking_point_t path_blocking_point[] = {
+    /* Totems. */
+      { { PG_TOTEM_LEFT_X, PG_TOTEM_Y },
+	PG_TOTEM_DIAG_MM / 2 + BOT_SIZE_RADIUS },
+      { { PG_TOTEM_RIGHT_X, PG_TOTEM_Y },
+	PG_TOTEM_DIAG_MM / 2 + BOT_SIZE_RADIUS },
+    /* Ship holds. */
+      { { PG_HOLD_NORTH_X, PG_HOLD_NORTH_Y },
+	BOT_SIZE_RADIUS },
+      { { PG_MIRROR_X (PG_HOLD_NORTH_X), PG_HOLD_NORTH_Y },
+	BOT_SIZE_RADIUS },
+    /* Ship captain rooms. */
+      { { PG_CAPTAIN_ROOM_WIDTH_MM, PG_LENGTH - PG_CAPTAIN_ROOM_LENGTH_MM },
+	BOT_SIZE_RADIUS },
+      { { PG_MIRROR_X (PG_CAPTAIN_ROOM_WIDTH_MM),
+	  PG_LENGTH - PG_CAPTAIN_ROOM_LENGTH_MM },
+	BOT_SIZE_RADIUS },
+};
+
 /** Return 1 if the direct path between a and b nodes is blocked, also compute
  * distance. */
 static uint8_t
@@ -202,46 +241,19 @@ path_blocking (uint8_t a, uint8_t b, int16_t *dp)
 	escape_factor = path.escape_factor;
     path_pos (a, &va);
     path_pos (b, &vb);
-    /* Test for totems. */
-    static const vect_t totems[] = {
-	  { PG_TOTEM_LEFT_X, PG_TOTEM_Y },
-	  { PG_TOTEM_RIGHT_X, PG_TOTEM_Y },
-    };
-    for (i = 0; i < UTILS_COUNT (totems) && !blocking; i++)
+    /* Test for static obstacles. */
+    for (i = 0; i < UTILS_COUNT (path_blocking_point) && !blocking; i++)
       {
-	uint16_t d = distance_segment_point (&va, &vb, &totems[i]);
-	if (d < PG_TOTEM_DIAG_MM / 2 + BOT_SIZE_RADIUS)
+	uint16_t d = distance_segment_point
+	    (&va, &vb, &path_blocking_point[i].pos);
+	if (d < path_blocking_point[i].radius)
 	    blocking = 1;
       }
-    /* Test for ships. */
-    static const vect_t ships_segments[][2] = {
-	  { { PG_HOLD_SOUTH_X + BOT_SIZE_RADIUS, PG_HOLD_SOUTH_Y },
-	    { PG_HOLD_NORTH_X + BOT_SIZE_RADIUS, PG_HOLD_NORTH_Y } },
-	  { { PG_MIRROR_X (PG_HOLD_SOUTH_X + BOT_SIZE_RADIUS), PG_HOLD_SOUTH_Y },
-	    { PG_MIRROR_X (PG_HOLD_NORTH_X + BOT_SIZE_RADIUS), PG_HOLD_NORTH_Y } },
-	  { { 0, PG_LENGTH - PG_CAPTAIN_ROOM_LENGTH_MM - BOT_SIZE_RADIUS },
-	    { PG_CAPTAIN_ROOM_WIDTH_MM,
-	      PG_LENGTH - PG_CAPTAIN_ROOM_LENGTH_MM - BOT_SIZE_RADIUS } },
-	  { { PG_MIRROR_X (0), PG_LENGTH - PG_CAPTAIN_ROOM_LENGTH_MM - BOT_SIZE_RADIUS },
-	    { PG_MIRROR_X (PG_CAPTAIN_ROOM_WIDTH_MM),
-	      PG_LENGTH - PG_CAPTAIN_ROOM_LENGTH_MM - BOT_SIZE_RADIUS } },
-    };
-    static const vect_t ships_angles[] = {
-	  { PG_HOLD_NORTH_X, PG_HOLD_NORTH_Y },
-	  { PG_MIRROR_X (PG_HOLD_NORTH_X), PG_HOLD_NORTH_Y },
-	  { PG_CAPTAIN_ROOM_WIDTH_MM, PG_LENGTH - PG_CAPTAIN_ROOM_LENGTH_MM },
-	  { PG_MIRROR_X (PG_CAPTAIN_ROOM_WIDTH_MM), PG_LENGTH - PG_CAPTAIN_ROOM_LENGTH_MM },
-    };
-    for (i = 0; i < UTILS_COUNT (ships_segments) && !blocking; i++)
+    for (i = 0; i < UTILS_COUNT (path_blocking_segment) && !blocking; i++)
       {
-	if (intersection_segment_segment (&va, &vb, &ships_segments[i][0],
-					  &ships_segments[i][1]))
-	    blocking = 1;
-      }
-    for (i = 0; i < UTILS_COUNT (ships_angles) && !blocking; i++)
-      {
-	uint16_t d = distance_segment_point (&va, &vb, &ships_angles[i]);
-	if (d < BOT_SIZE_RADIUS)
+	if (intersection_segment_segment (&va, &vb,
+					  &path_blocking_segment[i][0],
+					  &path_blocking_segment[i][1]))
 	    blocking = 1;
       }
     /* Test for a blocking obstacle. */
