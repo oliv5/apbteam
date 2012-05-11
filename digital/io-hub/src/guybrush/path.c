@@ -57,8 +57,11 @@
 /** Number of nodes in the grid. */
 #define PATH_GRID_NODES_NB (PATH_COLUMNS_NB * PATH_COLUMN_NODES_NB)
 
+/** Number of extra nodes not in the grid. */
+#define PATH_EXTRA_NODES_NB 4
+
 /** Number of fixed nodes. */
-#define PATH_FIXED_NODES_NB (PATH_GRID_NODES_NB)
+#define PATH_FIXED_NODES_NB (PATH_GRID_NODES_NB + PATH_EXTRA_NODES_NB)
 
 /** Number of nodes in search graph, last two nodes are destination and source
  * nodes. */
@@ -125,6 +128,10 @@ static const struct path_node_t path_nodes[PATH_FIXED_NODES_NB] = {
       { 1 }, /* 22 */
       { 1 }, /* 23 */
       { 1 }, /* 24 */
+      { 1 }, /* 25 extra nodes. */
+      { 1 }, /* 26 */
+      { 1 }, /* 27 */
+      { 1 }, /* 28 */
     /* }}} */
 };
 
@@ -146,17 +153,33 @@ static const uint16_t path_nodes_y[PATH_COLUMN_NODES_NB] = {
     PG_LENGTH - PATH_GRID_CLEARANCE_MM,
 };
 
+/** Position of extra nodes. */
+static const vect_t path_extra_nodes[PATH_EXTRA_NODES_NB] = {
+      { PG_TOTEM_LEFT_X - PATH_TOTEM_CLEAR_MM,
+	PG_TOTEM_Y - PATH_TOTEM_CLEAR_MM / 2 },
+      { PG_TOTEM_LEFT_X - PATH_TOTEM_CLEAR_MM,
+	PG_TOTEM_Y + PATH_TOTEM_CLEAR_MM / 2 },
+      { PG_TOTEM_RIGHT_X + PATH_TOTEM_CLEAR_MM,
+	PG_TOTEM_Y - PATH_TOTEM_CLEAR_MM / 2 },
+      { PG_TOTEM_RIGHT_X + PATH_TOTEM_CLEAR_MM,
+	PG_TOTEM_Y + PATH_TOTEM_CLEAR_MM / 2 },
+};
+
 /** Compute position of a node. */
 static void
 path_pos (uint8_t node, vect_t *pos)
 {
     assert (node < PATH_NODES_NB);
-    if (node < PATH_FIXED_NODES_NB)
+    if (node < PATH_GRID_NODES_NB)
       {
 	uint8_t col = node / PATH_COLUMN_NODES_NB;
 	uint8_t line = node - col * PATH_COLUMN_NODES_NB;
 	pos->x = path_nodes_x[col];
 	pos->y = path_nodes_y[line];
+      }
+    else if (node < PATH_FIXED_NODES_NB)
+      {
+	*pos = path_extra_nodes[node - PATH_GRID_NODES_NB];
       }
     else
       {
@@ -450,6 +473,16 @@ path_astar_neighbor_callback_grid (uint8_t node,
 	      }
 	  }
       }
+    /* Check path to extra nodes. */
+    for (i = PATH_GRID_NODES_NB; i < PATH_FIXED_NODES_NB; i++)
+      {
+	if (path.valid[i] && !path_blocking (node, i, &d))
+	  {
+	    neighbors[neighbors_nb].node = i;
+	    neighbors[neighbors_nb].weight = d + 1;
+	    neighbors_nb++;
+	  }
+      }
     /* Check if direct path OK. */
     if (!path_blocking (node, PATH_SRC_NODE_INDEX, &d))
       {
@@ -465,32 +498,26 @@ path_astar_neighbor_callback_grid (uint8_t node,
     return neighbors_nb;
 }
 
-/** Neighbors callback for endpoints. */
+/** Neighbors callback for other nodes. */
 static uint8_t
-path_astar_neighbor_callback_endpoints (uint8_t node,
-					struct astar_neighbor_t *neighbors)
+path_astar_neighbor_callback_other (uint8_t node,
+				    struct astar_neighbor_t *neighbors)
 {
     uint8_t neighbors_nb = 0;
     uint8_t i;
-    assert (node == PATH_DST_NODE_INDEX);
+    int16_t d;
     /* Select neighbors in the fixed nodes. */
     for (i = 0; i < PATH_FIXED_NODES_NB; i++)
       {
-	/* Discard blocking nodes. */
-	if (!path.valid[i])
-	    continue;
-	/* Check if there is an obstacle along the path. */
-	int16_t d;
-	if (path_blocking (PATH_DST_NODE_INDEX, i, &d))
-	    continue;
-	/* Add this neighbor. */
-	neighbors[neighbors_nb].node = i;
-	neighbors[neighbors_nb].weight = d + 1;
-	neighbors_nb++;
+	if (i != node && path.valid[i] && !path_blocking (node, i, &d))
+	  {
+	    neighbors[neighbors_nb].node = i;
+	    neighbors[neighbors_nb].weight = d + 1;
+	    neighbors_nb++;
+	  }
       }
     /* Check if direct path OK. */
-    int16_t d;
-    if (!path_blocking (PATH_DST_NODE_INDEX, PATH_SRC_NODE_INDEX, &d))
+    if (!path_blocking (node, PATH_SRC_NODE_INDEX, &d))
       {
 	/* Add this neighbor. */
 	neighbors[neighbors_nb].node = PATH_SRC_NODE_INDEX;
@@ -511,10 +538,10 @@ path_astar_neighbor_callback (uint8_t node,
 #if PATH_DEBUG
     DPRINTF ("neighbor %d\n", node);
 #endif
-    if (node < PATH_FIXED_NODES_NB)
+    if (node < PATH_GRID_NODES_NB)
 	return path_astar_neighbor_callback_grid (node, neighbors);
     else
-	return path_astar_neighbor_callback_endpoints (node, neighbors);
+	return path_astar_neighbor_callback_other (node, neighbors);
 }
 
 uint16_t
