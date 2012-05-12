@@ -67,6 +67,8 @@ FSM_STATES (
 	    TOP_TOTEM_GOING_BACK,
 	    /* Put clamps up. */
 	    TOP_TOTEM_CLAMP_UPPING,
+	    /* Going back after an error. */
+	    TOP_TOTEM_ERROR_GOING_BACK,
 
 	    /* Going to push a bottle. */
 	    TOP_BOTTLE_GOING,
@@ -225,12 +227,57 @@ FSM_TRANS (TOP_TOTEM_GOING_BACK, move_success, TOP_TOTEM_CLAMP_UPPING)
     return FSM_NEXT (TOP_TOTEM_GOING_BACK, move_success);
 }
 
+FSM_TRANS (TOP_TOTEM_GOING_BACK, move_failure, TOP_TOTEM_CLAMP_UPPING)
+{
+    FSM_HANDLE (AI, robot_is_back);
+    return FSM_NEXT (TOP_TOTEM_GOING_BACK, move_failure);
+}
+
 FSM_TRANS (TOP_TOTEM_CLAMP_UPPING, clamps_ready,
 	   totem, TOP_TOTEM_GOING,
 	   bottle, TOP_BOTTLE_GOING,
 	   unload, TOP_UNLOAD_GOING)
 {
     RETURN_TOP_DECISION_SWITCH (TOP_TOTEM_CLAMP_UPPING, clamps_ready);
+}
+
+/** TOTEM failures. */
+
+FSM_TRANS (TOP_TOTEM_GOING, move_failure,
+	   totem, TOP_TOTEM_GOING,
+	   bottle, TOP_BOTTLE_GOING,
+	   unload, TOP_UNLOAD_GOING)
+{
+    strat_failure ();
+    RETURN_TOP_DECISION_SWITCH (TOP_TOTEM_GOING, move_failure);
+}
+
+FSM_TRANS (TOP_TOTEM_APPROACHING, robot_move_failure,
+	   TOP_TOTEM_ERROR_GOING_BACK)
+{
+    strat_failure ();
+    move_start_noangle (top.decision_pos, ASSERV_BACKWARD, 0);
+    return FSM_NEXT (TOP_TOTEM_APPROACHING, robot_move_failure);
+}
+
+FSM_TRANS (TOP_TOTEM_PUSHING, robot_move_failure,
+	   TOP_TOTEM_ERROR_GOING_BACK)
+{
+    strat_failure ();
+    move_start_noangle (top.decision_pos, ASSERV_BACKWARD, 0);
+    return FSM_NEXT (TOP_TOTEM_PUSHING, robot_move_failure);
+}
+
+FSM_TRANS (TOP_TOTEM_ERROR_GOING_BACK, move_success, TOP_TOTEM_CLAMP_UPPING)
+{
+    FSM_HANDLE (AI, stop_tree_approach);
+    return FSM_NEXT (TOP_TOTEM_ERROR_GOING_BACK, move_success);
+}
+
+FSM_TRANS (TOP_TOTEM_ERROR_GOING_BACK, move_failure, TOP_TOTEM_CLAMP_UPPING)
+{
+    FSM_HANDLE (AI, stop_tree_approach);
+    return FSM_NEXT (TOP_TOTEM_ERROR_GOING_BACK, move_failure);
 }
 
 /** BOTTLE */
@@ -255,12 +302,63 @@ FSM_TRANS (TOP_BOTTLE_PUSHING, robot_move_success, TOP_BOTTLE_GOING_BACK)
     return FSM_NEXT (TOP_BOTTLE_PUSHING, robot_move_success);
 }
 
+FSM_TRANS (TOP_BOTTLE_PUSHING, robot_move_failure, TOP_BOTTLE_GOING_BACK)
+{
+    /* OK, ignore failure. */
+    asserv_stop_motor ();
+    strat_success ();
+    move_start_noangle (top.decision_pos, 0, 0);
+    return FSM_NEXT (TOP_BOTTLE_PUSHING, robot_move_failure);
+}
+
 FSM_TRANS (TOP_BOTTLE_GOING_BACK, move_success,
 	   totem, TOP_TOTEM_GOING,
 	   bottle, TOP_BOTTLE_GOING,
 	   unload, TOP_UNLOAD_GOING)
 {
     RETURN_TOP_DECISION_SWITCH (TOP_BOTTLE_GOING_BACK, move_success);
+}
+
+FSM_TRANS (TOP_BOTTLE_GOING_BACK, move_failure,
+	   totem, TOP_TOTEM_GOING,
+	   bottle, TOP_BOTTLE_GOING,
+	   unload, TOP_UNLOAD_GOING)
+{
+    /* Ignore and continue. */
+    RETURN_TOP_DECISION_SWITCH (TOP_BOTTLE_GOING_BACK, move_failure);
+}
+
+/** BOTTLE failures. */
+
+FSM_TRANS (TOP_BOTTLE_GOING, move_failure,
+	   totem, TOP_TOTEM_GOING,
+	   bottle, TOP_BOTTLE_GOING,
+	   unload, TOP_UNLOAD_GOING)
+{
+    strat_failure ();
+    RETURN_TOP_DECISION_SWITCH (TOP_BOTTLE_GOING, move_failure);
+}
+
+FSM_TRANS (TOP_BOTTLE_APPROACHING, robot_move_failure,
+	   try_anyway, TOP_BOTTLE_PUSHING,
+	   totem, TOP_TOTEM_GOING,
+	   bottle, TOP_BOTTLE_GOING,
+	   unload, TOP_UNLOAD_GOING)
+{
+    position_t robot_pos;
+    asserv_get_position (&robot_pos);
+    /* Try to continue anyway? */
+    if (robot_pos.v.y < BOT_SIZE_BACK + 100)
+      {
+	asserv_push_the_wall (ASSERV_BACKWARD, -1, -1, -1);
+	return FSM_NEXT (TOP_BOTTLE_APPROACHING, robot_move_failure,
+			 try_anyway);
+      }
+    else
+      {
+	strat_failure ();
+	RETURN_TOP_DECISION_SWITCH (TOP_BOTTLE_APPROACHING, robot_move_failure);
+      }
 }
 
 /** UNLOAD */
@@ -281,5 +379,16 @@ FSM_TRANS_TIMEOUT (TOP_UNLOADING, 250,
     IO_CLR (OUTPUT_DOOR_OPEN);
     IO_SET (OUTPUT_DOOR_CLOSE);
     RETURN_TOP_DECISION_SWITCH (TOP_UNLOADING, TOP_UNLOADING_TIMEOUT);
+}
+
+/** UNLOAD failures. */
+
+FSM_TRANS (TOP_UNLOAD_GOING, move_failure,
+	   totem, TOP_TOTEM_GOING,
+	   bottle, TOP_BOTTLE_GOING,
+	   unload, TOP_UNLOAD_GOING)
+{
+    strat_failure ();
+    RETURN_TOP_DECISION_SWITCH (TOP_UNLOAD_GOING, move_failure);
 }
 
