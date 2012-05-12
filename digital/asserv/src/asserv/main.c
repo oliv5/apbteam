@@ -303,6 +303,21 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	control_state_set_mode (state, CS_MODE_NONE, 0);
 	break;
 #endif
+      case c ('b', 0):
+	/* Simulate a blocked state. */
+	output_set (&output_left, 0);
+	output_set (&output_right, 0);
+	control_state_blocked (&cs_main.state);
+	break;
+#if AC_ASSERV_AUX_NB
+      case c ('B', 1):
+	/* Simulate a blocked state on auxiliary motor.
+	 * - b: aux index. */
+	if (!auxp) { proto_send0 ('?'); return; }
+	output_set (output, 0);
+	control_state_blocked (state);
+	break;
+#endif
       case c ('c', 4):
 	/* Add to position consign.
 	 * - w: theta consign offset.

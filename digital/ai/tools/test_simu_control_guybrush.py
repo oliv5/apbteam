@@ -52,6 +52,10 @@ class TestSimuControl (TestSimu):
                 fill = 'y')
         Button (self.control_frame, text = 'FSM step', padx = 0, pady = 0,
                 command = self.fsm_debug).pack ()
+        Button (self.control_frame, text = 'Asserv block', padx = 0, pady = 0,
+                command = self.asserv_block).pack ()
+        Button (self.control_frame, text = 'Clamp block', padx = 0, pady = 0,
+                command = self.clamp_block).pack ()
         def out_button (name, toggle):
             def command ():
                 self.io.output (toggle, 'toggle')
@@ -106,6 +110,12 @@ class TestSimuControl (TestSimu):
 
     def fsm_debug (self):
         self.io.fsm_debug ()
+
+    def asserv_block (self):
+        self.asserv.block ()
+
+    def clamp_block (self):
+        self.mimot.block ('a0')
 
     def move (self, ev):
         pos = self.table_view.screen_coord ((ev.x, ev.y))

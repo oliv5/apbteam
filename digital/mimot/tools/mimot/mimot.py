@@ -134,6 +134,10 @@ class Proto:
         del self.stats_line
         return array
 
+    def block (self, w):
+        """Simulate blocking."""
+        self.proto.send ('b', 'B', self._index[w])
+
     def consign (self, w, c):
         """Consign offset."""
 	self.proto.send ('c', 'Bh', self._index[w], c)

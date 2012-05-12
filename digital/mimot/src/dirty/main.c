@@ -224,6 +224,13 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	output_set (output, v8_to_v16 (args[1], args[2]));
 	control_state_set_mode (state, CS_MODE_NONE, 0);
 	break;
+      case c ('b', 1):
+	/* Simulate a blocked state on auxiliary motor.
+	 * - b: aux index. */
+	if (!auxp) { proto_send0 ('?'); return; }
+	output_set (output, 0);
+	control_state_blocked (state);
+	break;
       case c ('b', 2):
 	/* Set brake and set zero auxiliary pwm.
 	 * - b: aux index.
