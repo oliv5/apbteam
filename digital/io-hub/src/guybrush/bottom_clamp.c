@@ -109,6 +109,8 @@ FSM_EVENTS (
     coin_detected,
     /*signal sent to the top fsm when taking a coin*/
     taking_coin,
+    /*time to drop the cd. Sent by main*/
+    time_to_drop_coin,
     /* Lower clamp rotation motor success. */
     lower_clamp_rotation_success,
     /* Lower clamp rotation motor failure. */
@@ -143,6 +145,7 @@ FSM_START_WITH (CLAMP_START)
 /*-------------------------------------
          ROTATION DEFINITION
 ---------------------------------------*/
+#define POS_DELAY 1250
 #define HIDE_POS 3
 #define BACK_TO_READY 16-HIDE_POS
 #define HALF_TURN 8
@@ -258,11 +261,12 @@ FSM_TRANS (CLAMP_IDLE, coin_detected, CLAMP_TAKE_COIN)
 
 FSM_TRANS_TIMEOUT (CLAMP_TAKE_COIN, TIMEOUT_CLOSE_CLAMPS, CLAMP_TURN_HALF_WAY)
 {
+    main_set_drop_coin_pos(ctx.pos_current + (HALF_TURN * 250) - POS_DELAY);
     move_needed(HALF_TURN * 250);
     return FSM_NEXT_TIMEOUT (CLAMP_TAKE_COIN);
 }
 
-FSM_TRANS_TIMEOUT (CLAMP_TURN_HALF_WAY, TIMEOUT_DROP_CD, CLAMP_DROP_CD)
+FSM_TRANS (CLAMP_TURN_HALF_WAY, time_to_drop_coin, CLAMP_DROP_CD)
 {
     /*If the clamp 1 has the CD.*/
     if (ctx.clamp_1_down)
@@ -279,7 +283,8 @@ FSM_TRANS_TIMEOUT (CLAMP_TURN_HALF_WAY, TIMEOUT_DROP_CD, CLAMP_DROP_CD)
         /*Clamp 1 is now down (clamp 2 is up). */
         ctx.clamp_1_down = 1;            
     }
-    return FSM_NEXT_TIMEOUT (CLAMP_TURN_HALF_WAY);
+    return FSM_NEXT (CLAMP_TURN_HALF_WAY,time_to_drop_coin);
+}
 }
 
 FSM_TRANS (CLAMP_DROP_CD,lower_clamp_rotation_success,CLAMP_IDLE)
@@ -427,13 +432,16 @@ FSM_TRANS_TIMEOUT (CLAMP_OPEN_UPPER_CLAMPS, TIMEOUT_OPEN_CLAMPS, CLAMP_TURN_HALF
     IO_SET (OUTPUT_UPPER_CLAMP_OPEN);
     /*We reopen clamp 2.*/
     IO_CLR (OUTPUT_LOWER_CLAMP_2_CLOSE);
+    if (ctx.stop_tree_approach)
      if (ctx.stop_tree_approach)
     {
-        move_needed(BACK_TO_READY_TREE * 250);
+        main_set_drop_coin_pos(ctx.pos_current + ((HALF_TURN - HIDE_POS_TREE) * 250) - POS_DELAY);
+        move_needed((HALF_TURN - HIDE_POS_TREE) * 250,SPEED_ROTATION);
     }
     else
     {
-        move_needed((BACK_TO_READY_TREE_2) * 250);
+        main_set_drop_coin_pos(ctx.pos_current + (BACK_TO_READY_TREE_2 * 250) - POS_DELAY);
+        move_needed((BACK_TO_READY_TREE_2) * 250,SPEED_ROTATION);
     }
     ctx.stop_tree_approach = 0;
     fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));

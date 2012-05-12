@@ -106,6 +106,9 @@ static uint8_t main_stats_clamp_zero_last_io_;
 /** Clamp zero stats: last position. */
 static uint16_t main_stats_clamp_zero_last_position_;
 
+/** Position to drop CD */
+static int position_to_drop;
+
 /** Main initialisation. */
 static void
 main_init (void)
@@ -176,6 +179,8 @@ main_event_to_fsm (void)
 	|| !IO_GET (CONTACT_LOWER_CLAMP_SENSOR_3)
 	|| !IO_GET (CONTACT_LOWER_CLAMP_SENSOR_4))
 	FSM_HANDLE_E (AI, coin_detected);
+    if ((int16_t) (mimot_get_motor0_position() - position_to_drop) > 0)
+        FSM_HANDLE_E (AI, time_to_drop_coin);
     /* Jack. */
     if (!contact_get_jack ())
 	FSM_HANDLE_E (AI, jack_inserted);
@@ -393,6 +398,11 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
     /* When no error, acknowledge commands */
     proto_send (cmd, size, args);
 #undef c
+}
+
+void main_set_drop_coin_pos(int pos_to_drop)
+{
+    position_to_drop = pos_to_drop;
 }
 
 int
