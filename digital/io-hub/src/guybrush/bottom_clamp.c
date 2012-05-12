@@ -28,6 +28,7 @@
 #include "mimot.h"
 #include "contact.h"
 #include "bot.h"
+#include "main.h"
 
 
 #define FSM_NAME AI
