@@ -437,6 +437,9 @@ path_update (void)
 #if PATH_DEBUG_DRAW
     uint8_t i;
     debug_draw_start ();
+    for (i = 0; i < PATH_OBSTACLES_NB; i++)
+	if (path.obstacles[i].valid)
+	    debug_draw_circle (&path.obstacles[i].c, path.obstacles[i].r, 0);
     for (i = 0; i < UTILS_COUNT (path_blocking_point); i++)
 	debug_draw_circle (&path_blocking_point[i].pos,
 			   path_blocking_point[i].radius, 0);
