@@ -48,4 +48,8 @@ strat_decision (vect_t *pos);
 void
 strat_success (void);
 
+/** Report a failure of last decision. */
+void
+strat_failure (void);
+
 #endif /* strat_h */

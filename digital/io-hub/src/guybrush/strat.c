@@ -79,6 +79,8 @@ struct strat_place_dyn_t
 {
     /** Valid (not collected yet). */
     uint8_t valid;
+    /** Tryed yet. */
+    uint8_t fail_nb;
 };
 
 /** Strat context. */
@@ -155,6 +157,20 @@ strat_success (void)
 	break;
       default:
 	assert (0);
+      }
+}
+
+void
+strat_failure (void)
+{
+    switch (strat.last_decision)
+      {
+      default:
+	if (strat.place[strat.last_place].fail_nb < 255)
+	    strat.place[strat.last_place].fail_nb++;
+	break;
+      case STRAT_DECISION_UNLOAD:
+	break;
       }
 }
 
