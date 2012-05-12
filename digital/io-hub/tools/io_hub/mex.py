@@ -224,6 +224,31 @@ class Mex:
             self.pos[id] = p
             self.notify ()
 
+    class DebugDraw (Observable):
+        """General purpose debug drawing."""
+
+        def __init__ (self, node, instance):
+            Observable.__init__ (self)
+            self.drawing = [ ]
+            node.register (instance + ':debug-draw', self.__handle)
+
+        def __handle (self, msg):
+            self.drawing = [ ]
+            while len (msg):
+                t, = msg.pop ('c')
+                if t == 'c':
+                    x, y, r, c = msg.pop ('hhhb')
+                    self.drawing.append (['circle', x, y, r, c])
+                elif t == 's':
+                    x1, y1, x2, y2, c = msg.pop ('hhhhb')
+                    self.drawing.append (['segment', x1, y1, x2, y2, c])
+                elif t == 'p':
+                    x, y, c = msg.pop ('hhb')
+                    self.drawing.append (['point', x, y, c])
+                else:
+                    raise ValueError
+            self.notify ()
+
     def __init__ (self, node, instance = 'io-hub0',
             pwm_nb = 0, contact_nb = 0, output_nb = 0, codebar = False):
         self.adc = tuple (self.ADC (node, instance, i) for i in range (0, ADC_NB))
@@ -244,4 +269,5 @@ class Mex:
                     for i in (0, 1))
         self.path = self.Path (node, instance)
         self.pos_report = self.PosReport (node, instance)
+        self.debug_draw = self.DebugDraw (node, instance)
 

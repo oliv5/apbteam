@@ -33,6 +33,8 @@
 #include "modules/path/path.h"
 #include "io.h"
 
+#include "debug_draw.host.h"
+
 /** AVR registers. */
 uint8_t PORTA, PORTB, PORTC, PORTD, PORTF;
 uint8_t DDRA, DDRB, DDRC, DDRD, DDRF;
@@ -63,6 +65,7 @@ simu_init (void)
     simu_mex_pos_report = mex_node_reservef ("%s:pos-report", mex_instance);
     simu_mex_path = mex_node_reservef ("%s:path", mex_instance);
     output_host_init ();
+    debug_draw_init ();
 }
 
 /** Make a simulation step. */

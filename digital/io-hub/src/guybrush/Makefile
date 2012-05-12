@@ -10,7 +10,7 @@ io_hub_SOURCES = main.c top.c strat.c \
 		 contact.avr.c contact.host.c \
 		 output.c output.host.c \
 		 twi_master.c asserv.c mimot.c beacon.c \
-		 chrono.c timer.avr.c simu.host.c \
+		 chrono.c timer.avr.c simu.host.c debug_draw.host.c \
 		 bottom_clamp.c
 # Modules needed for IO.
 MODULES = proto uart twi utils \

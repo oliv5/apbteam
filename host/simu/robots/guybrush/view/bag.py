@@ -26,6 +26,7 @@ from simu.view.switch import Switch
 from simu.view.distance_sensor_us import DistanceSensorUS
 from simu.view.path import Path
 from simu.view.pos_report import PosReport
+from simu.view.debug_draw import DebugDraw
 from simu.robots.guybrush.view.robot import Robot
 from simu.robots.guybrush.view.clamps import ClampsSide
 
@@ -44,4 +45,5 @@ class Bag:
                 for ds in model_bag.distance_sensor]
         self.path = Path (table, model_bag.path)
         self.pos_report = PosReport (table, model_bag.pos_report)
+        self.debug_draw = DebugDraw (table, model_bag.debug_draw)
 

@@ -39,6 +39,12 @@
 #include "debug.host.h"
 #endif
 
+#define PATH_DEBUG_DRAW 0
+
+#if PATH_DEBUG_DRAW
+#include "debug_draw.host.h"
+#endif
+
 /**
  * This year, due to the large number of obstacles, a grid like structure is
  * used for path finding on the playground.  The A* algorithm is used to find
@@ -424,6 +430,23 @@ path_update (void)
 	AC_PATH_REPORT_CALLBACK (points, len, path.obstacles,
 				 PATH_OBSTACLES_NB);
       }
+#endif
+#if PATH_DEBUG_DRAW
+    uint8_t i;
+    debug_draw_start ();
+    for (i = 0; i < UTILS_COUNT (path_blocking_point); i++)
+	debug_draw_circle (&path_blocking_point[i].pos,
+			   path_blocking_point[i].radius, 0);
+    for (i = 0; i < UTILS_COUNT (path_blocking_segment); i++)
+	debug_draw_segment (&path_blocking_segment[i][0],
+			    &path_blocking_segment[i][1], 0);
+    for (i = 0; i < PATH_NODES_NB; i++)
+      {
+	vect_t pos;
+	path_pos (i, &pos);
+	debug_draw_point (&pos, 1);
+      }
+    debug_draw_send ();
 #endif
 }
 
