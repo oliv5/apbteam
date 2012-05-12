@@ -82,8 +82,8 @@
 /** Information on a node. */
 struct path_node_t
 {
-    /** Whether this node can be used. */
-    uint8_t usable;
+    /** Whether this node can be used, and its cost factor. */
+    uint8_t cost;
 };
 
 /** Context. */
@@ -107,7 +107,7 @@ struct path_t
 static struct path_t path;
 
 /** Static information on nodes. */
-static const struct path_node_t path_nodes[PATH_FIXED_NODES_NB] = {
+static const struct path_node_t path_nodes[PATH_NODES_NB] = {
     /* {{{ */
       { 1 }, /* 0 column 0. */
       { 1 }, /* 1 */
@@ -134,10 +134,12 @@ static const struct path_node_t path_nodes[PATH_FIXED_NODES_NB] = {
       { 1 }, /* 22 */
       { 1 }, /* 23 */
       { 1 }, /* 24 */
-      { 1 }, /* 25 extra nodes. */
-      { 1 }, /* 26 */
-      { 1 }, /* 27 */
-      { 1 }, /* 28 */
+      { 2 }, /* 25 extra nodes. */
+      { 2 }, /* 26 */
+      { 2 }, /* 27 */
+      { 2 }, /* 28 */
+      { 1 }, /* 29 dst node. */
+      { 1 }, /* 30 src node. */
     /* }}} */
 };
 
@@ -241,10 +243,11 @@ path_blocking (uint8_t a, uint8_t b, int16_t *dp)
     vect_t va;
     vect_t vb;
     uint8_t escape_factor = 0;
-    uint8_t factor = 1;
+    uint8_t factor;
     uint8_t blocking = 0;
     if (a == PATH_SRC_NODE_INDEX || b == PATH_SRC_NODE_INDEX)
 	escape_factor = path.escape_factor;
+    factor = UTILS_MAX (path_nodes[a].cost, path_nodes[b].cost);
     path_pos (a, &va);
     path_pos (b, &vb);
     /* Test for static obstacles. */
@@ -306,7 +309,7 @@ path_blocked_update (void)
       {
 	uint8_t valid = 1;
 	/* First, gather information from tables. */
-	if (!path_nodes[i].usable)
+	if (!path_nodes[i].cost)
 	    valid = 0;
 	else
 	  {
