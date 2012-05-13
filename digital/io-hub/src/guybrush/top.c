@@ -50,6 +50,10 @@ FSM_INIT
 FSM_STATES (
 	    /* Initial state. */
 	    TOP_START,
+	    /* Init door, waiting for end of init FSM. */
+	    TOP_INIT_DOOR,
+	    /* Init done, waiting for rount start. */
+	    TOP_INIT,
 
 	    /* Going to a collect position above or below a totem. */
 	    TOP_TOTEM_GOING,
@@ -163,13 +167,26 @@ top_decision (void)
       } \
 } while (0)
 
-FSM_TRANS (TOP_START, init_start_round,
+FSM_TRANS (TOP_START, init_actuators, TOP_INIT_DOOR)
+{
+    IO_SET (OUTPUT_DOOR_OPEN);
+    return FSM_NEXT (TOP_START, init_actuators);
+}
+
+FSM_TRANS (TOP_INIT_DOOR, init_done, TOP_INIT)
+{
+    IO_CLR (OUTPUT_DOOR_OPEN);
+    IO_SET (OUTPUT_DOOR_CLOSE);
+    return FSM_NEXT (TOP_INIT_DOOR, init_done);
+}
+
+FSM_TRANS (TOP_INIT, init_start_round,
 	   totem, TOP_TOTEM_GOING,
 	   bottle, TOP_BOTTLE_GOING,
 	   unload, TOP_UNLOAD_GOING)
 {
     strat_init ();
-    RETURN_TOP_DECISION_SWITCH (TOP_START, init_start_round);
+    RETURN_TOP_DECISION_SWITCH (TOP_INIT, init_start_round);
 }
 
 /** TOTEM */
