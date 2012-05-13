@@ -64,6 +64,9 @@ FSM_STATES (
     CLAMP_GOING_IDLE,
 
     /*--------------------------IDLE---------------------------------------*/
+    /*Wait before going idle*/
+    CLAMP_WAIT_BEFORE_IDLE,
+
     /* Waiting external events. */
     CLAMP_IDLE,
 
@@ -161,6 +164,7 @@ FSM_START_WITH (CLAMP_START)
 #define TIMEOUT_FREE_ASSERV 100
 #define TIMEOUT_RECENTRAGE 100
 #define TIMEOUT_BLOCKED 100
+#define TIMEOUT_IDLE 70
 
 /*-------------------------------------
          ROTATION DEFINITION
@@ -283,19 +287,25 @@ FSM_TRANS (CLAMP_INIT_READY,init_start_round, CLAMP_GOING_IDLE)
     return FSM_NEXT (CLAMP_INIT_READY, init_start_round);
 }
 
-FSM_TRANS (CLAMP_GOING_IDLE, lower_clamp_rotation_success, CLAMP_IDLE)
+FSM_TRANS (CLAMP_GOING_IDLE, lower_clamp_rotation_success, CLAMP_WAIT_BEFORE_IDLE)
 {
     /*Going back to the idle position, ready for showtime.*/
     fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
+    ctx.cpt_blocked = 0;
+    ctx.clamp_1_down = 0;
+    IO_CLR (OUTPUT_LOWER_CLAMP_2_CLOSE);
     return FSM_NEXT (CLAMP_GOING_IDLE, lower_clamp_rotation_success);
 }
 
 /*---------------------------------------------------------*/
 /*  parts of the FSM that Takes coin                       */
 /*---------------------------------------------------------*/
-FSM_TRANS (CLAMP_IDLE, coin_detected, CLAMP_TAKE_COIN)
+FSM_TRANS_TIMEOUT (CLAMP_WAIT_BEFORE_IDLE, TIMEOUT_IDLE, CLAMP_IDLE)
 {
-    if (ctx.clamp_1_down)
+    /*Going back to the idle position, ready for showtime.*/
+    return FSM_NEXT_TIMEOUT (CLAMP_WAIT_BEFORE_IDLE);
+}
+
 FSM_TRANS (CLAMP_IDLE, coin_detected, 
            normal_clamp,CLAMP_TAKE_COIN,
            calm_clamp,CLAMP_IDLE)
@@ -354,7 +364,7 @@ FSM_TRANS (CLAMP_TURN_HALF_WAY, lower_clamp_rotation_failure, CLAMP_BLOCKED)
     return FSM_NEXT (CLAMP_TURN_HALF_WAY,lower_clamp_rotation_failure);
 }
 
-FSM_TRANS (CLAMP_DROP_CD,lower_clamp_rotation_success,CLAMP_IDLE)
+FSM_TRANS (CLAMP_DROP_CD,lower_clamp_rotation_success,CLAMP_WAIT_BEFORE_IDLE)
 {
     fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
     return FSM_NEXT (CLAMP_DROP_CD,lower_clamp_rotation_success);
@@ -574,7 +584,7 @@ FSM_TRANS (CLAMP_BOTTOM_CLAMP_HIDE_POS,stop_tree_approach,CLAMP_BOTTOM_CLAMP_BAC
   
 }
 
-FSM_TRANS (CLAMP_BOTTOM_CLAMP_BACK,lower_clamp_rotation_success,CLAMP_IDLE)
+FSM_TRANS (CLAMP_BOTTOM_CLAMP_BACK,lower_clamp_rotation_success,CLAMP_WAIT_BEFORE_IDLE)
 {
     fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
     return FSM_NEXT(CLAMP_BOTTOM_CLAMP_BACK,lower_clamp_rotation_success);
@@ -669,8 +679,7 @@ FSM_TRANS_TIMEOUT (CLAMP_TURN_BACKWARD,TIMEOUT_BLOCKED, CLAMP_TURN_FORWARD)
 }
 
 
-
-FSM_TRANS (CLAMP_TURN_FORWARD,lower_clamp_rotation_success, CLAMP_IDLE)
+FSM_TRANS (CLAMP_TURN_FORWARD,lower_clamp_rotation_success, CLAMP_WAIT_BEFORE_IDLE)
 {
     ctx.cpt_blocked = 0;
     fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
