@@ -96,7 +96,9 @@ FSM_STATES (
 	    /* Going to an unload position. */
 	    TOP_UNLOAD_GOING,
 	    /* Unloading, waiting for elements to fall. */
-	    TOP_UNLOADING)
+	    TOP_UNLOADING,
+	    /* Unloading, going back to playground. */
+	    TOP_UNLOADING_GOING_BACK)
 
 FSM_START_WITH (TOP_START)
 
@@ -442,15 +444,21 @@ FSM_TRANS (TOP_UNLOAD_GOING, move_success, TOP_UNLOADING)
     return FSM_NEXT (TOP_UNLOAD_GOING, move_success);
 }
 
-FSM_TRANS_TIMEOUT (TOP_UNLOADING, 250,
-		   totem, TOP_TOTEM_GOING,
-		   bottle, TOP_BOTTLE_GOING,
-		   unload, TOP_UNLOAD_GOING)
+FSM_TRANS_TIMEOUT (TOP_UNLOADING, 250, TOP_UNLOADING_GOING_BACK)
 {
     strat_success ();
+    asserv_move_linearly (100);
+    return FSM_NEXT_TIMEOUT (TOP_UNLOADING);
+}
+
+FSM_TRANS (TOP_UNLOADING_GOING_BACK, robot_move_success,
+	   totem, TOP_TOTEM_GOING,
+	   bottle, TOP_BOTTLE_GOING,
+	   unload, TOP_UNLOAD_GOING)
+{
     IO_CLR (OUTPUT_DOOR_OPEN);
     IO_SET (OUTPUT_DOOR_CLOSE);
-    RETURN_TOP_DECISION_SWITCH (TOP_UNLOADING, TOP_UNLOADING_TIMEOUT);
+    RETURN_TOP_DECISION_SWITCH (TOP_UNLOADING_GOING_BACK, robot_move_success);
 }
 
 /** UNLOAD failures. */
