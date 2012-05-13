@@ -231,12 +231,17 @@ uint8_t clamp_read_blocked_cpt(void)
 
 FSM_TRANS (CLAMP_START, init_actuators, CLAMP_INIT_OPEN)
 {
+    ctx.pos_current = 0;
+    /* Starting the pump */
+    pressure_set(LOW_PRESSURE);
     /* Opening the 2 clamps. */
     IO_CLR (OUTPUT_LOWER_CLAMP_1_CLOSE);
-    IO_CLR (OUTPUT_LOWER_CLAMP_2_CLOSE);
+    IO_SET (OUTPUT_LOWER_CLAMP_2_CLOSE);
     /* recentrage the middle clamp. */
     IO_SET (OUTPUT_UPPER_CLAMP_OUT);
     IO_CLR (OUTPUT_UPPER_CLAMP_IN);
+    /*Contrepression*/
+    IO_SET (OUTPUT_UPPER_CLAMP_UP);
 
     return FSM_NEXT (CLAMP_START,init_actuators);
 
@@ -273,6 +278,7 @@ FSM_TRANS (CLAMP_INIT_READY,init_start_round, CLAMP_GOING_IDLE)
 {
     move_needed(BACK_TO_READY * 250,SPEED_ROTATION);   
     ctx.clamp_1_down = 1;
+    ctx.clamp_1_down = 0;
     return FSM_NEXT (CLAMP_INIT_READY, init_start_round);
 }
 
