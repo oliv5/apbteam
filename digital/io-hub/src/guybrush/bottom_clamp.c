@@ -122,6 +122,8 @@ FSM_STATES (
     )
 
 FSM_EVENTS (
+    /* O detected*/
+    0_found,
     /* coin detected in the clamp */
     coin_detected,
     /*signal sent to the top fsm when taking a coin*/
@@ -252,19 +254,21 @@ FSM_TRANS (CLAMP_START, init_actuators, CLAMP_INIT_OPEN)
 
 }
 
-FSM_TRANS_TIMEOUT (CLAMP_INIT_OPEN, TIMEOUT_OPEN_CLAMPS, CLAMP_INIT_FIND_0)
+FSM_TRANS_TIMEOUT (CLAMP_INIT_OPEN, 5*TIMEOUT_OPEN_CLAMPS, CLAMP_INIT_FIND_0)
 {
     /*Findig the 0 position. */
-    mimot_motor0_find_zero (0x05, 1, 0);
-    ctx.pos_current = 0;
+    move_needed(8000,SLOW_ROTATION);
     return FSM_NEXT_TIMEOUT (CLAMP_INIT_OPEN);
 }
 
-FSM_TRANS (CLAMP_INIT_FIND_0, lower_clamp_rotation_success, CLAMP_INIT_HIDE_CLAMP)
+FSM_TRANS (CLAMP_INIT_FIND_0, 0_found, CLAMP_INIT_HIDE_CLAMP)
 {
+    /*init of the position*/
+    ctx.pos_current = mimot_get_motor0_position();
+    
     /* Hidding the clamp inside the robot. */
-    move_needed(HIDE_POS * 250,SPEED_ROTATION);
-    return FSM_NEXT (CLAMP_INIT_FIND_0, lower_clamp_rotation_success);
+    move_needed(INIT_BOTTOM_POS  * 250,FAST_ROTATION);
+    return FSM_NEXT (CLAMP_INIT_FIND_0, 0_found);
 }
 
 FSM_TRANS (CLAMP_INIT_HIDE_CLAMP, lower_clamp_rotation_success, 
