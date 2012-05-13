@@ -236,10 +236,15 @@ FSM_TRANS (CLAMP_INIT_FIND_0, lower_clamp_rotation_success, CLAMP_INIT_HIDE_CLAM
     return FSM_NEXT (CLAMP_INIT_FIND_0, lower_clamp_rotation_success);
 }
 
-FSM_TRANS (CLAMP_INIT_HIDE_CLAMP, lower_clamp_rotation_success, CLAMP_INIT_READY)
+FSM_TRANS (CLAMP_INIT_HIDE_CLAMP, lower_clamp_rotation_success, 
+           normal_start,CLAMP_INIT_READY,
+           demo_start,CLAMP_GOING_IDLE)
 {
-    /*Nothing to do,just waiting for the clamp to be hidden*/
-    return FSM_NEXT (CLAMP_INIT_HIDE_CLAMP, lower_clamp_rotation_success);
+    /*Looking if we are in demo mode or normal mode*/
+    if (IO_GET(CONTACT_STRAT))
+        return FSM_NEXT (CLAMP_INIT_HIDE_CLAMP,lower_clamp_rotation_success,normal_start);
+    else
+        return FSM_NEXT (CLAMP_INIT_HIDE_CLAMP,lower_clamp_rotation_success,demo_start);
 }
 
 
