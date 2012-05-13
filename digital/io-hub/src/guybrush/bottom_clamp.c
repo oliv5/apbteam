@@ -294,7 +294,6 @@ FSM_TRANS (CLAMP_INIT_READY,init_start_round, CLAMP_GOING_IDLE)
 FSM_TRANS (CLAMP_GOING_IDLE, lower_clamp_rotation_success, CLAMP_WAIT_BEFORE_IDLE)
 {
     /*Going back to the idle position, ready for showtime.*/
-    fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
     ctx.cpt_blocked = 0;
     ctx.clamp_1_down = 0;
     IO_CLR (OUTPUT_LOWER_CLAMP_2_CLOSE);
@@ -307,6 +306,7 @@ FSM_TRANS (CLAMP_GOING_IDLE, lower_clamp_rotation_success, CLAMP_WAIT_BEFORE_IDL
 FSM_TRANS_TIMEOUT (CLAMP_WAIT_BEFORE_IDLE, TIMEOUT_IDLE, CLAMP_IDLE)
 {
     /*Going back to the idle position, ready for showtime.*/
+    fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
     return FSM_NEXT_TIMEOUT (CLAMP_WAIT_BEFORE_IDLE);
 }
 
@@ -370,7 +370,6 @@ FSM_TRANS (CLAMP_TURN_HALF_WAY, lower_clamp_rotation_failure, CLAMP_BLOCKED)
 
 FSM_TRANS (CLAMP_DROP_CD,lower_clamp_rotation_success,CLAMP_WAIT_BEFORE_IDLE)
 {
-    fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
     return FSM_NEXT (CLAMP_DROP_CD,lower_clamp_rotation_success);
 }
 
@@ -590,7 +589,6 @@ FSM_TRANS (CLAMP_BOTTOM_CLAMP_HIDE_POS,stop_tree_approach,CLAMP_BOTTOM_CLAMP_BAC
 
 FSM_TRANS (CLAMP_BOTTOM_CLAMP_BACK,lower_clamp_rotation_success,CLAMP_WAIT_BEFORE_IDLE)
 {
-    fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
     return FSM_NEXT(CLAMP_BOTTOM_CLAMP_BACK,lower_clamp_rotation_success);
     
 }
@@ -686,7 +684,6 @@ FSM_TRANS_TIMEOUT (CLAMP_TURN_BACKWARD,TIMEOUT_BLOCKED, CLAMP_TURN_FORWARD)
 FSM_TRANS (CLAMP_TURN_FORWARD,lower_clamp_rotation_success, CLAMP_WAIT_BEFORE_IDLE)
 {
     ctx.cpt_blocked = 0;
-    fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
     return FSM_NEXT (CLAMP_TURN_FORWARD, lower_clamp_rotation_success);
 }
 
