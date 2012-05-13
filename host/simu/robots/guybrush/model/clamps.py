@@ -63,7 +63,10 @@ class Clamps (Observable):
             self.notify ()
 
     def __lower_clamp_notified (self):
-        self.lower_clamp_rotation = self.lower_clamp_motor.angle
+        if self.lower_clamp_motor.angle is None:
+            self.lower_clamp_rotation = None
+        else:
+            self.lower_clamp_rotation = self.lower_clamp_motor.angle + pi
         for i, c in enumerate (self.lower_clamp_cylinders):
             if c.pos is None:
                 self.lower_clamp_clamping[i] = None
