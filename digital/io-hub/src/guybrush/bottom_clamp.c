@@ -69,7 +69,10 @@ FSM_STATES (
 
     /* Waiting external events. */
     CLAMP_IDLE,
-
+    /*---------------------------Cleaning area sequence---------------------*/
+    CLAMP_READY_TO_CLEAN,
+    CLAMP_CATCH_COIN,
+    CLAMP_READY_TO_LOAD, 
     /*---------------------------Taking coin sequence-----------------------*/
     /*Taking a coin. */
     CLAMP_TAKE_COIN,
@@ -138,6 +141,12 @@ FSM_EVENTS (
     upper_set_up,
     /*upper set is totally close*/
     upper_set_down,
+    /*Clean the area*/
+    clean_start,
+    /*Clos the bottom clamp*/
+    clean_catch,
+    /* Load the coin*/
+    clean_load,
     /* Tree detected, get ready to empty it. */
     tree_detected,
     /* stop the tree-emptying cycle*/
@@ -301,7 +310,7 @@ FSM_TRANS (CLAMP_GOING_IDLE, lower_clamp_rotation_success, CLAMP_WAIT_BEFORE_IDL
 }
 
 /*---------------------------------------------------------*/
-/*  parts of the FSM that Takes coin                       */
+/*  IDLE!!                                                 */
 /*---------------------------------------------------------*/
 FSM_TRANS_TIMEOUT (CLAMP_WAIT_BEFORE_IDLE, TIMEOUT_IDLE, CLAMP_IDLE)
 {
@@ -309,7 +318,45 @@ FSM_TRANS_TIMEOUT (CLAMP_WAIT_BEFORE_IDLE, TIMEOUT_IDLE, CLAMP_IDLE)
     fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
     return FSM_NEXT_TIMEOUT (CLAMP_WAIT_BEFORE_IDLE);
 }
+/*---------------------------------------------------------*/
+/*  parts of the FSM that Clean areas                      */
+/*---------------------------------------------------------*/
+FSM_TRANS (CLAMP_IDLE, clean_start,CLAMP_READY_TO_CLEAN) 
+{
+    return FSM_NEXT(CLAMP_IDLE,clean_start);
+}
 
+FSM_TRANS (CLAMP_READY_TO_CLEAN, clean_catch,CLAMP_CATCH_COIN) 
+{
+     /*If the clamp 1 has the CD.*/
+    if (ctx.clamp_1_down)
+    {     
+        /*Close it.*/
+        IO_SET (OUTPUT_LOWER_CLAMP_1_CLOSE);
+    }
+    /*If the clamp 2 is closed. */
+    else       
+    {
+        IO_SET (OUTPUT_LOWER_CLAMP_2_CLOSE);
+    }
+    return FSM_NEXT(CLAMP_READY_TO_CLEAN,clean_catch);
+}
+FSM_TRANS_TIMEOUT (CLAMP_CATCH_COIN, TIMEOUT_CLOSE_CLAMPS*2,CLAMP_READY_TO_LOAD) 
+{
+    fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
+    return FSM_NEXT_TIMEOUT(CLAMP_CATCH_COIN);
+}
+
+FSM_TRANS (CLAMP_READY_TO_LOAD, clean_load,CLAMP_TAKE_COIN) 
+{
+    return FSM_NEXT(CLAMP_READY_TO_LOAD,clean_load);
+}
+
+
+
+/*---------------------------------------------------------*/
+/*  parts of the FSM that Takes coin                       */
+/*---------------------------------------------------------*/
 FSM_TRANS (CLAMP_IDLE, coin_detected, 
            normal_clamp,CLAMP_TAKE_COIN,
            calm_clamp,CLAMP_IDLE)
