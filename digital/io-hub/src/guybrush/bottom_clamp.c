@@ -172,7 +172,7 @@ FSM_START_WITH (CLAMP_START)
          ROTATION DEFINITION
 ---------------------------------------*/
 #define POS_DELAY 1200
-#define INIT_BOTTOM_POS (6+HALF_TURN)
+#define INIT_BOTTOM_POS (6.25+HALF_TURN)
 #define HIDE_POS 3
 #define BACK_TO_READY (16-HIDE_POS)
 #define HALF_TURN 8
@@ -288,8 +288,6 @@ FSM_TRANS (CLAMP_INIT_HIDE_CLAMP, lower_clamp_rotation_success,
 
 FSM_TRANS (CLAMP_INIT_READY,init_start_round, CLAMP_GOING_IDLE)
 {
-    move_needed(BACK_TO_READY * 250,FAST_ROTATION);   
-    ctx.clamp_1_down = 0;
     return FSM_NEXT (CLAMP_INIT_READY, init_start_round);
 }
 
