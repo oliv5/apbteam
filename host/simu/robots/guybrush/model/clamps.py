@@ -128,7 +128,7 @@ class Clamps (Observable):
         if floor_clamp is None:
             new_state = True
         else:
-            new_state = not self.lower_clamp_content[floor_clamp]
+            new_state = bool (self.lower_clamp_content[floor_clamp])
         if new_state != old_state:
             for s in self.lower_clamp_sensors:
                 s.state = new_state

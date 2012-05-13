@@ -59,10 +59,10 @@ class Bag:
                     None, scheduler, 0., 30., 150., 75., 30.),
                 PneumaticCylinder (output[self.OUTPUT_LOWER_CLAMP_2_CLOSE],
                     None, scheduler, 0., 30., 150., 75., 30.)),
-                contact[0:4], contact[10],
+                contact[0:2], contact[8],
                 PneumaticCylinder (output[self.OUTPUT_UPPER_CLAMP_DOWN],
                     output[self.OUTPUT_UPPER_CLAMP_UP], scheduler,
-                    0., 1., 1., 1., 1., contact[4], contact[5]),
+                    0., 1., 1., 1., 1., contact[2], contact[3]),
                 PneumaticCylinder (output[self.OUTPUT_UPPER_CLAMP_IN],
                     output[self.OUTPUT_UPPER_CLAMP_OUT], scheduler,
                     0., 1., 1., 1., 0.),
@@ -70,7 +70,7 @@ class Bag:
                     scheduler, 0., 30., 150., 75., 30.),
                 PneumaticCylinder (output[self.OUTPUT_DOOR_CLOSE],
                     output[self.OUTPUT_DOOR_OPEN], scheduler,
-                    0., 1., 1., 1., 1., contact[7], contact[6])
+                    0., 1., 1., 1., 1., contact[5], contact[4])
                 )
         self.distance_sensor = [
                 DistanceSensorSensopart (link_bag.io_hub.adc[0], scheduler, table,
