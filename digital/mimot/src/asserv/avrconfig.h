@@ -133,7 +133,7 @@
 /** If not using XMEM, read enable IO, valid low. */
 #define AC_ENCODER_EXT_RD_IO D, 6
 /** Reverse flag for each encoder (1 to reverse direction). */
-#define AC_ENCODER_EXT_REVERSE 0, 0
+#define AC_ENCODER_EXT_REVERSE 1, 0
 /** Right shift for all encoders to lower resolution. */
 #define AC_ENCODER_EXT_SHIFT 1
 /** For debug purpose only! */
