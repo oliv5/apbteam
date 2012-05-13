@@ -179,6 +179,8 @@ main_event_to_fsm (void)
 	FSM_HANDLE_E (AI, coin_detected);
     if ((int16_t) (mimot_get_motor0_position() - position_to_drop) > 0)
         FSM_HANDLE_E (AI, time_to_drop_coin);
+    if (IO_GET(CONTACT_LOWER_CLAMP_ZERO))
+        FSM_HANDLE_E (AI, 0_found);
     /* Jack. */
     if (!contact_get_jack ())
 	FSM_HANDLE_E (AI, jack_inserted);
