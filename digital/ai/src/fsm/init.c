@@ -79,6 +79,8 @@ FSM_EVENTS (
 	    jack_removed,
 	    /* Sent to initialise actuators. */
 	    init_actuators,
+	    /* Sent when init is done. */
+	    init_done,
 	    /* Sent to start round. */
 	    init_start_round)
 
@@ -172,6 +174,7 @@ FSM_TRANS (INIT_GOING_AWAY_SECOND_WALL, robot_move_success,
 FSM_TRANS (INIT_GOING_TO_START_POSITION, robot_move_success,
 	   INIT_WAITING_SECOND_JACK_OUT)
 {
+    fsm_queue_post_event (FSM_EVENT (AI, init_done));
     asserv_set_speed (BOT_SPEED_NORMAL);
     return FSM_NEXT (INIT_GOING_TO_START_POSITION, robot_move_success);
 }
