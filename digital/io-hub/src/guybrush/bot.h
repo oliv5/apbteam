@@ -37,7 +37,7 @@
 /** Distance from the robot axis to the front. */
 #define BOT_SIZE_FRONT 150
 /** Distance from the robot axis to the back. */
-#define BOT_SIZE_BACK 130
+#define BOT_SIZE_BACK 134
 /** Distance from the robot axis to the side. */
 #define BOT_SIZE_SIDE 172
 /** Maximum distance from the robot base center to one of its edge. */
