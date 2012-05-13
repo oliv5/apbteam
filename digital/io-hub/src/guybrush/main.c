@@ -174,10 +174,8 @@ main_event_to_fsm (void)
 	FSM_HANDLE_E (AI, lower_clamp_rotation_success);
     else if (mimot_motor0_status == failure)
 	FSM_HANDLE_E (AI, lower_clamp_rotation_failure);
-    if (!IO_GET (CONTACT_LOWER_CLAMP_SENSOR_1)
-	|| !IO_GET (CONTACT_LOWER_CLAMP_SENSOR_2)
-	|| !IO_GET (CONTACT_LOWER_CLAMP_SENSOR_3)
-	|| !IO_GET (CONTACT_LOWER_CLAMP_SENSOR_4))
+    if (IO_GET (CONTACT_LOWER_CLAMP_SENSOR_1)
+	|| IO_GET (CONTACT_LOWER_CLAMP_SENSOR_2))
 	FSM_HANDLE_E (AI, coin_detected);
     if ((int16_t) (mimot_get_motor0_position() - position_to_drop) > 0)
         FSM_HANDLE_E (AI, time_to_drop_coin);
