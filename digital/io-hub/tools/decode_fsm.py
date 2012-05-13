@@ -22,10 +22,9 @@ def parse_header(fsm_name, fname):
 
 def parse_proto(states, events):
     """Parse proto output from stdin and output FSM transitions."""
-    fsm_re = re.compile(r'^!F([0-9af]{2})([0-9af]{2})([0-9af]{2})$')
+    fsm_re = re.compile(r'!F([0-9af]{2})([0-9af]{2})([0-9af]{2})')
     for l in sys.stdin:
-        m = fsm_re.match(l)
-        if m:
+        for m in fsm_re.finditer(l):
             old, event, new = [ int(i, 16) for i in m.groups() ]
             try:
                 old = states[old]
