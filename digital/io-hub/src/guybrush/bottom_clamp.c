@@ -30,6 +30,7 @@
 #include "bot.h"
 #include "main.h"
 #include "bottom_clamp.h"
+#include "pressure.h"
 
 
 #define FSM_NAME AI
