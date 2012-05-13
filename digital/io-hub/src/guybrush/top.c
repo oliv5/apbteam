@@ -57,6 +57,16 @@ FSM_STATES (
 
 	    /* Going to a collect position above or below a totem. */
 	    TOP_TOTEM_GOING,
+	    /* Cleaning: waiting clamp FSM. */
+	    TOP_TOTEM_CLEAN_WAITING,
+	    /* Cleaning: approaching totem. */
+	    TOP_TOTEM_CLEAN_APPROACHING,
+	    /* Cleaning; closing clamps. */
+	    TOP_TOTEM_CLEAN_CATCH_WAITING,
+	    /* Cleaning: going back. */
+	    TOP_TOTEM_CLEAN_GOING_BACK,
+	    /* Cleaning: loading. */
+	    TOP_TOTEM_CLEAN_LOADING,
 	    /* Waiting clamp FSM to put clamps down. */
 	    TOP_TOTEM_CLAMP_WAITING,
 	    /* Put clamps down. */
@@ -193,17 +203,61 @@ FSM_TRANS (TOP_INIT, init_start_round,
 /** TOTEM */
 
 FSM_TRANS (TOP_TOTEM_GOING, move_success,
-	   wait, TOP_TOTEM_CLAMP_WAITING,
-	   ready, TOP_TOTEM_CLAMP_DOWNING)
+	   wait, TOP_TOTEM_CLEAN_WAITING,
+	   ready, TOP_TOTEM_CLEAN_APPROACHING)
 {
-    if (!FSM_CAN_HANDLE (AI, tree_detected))
+    if (!FSM_CAN_HANDLE (AI, clean_start))
       {
 	return FSM_NEXT (TOP_TOTEM_GOING, move_success, wait);
       }
     else
       {
-	FSM_HANDLE (AI, tree_detected);
+	FSM_HANDLE (AI, clean_start);
+	asserv_move_linearly (PATH_GRID_CLEARANCE_MM - BOT_SIZE_FRONT - 130);
 	return FSM_NEXT (TOP_TOTEM_GOING, move_success, ready);
+      }
+}
+
+FSM_TRANS (TOP_TOTEM_CLEAN_WAITING, clamps_ready, TOP_TOTEM_CLEAN_APPROACHING)
+{
+    FSM_HANDLE (AI, clean_start);
+    asserv_move_linearly (PATH_GRID_CLEARANCE_MM - BOT_SIZE_FRONT - 130);
+    return FSM_NEXT (TOP_TOTEM_CLEAN_WAITING, clamps_ready);
+}
+
+FSM_TRANS (TOP_TOTEM_CLEAN_APPROACHING, robot_move_success,
+	   TOP_TOTEM_CLEAN_CATCH_WAITING)
+{
+    FSM_HANDLE (AI, clean_catch);
+    return FSM_NEXT (TOP_TOTEM_CLEAN_APPROACHING, robot_move_success);
+}
+
+FSM_TRANS (TOP_TOTEM_CLEAN_CATCH_WAITING, clamps_ready,
+	   TOP_TOTEM_CLEAN_GOING_BACK)
+{
+    asserv_move_linearly (-100);
+    return FSM_NEXT (TOP_TOTEM_CLEAN_CATCH_WAITING, clamps_ready);
+}
+
+FSM_TRANS (TOP_TOTEM_CLEAN_GOING_BACK, robot_move_success,
+	   TOP_TOTEM_CLEAN_LOADING)
+{
+    FSM_HANDLE (AI, clean_load);
+    return FSM_NEXT (TOP_TOTEM_CLEAN_GOING_BACK, robot_move_success);
+}
+
+FSM_TRANS (TOP_TOTEM_CLEAN_LOADING, clamps_ready,
+	   wait, TOP_TOTEM_CLAMP_WAITING,
+	   ready, TOP_TOTEM_CLAMP_DOWNING)
+{
+    if (!FSM_CAN_HANDLE (AI, tree_detected))
+      {
+	return FSM_NEXT (TOP_TOTEM_CLEAN_LOADING, clamps_ready, wait);
+      }
+    else
+      {
+	FSM_HANDLE (AI, tree_detected);
+	return FSM_NEXT (TOP_TOTEM_CLEAN_LOADING, clamps_ready, ready);
       }
 }
 
@@ -215,7 +269,7 @@ FSM_TRANS (TOP_TOTEM_CLAMP_WAITING, clamps_ready, TOP_TOTEM_CLAMP_DOWNING)
 
 FSM_TRANS (TOP_TOTEM_CLAMP_DOWNING, clamps_ready, TOP_TOTEM_APPROACHING)
 {
-    asserv_move_linearly (PATH_GRID_CLEARANCE_MM - BOT_SIZE_FRONT - 30);
+    asserv_move_linearly (200);
     return FSM_NEXT (TOP_TOTEM_CLAMP_DOWNING, clamps_ready);
 }
 
