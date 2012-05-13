@@ -134,7 +134,7 @@ class Clamps (Observable):
                 s.state = new_state
                 s.notify ()
         old_state = self.lower_clamp_zero.state
-        new_state = (rot_mod >= pi * 1.45 and rot_mod < pi * 1.55
+        new_state = (rot_mod >= pi * 1.21 and rot_mod < pi * 1.3
                 and self.lower_clamp_clamping[0])
         if new_state != old_state:
             self.lower_clamp_zero.state = new_state
