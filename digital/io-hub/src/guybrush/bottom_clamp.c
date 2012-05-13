@@ -134,8 +134,12 @@ FSM_EVENTS (
     clamps_ready,
     /* the robot is ready to empty the tree, and the top fsm is asking him to do so*/
     empty_tree,
+    /* The robot has step back. Event given by the main.c programm(after an empty tree, or a clamp_block event. */
     robot_is_back,
-    clamp_blocked
+    /* The clamp is blocked. We can try to unblock it*/
+    clamp_blocked,
+    /* We tryed to unblock the clamp too many time. we can now say that the bottom clamp is out of order*/
+    clamp_is_dead
      )
 
 
@@ -178,6 +182,8 @@ struct clamp_t
     uint8_t stop_tree_approach;
     /** True if we are in "Calm mod" (clamps can't move)*/
     uint8_t calm_mode;   
+    /** Compting the number of time the bottom clamp is being blocked in a row (reset when going back to  idle)*/
+    uint8_t cpt_blocked;
 };
 
 /*Global context. */
@@ -199,6 +205,11 @@ static void move_needed(int move,int speed)
 void clamp_calm_mode(int mode)
 {
     ctx.calm_mode=mode;
+}
+
+uint8_t clamp_read_blocked_cpt(void)
+{
+    return ctx.cpt_blocked;
 }
 
 
@@ -574,9 +585,20 @@ FSM_TRANS (CLAMP_OPEN_BOTTOM_CLAMPS,robot_is_back, CLAMP_WAIT)
     return FSM_NEXT (CLAMP_OPEN_BOTTOM_CLAMPS, robot_is_back);
 }
 
+FSM_TRANS (CLAMP_OPEN_BOTTOM_CLAMPS,clamp_is_dead, CLAMP_SHITTY_STATE)
+{
+    return FSM_NEXT (CLAMP_OPEN_BOTTOM_CLAMPS, clamp_is_dead);
+}
+
 FSM_TRANS (CLAMP_WAIT,lower_clamp_rotation_success, CLAMP_TURN_BACKWARD)
 {
     return FSM_NEXT (CLAMP_WAIT, lower_clamp_rotation_success);
+}
+
+FSM_TRANS (CLAMP_WAIT,lower_clamp_rotation_failure, CLAMP_BLOCKED)
+{
+    ctx.cpt_blocked += 1;
+    return FSM_NEXT (CLAMP_WAIT, lower_clamp_rotation_failure);
 }
 
 FSM_TRANS_TIMEOUT (CLAMP_TURN_BACKWARD,TIMEOUT_BLOCKED, CLAMP_TURN_FORWARD)
@@ -598,18 +620,22 @@ FSM_TRANS_TIMEOUT (CLAMP_TURN_BACKWARD,TIMEOUT_BLOCKED, CLAMP_TURN_FORWARD)
 
 FSM_TRANS (CLAMP_TURN_FORWARD,lower_clamp_rotation_success, CLAMP_IDLE)
 {
+    ctx.cpt_blocked = 0;
+    fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
     return FSM_NEXT (CLAMP_TURN_FORWARD, lower_clamp_rotation_success);
 }
 
 
-FSM_TRANS (CLAMP_TURN_BACKWARD,lower_clamp_rotation_failure, CLAMP_SHITTY_STATE)
+FSM_TRANS (CLAMP_TURN_BACKWARD,lower_clamp_rotation_failure, CLAMP_BLOCKED)
 {
+    ctx.cpt_blocked += 1;
     return FSM_NEXT (CLAMP_TURN_BACKWARD, lower_clamp_rotation_failure);
 }
 
 
-FSM_TRANS (CLAMP_TURN_FORWARD,lower_clamp_rotation_failure, CLAMP_SHITTY_STATE)
+FSM_TRANS (CLAMP_TURN_FORWARD,lower_clamp_rotation_failure, CLAMP_BLOCKED)
 {
+    ctx.cpt_blocked += 1;
     return FSM_NEXT (CLAMP_TURN_FORWARD, lower_clamp_rotation_failure);
 }
 
