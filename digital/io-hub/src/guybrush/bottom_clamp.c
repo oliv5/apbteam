@@ -95,6 +95,12 @@ FSM_STATES (
     CLAMP_FOLD_UPPER_SET,
     /*Open upper clamps to release objects. */
     CLAMP_OPEN_UPPER_CLAMPS,
+    /*Make the coin "fall" into the clamp (the clamp has to be 90° from the floor*/
+    CLAMP_READY_TO_RECALE,
+    CLAMP_READY_TO_RECALE_2,
+    CLAMP_BEGIN_RECALE,
+    CLAMP_TEMPO_RECALE,
+    CLAMP_END_RECALE,
 
     /*-------------------------Stop tree approach extra states--------------*/
     /*Letting the bottom clamp to finish it's move before starting the stop tree procedure. */
@@ -163,10 +169,14 @@ FSM_START_WITH (CLAMP_START)
 #define BACK_TO_READY (16-HIDE_POS)
 #define HALF_TURN 8
 #define QUARTER_TURN (16-4)
+#define DECALAGE_CD_BAS 1
 #define HIDE_POS_TREE 3
-#define HIDE_POS_TREE_2 2
-#define BACK_TO_READY_TREE -HIDE_POS_TREE
-#define BACK_TO_READY_TREE_2 (HALF_TURN-HIDE_POS_TREE_2)
+#define HIDE_POS_TREE_2 (2-DECALAGE_CD_BAS)
+#define BACK_TO_READY_TREE (-HIDE_POS_TREE + DECALAGE_CD_BAS)
+#define BACK_TO_READY_TREE_2 (HALF_TURN - HIDE_POS_TREE_2 - DECALAGE_CD_BAS)
+#define RECALE_COIN (QUARTER_TURN - HIDE_POS_TREE_2 - DECALAGE_CD_BAS)
+#define BACK_TO_READY_RECALE_COIN (-QUARTER_TURN)
+#define FAST_ROTATION 0x30
 #define SPEED_ROTATION 0x30
 #define FAILURE_ROTATION 0x10
 /*-------------------------------------
@@ -485,24 +495,59 @@ FSM_TRANS (CLAMP_FOLD_UPPER_SET, upper_set_up, CLAMP_OPEN_UPPER_CLAMPS)
 
 }
 
-FSM_TRANS_TIMEOUT (CLAMP_OPEN_UPPER_CLAMPS, TIMEOUT_OPEN_CLAMPS, CLAMP_TURN_HALF_WAY)
+FSM_TRANS_TIMEOUT (CLAMP_OPEN_UPPER_CLAMPS, TIMEOUT_OPEN_CLAMPS, 
+                   stop_tree_branch,CLAMP_TURN_HALF_WAY,
+                   continue_empty_tree_branch,CLAMP_READY_TO_RECALE)
 {
-    IO_SET (OUTPUT_UPPER_CLAMP_OPEN);
-    /*We reopen clamp 2.*/
     IO_CLR (OUTPUT_LOWER_CLAMP_2_CLOSE);
     if (ctx.stop_tree_approach)
     {
         main_set_drop_coin_pos(ctx.pos_current + ((HALF_TURN - HIDE_POS_TREE) * 250) - POS_DELAY);
-        move_needed((HALF_TURN - HIDE_POS_TREE) * 250,SPEED_ROTATION);
+        move_needed((HALF_TURN - HIDE_POS_TREE) * 250,FAST_ROTATION);
+        ctx.stop_tree_approach = 0;
+        fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
+        return FSM_NEXT_TIMEOUT (CLAMP_OPEN_UPPER_CLAMPS,stop_tree_branch);
     }
     else
     {
-        main_set_drop_coin_pos(ctx.pos_current + (BACK_TO_READY_TREE_2 * 250) - POS_DELAY);
-        move_needed((BACK_TO_READY_TREE_2) * 250,SPEED_ROTATION);
+        move_needed(RECALE_COIN * 250,SLOW_ROTATION);
+        return FSM_NEXT_TIMEOUT (CLAMP_OPEN_UPPER_CLAMPS,continue_empty_tree_branch);
     }
-    ctx.stop_tree_approach = 0;
-    fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
-    return FSM_NEXT_TIMEOUT (CLAMP_OPEN_UPPER_CLAMPS);
+}
+
+FSM_TRANS (CLAMP_READY_TO_RECALE, lower_clamp_rotation_success, CLAMP_READY_TO_RECALE_2)
+{
+    IO_CLR (OUTPUT_LOWER_CLAMP_1_CLOSE);
+    return FSM_NEXT (CLAMP_READY_TO_RECALE,lower_clamp_rotation_success);
+}
+
+FSM_TRANS (CLAMP_READY_TO_RECALE, lower_clamp_rotation_failure, CLAMP_BLOCKED)
+{
+    return FSM_NEXT (CLAMP_READY_TO_RECALE,lower_clamp_rotation_failure);
+}
+
+FSM_TRANS_TIMEOUT (CLAMP_READY_TO_RECALE_2, TIMEOUT_OPEN_CLAMPS, CLAMP_TEMPO_RECALE)
+{
+    IO_SET (OUTPUT_LOWER_CLAMP_1_CLOSE);
+    return FSM_NEXT_TIMEOUT (CLAMP_READY_TO_RECALE_2);
+}
+
+FSM_TRANS_TIMEOUT (CLAMP_TEMPO_RECALE, TIMEOUT_OPEN_CLAMPS,CLAMP_END_RECALE)
+{
+    move_needed(BACK_TO_READY_RECALE_COIN  * 250,FAST_ROTATION);
+    return FSM_NEXT_TIMEOUT (CLAMP_TEMPO_RECALE);
+}
+
+FSM_TRANS (CLAMP_END_RECALE, lower_clamp_rotation_failure,CLAMP_BLOCKED)
+{
+    return FSM_NEXT (CLAMP_END_RECALE,lower_clamp_rotation_failure);
+}
+
+FSM_TRANS (CLAMP_END_RECALE, lower_clamp_rotation_success,CLAMP_TURN_HALF_WAY)
+{
+    main_set_drop_coin_pos(ctx.pos_current + (HALF_TURN * 250) - POS_DELAY);
+    move_needed(HALF_TURN  * 250,FAST_ROTATION);
+    return FSM_NEXT (CLAMP_END_RECALE, lower_clamp_rotation_success);
 }
 /*---------------------------------------------------------------------------------*/
 /*Parts of the FSM that goes back to idle after receiving the stop approach signal */
