@@ -170,6 +170,7 @@ top_decision (void)
 FSM_TRANS (TOP_START, init_actuators, TOP_INIT_DOOR)
 {
     IO_SET (OUTPUT_DOOR_OPEN);
+    IO_CLR (OUTPUT_DOOR_CLOSE);
     return FSM_NEXT (TOP_START, init_actuators);
 }
 
