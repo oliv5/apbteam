@@ -93,3 +93,23 @@ cs_update (void)
 #endif
 }
 
+void
+cs_reset (void)
+{
+    output_set (&output_left, 0);
+    output_set (&output_right, 0);
+    output_brake (&output_left, 0);
+    output_brake (&output_right, 0);
+    control_state_set_mode (&cs_main.state, CS_MODE_NONE, 0);
+#if AC_ASSERV_AUX_NB
+    uint8_t i;
+    for (i = 0; i < AC_ASSERV_AUX_NB; i++)
+      {
+	output_set (&output_aux[i], 0);
+	output_brake (&output_aux[i], 0);
+	control_state_set_mode (&cs_aux[i].state, CS_MODE_NONE, 0);
+      }
+#endif
+    output_update ();
+}
+

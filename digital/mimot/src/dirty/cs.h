@@ -40,4 +40,7 @@ cs_update_prepare (void);
 void
 cs_update (void);
 
+void
+cs_reset (void);
+
 #endif /* cs_h */

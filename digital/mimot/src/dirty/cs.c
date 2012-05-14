@@ -67,3 +67,16 @@ cs_update (void)
 	control_system_single_update (&cs_aux[i]);
 }
 
+void
+cs_reset (void)
+{
+    uint8_t i;
+    for (i = 0; i < AC_ASSERV_AUX_NB; i++)
+      {
+	output_set (&output_aux[i], 0);
+	output_brake (&output_aux[i], 0);
+	control_state_set_mode (&cs_aux[i].state, CS_MODE_NONE, 0);
+      }
+    output_update ();
+}
+

@@ -267,6 +267,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
       {
       case c ('z', 0):
 	/* Reset. */
+	cs_reset ();
 	utils_reset ();
 	break;
     /* Commands. */

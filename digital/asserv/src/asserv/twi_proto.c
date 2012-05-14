@@ -127,6 +127,7 @@ twi_proto_callback (u8 *buf, u8 size)
       {
       case c ('z', 0):
 	/* Reset. */
+	cs_reset ();
 	utils_reset ();
 	break;
       case c ('w', 0):
