@@ -227,6 +227,6 @@ FSM_TRANS (INIT_WAIT_SECOND_JACK_OUT,
     /* Set the flag to transmit to other FSM. */
     init_match_is_started = 1;
     /* Start the chrono. */
-    chrono_init ();
+    chrono_start ();
     return FSM_NEXT (INIT_WAIT_SECOND_JACK_OUT, jack_removed_from_bot);
 }

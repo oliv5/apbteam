@@ -62,7 +62,11 @@ timer_init (void)
     TCCR0B = regv (FOC0A, FOC0B, 5, 4, WGM02, CS02, CS01, CS00,
 		       0,     0, 0, 0,     0,    1,    0,    0);
 #endif
+#ifdef TIMSK0
     TIMSK0 = _BV (TOIE0);
+#else
+    TIMSK |= _BV (TOIE0);
+#endif
 }
 
 uint8_t
