@@ -815,6 +815,4 @@ FSM_TRANS (CLAMP_TURN_FORWARD,lower_clamp_rotation_failure, CLAMP_BLOCKED)
     return FSM_NEXT (CLAMP_TURN_FORWARD, lower_clamp_rotation_failure);
 }
 
-
-
-
+/* vim: set cino={0\:0t0(0 et: */
