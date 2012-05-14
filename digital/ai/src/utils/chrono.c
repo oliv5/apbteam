@@ -37,8 +37,8 @@
 #define CHRONO_MATCH_TICK_COUNT \
     (CHRONO_MATCH_DURATION_MS / TIMER_PERIOD_MS)
 
-/** Time to wait before resetting slaves board, in ms. */
-#define CHRONO_WAIT_BEFORE_RESET_MS 1000
+/** Time to wait before freeing asserv motors, in ms. */
+#define CHRONO_WAIT_BEFORE_FREE_MS 1000
 
 /** Number of timer tick left before the match ends. */
 static uint32_t chrono_tick_left_;
@@ -92,24 +92,17 @@ chrono_end_match (uint8_t block)
 {
     /* Make the bot stop moving */
     asserv_stop_motor ();
-
     /* Wait until complete */
     while (!twi_master_sync ())
 	timer_wait ();
-
-    /* Wait CHRONO_WAIT_BEFORE_RESET ms before reseting */
-    utils_delay_ms (CHRONO_WAIT_BEFORE_RESET_MS);
-    /* Reset the asserv board */
-    asserv_reset ();
+    /* Wait, then release motors. */
+    utils_delay_ms (CHRONO_WAIT_BEFORE_FREE_MS);
+    asserv_free_motor ();
+    /* Wait until complete */
+    while (!twi_master_sync ())
+	timer_wait ();
     /* Block indefinitely */
-    if (block)
-	while (42)
-#ifdef HOST
-	  {
-	    mex_node_wait ();
-	  }
-#else
-	    ;
-#endif
+    while (block)
+	utils_delay_ms (1000);
 }
 
