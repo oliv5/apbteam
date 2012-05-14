@@ -479,6 +479,15 @@ path_get_next (vect_t *p)
 	return 0;
 }
 
+uint16_t
+path_get_score ()
+{
+    if (path.found)
+	return path.astar_nodes[PATH_SRC_NODE_INDEX].score;
+    else
+	return (uint16_t) -1;
+}
+
 /** Neighbors callback for nodes in grid. */
 static uint8_t
 path_astar_neighbor_callback_grid (uint8_t node,

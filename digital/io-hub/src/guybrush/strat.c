@@ -29,6 +29,8 @@
 #include "bot.h"
 #include "path.h"
 
+#include "asserv.h"
+
 /*
  * This file implements strategic decisions.
  */
@@ -116,9 +118,48 @@ strat_init (void)
       }
 }
 
+/** Compute score for a path to the given position. */
+static int32_t
+strat_position_score (const vect_t *pos)
+{
+    uint16_t path_score;
+    /* Find a path to position. */
+    position_t current_pos;
+    asserv_get_position (&current_pos);
+    path_endpoints (current_pos.v, *pos);
+    path_update ();
+    path_score = path_get_score ();
+    if (path_score != (uint16_t) -1)
+	return path_score;
+    else
+      {
+	path_escape (8);
+	path_update ();
+	path_score = path_get_score ();
+	if (path_score != (uint16_t) -1)
+	    return 4 * path_score;
+	else
+	    return -1;
+      }
+}
+
+/** Compute score for a given place. */
+static int32_t
+strat_place_score (uint8_t i)
+{
+    if (!strat.place[i].valid)
+	return -1;
+    int32_t position_score = strat_position_score (&strat_place[i].pos);
+    if (position_score == -1)
+	return -1;
+    return 10000 - position_score;
+}
+
 uint8_t
 strat_decision (vect_t *pos)
 {
+    int32_t best_score = -1;
+    uint8_t best_place = 0;
     uint8_t i;
     if (strat.load > 1)
       {
@@ -129,13 +170,19 @@ strat_decision (vect_t *pos)
       }
     for (i = 0; i < STRAT_PLACE_NB; i++)
       {
-	if (strat.place[i].valid)
+	int32_t score = strat_place_score (i);
+	if (score > best_score)
 	  {
-	    *pos = strat_place[i].pos;
-	    strat.last_decision = strat_place[i].decision;
-	    strat.last_place = i;
-	    return strat.last_decision;
+	    best_score = score;
+	    best_place = i;
 	  }
+      }
+    if (best_score != -1)
+      {
+	*pos = strat_place[best_place].pos;
+	strat.last_decision = strat_place[best_place].decision;
+	strat.last_place = best_place;
+	return strat.last_decision;
       }
     /* Nothing yet, crash. */
     return -1;
