@@ -37,6 +37,7 @@
 
 #include "strat.h"
 #include "path.h"
+#include "bottom_clamp.h"
 
 #include "output_defs.h"
 
@@ -58,7 +59,7 @@ FSM_STATES (
 	    /* Going to a collect position above or below a totem. */
 	    TOP_TOTEM_GOING,
 	    /* Cleaning: waiting clamp FSM. */
-	    TOP_TOTEM_CLEAN_WAITING,
+	    TOP_TOTEM_CLEAN_STARTING,
 	    /* Cleaning: approaching totem. */
 	    TOP_TOTEM_CLEAN_APPROACHING,
 	    /* Cleaning; closing clamps. */
@@ -67,8 +68,6 @@ FSM_STATES (
 	    TOP_TOTEM_CLEAN_GOING_BACK,
 	    /* Cleaning: loading. */
 	    TOP_TOTEM_CLEAN_LOADING,
-	    /* Waiting clamp FSM to put clamps down. */
-	    TOP_TOTEM_CLAMP_WAITING,
 	    /* Put clamps down. */
 	    TOP_TOTEM_CLAMP_DOWNING,
 	    /* Approaching a totem. */
@@ -204,27 +203,16 @@ FSM_TRANS (TOP_INIT, init_start_round,
 
 /** TOTEM */
 
-FSM_TRANS (TOP_TOTEM_GOING, move_success,
-	   wait, TOP_TOTEM_CLEAN_WAITING,
-	   ready, TOP_TOTEM_CLEAN_APPROACHING)
+FSM_TRANS (TOP_TOTEM_GOING, move_success, TOP_TOTEM_CLEAN_STARTING)
 {
-    if (!FSM_CAN_HANDLE (AI, clean_start))
-      {
-	return FSM_NEXT (TOP_TOTEM_GOING, move_success, wait);
-      }
-    else
-      {
-	FSM_HANDLE (AI, clean_start);
-	asserv_move_linearly (PATH_GRID_CLEARANCE_MM - BOT_SIZE_FRONT - 130);
-	return FSM_NEXT (TOP_TOTEM_GOING, move_success, ready);
-      }
+    clamp_request (FSM_EVENT (AI, clean_start));
+    return FSM_NEXT (TOP_TOTEM_GOING, move_success);
 }
 
-FSM_TRANS (TOP_TOTEM_CLEAN_WAITING, clamps_ready, TOP_TOTEM_CLEAN_APPROACHING)
+FSM_TRANS (TOP_TOTEM_CLEAN_STARTING, clamps_ready, TOP_TOTEM_CLEAN_APPROACHING)
 {
-    FSM_HANDLE (AI, clean_start);
     asserv_move_linearly (PATH_GRID_CLEARANCE_MM - BOT_SIZE_FRONT - 130);
-    return FSM_NEXT (TOP_TOTEM_CLEAN_WAITING, clamps_ready);
+    return FSM_NEXT (TOP_TOTEM_CLEAN_STARTING, clamps_ready);
 }
 
 FSM_TRANS (TOP_TOTEM_CLEAN_APPROACHING, robot_move_success,
@@ -248,25 +236,10 @@ FSM_TRANS (TOP_TOTEM_CLEAN_GOING_BACK, robot_move_success,
     return FSM_NEXT (TOP_TOTEM_CLEAN_GOING_BACK, robot_move_success);
 }
 
-FSM_TRANS (TOP_TOTEM_CLEAN_LOADING, clamps_ready,
-	   wait, TOP_TOTEM_CLAMP_WAITING,
-	   ready, TOP_TOTEM_CLAMP_DOWNING)
+FSM_TRANS (TOP_TOTEM_CLEAN_LOADING, clamps_ready, TOP_TOTEM_CLAMP_DOWNING)
 {
-    if (!FSM_CAN_HANDLE (AI, tree_detected))
-      {
-	return FSM_NEXT (TOP_TOTEM_CLEAN_LOADING, clamps_ready, wait);
-      }
-    else
-      {
-	FSM_HANDLE (AI, tree_detected);
-	return FSM_NEXT (TOP_TOTEM_CLEAN_LOADING, clamps_ready, ready);
-      }
-}
-
-FSM_TRANS (TOP_TOTEM_CLAMP_WAITING, clamps_ready, TOP_TOTEM_CLAMP_DOWNING)
-{
-    FSM_HANDLE (AI, tree_detected);
-    return FSM_NEXT (TOP_TOTEM_CLAMP_WAITING, clamps_ready);
+    clamp_request (FSM_EVENT (AI, tree_detected));
+    return FSM_NEXT (TOP_TOTEM_CLEAN_LOADING, clamps_ready);
 }
 
 FSM_TRANS (TOP_TOTEM_CLAMP_DOWNING, clamps_ready, TOP_TOTEM_APPROACHING)

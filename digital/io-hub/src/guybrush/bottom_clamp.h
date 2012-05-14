@@ -31,5 +31,9 @@ void clamp_calm_mode(int mode);
 /*function to find out how many times the clamp has been blocked*/
 uint8_t clamp_read_blocked_cpt(void);
 
+/** Request a specific move to be executed now or as soon as going to IDLE
+ * state. */
+void
+clamp_request (uint16_t event);
 
 #endif /* bottom_clamp_h */

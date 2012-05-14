@@ -213,6 +213,8 @@ struct clamp_t
     uint8_t calm_mode;   
     /** Compting the number of time the bottom clamp is being blocked in a row (reset when going back to  idle)*/
     uint8_t cpt_blocked;
+    /** Request from top FSM to be processed once in IDLE state. */
+    uint16_t idle_request;
 };
 
 /*Global context. */
@@ -234,6 +236,18 @@ static void move_needed(int move,int speed)
 void clamp_calm_mode(int mode)
 {
     ctx.calm_mode=mode;
+}
+
+void
+clamp_request (uint16_t event)
+{
+    /* If event can not be handled right now, keep it until going in IDLE
+     * state. */
+    if (!FSM_HANDLE_VAR (AI, event))
+    {
+        assert (!ctx.idle_request);
+        ctx.idle_request = event;
+    }
 }
 
 uint8_t clamp_read_blocked_cpt(void)
@@ -312,17 +326,56 @@ FSM_TRANS (CLAMP_GOING_IDLE, lower_clamp_rotation_success, CLAMP_WAIT_BEFORE_IDL
 /*---------------------------------------------------------*/
 /*  IDLE!!                                                 */
 /*---------------------------------------------------------*/
-FSM_TRANS_TIMEOUT (CLAMP_WAIT_BEFORE_IDLE, TIMEOUT_IDLE, CLAMP_IDLE)
+FSM_TRANS_TIMEOUT (CLAMP_WAIT_BEFORE_IDLE, TIMEOUT_IDLE,
+                   request_clean_start, CLAMP_READY_TO_CLEAN,
+		   request_tree_detected, CLAMP_BOTTOM_CLAMP_HIDE_POS,
+		   idle, CLAMP_IDLE)
 {
-    /*Going back to the idle position, ready for showtime.*/
-    fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
-    return FSM_NEXT_TIMEOUT (CLAMP_WAIT_BEFORE_IDLE);
+    if (ctx.idle_request)
+    {
+        uint16_t idle_request = ctx.idle_request;
+        ctx.idle_request = 0;
+        if (idle_request == FSM_EVENT (AI, clean_start))
+        {
+            fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
+            return FSM_NEXT_TIMEOUT (CLAMP_WAIT_BEFORE_IDLE,
+                                     request_clean_start);
+        }
+        else if (idle_request == FSM_EVENT (AI, tree_detected))
+        {
+            /* Hidding the clamp inside the robot. */
+            if (ctx.clamp_1_down)
+            {
+                move_needed (HIDE_POS_TREE * 250, FAST_ROTATION);
+            }
+            else
+            {
+                move_needed ((HALF_TURN + HIDE_POS_TREE) * 250, FAST_ROTATION);
+                ctx.clamp_1_down = 1;
+            }
+            return FSM_NEXT_TIMEOUT (CLAMP_WAIT_BEFORE_IDLE,
+                                     request_tree_detected);
+        }
+        else
+        {
+            assert (0);
+            return FSM_NEXT_TIMEOUT (CLAMP_WAIT_BEFORE_IDLE, idle);
+        }
+    }
+    else
+    {
+        /* Going back to the idle position, ready for showtime. */
+        fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
+        return FSM_NEXT_TIMEOUT (CLAMP_WAIT_BEFORE_IDLE, idle);
+    }
 }
+
 /*---------------------------------------------------------*/
 /*  parts of the FSM that Clean areas                      */
 /*---------------------------------------------------------*/
 FSM_TRANS (CLAMP_IDLE, clean_start,CLAMP_READY_TO_CLEAN) 
 {
+    fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
     return FSM_NEXT(CLAMP_IDLE,clean_start);
 }
 
