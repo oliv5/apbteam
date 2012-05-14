@@ -23,6 +23,7 @@
  *
  * }}} */
 #include "common.h"
+#include "modules/utils/utils.h"
 #include "io.h"
 
 #include "playground_2012.h"
@@ -106,6 +107,8 @@ struct top_t
 {
     /** Decision position. */
     vect_t decision_pos;
+    /** Current distance to totem. */
+    int16_t totem_distance;
 };
 
 /** Global context. */
@@ -120,6 +123,8 @@ top_go_totem (void)
     pos.a = pos.v.y > PG_LENGTH / 2 ? POSITION_A_DEG (-90)
 	: POSITION_A_DEG (90);
     move_start (pos, 0);
+    top.totem_distance = UTILS_ABS (pos.v.y - PG_LENGTH / 2)
+	- PG_TOTEM_WIDTH_MM / 2;
 }
 
 /** Go push a bottle button. */
@@ -211,7 +216,9 @@ FSM_TRANS (TOP_TOTEM_GOING, move_success, TOP_TOTEM_CLEAN_STARTING)
 
 FSM_TRANS (TOP_TOTEM_CLEAN_STARTING, clamps_ready, TOP_TOTEM_CLEAN_APPROACHING)
 {
-    asserv_move_linearly (PATH_GRID_CLEARANCE_MM - BOT_SIZE_FRONT - 130);
+    int16_t move = top.totem_distance - BOT_SIZE_LOWER_CLAMP_FRONT - 140;
+    top.totem_distance -= move;
+    asserv_move_linearly (move);
     return FSM_NEXT (TOP_TOTEM_CLEAN_STARTING, clamps_ready);
 }
 
@@ -225,7 +232,9 @@ FSM_TRANS (TOP_TOTEM_CLEAN_APPROACHING, robot_move_success,
 FSM_TRANS (TOP_TOTEM_CLEAN_CATCH_WAITING, clamps_ready,
 	   TOP_TOTEM_CLEAN_GOING_BACK)
 {
-    asserv_move_linearly (-100);
+    int16_t move = top.totem_distance - BOT_SIZE_LOWER_CLAMP_FRONT - 240;
+    top.totem_distance -= move;
+    asserv_move_linearly (move);
     return FSM_NEXT (TOP_TOTEM_CLEAN_CATCH_WAITING, clamps_ready);
 }
 
@@ -244,7 +253,9 @@ FSM_TRANS (TOP_TOTEM_CLEAN_LOADING, clamps_ready, TOP_TOTEM_CLAMP_DOWNING)
 
 FSM_TRANS (TOP_TOTEM_CLAMP_DOWNING, clamps_ready, TOP_TOTEM_APPROACHING)
 {
-    asserv_move_linearly (200);
+    int16_t move = top.totem_distance - BOT_SIZE_FRONT - 30;
+    top.totem_distance -= move;
+    asserv_move_linearly (move);
     return FSM_NEXT (TOP_TOTEM_CLAMP_DOWNING, clamps_ready);
 }
 
@@ -331,7 +342,8 @@ FSM_TRANS (TOP_TOTEM_ERROR_GOING_BACK, move_failure, TOP_TOTEM_CLAMP_UPPING)
 
 FSM_TRANS (TOP_BOTTLE_GOING, move_success, TOP_BOTTLE_APPROACHING)
 {
-    asserv_move_linearly (-(BOT_SIZE_RADIUS + 70 - BOT_SIZE_BACK - 22 - 30));
+    int16_t move = top.decision_pos.y - BOT_SIZE_BACK - 22 - 30;
+    asserv_move_linearly (-move);
     return FSM_NEXT (TOP_BOTTLE_GOING, move_success);
 }
 
