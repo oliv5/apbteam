@@ -35,8 +35,6 @@ EXTRA_CLEAN_FILES = fsm_AI_gen.h fsm_AI_gen.avr.c
 include $(BASE)/make/Makefile.gen
 
 # FSM generation.
-obj/main.avr.o: fsm_AI_gen.h
-fsm_AI_gen.avr.c: fsm_AI_gen.h
-fsm_AI_gen.h: io_hub.host
-	./$< --gen
-	mv fsm_AI_gen.c fsm_AI_gen.avr.c
+include ../../../ai/src/fsm/Makefile.fsm
+
+obj/main.avr.o: fsm

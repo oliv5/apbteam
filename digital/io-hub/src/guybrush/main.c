@@ -416,6 +416,7 @@ main (int argc, char **argv)
 	    if (strcmp (argv[i], "--gen") == 0)
 	      {
 		FSM_GENERATE (AVR, 0);
+		FSM_GEN_DOT (AI);
 		return 0;
 	      }
 #endif

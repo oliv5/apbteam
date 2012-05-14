@@ -1,0 +1,17 @@
+fsm: fsm_AI_gen.h
+fsm_AI_gen.avr.c: fsm_AI_gen.h
+dot_AI_1.dot: fsm_AI_gen.h
+fsm_AI_gen.h: io_hub.host
+	./$< --gen
+	mv fsm_AI_gen.c fsm_AI_gen.avr.c
+
+view: dot_AI_1.view
+png: dot_AI_1.png
+svg: dot_AI_1.svg
+
+%.view: %.dot
+	dot -Txlib $<
+%.png: %.dot
+	dot -Tpng $< > $@
+%.svg: %.dot
+	dot -Tsvg $< > $@
