@@ -55,7 +55,7 @@
 #define PATH_OBSTACLES_NB AC_PATH_OBSTACLES_NB
 
 /** Number of nodes in a column. */
-#define PATH_COLUMN_NODES_NB 5
+#define PATH_COLUMN_NODES_NB 7
 
 /** Number of columns. */
 #define PATH_COLUMNS_NB 5
@@ -114,32 +114,42 @@ static const struct path_node_t path_nodes[PATH_NODES_NB] = {
       { 1 }, /* 2 */
       { 1 }, /* 3 */
       { 1 }, /* 4 */
-      { 1 }, /* 5 column 1. */
+      { 1 }, /* 5 */
       { 1 }, /* 6 */
-      { 0 }, /* 7 */
+      { 1 }, /* 7 column 1. */
       { 1 }, /* 8 */
-      { 1 }, /* 9 */
-      { 1 }, /* 10 column 2. */
-      { 1 }, /* 11 */
-      { 0 }, /* 12 */
+      { 2 }, /* 9 avoid */
+      { 0 }, /* 10 */
+      { 2 }, /* 11 avoid */
+      { 1 }, /* 12 */
       { 1 }, /* 13 */
-      { 1 }, /* 14 */
-      { 1 }, /* 15 column 3. */
+      { 1 }, /* 14 column 2. */
+      { 1 }, /* 15 */
       { 1 }, /* 16 */
       { 0 }, /* 17 */
       { 1 }, /* 18 */
       { 1 }, /* 19 */
-      { 1 }, /* 20 column 4. */
-      { 1 }, /* 21 */
+      { 1 }, /* 20 */
+      { 1 }, /* 21 column 3. */
       { 1 }, /* 22 */
-      { 1 }, /* 23 */
-      { 1 }, /* 24 */
-      { 2 }, /* 25 extra nodes. */
-      { 2 }, /* 26 */
-      { 2 }, /* 27 */
-      { 2 }, /* 28 */
-      { 1 }, /* 29 dst node. */
-      { 1 }, /* 30 src node. */
+      { 2 }, /* 23 avoid */
+      { 0 }, /* 24 */
+      { 2 }, /* 25 avoid */
+      { 1 }, /* 26 */
+      { 1 }, /* 27 */
+      { 1 }, /* 28 column 4. */
+      { 1 }, /* 29 */
+      { 1 }, /* 30 */
+      { 1 }, /* 31 */
+      { 1 }, /* 32 */
+      { 1 }, /* 33 */
+      { 1 }, /* 34 */
+      { 2 }, /* 35 extra nodes. */
+      { 2 }, /* 36 */
+      { 2 }, /* 37 */
+      { 2 }, /* 38 */
+      { 1 }, /* 39 dst node. */
+      { 1 }, /* 40 src node. */
     /* }}} */
 };
 
@@ -155,9 +165,11 @@ static const uint16_t path_nodes_x[PATH_COLUMNS_NB] = {
 /** Y position of lines. */
 static const uint16_t path_nodes_y[PATH_COLUMN_NODES_NB] = {
     PATH_GRID_CLEARANCE_MM,
+    PG_TOTEM_Y - PATH_PEANUT_CLEAR_MM,
     PG_TOTEM_Y - PATH_TOTEM_CLEAR_MM,
     PG_TOTEM_Y,
     PG_TOTEM_Y + PATH_TOTEM_CLEAR_MM,
+    PG_TOTEM_Y + PATH_PEANUT_CLEAR_MM,
     PG_LENGTH - PATH_GRID_CLEARANCE_MM,
 };
 

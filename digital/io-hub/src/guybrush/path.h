@@ -36,8 +36,9 @@
  * construction. */
 #define PATH_GRID_CLEARANCE_MM (70 + BOT_SIZE_RADIUS)
 
-/** Shortcut. */
+/** Shortcuts. */
 #define PATH_TOTEM_CLEAR_MM (PG_TOTEM_WIDTH_MM / 2 + PATH_GRID_CLEARANCE_MM)
+#define PATH_PEANUT_CLEAR_MM (PG_PEANUT_RADIUS_MM + BOT_SIZE_RADIUS)
 
 /** Obstacle. */
 struct path_obstacle_t

@@ -43,6 +43,9 @@
 #define PG_TOTEM_RIGHT_X (PG_WIDTH / 2 + PG_TOTEM_X_OFFSET_MM)
 #define PG_TOTEM_Y (PG_LENGTH / 2)
 
+/** Peanut island. */
+#define PG_PEANUT_RADIUS_MM 300
+
 /** Ships holds. */
 #define PG_HOLD_SOUTH_X 325
 #define PG_HOLD_SOUTH_Y 0
