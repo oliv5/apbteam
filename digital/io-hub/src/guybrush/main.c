@@ -221,6 +221,15 @@ main_loop (void)
 	/* Is match over? */
 	if (chrono_is_match_over ())
 	  {
+	    /* Open everything. */
+	    IO_SET (OUTPUT_UPPER_CLAMP_OPEN);
+	    IO_CLR (OUTPUT_LOWER_CLAMP_1_CLOSE);
+	    IO_CLR (OUTPUT_LOWER_CLAMP_2_CLOSE);
+	    IO_SET (OUTPUT_DOOR_OPEN);
+	    IO_CLR (OUTPUT_DOOR_CLOSE);
+	    /* Stop motors. */
+	    mimot_motor0_free ();
+	    mimot_motor1_free ();
 	    /* End it and block here indefinitely. */
 	    chrono_end_match (42);
 	    return;
