@@ -96,9 +96,7 @@ FSM_STATES (
 	    /* Going to an unload position. */
 	    TOP_UNLOAD_GOING,
 	    /* Unloading, waiting for elements to fall. */
-	    TOP_UNLOADING,
-	    /* Unloading, going back to playground. */
-	    TOP_UNLOADING_GOING_BACK)
+	    TOP_UNLOADING)
 
 FSM_START_WITH (TOP_START)
 
@@ -109,10 +107,29 @@ struct top_t
     vect_t decision_pos;
     /** Current distance to totem. */
     int16_t totem_distance;
+    /** Close door when out of unloading zone. */
+    uint8_t close_door;
 };
 
 /** Global context. */
 struct top_t top;
+
+void
+top_update (void)
+{
+    if (top.close_door)
+      {
+	position_t robot_pos;
+	asserv_get_position (&robot_pos);
+	if (robot_pos.v.x > PG_HOLD_NORTH_X + BOT_SIZE_BACK
+	    && robot_pos.v.x < PG_MIRROR_X (PG_HOLD_NORTH_X + BOT_SIZE_BACK))
+	  {
+	    IO_CLR (OUTPUT_DOOR_OPEN);
+	    IO_SET (OUTPUT_DOOR_CLOSE);
+	    top.close_door = 0;
+	  }
+      }
+}
 
 /** Go collect a totem. */
 static void
@@ -432,21 +449,14 @@ FSM_TRANS (TOP_UNLOAD_GOING, move_success, TOP_UNLOADING)
     return FSM_NEXT (TOP_UNLOAD_GOING, move_success);
 }
 
-FSM_TRANS_TIMEOUT (TOP_UNLOADING, 250, TOP_UNLOADING_GOING_BACK)
+FSM_TRANS_TIMEOUT (TOP_UNLOADING, 250,
+		   totem, TOP_TOTEM_GOING,
+		   bottle, TOP_BOTTLE_GOING,
+		   unload, TOP_UNLOAD_GOING)
 {
     strat_success ();
-    asserv_move_linearly (100);
-    return FSM_NEXT_TIMEOUT (TOP_UNLOADING);
-}
-
-FSM_TRANS (TOP_UNLOADING_GOING_BACK, robot_move_success,
-	   totem, TOP_TOTEM_GOING,
-	   bottle, TOP_BOTTLE_GOING,
-	   unload, TOP_UNLOAD_GOING)
-{
-    IO_CLR (OUTPUT_DOOR_OPEN);
-    IO_SET (OUTPUT_DOOR_CLOSE);
-    RETURN_TOP_DECISION_SWITCH (TOP_UNLOADING_GOING_BACK, robot_move_success);
+    top.close_door = 1;
+    RETURN_TOP_DECISION_SWITCH (TOP_UNLOADING, TOP_UNLOADING_TIMEOUT);
 }
 
 /** UNLOAD failures. */

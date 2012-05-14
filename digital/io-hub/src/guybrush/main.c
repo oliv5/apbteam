@@ -53,6 +53,7 @@
 
 #include "path.h"
 #include "move.h"
+#include "top.h"
 
 #include "bot.h"
 
@@ -239,6 +240,7 @@ main_loop (void)
 	  }
 	pressure_update ();
 	/* Update AI modules. */
+	top_update ();
 	path_decay ();
 	/* Only manage events if slaves are synchronised. */
 	if (twi_master_sync () && main_fsm_debug_mode != MAIN_FSM_DEBUG_STOP)
