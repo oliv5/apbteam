@@ -385,17 +385,13 @@ path_optimize (void)
     vect_t curp, nextp, next2p;
     path_pos (cur, &curp);
     next = path.astar_nodes[cur].prev;
-    if (next == 0xff || next == PATH_DST_NODE_INDEX)
-	return;
     path_pos (next, &nextp);
     /* Look at three points, if they are aligned, remove the center point. */
-    while (1)
+    while (next != 0xff && next != PATH_DST_NODE_INDEX)
       {
 	/* Nodes: cur ---> next ---> next2.  Do not be fooled by the "prev"
 	 * name, astar is feed backward. */
 	next2 = path.astar_nodes[next].prev;
-	if (next2 == 0xff || next2 == PATH_DST_NODE_INDEX)
-	    break;
 	path_pos (next2, &next2p);
 	vect_t vnp = nextp; vect_sub (&vnp, &curp);
 	vect_t vn2p = next2p; vect_sub (&vn2p, &curp);
