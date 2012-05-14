@@ -30,7 +30,8 @@ vpath %.c $(AI_MODULES:%=../../../ai/src/%)
 vpath %.h $(AI_MODULES:%=../../../ai/src/%)
 INCLUDES += -I. -I../common $(AI_MODULES:%=-I../../../ai/src/%)
 
-EXTRA_CLEAN_FILES = fsm_AI_gen.h fsm_AI_gen.avr.c
+EXTRA_CLEAN_FILES = fsm_AI_gen.h fsm_AI_gen.avr.c \
+		    dot_AI_1.dot dot_AI_1.png dot_AI_1.svg
 
 include $(BASE)/make/Makefile.gen
 
