@@ -624,7 +624,10 @@ FSM_TRANS_TIMEOUT (CLAMP_OPEN_UPPER_CLAMPS, TIMEOUT_OPEN_CLAMPS,
                    stop_tree_branch,CLAMP_TURN_HALF_WAY,
                    continue_empty_tree_branch,CLAMP_READY_TO_RECALE)
 {
-    IO_CLR (OUTPUT_LOWER_CLAMP_2_CLOSE);
+    if (ctx.clamp_1_down)
+        IO_CLR (OUTPUT_LOWER_CLAMP_2_CLOSE);
+    else
+        IO_CLR (OUTPUT_LOWER_CLAMP_1_CLOSE);
     if (ctx.stop_tree_approach)
     {
         main_set_drop_coin_pos(ctx.pos_current + ((HALF_TURN - HIDE_POS_TREE) * 250) - POS_DELAY);
@@ -642,7 +645,10 @@ FSM_TRANS_TIMEOUT (CLAMP_OPEN_UPPER_CLAMPS, TIMEOUT_OPEN_CLAMPS,
 
 FSM_TRANS (CLAMP_READY_TO_RECALE, lower_clamp_rotation_success, CLAMP_READY_TO_RECALE_2)
 {
-    IO_CLR (OUTPUT_LOWER_CLAMP_1_CLOSE);
+    if (ctx.clamp_1_down)
+        IO_CLR (OUTPUT_LOWER_CLAMP_1_CLOSE);
+    else
+        IO_CLR (OUTPUT_LOWER_CLAMP_2_CLOSE);
     return FSM_NEXT (CLAMP_READY_TO_RECALE,lower_clamp_rotation_success);
 }
 
@@ -653,7 +659,10 @@ FSM_TRANS (CLAMP_READY_TO_RECALE, lower_clamp_rotation_failure, CLAMP_BLOCKED)
 
 FSM_TRANS_TIMEOUT (CLAMP_READY_TO_RECALE_2, TIMEOUT_OPEN_CLAMPS, CLAMP_TEMPO_RECALE)
 {
-    IO_SET (OUTPUT_LOWER_CLAMP_1_CLOSE);
+    if (ctx.clamp_1_down)
+        IO_SET (OUTPUT_LOWER_CLAMP_1_CLOSE);
+    else
+        IO_SET (OUTPUT_LOWER_CLAMP_2_CLOSE);
     return FSM_NEXT_TIMEOUT (CLAMP_READY_TO_RECALE_2);
 }
 
