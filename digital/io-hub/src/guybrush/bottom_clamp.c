@@ -270,6 +270,8 @@ FSM_TRANS (CLAMP_START, init_actuators, CLAMP_INIT_OPEN)
     /* Opening the 2 clamps. */
     IO_CLR (OUTPUT_LOWER_CLAMP_1_CLOSE);
     IO_SET (OUTPUT_LOWER_CLAMP_2_CLOSE);
+    /* Open upper clamp. */
+    IO_SET (OUTPUT_UPPER_CLAMP_OPEN);
     /* recentrage the middle clamp. */
     IO_SET (OUTPUT_UPPER_CLAMP_OUT);
     IO_CLR (OUTPUT_UPPER_CLAMP_IN);
