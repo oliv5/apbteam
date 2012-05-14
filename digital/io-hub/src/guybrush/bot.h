@@ -58,5 +58,7 @@
 #endif
 /** Normal cruise speed. */
 #define BOT_SPEED_NORMAL 0x50, 0x60, 0x20, 0x20
+/** Approach speed. */
+#define BOT_SPEED_APPROACH 0x20, 0x30, 0x20, 0x20
 
 #endif /* bot_h */
