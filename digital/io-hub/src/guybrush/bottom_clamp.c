@@ -181,7 +181,7 @@ FSM_START_WITH (CLAMP_START)
          ROTATION DEFINITION
 ---------------------------------------*/
 #define POS_DELAY 1200
-#define INIT_BOTTOM_POS (6.25+HALF_TURN)
+#define INIT_BOTTOM_POS (6.65+HALF_TURN)
 #define HIDE_POS 3
 #define BACK_TO_READY (16-HIDE_POS)
 #define HALF_TURN 8
