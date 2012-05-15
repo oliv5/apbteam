@@ -118,9 +118,9 @@ static const struct path_node_t path_nodes[PATH_NODES_NB] = {
       { 1 }, /* 6 */
       { 1 }, /* 7 column 1. */
       { 1 }, /* 8 */
-      { 2 }, /* 9 avoid */
+      { 1 }, /* 9 */
       { 0 }, /* 10 */
-      { 2 }, /* 11 avoid */
+      { 1 }, /* 11 */
       { 1 }, /* 12 */
       { 1 }, /* 13 */
       { 1 }, /* 14 column 2. */
@@ -132,9 +132,9 @@ static const struct path_node_t path_nodes[PATH_NODES_NB] = {
       { 1 }, /* 20 */
       { 1 }, /* 21 column 3. */
       { 1 }, /* 22 */
-      { 2 }, /* 23 avoid */
+      { 1 }, /* 23 */
       { 0 }, /* 24 */
-      { 2 }, /* 25 avoid */
+      { 1 }, /* 25 */
       { 1 }, /* 26 */
       { 1 }, /* 27 */
       { 1 }, /* 28 column 4. */
