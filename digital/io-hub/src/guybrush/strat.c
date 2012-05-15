@@ -92,6 +92,10 @@ struct strat_t
     uint8_t last_decision;
     /** Place of last decision. */
     uint8_t last_place;
+    /** Decision is prepared in advance. */
+    uint8_t prepared;
+    /** Prepared position. */
+    vect_t prepared_pos;
     /** Robot content estimation. */
     uint8_t load;
     /** Places information. */
@@ -161,6 +165,14 @@ strat_decision (vect_t *pos)
     int32_t best_score = -1;
     uint8_t best_place = 0;
     uint8_t i;
+    /* If decision was prepared, use it now. */
+    if (strat.prepared)
+      {
+	strat.prepared = 0;
+	*pos = strat.prepared_pos;
+	return strat.last_decision;
+      }
+    /* Else compute the best decision. */
     if (strat.load > 0)
       {
 	strat.last_decision = STRAT_DECISION_UNLOAD;
@@ -186,6 +198,13 @@ strat_decision (vect_t *pos)
       }
     /* Nothing yet, crash. */
     return -1;
+}
+
+void
+strat_prepare (void)
+{
+    strat_decision (&strat.prepared_pos);
+    strat.prepared = 1;
 }
 
 void

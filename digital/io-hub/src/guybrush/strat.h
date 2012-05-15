@@ -44,6 +44,11 @@ strat_init (void);
 uint8_t
 strat_decision (vect_t *pos);
 
+/** Take a decision in advance so that next strat_decision call is
+ * immediate. */
+void
+strat_prepare (void);
+
 /** Report a success of last decision. */
 void
 strat_success (void);

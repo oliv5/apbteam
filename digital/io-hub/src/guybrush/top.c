@@ -213,6 +213,8 @@ FSM_TRANS (TOP_START, init_actuators, TOP_INIT_DOOR)
     main_demo = !IO_GET (CONTACT_STRAT);
     IO_SET (OUTPUT_DOOR_OPEN);
     IO_CLR (OUTPUT_DOOR_CLOSE);
+    strat_init ();
+    strat_prepare ();
     return FSM_NEXT (TOP_START, init_actuators);
 }
 
@@ -228,7 +230,6 @@ FSM_TRANS (TOP_INIT, init_start_round,
 	   bottle, TOP_BOTTLE_GOING,
 	   unload, TOP_UNLOAD_GOING)
 {
-    strat_init ();
     main_usdist = 1;
     RETURN_TOP_DECISION_SWITCH (TOP_INIT, init_start_round);
 }
