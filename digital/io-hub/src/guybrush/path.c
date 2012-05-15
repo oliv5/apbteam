@@ -64,7 +64,7 @@
 #define PATH_GRID_NODES_NB (PATH_COLUMNS_NB * PATH_COLUMN_NODES_NB)
 
 /** Number of extra nodes not in the grid. */
-#define PATH_EXTRA_NODES_NB 4
+#define PATH_EXTRA_NODES_NB 6
 
 /** Number of fixed nodes. */
 #define PATH_FIXED_NODES_NB (PATH_GRID_NODES_NB + PATH_EXTRA_NODES_NB)
@@ -148,8 +148,10 @@ static const struct path_node_t path_nodes[PATH_NODES_NB] = {
       { 2 }, /* 36 */
       { 2 }, /* 37 */
       { 2 }, /* 38 */
-      { 1 }, /* 39 dst node. */
-      { 1 }, /* 40 src node. */
+      { 2 }, /* 39 */
+      { 2 }, /* 40 */
+      { 1 }, /* 41 dst node. */
+      { 1 }, /* 42 src node. */
     /* }}} */
 };
 
@@ -182,6 +184,10 @@ static const vect_t path_extra_nodes[PATH_EXTRA_NODES_NB] = {
       { PG_TOTEM_RIGHT_X + PATH_TOTEM_CLEAR_MM,
 	PG_TOTEM_Y - PATH_TOTEM_CLEAR_MM / 2 },
       { PG_TOTEM_RIGHT_X + PATH_TOTEM_CLEAR_MM,
+	PG_TOTEM_Y + PATH_TOTEM_CLEAR_MM / 2 },
+      { BOT_SIZE_RADIUS + 30,
+	PG_TOTEM_Y + PATH_TOTEM_CLEAR_MM / 2 },
+      { PG_MIRROR_X (BOT_SIZE_RADIUS + 30),
 	PG_TOTEM_Y + PATH_TOTEM_CLEAR_MM / 2 },
 };
 
