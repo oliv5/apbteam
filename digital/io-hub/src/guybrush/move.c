@@ -39,6 +39,9 @@
 
 #include <math.h>
 
+/** Number of tries to reach destination. */
+#define MOVE_TRY_AGAIN 1
+
 /** Move context. */
 struct move_t
 {
@@ -80,7 +83,7 @@ move_start (position_t position, uint8_t backward)
     move_data.final_move = 0;
     move_data.shorten = 0;
     /* Reset try counter. */
-    move_data.try_again_counter = 3;
+    move_data.try_again_counter = MOVE_TRY_AGAIN;
     /* Start the FSM. */
     fsm_queue_post_event (FSM_EVENT (AI, move_start));
 }
@@ -95,7 +98,7 @@ move_start_noangle (vect_t position, uint8_t backward, int16_t shorten)
     move_data.final_move = 0;
     move_data.shorten = shorten;
     /* Reset try counter. */
-    move_data.try_again_counter = 3;
+    move_data.try_again_counter = MOVE_TRY_AGAIN;
     /* Start the FSM. */
     fsm_queue_post_event (FSM_EVENT (AI, move_start));
 }
