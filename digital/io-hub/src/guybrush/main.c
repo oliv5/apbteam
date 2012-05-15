@@ -75,6 +75,10 @@ uint8_t main_obstacles_nb;
 /** Global demo mode flag. */
 uint8_t main_demo;
 
+/** Global US distance sensor activation flag.  Warning: US sensors can not be
+ * deactivated once activated or you will get outdated values. */
+uint8_t main_usdist;
+
 /** FSM debug mode. */
 enum
 {
@@ -242,7 +246,7 @@ main_loop (void)
 	    proto_accept (uart0_getc ());
 	/* Update IO modules. */
 	contact_update ();
-	if (usdist_update ())
+	if ((main_demo || main_usdist) && usdist_update ())
 	  {
 	    position_t robot_pos;
 	    asserv_get_position (&robot_pos);

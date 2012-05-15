@@ -223,6 +223,7 @@ FSM_TRANS (TOP_INIT, init_start_round,
 	   unload, TOP_UNLOAD_GOING)
 {
     strat_init ();
+    main_usdist = 1;
     RETURN_TOP_DECISION_SWITCH (TOP_INIT, init_start_round);
 }
 
