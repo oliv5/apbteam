@@ -402,11 +402,8 @@ FSM_TRANS_TIMEOUT (CLAMP_CATCH_COIN, TIMEOUT_CLOSE_CLAMPS*2,CLAMP_READY_TO_LOAD)
     return FSM_NEXT_TIMEOUT(CLAMP_CATCH_COIN);
 }
 
-FSM_TRANS (CLAMP_READY_TO_LOAD, clean_load, CLAMP_OPEN_UPPER_CLAMPS)
+FSM_TRANS (CLAMP_READY_TO_LOAD, clean_load,CLAMP_TAKE_COIN) 
 {
-    /* Hugly hack until Julien can make this better. */
-    ctx.pos_current += (HIDE_POS_TREE + BACK_TO_READY_TREE
-                        + HIDE_POS_TREE_2) * 250;
     return FSM_NEXT(CLAMP_READY_TO_LOAD,clean_load);
 }
 
