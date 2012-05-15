@@ -118,6 +118,7 @@ struct top_t top;
 void
 top_update (void)
 {
+    /* Close door when out of unloading zone. */
     if (top.close_door)
       {
 	position_t robot_pos;
@@ -129,6 +130,11 @@ top_update (void)
 	    IO_SET (OUTPUT_DOOR_CLOSE);
 	    top.close_door = 0;
 	  }
+      }
+    /* If door is closed, cut air to save power. */
+    if (!IO_GET (CONTACT_DOOR_CLOSE))
+      {
+	IO_CLR (OUTPUT_DOOR_CLOSE);
       }
 }
 
