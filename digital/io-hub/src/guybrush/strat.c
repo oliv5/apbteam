@@ -161,7 +161,7 @@ strat_decision (vect_t *pos)
     int32_t best_score = -1;
     uint8_t best_place = 0;
     uint8_t i;
-    if (strat.load > 1)
+    if (strat.load > 0)
       {
 	strat.last_decision = STRAT_DECISION_UNLOAD;
 	pos->x = PG_X (BOT_SIZE_RADIUS + 30);
