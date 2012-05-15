@@ -38,4 +38,4 @@ include $(BASE)/make/Makefile.gen
 # FSM generation.
 include ../../../ai/src/fsm/Makefile.fsm
 
-obj/main.avr.o: fsm
+obj/main.avr.o: fsm_AI_gen.h
