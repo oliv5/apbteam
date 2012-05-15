@@ -126,6 +126,10 @@ main_init (void)
     /* Main timer */
     timer_init ();
     timer_wait ();
+    /* IO modules. */
+    contact_init ();
+    output_init ();
+    usdist_init ();
     /* Send some debug aid in case of TWI synchronisation failure.
      * If !Z is sent, but not !z, this means that a slave is missing or is not
      * functioning. */
@@ -137,10 +141,6 @@ main_init (void)
     beacon_init ();
 #endif
     twi_master_init ();
-    /* IO modules. */
-    contact_init ();
-    output_init ();
-    usdist_init ();
     /* AI modules. */
     path_init ();
     /* Initialization done. */
