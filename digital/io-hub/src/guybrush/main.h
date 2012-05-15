@@ -27,6 +27,8 @@
 
 extern vect_t main_obstacles_pos[2];
 extern uint8_t main_obstacles_nb;
+extern uint8_t main_demo;
+
 void main_set_drop_coin_pos(int);
 
 #endif /* main_h */

@@ -72,6 +72,9 @@ vect_t main_obstacles_pos[2];
 /** Number of obstacles in main_obstacles_pos. */
 uint8_t main_obstacles_nb;
 
+/** Global demo mode flag. */
+uint8_t main_demo;
+
 /** FSM debug mode. */
 enum
 {

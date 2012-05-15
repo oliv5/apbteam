@@ -304,7 +304,7 @@ FSM_TRANS (CLAMP_INIT_HIDE_CLAMP, lower_clamp_rotation_success,
            demo_start,CLAMP_GOING_IDLE)
 {
     /*Looking if we are in demo mode or normal mode*/
-    if (IO_GET(CONTACT_STRAT))
+    if (!main_demo)
         return FSM_NEXT (CLAMP_INIT_HIDE_CLAMP,lower_clamp_rotation_success,normal_start);
     else
         return FSM_NEXT (CLAMP_INIT_HIDE_CLAMP,lower_clamp_rotation_success,demo_start);
