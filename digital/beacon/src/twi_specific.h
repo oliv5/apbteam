@@ -56,7 +56,8 @@ typedef enum
 	TWI_TX_X2_LSB_FIELD,
 	TWI_TX_Y2_MSB_FIELD,
 	TWI_TX_Y2_LSB_FIELD,
-	TWI_TX_TRUST2_FIELD
+	TWI_TX_TRUST2_FIELD,
+	TWI_TX_FIELD_NB
 } TTWI_TX_field;
 
 /* This function manages the TWI RX/RX transferts */

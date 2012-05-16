@@ -62,7 +62,7 @@ void twi_task(void)
 	TXbuffer[TWI_TX_TRUST2_FIELD] 	= position_get_trust(OPPONENT_2);
 	
 	/* Compute CRC */
-	TXbuffer[TWI_TX_CRC_FIELD] 	= crc_compute (&TXbuffer[1], sizeof (TXbuffer) - 1);
+	TXbuffer[TWI_TX_CRC_FIELD] 	= crc_compute (&TXbuffer[1],TWI_TX_FIELD_NB-1);
 	
 	/* data to be communicated to the master */
 	twi_slave_update (TXbuffer, sizeof (TXbuffer));
