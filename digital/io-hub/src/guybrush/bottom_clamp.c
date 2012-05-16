@@ -107,7 +107,6 @@ FSM_STATES (
     /*Make the coin "fall" into the clamp (the clamp has to be 90° from the floor*/
     CLAMP_READY_TO_RECALE,
     CLAMP_READY_TO_RECALE_2,
-    CLAMP_BEGIN_RECALE,
     CLAMP_TEMPO_RECALE,
     CLAMP_END_RECALE,
 
