@@ -140,9 +140,18 @@ void usartRXCallback(uint16_t bytesToRead)
 		case '0':
 			network_send_data(NETWORK_RESET,0x1);
 			break;
+		case 'w':
+			OCR0A--;
+			uprintf("OCR0A = %d\r\n",OCR0A);
+			break;
+		case 'x':
+			OCR0A++;
+			uprintf("OCR0A = %d\r\n",OCR0A);
+			break;
 		/* Default */
 		default :
 			uprintf(" ?? Unknown command ??\r\n");
+			break;
 	}
 }
 
