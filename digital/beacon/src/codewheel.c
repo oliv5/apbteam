@@ -108,5 +108,7 @@ ISR(TIMER3_COMPA_vect)
 		codewheel_set_state(CODEWHEEL_REBASED);
 	}	
 	else
-		OCR3A = CODEWHEEL_CPR;	
+	{
+		OCR3A = CODEWHEEL_CPR;
+	}
 }
