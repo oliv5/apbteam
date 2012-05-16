@@ -293,7 +293,16 @@ void APS_DataIndication(APS_DataInd_t* indData)
 	switch(appMessage->data[NETWORK_MSG_TYPE_FIELD])
 	{
 		case NETWORK_JACK_STATE:
-			motor_start_stop_control();
+			if(appMessage->data[NETWORK_MSG_DATA_LSB_FIELD])
+			{
+				motor_start();
+				servo_start_wave_task();
+			}
+			else
+			{
+				motor_stop();
+				servo_stop_wave_task();
+			}
 			break;
 		case NETWORK_OPPONENT_NUMBER:
 			break;

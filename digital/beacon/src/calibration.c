@@ -163,7 +163,6 @@ void calibration_task(void)
 #endif
 					codewheel_set_state(CODEWHEEL_REQUEST_REBASE);
 					calibration_stop_task();
-					servo_start_wave_task();
 					uprintf("Calibration finished\r\n");
 				}
 			}
