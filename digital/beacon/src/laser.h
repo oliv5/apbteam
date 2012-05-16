@@ -40,6 +40,7 @@ typedef enum
 typedef struct
 {
 	uint16_t angle;
+	uint16_t angle_id;
 } laser_s;
 
 /* This function initializes the laser pin input and associated interrupt */
