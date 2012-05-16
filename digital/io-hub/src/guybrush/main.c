@@ -54,6 +54,7 @@
 #include "path.h"
 #include "move.h"
 #include "top.h"
+#include "bottom_clamp.h"
 
 #include "bot.h"
 
@@ -154,6 +155,44 @@ main_init (void)
     proto_send0 ('z');
 }
 
+/** Generate demo mode events. */
+static uint8_t
+main_demo_events (void)
+{
+    static uint8_t color_switch_last = 0xff;
+    static uint8_t tree_step;
+    static uint8_t sleep;
+    /* Bounce detection. */
+    if (sleep)
+      {
+	sleep--;
+	return 0;
+      }
+    /* Look at color switch to control totem picking code. */
+    if (color_switch_last == 0xff)
+	color_switch_last = contact_get_color ();
+    if (color_switch_last != contact_get_color ())
+      {
+	color_switch_last = contact_get_color ();
+	sleep = 125;
+	switch (tree_step)
+	  {
+	  case 0:
+	    clamp_request (FSM_EVENT (AI, tree_detected));
+	    break;
+	  case 1:
+	    clamp_request (FSM_EVENT (AI, empty_tree));
+	    break;
+	  case 2:
+	    clamp_request (FSM_EVENT (AI, robot_is_back));
+	    break;
+	  }
+	tree_step = (tree_step + 1) % 3;
+	return 1;
+      }
+    return 0;
+}
+
 /** Main events management. */
 uint8_t
 main_event_to_fsm (void)
@@ -198,6 +237,9 @@ main_event_to_fsm (void)
 	FSM_HANDLE_E (AI,upper_set_down);
     if (!IO_GET(CONTACT_UPPER_CLAMP_UP))
 	FSM_HANDLE_E (AI,upper_set_up);
+    /* Demo mode. */
+    if (main_demo && main_demo_events ())
+	return 1;
     /* Events from the event queue. */
     if (fsm_queue_poll ())
       {
