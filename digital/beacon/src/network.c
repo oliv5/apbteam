@@ -30,8 +30,9 @@
 #include "network.h"
 #include "debug_avr.h"
 #include "led.h"
-
 #include "motor.h"
+#include "position.h"
+#include "misc.h"
 
 // Endpoint parameters
 static SimpleDescriptor_t simpleDescriptor = { APP_ENDPOINT, APP_PROFILE_ID, 1, 1, 0, 0 , NULL, 0, NULL };
@@ -283,7 +284,9 @@ void APS_DataConf(APS_DataConf_t* confInfo)
 /* APS data indication handler */
 void APS_DataIndication(APS_DataInd_t* indData)
 {
+	uint8_t beacon = 0;
 	uint16_t angle = 0;
+	uint16_t angle_id = 0;
 	AppMessage_t *appMessage = (AppMessage_t *) indData->asdu;
 	
 	// Data received indication
@@ -295,9 +298,21 @@ void APS_DataIndication(APS_DataInd_t* indData)
 		case NETWORK_OPPONENT_NUMBER:
 			break;
 		case NETWORK_ANGLE_RAW:
-			angle = codewheel_convert_angle_raw2degrees((appMessage->data[NETWORK_MSG_DATA_MSB_FIELD]<<8) + appMessage->data[NETWORK_MSG_DATA_LSB_FIELD]);
+			
+			/* Beacon address */
+			beacon = appMessage->data[NETWORK_MSG_ADDR_FIELD];
+			
+			/* Angle ID */
+			angle_id = appMessage->data[NETWORK_MSG_DATA_MSB_FIELD] >> 1;
+			
+			/* Angle value */
+			angle = ((appMessage->data[NETWORK_MSG_DATA_MSB_FIELD]&0x01) << 8) + appMessage->data[NETWORK_MSG_DATA_LSB_FIELD];
+			
+			/* For debug */
+			uprintf("[%d] angle[%d] = %f\r\n",beacon,angle_id,codewheel_convert_angle_raw2degrees(angle));
+			
 			/* New angle is avaiiable, update position */
-// 			update_position(appMessage->data[NETWORK_MSG_ADDR_FIELD],appMessage->data[NETWORK_MSG_DATA_FIELD]);
+			update_position(beacon,angle_id,codewheel_convert_angle_raw2radians(angle));
 			break;
 		case NETWORK_RESET:
 			reset_avr();
