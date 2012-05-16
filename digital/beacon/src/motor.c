@@ -50,13 +50,14 @@ void motor_init(void)
 void motor_start(void)
 {
 	OCR0A = 115;
-
+	start_codewheel_timer_task();
 }
 
 /* This function stops the motor rotation */
 void motor_stop(void)
 {
 	OCR0A = 0;
+	stop_codewheel_timer_task();
 }
 
 /* This function returns the motor state */
