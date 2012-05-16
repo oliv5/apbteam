@@ -240,6 +240,11 @@ void clamp_calm_mode(int mode)
     ctx.calm_mode=mode;
 }
 
+uint8_t clamp_calm_mode_read(void)
+{
+    return ctx.calm_mode;
+}
+
 void
 clamp_request (uint16_t event)
 {
@@ -437,29 +442,20 @@ FSM_TRANS (CLAMP_READY_TO_LOAD, clean_load,CLAMP_TAKE_COIN)
 /*---------------------------------------------------------*/
 /*  parts of the FSM that Takes coin                       */
 /*---------------------------------------------------------*/
-FSM_TRANS (CLAMP_IDLE, coin_detected, 
-           normal_clamp,CLAMP_TAKE_COIN,
-           calm_clamp,CLAMP_IDLE)
+FSM_TRANS (CLAMP_IDLE, coin_detected,CLAMP_TAKE_COIN)
 {
-    if (!ctx.calm_mode)
+    if (ctx.clamp_1_down)
     {
-        if (ctx.clamp_1_down)
-        {
-                /*Close it.*/
-                IO_SET (OUTPUT_LOWER_CLAMP_1_CLOSE);
-        }
-        /*If the clamp 2 is ready*/
-        else             
-        {
-                IO_SET(OUTPUT_LOWER_CLAMP_2_CLOSE);
-        }
-        fsm_queue_post_event (FSM_EVENT (AI, taking_coin));
-        return FSM_NEXT (CLAMP_IDLE, coin_detected,normal_clamp);
+        /*Close it.*/
+        IO_SET (OUTPUT_LOWER_CLAMP_1_CLOSE);
     }
-    else
+    /*If the clamp 2 is ready*/
+    else             
     {
-        return FSM_NEXT (CLAMP_IDLE, coin_detected,calm_clamp);
+        IO_SET(OUTPUT_LOWER_CLAMP_2_CLOSE);
     }
+    fsm_queue_post_event (FSM_EVENT (AI, taking_coin));
+    return FSM_NEXT (CLAMP_IDLE, coin_detected);
 }
 
 
@@ -510,29 +506,19 @@ FSM_TRANS (CLAMP_DROP_CD, lower_clamp_rotation_failure, CLAMP_BLOCKED)
 /*  Parts of the FSM that is Approaching the tree (totem)  */
 /*---------------------------------------------------------*/
 
-FSM_TRANS (CLAMP_IDLE, tree_detected, 
-           normal_clamp,CLAMP_BOTTOM_CLAMP_HIDE_POS,
-           calm_clamp,CLAMP_IDLE)
+FSM_TRANS (CLAMP_IDLE, tree_detected,CLAMP_BOTTOM_CLAMP_HIDE_POS)
 {
-    ctx.calm_mode=0;
-    if (!ctx.calm_mode)
+    /*Hidding the clamp inside the robot*/
+    if (ctx.clamp_1_down)
     {
-        /*Hidding the clamp inside the robot*/
-        if (ctx.clamp_1_down)
-        {
-                move_needed(HIDE_POS_TREE * 250,FAST_ROTATION);
-        }
-        else
-        {
-                move_needed((HALF_TURN + HIDE_POS_TREE) * 250,FAST_ROTATION);
-                ctx.clamp_1_down = 1;
-        }
-        return FSM_NEXT (CLAMP_IDLE, tree_detected,normal_clamp);
+       move_needed(HIDE_POS_TREE * 250,FAST_ROTATION);
     }
     else
     {
-        return FSM_NEXT (CLAMP_IDLE, tree_detected,calm_clamp);
+        move_needed((HALF_TURN + HIDE_POS_TREE) * 250,FAST_ROTATION);
+        ctx.clamp_1_down = 1;
     }
+    return FSM_NEXT (CLAMP_IDLE, tree_detected);
 }
 
 
