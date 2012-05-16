@@ -66,6 +66,9 @@ void network_init(void);
 /* This function starts the network according to the defined configuraiton*/
 void network_start(void);
 
+/* This function returns the network status */
+uint16_t network_get_status(void);
+
 /* ZDO_StartNetwork primitive confirmation callback */
 void ZDO_StartNetworkConf(ZDO_StartNetworkConf_t* confirmInfo);
 
