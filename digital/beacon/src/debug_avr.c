@@ -37,7 +37,6 @@
 
 HAL_UsartDescriptor_t appUsartDescriptor;          			// USART descriptor (required by stack)
 HAL_AppTimer_t debugTimer;						// TIMER descripor used by the DEBUG task
-HAL_AppTimer_t wheelTimer;						// TIMER descripor used by the DEBUG task
 
 uint8_t usartRxBuffer[APP_USART_RX_BUFFER_SIZE];   	// USART Rx buffer
 uint8_t usartTxBuffer[APP_USART_TX_BUFFER_SIZE];   	// USART Tx buffer
