@@ -277,7 +277,7 @@ FSM_TRANS (CLAMP_START, init_actuators, CLAMP_INIT_OPEN_ALL_CLAMPS)
     /*Opening upper clamps*/
     IO_SET (OUTPUT_UPPER_CLAMP_OPEN);
     
-    FSM_NEXT (CLAMP_START,init_actuators);
+    return FSM_NEXT (CLAMP_START,init_actuators);
     
 }
 
