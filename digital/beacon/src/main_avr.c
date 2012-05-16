@@ -26,6 +26,7 @@
 #include <types.h>
 #include <util/delay.h>
 #include "configuration.h"
+#include "twi_specific.h"
 #include "calibration.h"
 #include "codewheel.h"
 #include "debug_avr.h"
@@ -45,32 +46,9 @@ AppState_t appState = APP_INITIAL_STATE;  // application state
 #else
  	DeviceType_t deviceType = DEVICE_TYPE_END_DEVICE;
 #endif
-	
-
-void twi_RXTX_update(void)
-{
-	uint8_t TXbuffer[AC_TWI_SLAVE_SEND_BUFFER_SIZE];
-	uint8_t RXbuffer[AC_TWI_SLAVE_RECV_BUFFER_SIZE];
-	uint8_t RXlen;
-	
-	/* data to be communicated to the master */
-	twi_slave_update (TXbuffer, sizeof (TXbuffer));
-	
-	/* Check for data. */
-	RXlen = twi_slave_poll (RXbuffer, AC_TWI_SLAVE_RECV_BUFFER_SIZE);
-	
-	/* data availlable */
-	if(RXlen != 0)
-	{
-	}
-}
 
 void APL_TaskHandler(void)
 {
-	if(deviceType == DEVICE_TYPE_COORDINATOR)
-	{
-		twi_RXTX_update();
-	}
 	switch (appState)
 	{
 		case APP_INITIAL_STATE:
@@ -85,7 +63,7 @@ void APL_TaskHandler(void)
 			{
 				case DEVICE_TYPE_COORDINATOR:
 						network_init();
-						twi_init(AC_BEACON_TWI_ADDRESS);
+						twi_init_specific();
 						uprintf("COORDINATOR initialisation OK !\n\r");
 					break;
 				case DEVICE_TYPE_END_DEVICE:
