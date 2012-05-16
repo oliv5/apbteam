@@ -55,7 +55,8 @@ void init_struct(void)
 	}
 }
 
-int update_position(int beaconID, int angleID, double angle)
+/* This function update the opponent position when a new angle is avalaible */
+int update_position(uint16_t beaconID, uint16_t angleID, float angle)
 {
 	static int last_ID[2] = {0};
 	int last_valid_id = 0;

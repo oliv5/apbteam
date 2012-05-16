@@ -53,16 +53,16 @@ typedef enum{
 /* Beacon Structure */
 typedef struct
 {
-	int angleNumber;					
+	uint16_t angleNumber;					
 	float angle[MAX_OBSTACLE+1];
 }beacon_s;
 
 /* Obstacle structure */
 typedef struct
 {
-	int x;
-	int y;
-	int trust;
+	int16_t x;
+	int16_t y;
+	int8_t trust;
 }opponent_s;
 
 /* Coordinates structure */
