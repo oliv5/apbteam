@@ -38,7 +38,7 @@
 #undef AC_TWI_SLAVE_RECV					/* Slave reception callback to be defined by the user when not in polled mode. */
 #define AC_TWI_PULL_UP 				0		/* Use internal pull up. */
 #define AC_TWI_SLAVE_RECV_BUFFER_SIZE 16		/* Slave reception buffer size. */
-#define AC_TWI_SLAVE_SEND_BUFFER_SIZE 16		/* Slave transmission buffer size. */
+#define AC_TWI_SLAVE_SEND_BUFFER_SIZE 32		/* Slave transmission buffer size. */
 
 
 /* -----------------------------------------------------------  	*/
