@@ -234,20 +234,25 @@ int8_t network_get_rssi(void)
 /* This function must be used to send data through zigbee network */
 void network_send_data(TMessage_type type, uint16_t data)
 {
-	/* Message type*/
-	zigbit_tx_buffer.message.data[NETWORK_MSG_TYPE_FIELD] = type;
 	
-	/* Source address */
-	zigbit_tx_buffer.message.data[NETWORK_MSG_ADDR_FIELD] = CS_NWK_ADDR;
-	
-	/* LSB Data */
-	zigbit_tx_buffer.message.data[NETWORK_MSG_DATA_LSB_FIELD] = data;
-	
-	/* MSB Data */
-	zigbit_tx_buffer.message.data[NETWORK_MSG_DATA_MSB_FIELD] = data >> 8;
-	
-	/* Bitcloud sending request */
-	APS_DataReq(&config);
+	if(network_get_status() == APP_NETWORK_JOINED_STATE)
+	{
+		led_inverse(2);
+		/* Message type*/
+		zigbit_tx_buffer.message.data[NETWORK_MSG_TYPE_FIELD] = type;
+		
+		/* Source address */
+		zigbit_tx_buffer.message.data[NETWORK_MSG_ADDR_FIELD] = CS_NWK_ADDR;
+		
+		/* LSB Data */
+		zigbit_tx_buffer.message.data[NETWORK_MSG_DATA_LSB_FIELD] = data;
+		
+		/* MSB Data */
+		zigbit_tx_buffer.message.data[NETWORK_MSG_DATA_MSB_FIELD] = data >> 8;
+		
+		/* Bitcloud sending request */
+		APS_DataReq(&config);
+	}
 }
 
 
