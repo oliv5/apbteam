@@ -115,7 +115,7 @@ All_ZigBit_Atmega1281_Rf230_8Mhz_Gcc/Obj/twi_hard.avr.o: CFLAGS=$(APB_CFLAGS)
 
 
 $(EXE_PATH)/$(APP_NAME).elf: $(OBJS)
-	$(LD) $(LINKER_FLAGS) $(OBJS) -Wl,-\( $(LIBS) -Wl,-\) -o $@
+	$(LD) $(LINKER_FLAGS) $(OBJS) -lm -Wl,-\( $(LIBS) -Wl,-\) -o $@
 
 $(EXE_PATH)/$(APP_NAME).srec: $(EXE_PATH)/$(APP_NAME).elf
 	$(OBJCOPY) -O srec --srec-len 128 $^ $@
