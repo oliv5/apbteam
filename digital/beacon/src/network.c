@@ -120,7 +120,7 @@ void ZDO_StartNetworkConf(ZDO_StartNetworkConf_t* confirmInfo)
 		config.clusterId = APP_CLUSTER_ID;						// Desctination cluster ID
 		config.srcEndpoint = APP_ENDPOINT;						// Source endpoint
 		config.asdu = &zigbit_tx_buffer.message;							// application message pointer
-		config.asduLength = 3 + sizeof(zigbit_tx_buffer.message.messageId);		// actual application message length
+		config.asduLength = 4 + sizeof(zigbit_tx_buffer.message.messageId);		// actual application message length
 		config.txOptions.acknowledgedTransmission = 0;				// Acknowledged transmission enabled
 		config.radius = 0;										// Use maximal possible radius
 		config.APS_DataConf = APS_DataConf;						// Confirm handler    Z
