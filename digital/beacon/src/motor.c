@@ -28,24 +28,41 @@
 /* This function initializes the motor control output */
 void motor_init(void)
 {
-	DDRB |= (1<<PB7);
+	/* Select ouptut */
+	DDRB |= (1<<PB7);	
+	
+	OCR0A = 0;
+	
+	/* Fast PWM 10bits with TOP=0x03FF */
+	TCCR0A |= (1<<WGM01)|(1<<WGM00);
+	
+	/* Prescaler = 1 */
+	TCCR0B |= (1<<CS01);
+	
+	/* Postive Logic */
+	TCCR0A |= (1<<COM0A1);
+
+	/* Enable Interrupts */
+	sei();
 }
 
 /* This function starts the motor rotation */
 void motor_start(void)
 {
-	PORTB |= (1<<PORTB7); 
+	OCR0A = 115;
+
 }
 
 /* This function stops the motor rotation */
 void motor_stop(void)
 {
-	PORTB &= ~(1<<PORTB7);
+	OCR0A = 0;
 }
 
+/* This function returns the motor state */
 TMotor_state motor_get_state(void)
 {
-	if(PORTB&(1<<PORTB7))
+	if(OCR0A != 0)
 		return MOTOR_IN_ROTATION;
 	else
 		return MOTOR_STOPPED;
@@ -54,9 +71,13 @@ TMotor_state motor_get_state(void)
 /* This function starts or stops the motor according to the current state */
 void motor_start_stop_control(void)
 {
-
 	if(motor_get_state() == MOTOR_IN_ROTATION)
 		motor_stop();
 	else
 		motor_start();
+}
+
+
+ISR(TIMER0_COMPA_vect)
+{
 }
