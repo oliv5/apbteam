@@ -41,7 +41,7 @@ int main (int argc, char **argv)
 	int angle_id = 0;
 	int i = 0;
 	/* Init global structures */
-  	init_struct();
+  	position_init_struct();
 
 	while(1)
 	{
