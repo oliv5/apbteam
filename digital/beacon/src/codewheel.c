@@ -114,6 +114,7 @@ ISR(TIMER3_COMPA_vect)
 	else
 	{
 		OCR3A = CODEWHEEL_CPR;
+		motor_control_speed(codewheel.time);
 		codewheel.time = 0;
 	}
 	laser_reset_angle_id();

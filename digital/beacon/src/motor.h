@@ -26,6 +26,16 @@
 #ifndef _MOTOR_H
 #define _MOTOR_H
 
+#define MOTOR_TARGET_SPEED_INIT	110
+#define MOTOR_SPEED_STOP		0
+#define MOTOR_SPEED_MIN			90
+#define MOTOR_SPEED_MAX			140
+
+typedef struct
+{
+	uint16_t target_speed;
+} motor_s;
+
 typedef enum
 {
 	MOTOR_STOPPED,
@@ -41,10 +51,25 @@ void motor_start(void);
 /* This function stops the motor rotation */
 void motor_stop(void);
 
+/* This function sets the motor speed */
+void motor_set_speed(uint8_t value);
+
+/* This function returns the motor speed in raw format */
+uint8_t motor_get_speed_raw();
+
 /* This function returns the motor state */
 TMotor_state motor_get_state(void);
 
 /* This function starts or stops the motor according to the current state */
 void motor_start_stop_control(void);
+
+/* This function sets the target speed */
+void motor_set_target_speed(uint8_t value);
+
+/* This function returns the target speed */
+uint8_t motor_get_target_speed();
+
+/* This function control the motor speed accroding to target speed requested */
+void motor_control_speed(uint16_t time);
 
 #endif
