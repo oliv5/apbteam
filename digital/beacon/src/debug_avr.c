@@ -137,6 +137,9 @@ void usartRXCallback(uint16_t bytesToRead)
 		case 'j':
 			jack_on_off();
 			break;
+		case '0':
+			network_send_data(NETWORK_RESET,0x1);
+			break;
 		/* Default */
 		default :
 			uprintf(" ?? Unknown command ??\r\n");

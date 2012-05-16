@@ -299,6 +299,9 @@ void APS_DataIndication(APS_DataInd_t* indData)
 			/* New angle is avaiiable, update position */
 // 			update_position(appMessage->data[NETWORK_MSG_ADDR_FIELD],appMessage->data[NETWORK_MSG_DATA_FIELD]);
 			break;
+		case NETWORK_RESET:
+			reset_avr();
+			break;
 		default:
 			uprintf("Unknown data type received = %x\r\n",appMessage->data[NETWORK_MSG_TYPE_FIELD]);
 			break;
