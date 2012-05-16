@@ -292,6 +292,12 @@ void servo_start_wave_task(void)
 	HAL_StartAppTimer(&waveTimer);
 }
 
+/* Stop wave task */
+void servo_stop_wave_task(void)
+{
+	HAL_StopAppTimer(&waveTimer);
+}
+
 SIGNAL (SIG_OVERFLOW1)
 {
 }

@@ -113,4 +113,7 @@ void servo_wave_task(void);
 /* Start wave task */
 void servo_start_wave_task(void);
 
+/* Stop wave task */
+void servo_stop_wave_task(void);
+
 #endif
