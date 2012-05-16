@@ -320,6 +320,8 @@ FSM_TRANS (CLAMP_INIT_HIDE_CLAMP, lower_clamp_rotation_success,
            normal_start,CLAMP_INIT_READY,
            demo_start,CLAMP_GOING_IDLE)
 {
+    /*Opening the clamp 2. We do it know to save the batteries*/
+    IO_CLR (OUTPUT_LOWER_CLAMP_2_CLOSE);
     /*Looking if we are in demo mode or normal mode*/
     if (!main_demo)
         return FSM_NEXT (CLAMP_INIT_HIDE_CLAMP,lower_clamp_rotation_success,normal_start);
