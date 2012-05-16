@@ -25,6 +25,7 @@
 
 #include <types.h>
 #include <avr/interrupt.h>
+#include <math.h>
 #include "debug_avr.h"
 #include "codewheel.h"
 
@@ -90,6 +91,12 @@ void codewheel_set_rebase_offset(uint16_t offset)
 float codewheel_convert_angle_raw2degrees(uint16_t raw_value)
 {
 	return  (float)raw_value*(float)360/(float)CODEWHEEL_CPR;
+}
+
+/* This function converts the angle value from row format to radians */
+float codewheel_convert_angle_raw2radians(uint16_t raw_value)
+{
+	return  (float)raw_value*(float)(2*M_PI)/(float)CODEWHEEL_CPR;
 }
 
 /* Codewheel complete turn IRQ vector for CodeWheel*/
