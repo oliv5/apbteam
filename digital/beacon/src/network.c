@@ -33,6 +33,8 @@
 #include "motor.h"
 #include "position.h"
 #include "misc.h"
+#include "servo.h"
+#include "codewheel.h"
 
 // Endpoint parameters
 static SimpleDescriptor_t simpleDescriptor = { APP_ENDPOINT, APP_PROFILE_ID, 1, 1, 0, 0 , NULL, 0, NULL };

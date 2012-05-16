@@ -30,6 +30,7 @@
 #include "codewheel.h"
 #include "laser.h"
 #include "network.h"
+#include "motor.h"
 
 codewheel_s codewheel;
 static HAL_AppTimer_t codewheelTimer;
