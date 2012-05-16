@@ -85,14 +85,7 @@ void laser_inhibit_angle_confirmation(void)
 /* This function configures the AVR OC3B interrupt that will send the angle LASER_SENDING_OFFSET after the latest rising edge */
 void laser_engage_angle_confirmation(uint16_t value)
 {
-	if(value > CODEWHEEL_CPR - LASER_CONFIRMATION_OFFSET)
-	{
-		OCR3B = LASER_CONFIRMATION_OFFSET - (CODEWHEEL_CPR - value);
-	}
-	else
-	{
-		OCR3B = value + LASER_CONFIRMATION_OFFSET;
-	}
+	OCR3B = (value + LASER_CONFIRMATION_OFFSET)%CODEWHEEL_CPR;
 	
 	/* Enable interrupt */
 	TIMSK3 |= (1<<OCIE3B);
