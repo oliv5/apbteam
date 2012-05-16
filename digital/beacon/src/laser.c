@@ -129,19 +129,18 @@ ISR(TIMER3_COMPB_vect)
 		{
 			codewheel_set_rebase_offset(laser_get_angle_raw());
 			codewheel_set_state(CODEWHEEL_REQUEST_REBASE);
-			calibration_set_laser_flag(SET);
 		}
 		else
 		{
 			/* If mire 1 is spotted */
-			if(((laser_get_angle_degree() <= SERVO_1_ANGLE_POSITION + SERVO_ANGLE_POSITION_TOLERANCE) && (laser_get_angle_degree() >= 360 - SERVO_ANGLE_POSITION_TOLERANCE)) && ((servo_get_state(SERVO_1) == SERVO_SCANNING_FAST_IN_PROGRESS) || (servo_get_state(SERVO_1) == SERVO_SCANNING_SLOW_IN_PROGRESS)))
+			if(((laser_get_angle_degree() <= SERVO_1_ANGLE_POSITION + SERVO_ANGLE_POSITION_TOLERANCE) || (laser_get_angle_degree() >= 360 - SERVO_ANGLE_POSITION_TOLERANCE)) && ((servo_get_state(SERVO_1) == SERVO_SCANNING_FAST_IN_PROGRESS) || (servo_get_state(SERVO_1) == SERVO_SCANNING_SLOW_IN_PROGRESS)))
 			{
-				calibration_set_laser_flag(SET);
+				calibration_set_laser_flag(SET_SERVO_1);
 			}
 			/* If mire 2 is spotted */
 			else if(((laser_get_angle_degree() <= SERVO_2_ANGLE_POSITION + SERVO_ANGLE_POSITION_TOLERANCE) && (laser_get_angle_degree() >= SERVO_2_ANGLE_POSITION - SERVO_ANGLE_POSITION_TOLERANCE)) && ((servo_get_state(SERVO_2) == SERVO_SCANNING_FAST_IN_PROGRESS) || (servo_get_state(SERVO_2) == SERVO_SCANNING_SLOW_IN_PROGRESS)))
 			{
-				calibration_set_laser_flag(SET);
+				calibration_set_laser_flag(SET_SERVO_2);		
 			}
 		}
 	}
