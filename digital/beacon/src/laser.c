@@ -28,7 +28,9 @@
 #include "debug_avr.h"
 #include "laser.h"
 #include "servo.h"
+#include "network.h"
 #include "codewheel.h"
+#include "calibration.h"
 
 laser_s laser;
 
@@ -37,6 +39,7 @@ void laser_init(void)
 {	
 	/* Init laser structiure */
 	laser_set_angle(0);
+	laser_reset_angle_id();
 	
 	/* Configure Input compare interrupts for Laser Interrupt*/
 	TCCR3B |= (1<<ICNC3)|(1<<ICES3);
@@ -112,10 +115,20 @@ void laser_set_angle(uint16_t angle)
 	laser.angle = angle;
 }
 
+/* This function resets the angle id variable */
+void laser_reset_angle_id(void)
+{
+	laser.angle_id = 1;
+}
 
 /* Zigbee sending IRQ vector */
 ISR(TIMER3_COMPB_vect)
 {
+	uint16_t angle_to_send;
+	
+	/*  For debug */
+	uprintf("angle[degree] = %f  ---   angle[raw] = %d\r\n",laser_get_angle_degree(),laser_get_angle_raw());
+	
 	if(calibration_get_state() != SCANNING_STATE_CALIBRATED)
 	{
 		if(codewheel_get_state() == CODEWHEEL_INIT)
@@ -139,7 +152,16 @@ ISR(TIMER3_COMPB_vect)
 	}
 	else
 	{
-		// TODO: Send  angle
+		angle_to_send = laser_get_angle_raw() + (laser.angle_id << 9);
+#ifdef LOL_NUMBER_2
+		angle_to_send = (CODEWHEEL_CPR/4 - laser_get_angle_raw()) + (laser.angle_id << 9);
+#endif
+		network_send_data(NETWORK_ANGLE_RAW,angle_to_send);
+		if((laser_get_angle_degree() > 30) && (laser_get_angle_degree() < 70))
+		{
+			uprintf("angle[%d] = %f\r\n",laser.angle_id,laser_get_angle_degree());
+			laser.angle_id++;
+		}
 	}
 	
 	/* Disable the interrupt */

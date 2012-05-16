@@ -28,6 +28,8 @@
 #include <math.h>
 #include "debug_avr.h"
 #include "codewheel.h"
+#include "laser.h"
+#include "network.h"
 
 codewheel_s codewheel;
 
@@ -111,4 +113,5 @@ ISR(TIMER3_COMPA_vect)
 	{
 		OCR3A = CODEWHEEL_CPR;
 	}
+	laser_reset_angle_id();
 }
