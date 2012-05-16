@@ -45,6 +45,7 @@ void calibration_init_structure(void)
 /* This function starts the calibration task */
 void calibration_start_task(void)
 {
+	calibration.state = CALIBRATION_INIT;
 	calibrationTimer.interval = CALIBRATION_FAST_TASK_PERIOD;
 	calibrationTimer.mode     = TIMER_REPEAT_MODE;
 	calibrationTimer.callback = calibration_task;
@@ -59,7 +60,6 @@ void calibration_stop_task(void)
 {
 	HAL_StopAppTimer(&calibrationTimer);
 	motor_stop();
-	calibration.state = CALIBRATION_INIT;
 }
 
 /* This function starts or stops the calibration task depending on the current state */
