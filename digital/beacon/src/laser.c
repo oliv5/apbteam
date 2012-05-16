@@ -173,6 +173,7 @@ ISR(TIMER3_COMPB_vect)
 ISR(TIMER3_CAPT_vect)
 {
 	static uint16_t virtual_angle = 0;
+	uint16_t icr3_temp = ICR3;
 	TLaser_edge_type current_edge;
 	
 	/* Check which kind of edge triggered the interrupt */
@@ -185,29 +186,44 @@ ISR(TIMER3_CAPT_vect)
 	{
 		/* First rising edge of a reflector */
 		case LASER_FIRST_RISING_EDGE:
-			virtual_angle = ICR3;
+			virtual_angle = icr3_temp;
 			break;
 			
 		/* Common rising edge of a reflector  */
 		case LASER_RISING_EDGE:
 			
 			/* Recompute the angle value */
-			virtual_angle = (virtual_angle + ICR3) / 2;
+			if(ICR3 < virtual_angle)
+			{
+				virtual_angle = ((virtual_angle + icr3_temp + CODEWHEEL_CPR) / 2)%(CODEWHEEL_CPR+1);
+			}
+			else
+			{
+				virtual_angle = (virtual_angle + icr3_temp) / 2;
+			}
 			break;
 			
 		/* Falling edge detected */
 		case LASER_FALLING_EDGE:
 			
 			/* Recompute the angle value */
-			virtual_angle = (virtual_angle + ICR3) / 2;
-			/* UseI ICR3 for now*/
-			virtual_angle = ICR3;
+			if(ICR3 < virtual_angle)
+			{
+				virtual_angle = ((virtual_angle + icr3_temp + CODEWHEEL_CPR) / 2)%(CODEWHEEL_CPR+1);
+			}
+			else
+			{
+				virtual_angle = (virtual_angle + icr3_temp) / 2;
+			}
+			
+			/* For now we use directly ICR3 */
+			virtual_angle = icr3_temp;
 			
 			/* It's a falling edge so potentially current_angle could be a real one */
 			laser_set_angle(virtual_angle);
 			
 			/* Start virtual angle confirmation */
-			laser_engage_angle_confirmation(ICR3);
+			laser_engage_angle_confirmation(icr3_temp);
 			break;
 			
 		default:
