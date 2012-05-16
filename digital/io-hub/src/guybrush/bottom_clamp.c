@@ -52,8 +52,10 @@ FSM_STATES (
     CLAMP_START,
 
     /* ---------------------Initialisation sequence---------------------- */
-    /*Opening the 2 clamps. */
-    CLAMP_INIT_OPEN,
+    /*Opening all the clamps. */
+    CLAMP_INIT_OPEN_ALL_CLAMPS,
+    /*Closing all the clamps (except bottom clamp 2). */
+    CLAMP_INIT_CLOSE_ALL_CLAMPS,
     /*Finding 0 position. */
     CLAMP_INIT_FIND_0,
     /* Hide the clamp in order not to go over the robot. */
@@ -261,32 +263,47 @@ uint8_t clamp_read_blocked_cpt(void)
 /*---------------------------------------------------------*/
 
 /* Init Bottom clamp. */
-
-FSM_TRANS (CLAMP_START, init_actuators, CLAMP_INIT_OPEN)
+FSM_TRANS (CLAMP_START, init_actuators, CLAMP_INIT_OPEN_ALL_CLAMPS)
 {
-    ctx.pos_current = 0;
     /* Starting the pump */
     pressure_set(LOW_PRESSURE);
-    /* Opening the 2 clamps. */
+    /*Opening bottom Clamps*/
+    IO_CLR (OUTPUT_LOWER_CLAMP_2_CLOSE);
     IO_CLR (OUTPUT_LOWER_CLAMP_1_CLOSE);
-    IO_SET (OUTPUT_LOWER_CLAMP_2_CLOSE);
-    /* Open upper clamp. */
+    /*Opening upper clamps*/
     IO_SET (OUTPUT_UPPER_CLAMP_OPEN);
-    /* recentrage the middle clamp. */
-    IO_SET (OUTPUT_UPPER_CLAMP_OUT);
-    IO_CLR (OUTPUT_UPPER_CLAMP_IN);
-    /*Contrepression*/
-    IO_SET (OUTPUT_UPPER_CLAMP_UP);
+    
+    FSM_NEXT (CLAMP_START,init_actuators);
+    
+}
 
-    return FSM_NEXT (CLAMP_START,init_actuators);
+FSM_TRANS_TIMEOUT (CLAMP_INIT_OPEN_ALL_CLAMPS,TIMEOUT_OPEN_CLAMPS, 
+           upper_set_in,CLAMP_INIT_CLOSE_ALL_CLAMPS,
+           upper_set_out,CLAMP_SHITTY_STATE)
+{
+    /*if upper set is inside the robot*/
+    if(!IO_GET(CONTACT_UPPER_CLAMP_UP))
+    {
+        ctx.pos_current = 0;
+        /* closing all the clamps except the clamp 1 to proceed the find_O function. */
+        IO_SET (OUTPUT_LOWER_CLAMP_2_CLOSE);
+        IO_CLR (OUTPUT_UPPER_CLAMP_OPEN);
+        return FSM_NEXT_TIMEOUT (CLAMP_INIT_OPEN_ALL_CLAMPS,upper_set_in);
+    }
+    /*if it is outside, go to shitty state and stop everything*/
+    else
+    {
+        return FSM_NEXT_TIMEOUT (CLAMP_INIT_OPEN_ALL_CLAMPS,upper_set_out);
+    }
+    
 
 }
 
-FSM_TRANS_TIMEOUT (CLAMP_INIT_OPEN, 5*TIMEOUT_OPEN_CLAMPS, CLAMP_INIT_FIND_0)
+FSM_TRANS_TIMEOUT (CLAMP_INIT_CLOSE_ALL_CLAMPS, 5*TIMEOUT_OPEN_CLAMPS, CLAMP_INIT_FIND_0)
 {
     /*Findig the 0 position. */
     move_needed(8000,SLOW_ROTATION);
-    return FSM_NEXT_TIMEOUT (CLAMP_INIT_OPEN);
+    return FSM_NEXT_TIMEOUT (CLAMP_INIT_CLOSE_ALL_CLAMPS);
 }
 
 FSM_TRANS (CLAMP_INIT_FIND_0, 0_found, CLAMP_INIT_HIDE_CLAMP)
@@ -316,13 +333,19 @@ FSM_TRANS (CLAMP_INIT_READY,init_start_round, CLAMP_GOING_IDLE)
     return FSM_NEXT (CLAMP_INIT_READY, init_start_round);
 }
 
-FSM_TRANS (CLAMP_GOING_IDLE, lower_clamp_rotation_success, CLAMP_WAIT_BEFORE_IDLE)
+FSM_TRANS_TIMEOUT (CLAMP_GOING_IDLE, 3*TIMEOUT_OPEN_CLAMPS, CLAMP_WAIT_BEFORE_IDLE)
 {
     /*Going back to the idle position, ready for showtime.*/
     ctx.cpt_blocked = 0;
     ctx.clamp_1_down = 0;
-    IO_CLR (OUTPUT_LOWER_CLAMP_2_CLOSE);
-    return FSM_NEXT (CLAMP_GOING_IDLE, lower_clamp_rotation_success);
+    /* Open upper clamp. */
+    IO_SET (OUTPUT_UPPER_CLAMP_OPEN);
+    /* recentrage the middle clamp. */
+    IO_SET (OUTPUT_UPPER_CLAMP_OUT);
+    IO_CLR (OUTPUT_UPPER_CLAMP_IN);
+    /*Contrepression*/
+    IO_SET (OUTPUT_UPPER_CLAMP_UP);
+    return FSM_NEXT_TIMEOUT (CLAMP_GOING_IDLE);
 }
 
 /*---------------------------------------------------------*/
