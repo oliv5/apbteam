@@ -24,6 +24,7 @@
  * }}} */
 
 #include "motor.h"
+#include "codewheel.h"
 
 /* This function initializes the motor control output */
 void motor_init(void)

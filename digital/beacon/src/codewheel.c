@@ -32,6 +32,7 @@
 #include "network.h"
 
 codewheel_s codewheel;
+static HAL_AppTimer_t codewheelTimer;
 
 /* This function initializes the codewheel optical sensors and associated interrupt */
 void codewheel_init(void)
