@@ -31,6 +31,7 @@
 #include "debug_avr.h"
 #include "led.h"
 
+#include "motor.h"
 
 // Endpoint parameters
 static SimpleDescriptor_t simpleDescriptor = { APP_ENDPOINT, APP_PROFILE_ID, 1, 1, 0, 0 , NULL, 0, NULL };
@@ -289,6 +290,7 @@ void APS_DataIndication(APS_DataInd_t* indData)
 	switch(appMessage->data[NETWORK_MSG_TYPE_FIELD])
 	{
 		case NETWORK_JACK_STATE:
+			motor_start_stop_control();
 			break;
 		case NETWORK_OPPONENT_NUMBER:
 			break;
