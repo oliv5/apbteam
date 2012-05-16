@@ -23,8 +23,8 @@
  *
  * }}} */
 
-#include <types.h>
 #include <avr/interrupt.h>
+#include <types.h>
 #include <math.h>
 #include "debug_avr.h"
 #include "codewheel.h"
