@@ -154,3 +154,25 @@ int update_position(uint16_t beaconID, uint16_t angleID, float angle)
 	}
 	return 0;
 }
+
+/* This function returns the requested coord according to the opponent number */
+int16_t position_get_coord(TOpponent_ID id, TCoord_type type)
+{
+	switch(type)
+	{
+		case X:
+			return opponent[id].x;
+			break;
+		case Y:
+			return opponent[id].y;
+			break;
+		default:
+			return 0;
+	}
+}
+
+/* This function returns the trust according to opponent number */
+int8_t position_get_trust(TOpponent_ID id)
+{
+	return opponent[id].trust;
+}
