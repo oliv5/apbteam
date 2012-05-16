@@ -144,7 +144,6 @@ void network_leave(void)
 	ZDO_MgmtLeaveReq_t *zdpLeaveReq = &leaveReq.req.reqPayload.mgmtLeaveReq;
 	APS_UnregisterEndpointReq_t unregEndpoint;
 
-	appState = APP_NETWORK_LEAVING_STATE;
 
 	unregEndpoint.endpoint = endpointParams.simpleDescriptor->endpoint;
 	APS_UnregisterEndpointReq(&unregEndpoint);
@@ -164,9 +163,6 @@ void network_leave(void)
 /* Leave network response */
 void zdpLeaveResp(ZDO_ZdpResp_t *zdpResp)
 {
-	// Try to rejoin the network
-	appState = APP_NETWORK_JOIN_REQUEST;
-
 	(void)zdpResp;
 }
 
@@ -199,11 +195,7 @@ void ZDO_MgmtNwkUpdateNotf(ZDO_MgmtNwkUpdateNotf_t *nwkParams)
 			break;
 		case ZDO_NETWORK_LOST_STATUS:
 		{
-			APS_UnregisterEndpointReq_t unregEndpoint;
-			unregEndpoint.endpoint = endpointParams.simpleDescriptor->endpoint;
-			APS_UnregisterEndpointReq(&unregEndpoint);
-			
-			// try to rejoin the network
+			network_leave();
 			appState = APP_NETWORK_JOIN_REQUEST;
 			break;
 		}
@@ -269,6 +261,7 @@ void APS_DataConf(APS_DataConf_t* confInfo)
 		if (MAX_RETRIES_BEFORE_REJOIN == retryCounter)
 		{
 			network_leave();
+			appState = APP_NETWORK_JOIN_REQUEST;
 		}
 		else
 		{
