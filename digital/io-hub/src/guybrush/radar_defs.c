@@ -31,13 +31,13 @@
 /** Define radar configuration. */
 struct radar_sensor_t radar_sensors[RADAR_SENSOR_NB] = {
 #define RADAR_SENSOR_FRONT 0
-      { &usdist_mm[0], { 120, 0 }, G_ANGLE_UF016_DEG (0) },
+      { &usdist_mm[0], { 150, 0 }, G_ANGLE_UF016_DEG (0) },
 #define RADAR_SENSOR_LEFT 1
-      { &usdist_mm[1], { 120, 160 }, G_ANGLE_UF016_DEG (0) },
+      { &usdist_mm[1], { 50, 147 }, G_ANGLE_UF016_DEG (0) },
 #define RADAR_SENSOR_RIGHT 2
-      { &usdist_mm[2], { 120, -160 }, G_ANGLE_UF016_DEG (0) },
+      { &usdist_mm[2], { 50, -147 }, G_ANGLE_UF016_DEG (0) },
 #define RADAR_SENSOR_BACK 3
-      { &usdist_mm[3], { -130, 0 }, G_ANGLE_UF016_DEG (180) },
+      { &usdist_mm[3], { -120, 0 }, G_ANGLE_UF016_DEG (180) },
 };
 
 /** Define exclusion area (considered as invalid point). */
