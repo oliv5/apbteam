@@ -34,6 +34,7 @@
 #include "network.h"
 #include "motor.h"
 #include "misc.h"
+#include "position.h"
 
 HAL_UsartDescriptor_t appUsartDescriptor;          			// USART descriptor (required by stack)
 HAL_AppTimer_t debugTimer;						// TIMER descripor used by the DEBUG task
@@ -126,7 +127,7 @@ void usartRXCallback(uint16_t bytesToRead)
 			calibration_start_stop_task();
 			break;
 		case 'q':
-			calibration_set_laser_flag(SET);
+// 			calibration_set_laser_flag(SET);
 			break;
 		case 'r':
 			reset_avr();
@@ -208,15 +209,19 @@ void debug_task(void)
 	uprintf("Status : 0x%x - ",network_get_status());
 	uprintf("LQI = %d - ",network_get_lqi());
 	uprintf("RSSI = %d - \r\n",network_get_rssi());
-#ifdef TYPE_END
+#ifdef TYPE_COOR
+	uprintf("X = %d   ---   ",position_get_coord(OPPONENT_1,X));
+	uprintf("Y = %d   ---   ",position_get_coord(OPPONENT_1,Y));
+	uprintf("Trust = %d\r\n",position_get_trust(OPPONENT_1));
+#else
+	uprintf("## Calibration\r\n");
+	uprintf("State : %d\r\n",calibration_get_state());
 	uprintf("## Servo\r\n");
  	uprintf("State : [1]=%d [2]=%d - ",servo_get_state(SERVO_1),servo_get_state(SERVO_2));
  	uprintf("Value : [1]=%d [2]=%d\r\n",servo_get_value(SERVO_1),servo_get_value(SERVO_2));
 	uprintf("## Codewheel\r\n");
-	uprintf("Raw = %d - Degree = %f\r\n",codewheel_get_value(),codewheel_convert_angle_raw2degrees(codewheel_get_value()));
-	uprintf("## Calibration\r\n");
-	uprintf("State : %d\r\n",calibration_get_state());
-	uprintf("## Calibration\r\n");
-	uprintf("State : %d\r\n",motor_get_state());
+	uprintf("State = %d - Raw = %d - Degree = %f\r\n",codewheel_get_state(),codewheel_get_value(),codewheel_convert_angle_raw2degrees(codewheel_get_value()));
+	uprintf("## Motor\r\n");
+	uprintf("State : %d   ----    speed = %d\r\n",motor_get_state(),OCR0A);
 #endif
 }
