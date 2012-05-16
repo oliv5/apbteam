@@ -38,6 +38,8 @@ class Bag:
                 'Color')
         self.strat_switch = Switch (sensor_frame, model_bag.strat_switch,
                 'Strat')
+        self.nb_robots_switch = Switch (sensor_frame,
+                model_bag.nb_robots_switch, 'Nb robots')
         self.robot = Robot (table, model_bag.position, model_bag.clamps)
         self.clamps = ClampsSide (actuator_view.add_view (ClampsSide.width,
             ClampsSide.height), model_bag.clamps)

@@ -49,11 +49,12 @@ class Bag:
         self.color_switch.notify ()
         self.jack = Switch (link_bag.io_hub.contact[1], invert = True)
         self.strat_switch = Switch (link_bag.io_hub.contact[2], invert = True)
+        self.nb_robots_switch = Switch (link_bag.io_hub.contact[12], invert = True)
         self.beacon = RoundObstacle (40, 5)
         table.obstacles.append (self.beacon)
         self.position = Position (link_bag.asserv.position, [ self.beacon ])
         output = link_bag.io_hub.output
-        contact = [ Switch (c) for c in link_bag.io_hub.contact[3:] ]
+        contact = [ Switch (c) for c in link_bag.io_hub.contact[3:12] ]
         self.clamps = Clamps (table, self.position, link_bag.mimot.aux[0],
                 (PneumaticCylinder (output[self.OUTPUT_LOWER_CLAMP_1_CLOSE],
                     None, scheduler, 0., 30., 150., 75., 30.),
