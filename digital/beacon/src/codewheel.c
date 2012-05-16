@@ -113,6 +113,31 @@ ISR(TIMER3_COMPA_vect)
 	else
 	{
 		OCR3A = CODEWHEEL_CPR;
+		codewheel.time = 0;
 	}
 	laser_reset_angle_id();
 }
+
+/* Task for turn time measurment */
+void codewheel_timer_task(void)
+{
+	codewheel.time+=10;
+}
+
+/* This function start the codewheel timer task */
+void start_codewheel_timer_task(void)
+{
+	codewheel.time = 0;
+	codewheelTimer.interval = CODEWHEEL_TIMER_TASK_PERIOD;
+	codewheelTimer.mode     = TIMER_REPEAT_MODE;
+	codewheelTimer.callback = codewheel_timer_task;
+	HAL_StartAppTimer(&codewheelTimer);
+}
+
+/* This function stop the codewheel timer task */
+void stop_codewheel_timer_task(void)
+{
+	HAL_StopAppTimer(&codewheelTimer);
+}
+
+

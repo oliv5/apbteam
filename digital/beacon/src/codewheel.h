@@ -27,7 +27,7 @@
 #define _CODEWHEEL_H
 
 #define CODEWHEEL_CPR 499
-
+#define CODEWHEEL_TIMER_TASK_PERIOD 10L
 typedef enum
 {
 	CODEWHEEL_INIT,
@@ -39,6 +39,7 @@ typedef struct
 {
 	TCodewheel_state state;
 	uint16_t rebase_offset;
+	uint16_t time;
 } codewheel_s;
 
 /* This function initializes the codewheel optical sensors and associated interrupt */
@@ -67,5 +68,14 @@ float codewheel_convert_angle_raw2degrees(uint16_t raw_value);
 
 /* This function converts the angle value from row format to radians */
 float codewheel_convert_angle_raw2radians(uint16_t raw_value);
+
+/* Task for turn time measurment */
+void codewheel_timer_task(void);
+
+/* This function start the codewheel timer task */
+void start_codewheel_timer_task(void);
+
+/* This function stop the codewheel timer task */
+void stop_codewheel_timer_task(void);
 
 #endif
