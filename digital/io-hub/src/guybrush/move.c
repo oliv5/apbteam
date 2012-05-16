@@ -39,6 +39,8 @@
 
 #include <math.h>
 
+#include "playground_2012.h"
+
 /** Number of tries to reach destination. */
 #define MOVE_TRY_AGAIN 1
 
@@ -378,24 +380,50 @@ FSM_TRANS (MOVE_MOVING, robot_move_success,
     //return FSM_NEXT (MOVE_MOVING, robot_move_success, no_path_found);
 }
 
+/** Test if a point is ok to move back. */
+static uint8_t
+move_test_point (vect_t p, int16_t margin)
+{
+    return p.x >= margin && p.x < PG_WIDTH - margin
+	&& p.y >= margin && p.y < PG_LENGTH - margin
+	&& !(p.y >= PG_TOTEM_Y - PG_TOTEM_WIDTH_MM / 2 - margin
+	     && p.y < PG_TOTEM_Y + PG_TOTEM_WIDTH_MM / 2 + margin
+	     && p.x >= PG_TOTEM_LEFT_X - PG_TOTEM_WIDTH_MM / 2 - margin
+	     && p.x < PG_TOTEM_RIGHT_X + PG_TOTEM_WIDTH_MM / 2 + margin);
+}
+
 static void
 move_moving_backward_to_turn_freely (void)
 {
     move_data.final_move = 0;
+    int16_t dist, back_dist, margin;
+    if (asserv_get_last_moving_direction () == DIRECTION_FORWARD)
+      {
+	dist = BOT_SIZE_FRONT + MOVE_REAL_OBSTACLE_RADIUS;
+	back_dist = -300;
+	margin = BOT_SIZE_BACK_RADIUS;
+      }
+    else
+      {
+	dist = -(BOT_SIZE_FRONT + MOVE_REAL_OBSTACLE_RADIUS);
+	back_dist = 300;
+	margin = BOT_SIZE_RADIUS;
+      }
     /* Assume there is an obstacle in front of the robot. */
     position_t robot_pos;
     asserv_get_position (&robot_pos);
     vect_t obstacle_pos;
-    int16_t dist = asserv_get_last_moving_direction () == DIRECTION_FORWARD
-	? BOT_SIZE_FRONT + MOVE_REAL_OBSTACLE_RADIUS
-	: -(BOT_SIZE_BACK + MOVE_REAL_OBSTACLE_RADIUS);
     vect_from_polar_uf016 (&obstacle_pos, dist, robot_pos.a);
     vect_translate (&obstacle_pos, &robot_pos.v);
     path_obstacle (0, obstacle_pos, MOVE_OBSTACLE_RADIUS, 0,
 		   MOVE_OBSTACLE_VALIDITY);
     /* Move backward to turn freely. */
-    asserv_move_linearly (asserv_get_last_moving_direction ()
-			  == DIRECTION_FORWARD ? -300 : 300);
+    vect_t back_pos;
+    vect_from_polar_uf016 (&back_pos, back_dist, robot_pos.a);
+    vect_translate (&back_pos, &robot_pos.v);
+    if (!move_test_point (back_pos, margin))
+	back_dist /= 8;
+    asserv_move_linearly (back_dist);
 }
 
 FSM_TRANS (MOVE_MOVING,
