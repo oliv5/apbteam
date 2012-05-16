@@ -30,6 +30,7 @@
 
 servo_s servo1;
 servo_s servo2;
+static HAL_AppTimer_t waveTimer;						// TIMER descripor used by the DEBUG task
 
 /* This function initializes low and high level modules for servos */
 void servo_init(void)
@@ -242,6 +243,53 @@ void servo_inverse_scanning_sense(TServo_ID servo_id)
 		default:
 			break;
 	}
+}
+
+/* This function generates a wave scanning */
+void servo_waveform_scanning(TServo_ID servo_id, uint8_t average_value)
+{
+	
+	uint16_t next_value = 0;
+	uint16_t current_value = 0;
+
+	/* Compute next value to set to the servo */
+	next_value = servo_get_value(servo_id) + servo_get_scanning_sense(servo_id);
+
+	/* Set it and check the return value in order to inverse the sense MIN or MAX is reached */
+	current_value = servo_set_value(servo_id,next_value);
+
+	if((current_value <= average_value - SERVO_WAVE_OFFSET) || (current_value >= average_value + SERVO_WAVE_OFFSET))
+	{
+		servo_inverse_scanning_sense(servo_id);
+	}
+}
+
+/* Wave Task */
+void servo_wave_task(void)
+{
+	static bool first_time = 1;
+	static uint8_t average_value[2] = {0};
+	
+	/* Get and save the average value found with the calibration */
+	if(first_time == 1)
+	{
+		average_value[SERVO_1] = servo_get_value(SERVO_1);
+		average_value[SERVO_2] = servo_get_value(SERVO_2);
+		first_time = 0;
+	}
+	
+	/* Scan each servos */
+	servo_waveform_scanning(SERVO_1,average_value[SERVO_1]);
+	servo_waveform_scanning(SERVO_2,average_value[SERVO_2]);
+}
+
+/* Start wave task */
+void servo_start_wave_task(void)
+{
+	waveTimer.interval = WAVE_TASK_PERIOD;
+	waveTimer.mode     = TIMER_REPEAT_MODE;
+	waveTimer.callback = servo_wave_task;
+	HAL_StartAppTimer(&waveTimer);
 }
 
 SIGNAL (SIG_OVERFLOW1)

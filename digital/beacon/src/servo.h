@@ -95,4 +95,13 @@ int8_t servo_get_scanning_sense(TServo_ID servo_id);
 /* This function inverses the scanning sense of the servo */
 void servo_inverse_scanning_sense(TServo_ID servo_id);
 
+/* This function generates a wave scanning */
+void servo_waveform_scanning(TServo_ID servo_id, uint8_t average_value);
+
+/* Wave Task */
+void servo_wave_task(void);
+
+/* Start wave task */
+void servo_start_wave_task(void);
+
 #endif
