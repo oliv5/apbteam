@@ -160,6 +160,7 @@ static uint8_t
 main_demo_events (void)
 {
     static uint8_t color_switch_last = 0xff;
+    static uint8_t nb_robots_switch_last = 0xff;
     static uint8_t tree_step;
     static uint8_t sleep;
     /* Bounce detection. */
@@ -189,6 +190,15 @@ main_demo_events (void)
 	  }
 	tree_step = (tree_step + 1) % 3;
 	return 1;
+      }
+    /* Look at nb robots switch to control unblocking. */
+    if (nb_robots_switch_last == 0xff)
+	nb_robots_switch_last = IO_GET (CONTACT_NB_ROBOTS);
+    if (nb_robots_switch_last != IO_GET (CONTACT_NB_ROBOTS))
+      {
+	nb_robots_switch_last = IO_GET (CONTACT_NB_ROBOTS);
+	sleep = 125;
+	return FSM_HANDLE (AI, robot_is_back);
       }
     return 0;
 }
