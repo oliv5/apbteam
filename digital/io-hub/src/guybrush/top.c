@@ -258,6 +258,14 @@ FSM_TRANS (TOP_TOTEM_CLEAN_APPROACHING, robot_move_success,
     return FSM_NEXT (TOP_TOTEM_CLEAN_APPROACHING, robot_move_success);
 }
 
+FSM_TRANS (TOP_TOTEM_CLEAN_APPROACHING, robot_move_failure,
+	   TOP_TOTEM_CLEAN_CATCH_WAITING)
+{
+    /* Must be blocked on a CD, catch and continue. */
+    FSM_HANDLE (AI, clean_catch);
+    return FSM_NEXT (TOP_TOTEM_CLEAN_APPROACHING, robot_move_failure);
+}
+
 FSM_TRANS (TOP_TOTEM_CLEAN_CATCH_WAITING, clamps_ready,
 	   TOP_TOTEM_CLEAN_GOING_BACK)
 {
@@ -272,6 +280,13 @@ FSM_TRANS (TOP_TOTEM_CLEAN_GOING_BACK, robot_move_success,
 {
     FSM_HANDLE (AI, clean_load);
     return FSM_NEXT (TOP_TOTEM_CLEAN_GOING_BACK, robot_move_success);
+}
+
+FSM_TRANS (TOP_TOTEM_CLEAN_GOING_BACK, robot_move_failure,
+	   TOP_TOTEM_CLEAN_LOADING)
+{
+    FSM_HANDLE (AI, clean_load);
+    return FSM_NEXT (TOP_TOTEM_CLEAN_GOING_BACK, robot_move_failure);
 }
 
 FSM_TRANS (TOP_TOTEM_CLEAN_LOADING, clamps_ready, TOP_TOTEM_CLAMP_DOWNING)
