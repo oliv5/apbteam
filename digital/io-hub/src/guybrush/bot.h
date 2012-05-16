@@ -38,6 +38,9 @@
 #define BOT_SIZE_FRONT 165
 /** Distance from the robot axis to the lower clamp back. */
 #define BOT_SIZE_LOWER_CLAMP_FRONT 100
+/** Distance from the robot axis to the maximum occupied space when
+ * loading. */
+#define BOT_SIZE_LOADING_FRONT 275
 /** Distance from the robot axis to the back. */
 #define BOT_SIZE_BACK 134
 /** Distance from the robot axis to the side. */

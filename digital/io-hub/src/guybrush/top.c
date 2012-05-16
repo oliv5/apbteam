@@ -269,7 +269,7 @@ FSM_TRANS (TOP_TOTEM_CLEAN_APPROACHING, robot_move_failure,
 FSM_TRANS (TOP_TOTEM_CLEAN_CATCH_WAITING, clamps_ready,
 	   TOP_TOTEM_CLEAN_GOING_BACK)
 {
-    int16_t move = top.totem_distance - BOT_SIZE_LOWER_CLAMP_FRONT - 240;
+    int16_t move = top.totem_distance - BOT_SIZE_LOADING_FRONT - 30;
     top.totem_distance -= move;
     asserv_move_linearly (move);
     return FSM_NEXT (TOP_TOTEM_CLEAN_CATCH_WAITING, clamps_ready);
