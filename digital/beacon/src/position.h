@@ -38,6 +38,16 @@ typedef enum{
 	POSITION_IGNORE_ANGLE
 } TPositionStatus;
 
+typedef enum{
+	OPPONENT_1 = 1,
+	OPPONENT_2
+} TOpponent_ID;
+
+typedef enum{
+	X,
+	Y
+} TCoord_type;
+
 /* Structures definition */
 
 /* Beacon Structure */
