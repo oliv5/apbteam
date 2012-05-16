@@ -160,6 +160,8 @@ FSM_EVENTS (
     robot_is_back,
     /* The clamp is blocked. We can try to unblock it*/
     clamp_blocked,
+    /* Try to unblock clamp. */
+    clamp_unblock,
     /* We tryed to unblock the clamp too many time. we can now say that the bottom clamp is out of order*/
     clamp_is_dead
      )
@@ -764,10 +766,10 @@ FSM_TRANS_TIMEOUT (CLAMP_BLOCKED,TIMEOUT_OPEN_CLAMPS,CLAMP_OPEN_BOTTOM_CLAMPS)
     return FSM_NEXT_TIMEOUT (CLAMP_BLOCKED);
 }
 
-FSM_TRANS (CLAMP_OPEN_BOTTOM_CLAMPS,robot_is_back, CLAMP_WAIT)
+FSM_TRANS (CLAMP_OPEN_BOTTOM_CLAMPS, clamp_unblock, CLAMP_WAIT)
 {
     mimot_move_motor0_absolute (mimot_get_motor0_position() - 16 * 250, MEDIUM_ROTATION);
-    return FSM_NEXT (CLAMP_OPEN_BOTTOM_CLAMPS, robot_is_back);
+    return FSM_NEXT (CLAMP_OPEN_BOTTOM_CLAMPS, clamp_unblock);
 }
 
 FSM_TRANS (CLAMP_OPEN_BOTTOM_CLAMPS,clamp_is_dead, CLAMP_SHITTY_STATE)

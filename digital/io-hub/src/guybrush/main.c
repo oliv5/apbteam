@@ -198,7 +198,7 @@ main_demo_events (void)
       {
 	nb_robots_switch_last = IO_GET (CONTACT_NB_ROBOTS);
 	sleep = 125;
-	return FSM_HANDLE (AI, robot_is_back);
+	return FSM_HANDLE (AI, clamp_unblock);
       }
     return 0;
 }
