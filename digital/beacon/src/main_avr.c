@@ -64,6 +64,7 @@ void APL_TaskHandler(void)
 				case DEVICE_TYPE_COORDINATOR:
 						network_init();
 						twi_init_specific();
+						position_init_struct();
 						uprintf("COORDINATOR initialisation OK !\n\r");
 					break;
 				case DEVICE_TYPE_END_DEVICE:
