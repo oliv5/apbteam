@@ -119,7 +119,7 @@ pressure_update (void)
 	    if (pressure_get () > pressure.high)
 	      {
 		/* Done. Stop. Open circuit. */
-		mimot_motor1_free ();
+		mimot_motor_free (1, 0);
 		IO_SET (OUTPUT_PNEUM_OPEN);
 		pressure.state = PRESSURE_IDLE;
 		pressure.wait = PRESSURE_REST;

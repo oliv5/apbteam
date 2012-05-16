@@ -287,8 +287,8 @@ main_loop (void)
 	    IO_SET (OUTPUT_DOOR_OPEN);
 	    IO_CLR (OUTPUT_DOOR_CLOSE);
 	    /* Stop motors. */
-	    mimot_motor0_free ();
-	    mimot_motor1_free ();
+	    mimot_motor_free (0, 0);
+	    mimot_motor_free (1, 0);
 	    /* End it and block here indefinitely. */
 	    chrono_end_match (42);
 	    return;

@@ -111,13 +111,9 @@ mimot_motor0_clamp (int16_t speed, int16_t pwm);
 void
 mimot_motor1_clamp (int16_t speed, int16_t pwm);
 
-/** Free motor0. */
+/** Free motor. */
 void
-mimot_motor0_free (void);
-
-/** Free motor1. */
-void
-mimot_motor1_free (void);
+mimot_motor_free (uint8_t motor, uint8_t brake);
 
 /** Set raw output for motor. */
 void

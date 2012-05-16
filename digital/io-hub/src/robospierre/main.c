@@ -340,8 +340,8 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	break;
       case c ('w', 0):
 	/* Disable all motor control. */
-	mimot_motor0_free ();
-	mimot_motor1_free ();
+	mimot_motor_free (0, 0);
+	mimot_motor_free (1, 0);
 	asserv_free_motor ();
 	break;
 	/* Stats commands.

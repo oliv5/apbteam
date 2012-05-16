@@ -547,8 +547,8 @@ clamp_blocked (void)
 	else
 	    logistic_dump (DIRECTION_BACKWARD, 0);
       }
-    mimot_motor0_free ();
-    mimot_motor1_free ();
+    mimot_motor_free (0, 1);
+    mimot_motor_free (1, 1);
     /* Signal problem. */
     fsm_queue_post_event (FSM_EVENT (AI, clamp_move_failure));
 }
@@ -649,8 +649,8 @@ FSM_TRANS (CLAMP_INIT_FINDING_TOP, clamp_elevation_success,
 
 FSM_TRANS (CLAMP_INIT_GOING_REST, clamp_move_success, CLAMP_INIT_READY)
 {
-    mimot_motor0_free ();
-    mimot_motor1_free ();
+    mimot_motor_free (0, 1);
+    mimot_motor_free (1, 1);
     return FSM_NEXT (CLAMP_INIT_GOING_REST, clamp_move_success);
 }
 

@@ -240,21 +240,13 @@ mimot_motor1_clamp (int16_t speed, int16_t pwm)
 }
 
 void
-mimot_motor0_free (void)
+mimot_motor_free (uint8_t motor, uint8_t brake)
 {
     uint8_t *buffer = twi_master_get_buffer (TWI_MASTER_ID_MIMOT);
     buffer[0] = 'w';
-    buffer[1] = 0;
-    twi_master_send_buffer (2);
-}
-
-void
-mimot_motor1_free (void)
-{
-    uint8_t *buffer = twi_master_get_buffer (TWI_MASTER_ID_MIMOT);
-    buffer[0] = 'w';
-    buffer[1] = 1;
-    twi_master_send_buffer (2);
+    buffer[1] = motor;
+    buffer[2] = brake;
+    twi_master_send_buffer (3);
 }
 
 void

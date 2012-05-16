@@ -156,13 +156,14 @@ twi_proto_callback (u8 *buf, u8 size)
 	else
 	    buf[0] = 0;
 	break;
-      case c ('w', 1):
+      case c ('w', 2):
 	/* Free motor.
-	 * - b: aux index. */
+	 * - b: aux index.
+	 * - b: brake. */
 	if (buf[2] < AC_ASSERV_AUX_NB)
 	  {
 	    output_set (&output_aux[buf[2]], 0);
-	    output_brake (&output_aux[buf[2]], 0);
+	    output_brake (&output_aux[buf[2]], buf[3]);
 	    control_state_set_mode (&cs_aux[buf[2]].state, CS_MODE_NONE, 0);
 	  }
 	else
