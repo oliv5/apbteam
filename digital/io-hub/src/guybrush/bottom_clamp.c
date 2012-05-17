@@ -464,25 +464,22 @@ FSM_TRANS_TIMEOUT (CLAMP_TAKE_COIN, TIMEOUT_CLOSE_CLAMPS, CLAMP_TURN_HALF_WAY)
 {
     main_set_drop_coin_pos(ctx.pos_current + (HALF_TURN * 250) - POS_DELAY);
     move_needed(HALF_TURN * 250,FAST_ROTATION);
+    ctx.clamp_1_down = !ctx.clamp_1_down;
     return FSM_NEXT_TIMEOUT (CLAMP_TAKE_COIN);
 }
 
 FSM_TRANS (CLAMP_TURN_HALF_WAY, time_to_drop_coin, CLAMP_DROP_CD)
 {
     /*If the clamp 1 has the CD.*/
-    if (ctx.clamp_1_down)
+    if (!ctx.clamp_1_down)
     {     
         /*Open it.*/
         IO_CLR (OUTPUT_LOWER_CLAMP_1_CLOSE);
-        /*Clamp 1 is now up (clamp 2 is down).*/
-        ctx.clamp_1_down = 0;
     }
     /*If the clamp 2 is closed. */
     else       
     {
         IO_CLR (OUTPUT_LOWER_CLAMP_2_CLOSE);
-        /*Clamp 1 is now down (clamp 2 is up). */
-        ctx.clamp_1_down = 1;            
     }
     return FSM_NEXT (CLAMP_TURN_HALF_WAY,time_to_drop_coin);
 }
@@ -699,6 +696,7 @@ FSM_TRANS (CLAMP_END_RECALE, lower_clamp_rotation_success,CLAMP_TURN_HALF_WAY)
 {
     main_set_drop_coin_pos(ctx.pos_current + (HALF_TURN * 250) - POS_DELAY);
     move_needed(HALF_TURN  * 250,FAST_ROTATION);
+    ctx.clamp_1_down = !ctx.clamp_1_down;
     return FSM_NEXT (CLAMP_END_RECALE, lower_clamp_rotation_success);
 }
 /*---------------------------------------------------------------------------------*/
@@ -800,15 +798,6 @@ FSM_TRANS (CLAMP_WAIT,lower_clamp_rotation_failure, CLAMP_BLOCKED)
 FSM_TRANS_TIMEOUT (CLAMP_TURN_BACKWARD,TIMEOUT_BLOCKED, CLAMP_TURN_FORWARD)
 {
     move_needed(0,MEDIUM_ROTATION);
-    if (ctx.clamp_1_down)
-    {
-        /*Clamp 1 is now up (clamp 2 is down).*/
-        ctx.clamp_1_down = 0;
-    }
-    else
-    {
-        ctx.clamp_1_down = 1;
-    }
     return FSM_NEXT_TIMEOUT (CLAMP_TURN_BACKWARD);
 }
 
