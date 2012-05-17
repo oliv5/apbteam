@@ -37,6 +37,11 @@
 
 enum
 {
+    /** Unloading area. */
+    STRAT_PLACE_CAPTAIN0,
+    STRAT_PLACE_CAPTAIN1,
+    STRAT_PLACE_HOLD0,
+    STRAT_PLACE_HOLD1,
     /** The four collecting places for totems. */
     STRAT_PLACE_TOTEM0,
     STRAT_PLACE_TOTEM1,
@@ -48,7 +53,9 @@ enum
     STRAT_PLACE_BOTTLE2,
     STRAT_PLACE_BOTTLE3,
     /** Number of places, should be last. */
-    STRAT_PLACE_NB
+    STRAT_PLACE_NB,
+    /** Number of unloading area. */
+    STRAT_PLACE_UNLOAD_NB = 4,
 };
 
 /** Place static information. */
@@ -62,6 +69,16 @@ struct strat_place_t
     uint8_t decision;
 };
 static const struct strat_place_t strat_place[STRAT_PLACE_NB] = {
+      { { PG_CAPTAIN_ROOM_LENGTH_MM,
+	  PG_LENGTH - PG_CAPTAIN_ROOM_LENGTH_MM / 2 },
+        100, STRAT_DECISION_UNLOAD },
+      { { PG_MIRROR_X (PG_CAPTAIN_ROOM_LENGTH_MM),
+	  PG_LENGTH - PG_CAPTAIN_ROOM_LENGTH_MM / 2 },
+        100, STRAT_DECISION_UNLOAD },
+      { { BOT_SIZE_RADIUS + 30, PG_LENGTH / 2 },
+	1000, STRAT_DECISION_UNLOAD },
+      { { PG_MIRROR_X (BOT_SIZE_RADIUS + 30), PG_LENGTH / 2 },
+	1000, STRAT_DECISION_UNLOAD },
       { { PG_WIDTH / 2 - PG_TOTEM_X_OFFSET_MM,
 	  PG_LENGTH / 2 + PATH_PEANUT_CLEAR_MM }, 100, STRAT_DECISION_TOTEM },
       { { PG_WIDTH / 2 + PG_TOTEM_X_OFFSET_MM,
@@ -112,11 +129,15 @@ strat_init (void)
 	strat.place[i].valid = 1;
     if (team_color)
       {
+	strat.place[STRAT_PLACE_CAPTAIN1].valid = 0;
+	strat.place[STRAT_PLACE_HOLD1].valid = 0;
 	strat.place[STRAT_PLACE_BOTTLE1].valid = 0;
 	strat.place[STRAT_PLACE_BOTTLE3].valid = 0;
       }
     else
       {
+	strat.place[STRAT_PLACE_CAPTAIN0].valid = 0;
+	strat.place[STRAT_PLACE_HOLD0].valid = 0;
 	strat.place[STRAT_PLACE_BOTTLE0].valid = 0;
 	strat.place[STRAT_PLACE_BOTTLE2].valid = 0;
       }
@@ -174,14 +195,18 @@ strat_decision (vect_t *pos)
 	return strat.last_decision;
       }
     /* Else compute the best decision. */
+    uint8_t min, max;
     if (strat.load > 0)
       {
-	strat.last_decision = STRAT_DECISION_UNLOAD;
-	pos->x = PG_X (BOT_SIZE_RADIUS + 30);
-	pos->y = PG_Y (PG_LENGTH / 2);
-	return strat.last_decision;
+	min = 0;
+	max = STRAT_PLACE_UNLOAD_NB;
       }
-    for (i = 0; i < STRAT_PLACE_NB; i++)
+    else
+      {
+	min = STRAT_PLACE_UNLOAD_NB;
+	max = STRAT_PLACE_NB;
+      }
+    for (i = min; i < max; i++)
       {
 	int32_t score = strat_place_score (i);
 	if (score > best_score)
@@ -221,6 +246,11 @@ strat_success (void)
 	break;
       case STRAT_DECISION_UNLOAD:
 	strat.load = 0;
+	if (strat.last_place == STRAT_PLACE_CAPTAIN0
+	    || strat.last_place == STRAT_PLACE_CAPTAIN1)
+	  {
+	    strat.place[strat.last_place].valid = 0;
+	  }
 	break;
       default:
 	assert (0);

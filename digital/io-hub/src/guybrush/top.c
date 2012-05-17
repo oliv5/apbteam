@@ -171,7 +171,10 @@ top_go_unload (void)
 {
     position_t pos;
     pos.v = top.decision_pos;
-    pos.a = PG_A_DEG (70);
+    if (pos.v.y > PG_LENGTH - PG_CAPTAIN_ROOM_LENGTH_MM)
+	pos.a = PG_A_DEG (0);
+    else
+	pos.a = PG_A_DEG (70);
     move_start (pos, 0);
 }
 
