@@ -57,6 +57,8 @@ FSM_STATES (
 	    TOP_INIT_DOOR,
 	    /* Init done, waiting for rount start. */
 	    TOP_INIT,
+	    /* Transition state to take a new decision. */
+	    TOP_DECISION,
 
 	    /* Going to a collect position above or below a totem. */
 	    TOP_TOTEM_GOING,
@@ -195,19 +197,6 @@ top_decision (void)
     return decision;
 }
 
-#define RETURN_TOP_DECISION_SWITCH(state, event) do { \
-    switch (top_decision ()) \
-      { \
-      default: assert (0); \
-      case STRAT_DECISION_TOTEM: \
-	return FSM_NEXT (state, event, totem); \
-      case STRAT_DECISION_BOTTLE: \
-	return FSM_NEXT (state, event, bottle); \
-      case STRAT_DECISION_UNLOAD: \
-	return FSM_NEXT (state, event, unload); \
-      } \
-} while (0)
-
 FSM_TRANS (TOP_START, init_actuators, TOP_INIT_DOOR)
 {
     main_demo = !IO_GET (CONTACT_STRAT);
@@ -225,13 +214,28 @@ FSM_TRANS (TOP_INIT_DOOR, init_done, TOP_INIT)
     return FSM_NEXT (TOP_INIT_DOOR, init_done);
 }
 
-FSM_TRANS (TOP_INIT, init_start_round,
-	   totem, TOP_TOTEM_GOING,
-	   bottle, TOP_BOTTLE_GOING,
-	   unload, TOP_UNLOAD_GOING)
+FSM_TRANS (TOP_INIT, init_start_round, TOP_DECISION)
 {
     main_usdist = 1;
-    RETURN_TOP_DECISION_SWITCH (TOP_INIT, init_start_round);
+    return FSM_NEXT (TOP_INIT, init_start_round);
+}
+
+FSM_TRANS_TIMEOUT (TOP_DECISION, 1,
+		   totem, TOP_TOTEM_GOING,
+		   bottle, TOP_BOTTLE_GOING,
+		   unload, TOP_UNLOAD_GOING)
+{
+    switch (top_decision ())
+      {
+      default:
+	assert (0);
+      case STRAT_DECISION_TOTEM:
+	return FSM_NEXT_TIMEOUT (TOP_DECISION, totem);
+      case STRAT_DECISION_BOTTLE:
+	return FSM_NEXT_TIMEOUT (TOP_DECISION, bottle);
+      case STRAT_DECISION_UNLOAD:
+	return FSM_NEXT_TIMEOUT (TOP_DECISION, unload);
+      }
 }
 
 /** TOTEM */
@@ -335,23 +339,17 @@ FSM_TRANS (TOP_TOTEM_GOING_BACK, move_failure, TOP_TOTEM_CLAMP_UPPING)
     return FSM_NEXT (TOP_TOTEM_GOING_BACK, move_failure);
 }
 
-FSM_TRANS (TOP_TOTEM_CLAMP_UPPING, clamps_ready,
-	   totem, TOP_TOTEM_GOING,
-	   bottle, TOP_BOTTLE_GOING,
-	   unload, TOP_UNLOAD_GOING)
+FSM_TRANS (TOP_TOTEM_CLAMP_UPPING, clamps_ready, TOP_DECISION)
 {
-    RETURN_TOP_DECISION_SWITCH (TOP_TOTEM_CLAMP_UPPING, clamps_ready);
+    return FSM_NEXT (TOP_TOTEM_CLAMP_UPPING, clamps_ready);
 }
 
 /** TOTEM failures. */
 
-FSM_TRANS (TOP_TOTEM_GOING, move_failure,
-	   totem, TOP_TOTEM_GOING,
-	   bottle, TOP_BOTTLE_GOING,
-	   unload, TOP_UNLOAD_GOING)
+FSM_TRANS (TOP_TOTEM_GOING, move_failure, TOP_DECISION)
 {
     strat_failure ();
-    RETURN_TOP_DECISION_SWITCH (TOP_TOTEM_GOING, move_failure);
+    return FSM_NEXT (TOP_TOTEM_GOING, move_failure);
 }
 
 FSM_TRANS (TOP_TOTEM_APPROACHING, robot_move_failure,
@@ -415,39 +413,28 @@ FSM_TRANS (TOP_BOTTLE_PUSHING, robot_move_failure, TOP_BOTTLE_GOING_BACK)
     return FSM_NEXT (TOP_BOTTLE_PUSHING, robot_move_failure);
 }
 
-FSM_TRANS (TOP_BOTTLE_GOING_BACK, move_success,
-	   totem, TOP_TOTEM_GOING,
-	   bottle, TOP_BOTTLE_GOING,
-	   unload, TOP_UNLOAD_GOING)
+FSM_TRANS (TOP_BOTTLE_GOING_BACK, move_success, TOP_DECISION)
 {
-    RETURN_TOP_DECISION_SWITCH (TOP_BOTTLE_GOING_BACK, move_success);
+    return FSM_NEXT (TOP_BOTTLE_GOING_BACK, move_success);
 }
 
-FSM_TRANS (TOP_BOTTLE_GOING_BACK, move_failure,
-	   totem, TOP_TOTEM_GOING,
-	   bottle, TOP_BOTTLE_GOING,
-	   unload, TOP_UNLOAD_GOING)
+FSM_TRANS (TOP_BOTTLE_GOING_BACK, move_failure, TOP_DECISION)
 {
     /* Ignore and continue. */
-    RETURN_TOP_DECISION_SWITCH (TOP_BOTTLE_GOING_BACK, move_failure);
+    return FSM_NEXT (TOP_BOTTLE_GOING_BACK, move_failure);
 }
 
 /** BOTTLE failures. */
 
-FSM_TRANS (TOP_BOTTLE_GOING, move_failure,
-	   totem, TOP_TOTEM_GOING,
-	   bottle, TOP_BOTTLE_GOING,
-	   unload, TOP_UNLOAD_GOING)
+FSM_TRANS (TOP_BOTTLE_GOING, move_failure, TOP_DECISION)
 {
     strat_failure ();
-    RETURN_TOP_DECISION_SWITCH (TOP_BOTTLE_GOING, move_failure);
+    return FSM_NEXT (TOP_BOTTLE_GOING, move_failure);
 }
 
 FSM_TRANS (TOP_BOTTLE_APPROACHING, robot_move_failure,
 	   try_anyway, TOP_BOTTLE_PUSHING,
-	   totem, TOP_TOTEM_GOING,
-	   bottle, TOP_BOTTLE_GOING,
-	   unload, TOP_UNLOAD_GOING)
+	   decision, TOP_DECISION)
 {
     position_t robot_pos;
     asserv_get_position (&robot_pos);
@@ -461,7 +448,8 @@ FSM_TRANS (TOP_BOTTLE_APPROACHING, robot_move_failure,
     else
       {
 	strat_failure ();
-	RETURN_TOP_DECISION_SWITCH (TOP_BOTTLE_APPROACHING, robot_move_failure);
+	return FSM_NEXT (TOP_BOTTLE_APPROACHING, robot_move_failure,
+			 decision);
       }
 }
 
@@ -474,24 +462,18 @@ FSM_TRANS (TOP_UNLOAD_GOING, move_success, TOP_UNLOADING)
     return FSM_NEXT (TOP_UNLOAD_GOING, move_success);
 }
 
-FSM_TRANS_TIMEOUT (TOP_UNLOADING, 250,
-		   totem, TOP_TOTEM_GOING,
-		   bottle, TOP_BOTTLE_GOING,
-		   unload, TOP_UNLOAD_GOING)
+FSM_TRANS_TIMEOUT (TOP_UNLOADING, 250, TOP_DECISION)
 {
     strat_success ();
     top.close_door = 1;
-    RETURN_TOP_DECISION_SWITCH (TOP_UNLOADING, TOP_UNLOADING_TIMEOUT);
+    return FSM_NEXT_TIMEOUT (TOP_UNLOADING);
 }
 
 /** UNLOAD failures. */
 
-FSM_TRANS (TOP_UNLOAD_GOING, move_failure,
-	   totem, TOP_TOTEM_GOING,
-	   bottle, TOP_BOTTLE_GOING,
-	   unload, TOP_UNLOAD_GOING)
+FSM_TRANS (TOP_UNLOAD_GOING, move_failure, TOP_DECISION)
 {
     strat_failure ();
-    RETURN_TOP_DECISION_SWITCH (TOP_UNLOAD_GOING, move_failure);
+    return FSM_NEXT (TOP_UNLOAD_GOING, move_failure);
 }
 
