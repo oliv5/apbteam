@@ -142,12 +142,12 @@ void usartRXCallback(uint16_t bytesToRead)
 			network_send_data(NETWORK_RESET,0x1);
 			break;
 		case 'w':
-			OCR0A--;
-			uprintf("OCR0A = %d\r\n",OCR0A);
+			motor_set_target_speed(motor_get_target_speed()-1);
+			uprintf("target speed = %d\r\n",motor_get_target_speed());
 			break;
 		case 'x':
-			OCR0A++;
-			uprintf("OCR0A = %d\r\n",OCR0A);
+			motor_set_target_speed(motor_get_target_speed()+1);
+			uprintf("target speed = %d\r\n",motor_get_target_speed());
 			break;
 		/* Default */
 		default :
