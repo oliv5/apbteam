@@ -351,7 +351,7 @@ FSM_TRANS (TOP_TOTEM_GOING, move_failure, TOP_DECISION)
 FSM_TRANS (TOP_TOTEM_APPROACHING, robot_move_failure,
 	   TOP_TOTEM_ERROR_GOING_BACK)
 {
-    strat_failure ();
+    strat_giveup ();
     move_start_noangle (top.decision_pos, ASSERV_BACKWARD, 0);
     return FSM_NEXT (TOP_TOTEM_APPROACHING, robot_move_failure);
 }
@@ -359,14 +359,14 @@ FSM_TRANS (TOP_TOTEM_APPROACHING, robot_move_failure,
 FSM_TRANS (TOP_TOTEM_PUSHING, robot_move_failure,
 	   TOP_TOTEM_ERROR_GOING_BACK)
 {
-    strat_failure ();
+    strat_giveup ();
     move_start_noangle (top.decision_pos, ASSERV_BACKWARD, 0);
     return FSM_NEXT (TOP_TOTEM_PUSHING, robot_move_failure);
 }
 
 FSM_TRANS (TOP_TOTEM_GOING_BACK, move_failure, TOP_TOTEM_ERROR_RELEASE)
 {
-    strat_failure ();
+    strat_giveup ();
     FSM_HANDLE (AI, stop_tree_approach);
     return FSM_NEXT (TOP_TOTEM_GOING_BACK, move_failure);
 }

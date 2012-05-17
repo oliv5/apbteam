@@ -240,3 +240,15 @@ strat_failure (void)
       }
 }
 
+void
+strat_giveup (void)
+{
+    switch (strat.last_decision)
+      {
+      default:
+	strat.place[strat.last_place].valid = 0;
+	break;
+      case STRAT_DECISION_UNLOAD:
+	assert (0);
+      }
+}
