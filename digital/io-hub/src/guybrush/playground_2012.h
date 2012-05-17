@@ -56,10 +56,10 @@
 #define PG_CAPTAIN_ROOM_WIDTH_MM 400
 #define PG_CAPTAIN_ROOM_LENGTH_MM 500
 
-/** Bottles, align on path grid. */
-#define PG_BOTTLE0_X (PG_TOTEM_LEFT_X - PATH_TOTEM_CLEAR_MM)
-#define PG_BOTTLE1_X PG_TOTEM_LEFT_X
-#define PG_BOTTLE2_X PG_TOTEM_RIGHT_X
-#define PG_BOTTLE3_X (PG_TOTEM_RIGHT_X + PATH_TOTEM_CLEAR_MM)
+/** Bottles. */
+#define PG_BOTTLE0_X 640
+#define PG_BOTTLE1_X (640 + 477)
+#define PG_BOTTLE2_X PG_MIRROR_X (PG_BOTTLE1_X)
+#define PG_BOTTLE3_X PG_MIRROR_X (PG_BOTTLE0_X)
 
 #endif /* playground_2012_h */
