@@ -288,7 +288,7 @@ FSM_TRANS_TIMEOUT (CLAMP_INIT_OPEN_ALL_CLAMPS,TIMEOUT_OPEN_CLAMPS,
            upper_set_out,CLAMP_SHITTY_STATE)
 {
     /*if upper set is inside the robot*/
-    if(!IO_GET(CONTACT_UPPER_CLAMP_UP))
+    if(IO_GET(CONTACT_UPPER_CLAMP_DOWN))
     {
         ctx.pos_current = 0;
         /* closing all the clamps except the clamp 1 to proceed the find_O function. */
