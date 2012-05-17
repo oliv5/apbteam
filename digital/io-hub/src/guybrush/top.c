@@ -48,6 +48,9 @@
  * impression of intelligence... Well...
  */
 
+/** Number of time to try to unblock clamp. */
+#define TOP_CLAMP_BLOCKED_THRESHOLD 5
+
 FSM_INIT
 
 FSM_STATES (
@@ -59,6 +62,8 @@ FSM_STATES (
 	    TOP_INIT,
 	    /* Transition state to take a new decision. */
 	    TOP_DECISION,
+	    /* Unblock clamp and take a new decision. */
+	    TOP_CLAMP_ERROR_DECISION,
 
 	    /* Going to a collect position above or below a totem. */
 	    TOP_TOTEM_GOING,
@@ -88,6 +93,8 @@ FSM_STATES (
 	    TOP_TOTEM_ERROR_RELEASE,
 	    /* Going back after an error. */
 	    TOP_TOTEM_ERROR_GOING_BACK,
+	    /* Going back after a clamp error. */
+	    TOP_TOTEM_CLAMP_ERROR_GOING_BACK,
 
 	    /* Going to push a bottle. */
 	    TOP_BOTTLE_GOING,
@@ -226,10 +233,15 @@ FSM_TRANS (TOP_INIT, init_start_round, TOP_DECISION)
 }
 
 FSM_TRANS_TIMEOUT (TOP_DECISION, 1,
+		   clamp_blocked, TOP_CLAMP_ERROR_DECISION,
 		   totem, TOP_TOTEM_GOING,
 		   bottle, TOP_BOTTLE_GOING,
 		   unload, TOP_UNLOAD_GOING)
 {
+    if (FSM_HANDLE (AI, clamp_unblock))
+      {
+	return FSM_NEXT_TIMEOUT (TOP_DECISION, clamp_blocked);
+      }
     switch (top_decision ())
       {
       default:
@@ -240,6 +252,28 @@ FSM_TRANS_TIMEOUT (TOP_DECISION, 1,
 	return FSM_NEXT_TIMEOUT (TOP_DECISION, bottle);
       case STRAT_DECISION_UNLOAD:
 	return FSM_NEXT_TIMEOUT (TOP_DECISION, unload);
+      }
+}
+
+FSM_TRANS (TOP_CLAMP_ERROR_DECISION, clamps_ready, TOP_DECISION)
+{
+    return FSM_NEXT (TOP_CLAMP_ERROR_DECISION, clamps_ready);
+}
+
+FSM_TRANS (TOP_CLAMP_ERROR_DECISION, clamp_blocked,
+	   unblock, TOP_CLAMP_ERROR_DECISION,
+	   dead, TOP_DECISION)
+{
+    if (clamp_read_blocked_cpt () < TOP_CLAMP_BLOCKED_THRESHOLD)
+      {
+	FSM_HANDLE (AI, clamp_unblock);
+	return FSM_NEXT (TOP_CLAMP_ERROR_DECISION, clamp_blocked, unblock);
+      }
+    else
+      {
+	strat_clamp_dead ();
+	FSM_HANDLE (AI, clamp_is_dead);
+	return FSM_NEXT (TOP_CLAMP_ERROR_DECISION, clamp_blocked, dead);
       }
 }
 
@@ -351,6 +385,35 @@ FSM_TRANS (TOP_TOTEM_GOING, move_failure, TOP_DECISION)
     return FSM_NEXT (TOP_TOTEM_GOING, move_failure);
 }
 
+FSM_TRANS (TOP_TOTEM_CLEAN_STARTING, clamp_blocked, TOP_CLAMP_ERROR_DECISION)
+{
+    strat_failure ();
+    FSM_HANDLE (AI, clamp_unblock);
+    return FSM_NEXT (TOP_TOTEM_CLEAN_STARTING, clamp_blocked);
+}
+
+FSM_TRANS (TOP_TOTEM_CLEAN_CATCH_WAITING, clamp_blocked,
+	   TOP_TOTEM_CLAMP_ERROR_GOING_BACK)
+{
+    strat_failure ();
+    move_start_noangle (top.decision_pos, ASSERV_BACKWARD, 0);
+    return FSM_NEXT (TOP_TOTEM_CLEAN_CATCH_WAITING, clamp_blocked);
+}
+
+FSM_TRANS (TOP_TOTEM_CLEAN_LOADING, clamp_blocked, TOP_CLAMP_ERROR_DECISION)
+{
+    strat_failure ();
+    FSM_HANDLE (AI, clamp_unblock);
+    return FSM_NEXT (TOP_TOTEM_CLEAN_LOADING, clamp_blocked);
+}
+
+FSM_TRANS (TOP_TOTEM_CLAMP_DOWNING, clamp_blocked, TOP_CLAMP_ERROR_DECISION)
+{
+    strat_failure ();
+    FSM_HANDLE (AI, clamp_unblock);
+    return FSM_NEXT (TOP_TOTEM_CLAMP_DOWNING, clamp_blocked);
+}
+
 FSM_TRANS (TOP_TOTEM_APPROACHING, robot_move_failure,
 	   TOP_TOTEM_ERROR_GOING_BACK)
 {
@@ -367,11 +430,26 @@ FSM_TRANS (TOP_TOTEM_PUSHING, robot_move_failure,
     return FSM_NEXT (TOP_TOTEM_PUSHING, robot_move_failure);
 }
 
+FSM_TRANS (TOP_TOTEM_EMPTYING, clamp_blocked,
+	   TOP_TOTEM_CLAMP_ERROR_GOING_BACK)
+{
+    strat_giveup ();
+    move_start_noangle (top.decision_pos, ASSERV_BACKWARD, 0);
+    return FSM_NEXT (TOP_TOTEM_EMPTYING, clamp_blocked);
+}
+
 FSM_TRANS (TOP_TOTEM_GOING_BACK, move_failure, TOP_TOTEM_ERROR_RELEASE)
 {
     strat_giveup ();
     FSM_HANDLE (AI, stop_tree_approach);
     return FSM_NEXT (TOP_TOTEM_GOING_BACK, move_failure);
+}
+
+FSM_TRANS (TOP_TOTEM_CLAMP_UPPING, clamp_blocked, TOP_CLAMP_ERROR_DECISION)
+{
+    strat_giveup ();
+    FSM_HANDLE (AI, clamp_unblock);
+    return FSM_NEXT (TOP_TOTEM_CLAMP_UPPING, clamp_blocked);
 }
 
 FSM_TRANS (TOP_TOTEM_ERROR_RELEASE, clamps_ready, TOP_TOTEM_ERROR_GOING_BACK)
@@ -390,6 +468,20 @@ FSM_TRANS (TOP_TOTEM_ERROR_GOING_BACK, move_failure, TOP_TOTEM_CLAMP_UPPING)
 {
     FSM_HANDLE (AI, stop_tree_approach);
     return FSM_NEXT (TOP_TOTEM_ERROR_GOING_BACK, move_failure);
+}
+
+FSM_TRANS (TOP_TOTEM_CLAMP_ERROR_GOING_BACK, move_success,
+	   TOP_CLAMP_ERROR_DECISION)
+{
+    FSM_HANDLE (AI, clamp_unblock);
+    return FSM_NEXT (TOP_TOTEM_CLAMP_ERROR_GOING_BACK, move_success);
+}
+
+FSM_TRANS (TOP_TOTEM_CLAMP_ERROR_GOING_BACK, move_failure,
+	   TOP_CLAMP_ERROR_DECISION)
+{
+    FSM_HANDLE (AI, clamp_unblock);
+    return FSM_NEXT (TOP_TOTEM_CLAMP_ERROR_GOING_BACK, move_failure);
 }
 
 /** BOTTLE */

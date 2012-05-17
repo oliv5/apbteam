@@ -283,3 +283,10 @@ strat_giveup (void)
 	assert (0);
       }
 }
+
+void
+strat_clamp_dead (void)
+{
+    /* TODO */
+}
+
