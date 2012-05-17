@@ -52,6 +52,8 @@
 /** Traj mode enum. */
 enum
 {
+    /* Detect end of stop command. */
+    TRAJ_STOP,
     /* Detect end of speed controled position control. */
     TRAJ_SPEED,
     /* Go to the wall. */
@@ -108,6 +110,27 @@ void
 traj_init (void)
 {
     traj_set_angle_limit (traj_angle_limit);
+}
+
+/** Wait for stop mode. */
+void
+traj_stop (void)
+{
+    if (cs_main.speed_theta.cur_f == 0 && cs_main.speed_alpha.cur_f == 0)
+      {
+	control_state_finished (&cs_main.state);
+	traj_mode = TRAJ_DONE;
+      }
+}
+
+/** Start stop mode. */
+void
+traj_stop_start (void)
+{
+    speed_control_set_speed (&cs_main.speed_theta, 0);
+    speed_control_set_speed (&cs_main.speed_alpha, 0);
+    control_state_set_mode (&cs_main.state, CS_MODE_TRAJ_CONTROL, 0);
+    traj_mode = TRAJ_STOP;
 }
 
 /** Wait for zero speed mode. */
@@ -447,6 +470,9 @@ traj_update (void)
       {
 	switch (traj_mode)
 	  {
+	  case TRAJ_STOP:
+	    traj_stop ();
+	    break;
 	  case TRAJ_SPEED:
 	    traj_speed ();
 	    break;

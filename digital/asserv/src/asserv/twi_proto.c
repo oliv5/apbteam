@@ -138,9 +138,7 @@ twi_proto_callback (u8 *buf, u8 size)
 	break;
       case c ('s', 0):
 	/* Stop (set zero speed). */
-	speed_control_set_speed (&cs_main.speed_theta, 0);
-	speed_control_set_speed (&cs_main.speed_alpha, 0);
-	control_state_set_mode (&cs_main.state, CS_MODE_SPEED_CONTROL, 0);
+	traj_stop_start ();
 	break;
       case c ('l', 3):
 	/* Set linear speed controlled position consign.

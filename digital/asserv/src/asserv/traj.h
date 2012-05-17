@@ -40,6 +40,9 @@ void
 traj_update (void);
 
 void
+traj_stop_start (void);
+
+void
 traj_speed_start (void);
 
 void
