@@ -30,6 +30,12 @@
 #define SENDING_ENGAGED 		TIMSK3&(1<<OCIE3B)
 #define LASER_CONFIRMATION_OFFSET 	10
 
+#ifdef LOL_NUMBER_3
+#define ANGLE_RANGE_MAX 		180
+#else
+#define ANGLE_RANGE_MAX		90
+#endif
+
 typedef enum
 {
 	LASER_FIRST_RISING_EDGE,

@@ -152,14 +152,13 @@ ISR(TIMER3_COMPB_vect)
 	}
 	else
 	{
-		angle_to_send = laser_get_angle_raw() + (laser.angle_id << 9);
-#ifdef LOL_NUMBER_2
-		angle_to_send = (CODEWHEEL_CPR/4 - laser_get_angle_raw()) + (laser.angle_id << 9);
-#endif
-		network_send_data(NETWORK_ANGLE_RAW,angle_to_send);
-		if((laser_get_angle_degree() > 30) && (laser_get_angle_degree() < 70))
+		if(laser_get_angle_degree() < ANGLE_RANGE_MAX)
 		{
-			uprintf("angle[%d] = %f\r\n",laser.angle_id,laser_get_angle_degree());
+			angle_to_send = laser_get_angle_raw() + (laser.angle_id << 9);
+#ifdef LOL_NUMBER_2
+			angle_to_send = (CODEWHEEL_CPR/4 - laser_get_angle_raw()) + (laser.angle_id << 9);
+#endif
+			network_send_data(NETWORK_ANGLE_RAW,angle_to_send);
 			laser.angle_id++;
 		}
 	}
