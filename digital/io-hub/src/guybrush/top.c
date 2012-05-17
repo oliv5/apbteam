@@ -84,6 +84,8 @@ FSM_STATES (
 	    TOP_TOTEM_GOING_BACK,
 	    /* Put clamps up. */
 	    TOP_TOTEM_CLAMP_UPPING,
+	    /* Release a goldbar blocking the robot. */
+	    TOP_TOTEM_ERROR_RELEASE,
 	    /* Going back after an error. */
 	    TOP_TOTEM_ERROR_GOING_BACK,
 
@@ -333,12 +335,6 @@ FSM_TRANS (TOP_TOTEM_GOING_BACK, move_success, TOP_TOTEM_CLAMP_UPPING)
     return FSM_NEXT (TOP_TOTEM_GOING_BACK, move_success);
 }
 
-FSM_TRANS (TOP_TOTEM_GOING_BACK, move_failure, TOP_TOTEM_CLAMP_UPPING)
-{
-    FSM_HANDLE (AI, robot_is_back);
-    return FSM_NEXT (TOP_TOTEM_GOING_BACK, move_failure);
-}
-
 FSM_TRANS (TOP_TOTEM_CLAMP_UPPING, clamps_ready, TOP_DECISION)
 {
     return FSM_NEXT (TOP_TOTEM_CLAMP_UPPING, clamps_ready);
@@ -366,6 +362,19 @@ FSM_TRANS (TOP_TOTEM_PUSHING, robot_move_failure,
     strat_failure ();
     move_start_noangle (top.decision_pos, ASSERV_BACKWARD, 0);
     return FSM_NEXT (TOP_TOTEM_PUSHING, robot_move_failure);
+}
+
+FSM_TRANS (TOP_TOTEM_GOING_BACK, move_failure, TOP_TOTEM_ERROR_RELEASE)
+{
+    strat_failure ();
+    FSM_HANDLE (AI, stop_tree_approach);
+    return FSM_NEXT (TOP_TOTEM_GOING_BACK, move_failure);
+}
+
+FSM_TRANS (TOP_TOTEM_ERROR_RELEASE, clamps_ready, TOP_TOTEM_ERROR_GOING_BACK)
+{
+    move_start_noangle (top.decision_pos, ASSERV_BACKWARD, 0);
+    return FSM_NEXT (TOP_TOTEM_ERROR_RELEASE, clamps_ready);
 }
 
 FSM_TRANS (TOP_TOTEM_ERROR_GOING_BACK, move_success, TOP_TOTEM_CLAMP_UPPING)
