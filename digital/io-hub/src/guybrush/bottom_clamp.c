@@ -181,33 +181,37 @@ FSM_START_WITH (CLAMP_START)
 #define TIMEOUT_IDLE 70
 
 /*-------------------------------------
-         ROTATION DEFINITION
+        ROTATON SPEED DEFINITION
 ---------------------------------------*/
-#define POS_DELAY 1200
-#define INIT_BOTTOM_POS (6.65+HALF_TURN)
-#define HIDE_POS 3
-#define BACK_TO_READY (16-HIDE_POS)
-#define HALF_TURN 8
-#define QUARTER_TURN 4
-#define DECALAGE_CD_BAS 1.5
-#define HIDE_POS_TREE 3
-#define HIDE_POS_TREE_2 (2-DECALAGE_CD_BAS)
-#define BACK_TO_READY_TREE (-HIDE_POS_TREE + DECALAGE_CD_BAS)
-#define BACK_TO_READY_TREE_2 (HALF_TURN - HIDE_POS_TREE_2 - DECALAGE_CD_BAS)
-#define RECALE_COIN (QUARTER_TURN - HIDE_POS_TREE_2 - DECALAGE_CD_BAS)
-#define BACK_TO_READY_RECALE_COIN (-QUARTER_TURN)
 #define FAST_ROTATION 0x30
 #define MEDIUM_ROTATION 0x10
 #define SLOW_ROTATION 0x01
+
+/*-------------------------------------
+        PRESSURE DEFINITION
+---------------------------------------*/
 #define LOW_PRESSURE 0x300
 #define HIGH_PRESSURE 0x380
+
+/*-------------------------------------
+        POSITION DEFINITION
+---------------------------------------*/
+#define RECALE_COIN 1000
+#define CLAMP_1_DOWN 0
+#define CLAMP_1_UP 2000
+#define POS_TO_DROP 800
+#define HIDE_POS_TREE 550
+#define DECALAGE_CD_BAS 200
+#define LET_UPPER_SET_UP 500
 /*-------------------------------------
          Clamp context
 ---------------------------------------*/
 struct clamp_t
 {
     /** Current position. */
-    int pos_current;
+    int32_t current_pos;
+    /** Init position. */
+    uint16_t init_pos;
     /* Clamp_1 is low, which means, it is ready to take a coin*/
     uint8_t clamp_1_down;
     /** True we are stopping the tree approach. */
@@ -230,11 +234,46 @@ clamp_blocked (void)
 {
 }
 
-static void move_needed(int move,int speed)
-{
-    ctx.pos_current += move;
-    mimot_move_motor0_absolute (ctx.pos_current, speed);
+static int is_clamp_1_down(uint32_t pos)
+{        
+    if ((pos%4000 > 3000) || (pos%4000 < 1000))
+        return 1;
+    else
+        return 0;
 }
+
+
+
+static void move_needed2(uint16_t angle,uint8_t speed,int8_t direction)
+{
+    int32_t  new_pos;
+    if (angle >= ctx.current_pos%4000)
+    {
+        if (direction==1)
+        {
+             new_pos=ctx.current_pos-ctx.current_pos%4000+angle;
+        }
+        else
+        {
+             new_pos=ctx.current_pos-ctx.current_pos%4000+4000-angle;
+        }
+       
+    }
+    else
+    {
+        if (direction==1)
+        {
+            new_pos=ctx.current_pos-ctx.current_pos%4000+angle+4000;
+        }
+        else
+        {  
+            new_pos=ctx.current_pos-ctx.current_pos%4000+angle;
+        }
+    }
+    mimot_move_motor0_absolute (new_pos+ctx.init_pos, speed);    
+    ctx.current_pos = new_pos;
+}
+
 
 void clamp_calm_mode(int mode)
 {
@@ -290,7 +329,6 @@ FSM_TRANS_TIMEOUT (CLAMP_INIT_OPEN_ALL_CLAMPS,TIMEOUT_OPEN_CLAMPS,
     /*if upper set is inside the robot*/
     if(IO_GET(CONTACT_UPPER_CLAMP_DOWN))
     {
-        ctx.pos_current = 0;
         /* closing all the clamps except the clamp 1 to proceed the find_O function. */
         IO_SET (OUTPUT_LOWER_CLAMP_2_CLOSE);
         IO_CLR (OUTPUT_UPPER_CLAMP_OPEN);
@@ -308,17 +346,19 @@ FSM_TRANS_TIMEOUT (CLAMP_INIT_OPEN_ALL_CLAMPS,TIMEOUT_OPEN_CLAMPS,
 FSM_TRANS_TIMEOUT (CLAMP_INIT_CLOSE_ALL_CLAMPS, 5*TIMEOUT_OPEN_CLAMPS, CLAMP_INIT_FIND_0)
 {
     /*Findig the 0 position. */
-    move_needed(8000,SLOW_ROTATION);
+    ctx.current_pos = 0;
+    move_needed2(8000,SLOW_ROTATION,1);
     return FSM_NEXT_TIMEOUT (CLAMP_INIT_CLOSE_ALL_CLAMPS);
 }
 
 FSM_TRANS (CLAMP_INIT_FIND_0, 0_found, CLAMP_INIT_HIDE_CLAMP)
 {
     /*init of the position*/
-    ctx.pos_current = mimot_get_motor0_position();
-    
-    /* Hidding the clamp inside the robot. */
-    move_needed(INIT_BOTTOM_POS  * 250,FAST_ROTATION);
+    ctx.init_pos = mimot_get_motor0_position() + 6.65 * 250;
+    ctx.current_pos = 0;
+    /* Robot is ready with clamp 1 at the bottom. */
+    move_needed2(CLAMP_1_DOWN,FAST_ROTATION,1);
+    ctx.clamp_1_down = 1;
     return FSM_NEXT (CLAMP_INIT_FIND_0, 0_found);
 }
 
@@ -345,7 +385,6 @@ FSM_TRANS_TIMEOUT (CLAMP_GOING_IDLE, 3*TIMEOUT_OPEN_CLAMPS, CLAMP_WAIT_BEFORE_ID
 {
     /*Going back to the idle position, ready for showtime.*/
     ctx.cpt_blocked = 0;
-    ctx.clamp_1_down = 0;
     /* Open upper clamp. */
     IO_SET (OUTPUT_UPPER_CLAMP_OPEN);
     /* recentrage the middle clamp. */
@@ -379,11 +418,11 @@ FSM_TRANS_TIMEOUT (CLAMP_WAIT_BEFORE_IDLE, TIMEOUT_IDLE,
             /* Hidding the clamp inside the robot. */
             if (ctx.clamp_1_down)
             {
-                move_needed (HIDE_POS_TREE * 250, FAST_ROTATION);
+                move_needed2 (HIDE_POS_TREE, FAST_ROTATION,1);
             }
             else
             {
-                move_needed ((HALF_TURN + HIDE_POS_TREE) * 250, FAST_ROTATION);
+                move_needed2 (HIDE_POS_TREE, FAST_ROTATION,1);
                 ctx.clamp_1_down = 1;
             }
             return FSM_NEXT_TIMEOUT (CLAMP_WAIT_BEFORE_IDLE,
@@ -415,7 +454,7 @@ FSM_TRANS (CLAMP_IDLE, clean_start,CLAMP_READY_TO_CLEAN)
 FSM_TRANS (CLAMP_READY_TO_CLEAN, clean_catch,CLAMP_CATCH_COIN) 
 {
      /*If the clamp 1 has the CD.*/
-    if (ctx.clamp_1_down)
+    if (is_clamp_1_down(ctx.current_pos))
     {     
         /*Close it.*/
         IO_SET (OUTPUT_LOWER_CLAMP_1_CLOSE);
@@ -445,7 +484,7 @@ FSM_TRANS (CLAMP_READY_TO_LOAD, clean_load,CLAMP_TAKE_COIN)
 /*---------------------------------------------------------*/
 FSM_TRANS (CLAMP_IDLE, coin_detected,CLAMP_TAKE_COIN)
 {
-    if (ctx.clamp_1_down)
+    if (is_clamp_1_down(ctx.current_pos))
     {
         /*Close it.*/
         IO_SET (OUTPUT_LOWER_CLAMP_1_CLOSE);
@@ -462,16 +501,23 @@ FSM_TRANS (CLAMP_IDLE, coin_detected,CLAMP_TAKE_COIN)
 
 FSM_TRANS_TIMEOUT (CLAMP_TAKE_COIN, TIMEOUT_CLOSE_CLAMPS, CLAMP_TURN_HALF_WAY)
 {
-    main_set_drop_coin_pos(ctx.pos_current + (HALF_TURN * 250) - POS_DELAY);
-    move_needed(HALF_TURN * 250,FAST_ROTATION);
-    ctx.clamp_1_down = !ctx.clamp_1_down;
+    main_set_drop_coin_pos(ctx.current_pos + POS_TO_DROP + ctx.init_pos);
+    if (is_clamp_1_down(ctx.current_pos))
+    {
+        move_needed2(CLAMP_1_UP,FAST_ROTATION,1);
+    }
+    else
+    {
+        move_needed2(CLAMP_1_DOWN,FAST_ROTATION,1);
+    }
+
     return FSM_NEXT_TIMEOUT (CLAMP_TAKE_COIN);
 }
 
 FSM_TRANS (CLAMP_TURN_HALF_WAY, time_to_drop_coin, CLAMP_DROP_CD)
 {
-    /*If the clamp 1 has the CD.*/
-    if (!ctx.clamp_1_down)
+    /*If the clamp 1 up (ready to drop the cd).*/
+    if (!is_clamp_1_down(ctx.current_pos))
     {     
         /*Open it.*/
         IO_CLR (OUTPUT_LOWER_CLAMP_1_CLOSE);
@@ -479,7 +525,7 @@ FSM_TRANS (CLAMP_TURN_HALF_WAY, time_to_drop_coin, CLAMP_DROP_CD)
     /*If the clamp 2 is closed. */
     else       
     {
-        IO_CLR (OUTPUT_LOWER_CLAMP_2_CLOSE);
+        IO_CLR (OUTPUT_LOWER_CLAMP_2_CLOSE);           
     }
     return FSM_NEXT (CLAMP_TURN_HALF_WAY,time_to_drop_coin);
 }
@@ -507,14 +553,13 @@ FSM_TRANS (CLAMP_DROP_CD, lower_clamp_rotation_failure, CLAMP_BLOCKED)
 FSM_TRANS (CLAMP_IDLE, tree_detected,CLAMP_BOTTOM_CLAMP_HIDE_POS)
 {
     /*Hidding the clamp inside the robot*/
-    if (ctx.clamp_1_down)
+    if (is_clamp_1_down(ctx.current_pos))
     {
-       move_needed(HIDE_POS_TREE * 250,FAST_ROTATION);
+       move_needed2(HIDE_POS_TREE,FAST_ROTATION,1);
     }
     else
     {
-        move_needed((HALF_TURN + HIDE_POS_TREE) * 250,FAST_ROTATION);
-        ctx.clamp_1_down = 1;
+        move_needed2(HIDE_POS_TREE,FAST_ROTATION,1);
     }
     return FSM_NEXT (CLAMP_IDLE, tree_detected);
 }
@@ -538,10 +583,10 @@ FSM_TRANS (CLAMP_BOTTOM_CLAMP_HIDE_POS, lower_clamp_rotation_failure, CLAMP_BLOC
 FSM_TRANS (CLAMP_UNFOLD_UPPER_SET, upper_set_down, CLAMP_BOTTOM_CLAMP_READY)
 {
     /*Putting the bottom clamp back to ready.*/
-    move_needed(BACK_TO_READY_TREE * 250,FAST_ROTATION);    
+    move_needed2(DECALAGE_CD_BAS,FAST_ROTATION,-1);    
     
     /*Opening the top clamp.*/
-     IO_SET (OUTPUT_UPPER_CLAMP_OPEN);
+    IO_SET (OUTPUT_UPPER_CLAMP_OPEN);
 
     return FSM_NEXT (CLAMP_UNFOLD_UPPER_SET, upper_set_down);
 
@@ -602,7 +647,7 @@ FSM_TRANS (CLAMP_CLOSE_ALL_CLAMPS, stop_tree_approach, CLAMP_READY_TO_EMPTY_TREE
 FSM_TRANS_TIMEOUT (CLAMP_REARRANGE_CD, TIMEOUT_RECENTRAGE, CLAMP_BOTTOM_CLAMP_HIDE_POS2)
 {
     /*Hidding the clamp inside the robot.*/
-    move_needed(HIDE_POS_TREE_2 * 250,FAST_ROTATION);
+    move_needed2(LET_UPPER_SET_UP,MEDIUM_ROTATION,1);
     return FSM_NEXT_TIMEOUT (CLAMP_REARRANGE_CD);
 }
 FSM_TRANS (CLAMP_BOTTOM_CLAMP_HIDE_POS2, lower_clamp_rotation_success, CLAMP_RELEASE_ASSERV)
@@ -639,31 +684,28 @@ FSM_TRANS_TIMEOUT (CLAMP_OPEN_UPPER_CLAMPS, TIMEOUT_OPEN_CLAMPS,
                    stop_tree_branch,CLAMP_TURN_HALF_WAY,
                    continue_empty_tree_branch,CLAMP_READY_TO_RECALE)
 {
-    if (ctx.clamp_1_down)
+    if (is_clamp_1_down(ctx.current_pos))
         IO_CLR (OUTPUT_LOWER_CLAMP_2_CLOSE);
     else
         IO_CLR (OUTPUT_LOWER_CLAMP_1_CLOSE);
     if (ctx.stop_tree_approach)
     {
-        main_set_drop_coin_pos(ctx.pos_current + ((HALF_TURN - HIDE_POS_TREE) * 250) - POS_DELAY);
-        move_needed((HALF_TURN - HIDE_POS_TREE) * 250,FAST_ROTATION);
+        main_set_drop_coin_pos(ctx.current_pos + POS_TO_DROP + ctx.init_pos);
+        move_needed2(CLAMP_1_UP,FAST_ROTATION,1);
         ctx.stop_tree_approach = 0;
         fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
         return FSM_NEXT_TIMEOUT (CLAMP_OPEN_UPPER_CLAMPS,stop_tree_branch);
     }
     else
     {
-        move_needed(RECALE_COIN * 250,SLOW_ROTATION);
+        move_needed2(RECALE_COIN,MEDIUM_ROTATION,1);
         return FSM_NEXT_TIMEOUT (CLAMP_OPEN_UPPER_CLAMPS,continue_empty_tree_branch);
     }
 }
 
 FSM_TRANS (CLAMP_READY_TO_RECALE, lower_clamp_rotation_success, CLAMP_READY_TO_RECALE_2)
 {
-    if (ctx.clamp_1_down)
-        IO_CLR (OUTPUT_LOWER_CLAMP_1_CLOSE);
-    else
-        IO_CLR (OUTPUT_LOWER_CLAMP_2_CLOSE);
+    IO_CLR (OUTPUT_LOWER_CLAMP_1_CLOSE);
     return FSM_NEXT (CLAMP_READY_TO_RECALE,lower_clamp_rotation_success);
 }
 
@@ -672,18 +714,15 @@ FSM_TRANS (CLAMP_READY_TO_RECALE, lower_clamp_rotation_failure, CLAMP_BLOCKED)
     return FSM_NEXT (CLAMP_READY_TO_RECALE,lower_clamp_rotation_failure);
 }
 
-FSM_TRANS_TIMEOUT (CLAMP_READY_TO_RECALE_2, TIMEOUT_OPEN_CLAMPS, CLAMP_TEMPO_RECALE)
+FSM_TRANS_TIMEOUT (CLAMP_READY_TO_RECALE_2, 5*TIMEOUT_OPEN_CLAMPS, CLAMP_TEMPO_RECALE)
 {
-    if (ctx.clamp_1_down)
-        IO_SET (OUTPUT_LOWER_CLAMP_1_CLOSE);
-    else
-        IO_SET (OUTPUT_LOWER_CLAMP_2_CLOSE);
+    IO_SET (OUTPUT_LOWER_CLAMP_1_CLOSE);
     return FSM_NEXT_TIMEOUT (CLAMP_READY_TO_RECALE_2);
 }
 
-FSM_TRANS_TIMEOUT (CLAMP_TEMPO_RECALE, TIMEOUT_OPEN_CLAMPS,CLAMP_END_RECALE)
+FSM_TRANS_TIMEOUT (CLAMP_TEMPO_RECALE, 5*TIMEOUT_OPEN_CLAMPS,CLAMP_END_RECALE)
 {
-    move_needed(BACK_TO_READY_RECALE_COIN  * 250,FAST_ROTATION);
+    move_needed2(CLAMP_1_DOWN,FAST_ROTATION,-1);
     return FSM_NEXT_TIMEOUT (CLAMP_TEMPO_RECALE);
 }
 
@@ -694,9 +733,9 @@ FSM_TRANS (CLAMP_END_RECALE, lower_clamp_rotation_failure,CLAMP_BLOCKED)
 
 FSM_TRANS (CLAMP_END_RECALE, lower_clamp_rotation_success,CLAMP_TURN_HALF_WAY)
 {
-    main_set_drop_coin_pos(ctx.pos_current + (HALF_TURN * 250) - POS_DELAY);
-    move_needed(HALF_TURN  * 250,FAST_ROTATION);
-    ctx.clamp_1_down = !ctx.clamp_1_down;
+    
+    main_set_drop_coin_pos(ctx.current_pos + POS_TO_DROP + ctx.init_pos);
+    move_needed2(CLAMP_1_UP,FAST_ROTATION,1);
     return FSM_NEXT (CLAMP_END_RECALE, lower_clamp_rotation_success);
 }
 /*---------------------------------------------------------------------------------*/
@@ -705,13 +744,13 @@ FSM_TRANS (CLAMP_END_RECALE, lower_clamp_rotation_success,CLAMP_TURN_HALF_WAY)
 FSM_TRANS (CLAMP_BOTTOM_CLAMP_HIDE_POS,stop_tree_approach,CLAMP_BOTTOM_CLAMP_BACK)
 {
     /*Putting the clamp back to take coin*/
-    if (ctx.clamp_1_down)
+    if (is_clamp_1_down(ctx.current_pos))
     {
-        move_needed(BACK_TO_READY_TREE * 250,FAST_ROTATION);
+        move_needed2(CLAMP_1_UP,FAST_ROTATION,1);
     }
     else
     {
-        move_needed((16-BACK_TO_READY_TREE) * 250,FAST_ROTATION);
+        move_needed2(CLAMP_1_DOWN,FAST_ROTATION,1);
     }
     return FSM_NEXT(CLAMP_BOTTOM_CLAMP_HIDE_POS,stop_tree_approach);
   
@@ -756,6 +795,10 @@ FSM_TRANS (CLAMP_FINISH_BOTTOM_CLAMP_READY, lower_clamp_rotation_failure,CLAMP_B
 
 FSM_TRANS (CLAMP_READY_TO_EMPTY_TREE, stop_tree_approach, CLAMP_REARRANGE_CD)
 {
+    /*Closgin bottom clamp. */
+    IO_SET (OUTPUT_LOWER_CLAMP_1_CLOSE);
+    /*We need to close both clamp to have an easier turn around. */
+    IO_SET (OUTPUT_LOWER_CLAMP_2_CLOSE);
     return FSM_NEXT (CLAMP_READY_TO_EMPTY_TREE, stop_tree_approach);
 }
 
@@ -775,7 +818,16 @@ FSM_TRANS_TIMEOUT (CLAMP_BLOCKED,TIMEOUT_OPEN_CLAMPS,CLAMP_OPEN_BOTTOM_CLAMPS)
 
 FSM_TRANS (CLAMP_OPEN_BOTTOM_CLAMPS, clamp_unblock, CLAMP_WAIT)
 {
-    mimot_move_motor0_absolute (mimot_get_motor0_position() - 16 * 250, MEDIUM_ROTATION);
+    uint32_t pos;
+    pos = mimot_get_motor0_position();
+    if (ctx.cpt_blocked%2==0)
+    {
+        mimot_move_motor0_absolute (pos-4000, MEDIUM_ROTATION);
+    }
+    else
+    {
+        mimot_move_motor0_absolute (4000-pos, MEDIUM_ROTATION);
+    }
     return FSM_NEXT (CLAMP_OPEN_BOTTOM_CLAMPS, clamp_unblock);
 }
 
@@ -797,7 +849,16 @@ FSM_TRANS (CLAMP_WAIT,lower_clamp_rotation_failure, CLAMP_BLOCKED)
 
 FSM_TRANS_TIMEOUT (CLAMP_TURN_BACKWARD,TIMEOUT_BLOCKED, CLAMP_TURN_FORWARD)
 {
-    move_needed(0,MEDIUM_ROTATION);
+    int sens;
+    if (ctx.cpt_blocked%2==0)
+    {
+        sens=1;
+    }
+    else
+    {
+        sens=-1;
+    }
+    move_needed2(CLAMP_1_DOWN,MEDIUM_ROTATION,sens);
     return FSM_NEXT_TIMEOUT (CLAMP_TURN_BACKWARD);
 }
 
