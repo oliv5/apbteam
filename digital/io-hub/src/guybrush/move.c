@@ -143,6 +143,8 @@ FSM_STATES (
 	    MOVE_ROTATING,
 	    /* Moving to a position (intermediate or final). */
 	    MOVE_MOVING,
+	    /* Brake when a obstacle is seen. */
+	    MOVE_BRAKE,
 	    /* Moving backward to go away from what is blocking the bot. */
 	    MOVE_MOVING_BACKWARD_TO_TURN_FREELY,
 	    /* Waiting for obstacle to disappear. */
@@ -441,19 +443,37 @@ FSM_TRANS_TIMEOUT (MOVE_MOVING, 2500,
     return FSM_NEXT_TIMEOUT (MOVE_MOVING);
 }
 
-FSM_TRANS (MOVE_MOVING, obstacle_in_front,
-	   tryagain, MOVE_WAIT_FOR_CLEAR_PATH,
-	   tryout, MOVE_IDLE)
+FSM_TRANS (MOVE_MOVING, obstacle_in_front, MOVE_BRAKE)
 {
     move_data.final_move = 0;
     asserv_stop_motor ();
+    return FSM_NEXT (MOVE_MOVING, obstacle_in_front);
+}
+
+FSM_TRANS (MOVE_BRAKE, robot_move_success,
+	   tryagain, MOVE_WAIT_FOR_CLEAR_PATH,
+	   tryout, MOVE_IDLE)
+{
     if (--move_data.try_again_counter == 0)
       {
 	fsm_queue_post_event (FSM_EVENT (AI, move_failure));
-	return FSM_NEXT (MOVE_MOVING, obstacle_in_front, tryout);
+	return FSM_NEXT (MOVE_BRAKE, robot_move_success, tryout);
       }
     else
-	return FSM_NEXT (MOVE_MOVING, obstacle_in_front, tryagain);
+	return FSM_NEXT (MOVE_BRAKE, robot_move_success, tryagain);
+}
+
+FSM_TRANS (MOVE_BRAKE, robot_move_failure,
+	   tryagain, MOVE_WAIT_FOR_CLEAR_PATH,
+	   tryout, MOVE_IDLE)
+{
+    if (--move_data.try_again_counter == 0)
+      {
+	fsm_queue_post_event (FSM_EVENT (AI, move_failure));
+	return FSM_NEXT (MOVE_BRAKE, robot_move_failure, tryout);
+      }
+    else
+	return FSM_NEXT (MOVE_BRAKE, robot_move_failure, tryagain);
 }
 
 FSM_TRANS (MOVE_MOVING, move_stop, MOVE_IDLE)
