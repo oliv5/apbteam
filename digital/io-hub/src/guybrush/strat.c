@@ -156,7 +156,8 @@ strat_place_score (uint8_t i)
     int32_t position_score = strat_position_score (&strat_place[i].pos);
     if (position_score == -1)
 	return -1;
-    return 10000 - position_score + strat_place[i].score;
+    return 10000 - position_score + strat_place[i].score
+	- 100ll * strat.place[i].fail_nb;
 }
 
 uint8_t
