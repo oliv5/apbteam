@@ -177,8 +177,16 @@ strat_place_score (uint8_t i)
     int32_t position_score = strat_position_score (&strat_place[i].pos);
     if (position_score == -1)
 	return -1;
-    return 10000 - position_score + strat_place[i].score
+    int32_t score = 10000ll - position_score + strat_place[i].score
 	- 100ll * strat.place[i].fail_nb;
+    if (i < STRAT_PLACE_UNLOAD_NB)
+      {
+	if (strat.load > 3)
+	    score += 5000;
+	else
+	    score -= 5000;
+      }
+    return score;
 }
 
 uint8_t
@@ -195,18 +203,7 @@ strat_decision (vect_t *pos)
 	return strat.last_decision;
       }
     /* Else compute the best decision. */
-    uint8_t min, max;
-    if (strat.load > 3)
-      {
-	min = 0;
-	max = STRAT_PLACE_UNLOAD_NB;
-      }
-    else
-      {
-	min = STRAT_PLACE_UNLOAD_NB;
-	max = STRAT_PLACE_NB;
-      }
-    for (i = min; i < max; i++)
+    for (i = 0; i < STRAT_PLACE_NB; i++)
       {
 	int32_t score = strat_place_score (i);
 	if (score > best_score)
