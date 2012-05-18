@@ -154,11 +154,11 @@ top_update (void)
       {
 	IO_CLR (OUTPUT_DOOR_CLOSE);
       }
-    /* Else, test if it should be closed. */
-    else if (top.close_door_check)
+    /* Test if it should be closed. */
+    if (top.close_door_check)
       {
 	top.close_door_check--;
-	if (!top.close_door_check)
+	if (!top.close_door_check && IO_GET (CONTACT_DOOR_CLOSE))
 	  {
 	    IO_SET (OUTPUT_DOOR_OPEN);
 	    IO_CLR (OUTPUT_DOOR_CLOSE);
