@@ -57,6 +57,7 @@
 #include "bottom_clamp.h"
 
 #include "bot.h"
+#include "playground_2012.h"
 
 #include "io.h"
 
@@ -203,6 +204,17 @@ main_demo_events (void)
     return 0;
 }
 
+static uint8_t
+main_coin_detected_ok (void)
+{
+    position_t robot_pos;
+    asserv_get_position (&robot_pos);
+    int16_t limit = robot_pos.v.y < PG_LENGTH - PG_CAPTAIN_ROOM_LENGTH_MM
+	? PG_HOLD_NORTH_X + BOT_SIZE_FRONT
+	: PG_CAPTAIN_ROOM_LENGTH_MM + BOT_SIZE_FRONT;
+    return robot_pos.v.x > limit && robot_pos.v.x < PG_MIRROR_X (limit);
+}
+
 /** Main events management. */
 uint8_t
 main_event_to_fsm (void)
@@ -232,7 +244,9 @@ main_event_to_fsm (void)
     else if (mimot_motor0_status == failure)
 	FSM_HANDLE_E (AI, lower_clamp_rotation_failure);
     if ((IO_GET (CONTACT_LOWER_CLAMP_SENSOR_1)
-	|| IO_GET (CONTACT_LOWER_CLAMP_SENSOR_2)) && (!clamp_calm_mode_read()))
+	|| IO_GET (CONTACT_LOWER_CLAMP_SENSOR_2))
+	&& !clamp_calm_mode_read ()
+	&& main_coin_detected_ok ())
 	FSM_HANDLE_E (AI, coin_detected);
     if ((int16_t) (mimot_get_motor0_position() - position_to_drop) > 0)
         FSM_HANDLE_E (AI, time_to_drop_coin);
