@@ -62,4 +62,8 @@
 #define PG_BOTTLE2_X PG_MIRROR_X (PG_BOTTLE1_X)
 #define PG_BOTTLE3_X PG_MIRROR_X (PG_BOTTLE0_X)
 
+/** 4 coins. */
+#define PG_COIN_QUARTET_X (PG_WIDTH / 2)
+#define PG_COIN_QUARTET_Y 300
+
 #endif /* playground_2012_h */
