@@ -197,12 +197,13 @@ FSM_START_WITH (CLAMP_START)
         POSITION DEFINITION
 ---------------------------------------*/
 #define RECALE_COIN 1000
-#define CLAMP_1_DOWN 0
-#define CLAMP_1_UP 2000
+#define CLAMP_1_DOWN 3863
+#define CLAMP_1_UP 1863
 #define POS_TO_DROP 800
 #define HIDE_POS_TREE 550
 #define DECALAGE_CD_BAS 200
 #define LET_UPPER_SET_UP 500
+#define DECALAGE_INIT 1662
 /*-------------------------------------
          Clamp context
 ---------------------------------------*/
@@ -354,7 +355,7 @@ FSM_TRANS_TIMEOUT (CLAMP_INIT_CLOSE_ALL_CLAMPS, 5*TIMEOUT_OPEN_CLAMPS, CLAMP_INI
 FSM_TRANS (CLAMP_INIT_FIND_0, 0_found, CLAMP_INIT_HIDE_CLAMP)
 {
     /*init of the position*/
-    ctx.init_pos = mimot_get_motor0_position() + 6.65 * 250;
+    ctx.init_pos = mimot_get_motor0_position() + DECALAGE_INIT;
     ctx.current_pos = 0;
     /* Robot is ready with clamp 1 at the bottom. */
     move_needed2(CLAMP_1_DOWN,FAST_ROTATION,1);
