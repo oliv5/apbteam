@@ -196,7 +196,7 @@ FSM_START_WITH (CLAMP_START)
 /*-------------------------------------
         POSITION DEFINITION
 ---------------------------------------*/
-#define RECALE_COIN 1000
+#define RECALE_COIN 1100
 #define CLAMP_1_DOWN 3863
 #define CLAMP_1_UP 1863
 #define POS_TO_DROP 800
