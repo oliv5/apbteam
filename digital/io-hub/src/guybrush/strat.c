@@ -181,6 +181,16 @@ strat_place_score (uint8_t i)
 	return -1;
     int32_t score = 10000ll - position_score + strat_place[i].score
 	- 100ll * strat.place[i].fail_nb;
+    if (team_color)
+      {
+	if (i == STRAT_PLACE_TOTEM1 || i == STRAT_PLACE_TOTEM3)
+	    score -= 1500;
+      }
+    else
+      {
+	if (i == STRAT_PLACE_TOTEM0 || i == STRAT_PLACE_TOTEM2)
+	    score -= 1500;
+      }
     if (i < STRAT_PLACE_UNLOAD_NB)
       {
 	if (strat.load > 3)
