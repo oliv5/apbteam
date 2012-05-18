@@ -417,7 +417,7 @@ FSM_TRANS_TIMEOUT (CLAMP_WAIT_BEFORE_IDLE, TIMEOUT_IDLE,
         else if (idle_request == FSM_EVENT (AI, tree_detected))
         {
             /* Hidding the clamp inside the robot. */
-            if (ctx.clamp_1_down)
+            if (is_clamp_1_down(ctx.current_pos))
             {
                 move_needed2 (HIDE_POS_TREE, FAST_ROTATION,1);
             }
