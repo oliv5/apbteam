@@ -184,9 +184,9 @@ strat_place_score (uint8_t i)
     if (i < STRAT_PLACE_UNLOAD_NB)
       {
 	if (strat.load > 3)
-	    score += 5000;
+	    score += 7000;
 	else
-	    score -= 5000;
+	    score -= 7000;
       }
     if (strat.upper_clamp_dead
 	&& strat_place[i].decision == STRAT_DECISION_TOTEM)
