@@ -115,6 +115,8 @@ struct strat_t
     vect_t prepared_pos;
     /** Robot content estimation. */
     uint8_t load;
+    /** Upper clamp is dead. */
+    uint8_t upper_clamp_dead;
     /** Places information. */
     struct strat_place_dyn_t place[STRAT_PLACE_NB];
 };
@@ -186,6 +188,9 @@ strat_place_score (uint8_t i)
 	else
 	    score -= 5000;
       }
+    if (strat.upper_clamp_dead
+	&& strat_place[i].decision == STRAT_DECISION_TOTEM)
+	score -= 3000;
     return score;
 }
 
@@ -296,9 +301,6 @@ strat_clamp_dead (void)
 void
 strat_upper_clamp_dead (void)
 {
-    strat.place[STRAT_PLACE_TOTEM0].valid = 0;
-    strat.place[STRAT_PLACE_TOTEM1].valid = 0;
-    strat.place[STRAT_PLACE_TOTEM2].valid = 0;
-    strat.place[STRAT_PLACE_TOTEM3].valid = 0;
+    strat.upper_clamp_dead = 1;
 }
 
