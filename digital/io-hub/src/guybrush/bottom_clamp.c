@@ -123,7 +123,12 @@ FSM_STATES (
     CLAMP_TURN_BACKWARD,
     CLAMP_WAIT,
     CLAMP_TURN_FORWARD,
-    CLAMP_SHITTY_STATE
+    CLAMP_SHITTY_STATE,
+    /*-------------------------Upper set not going down-------------------- */
+    CLAMP_UPPER_SET_BLOCKED_UP,
+    CLAMP_UPPER_SET_FOLD_BACK,
+    CLAMP_UPPER_SET_DEAD,
+    CLAMP_TRY_ROTATION
     )
 
 FSM_EVENTS (
@@ -164,7 +169,9 @@ FSM_EVENTS (
     /* Try to unblock clamp. */
     clamp_unblock,
     /* We tryed to unblock the clamp too many time. we can now say that the bottom clamp is out of order*/
-    clamp_is_dead
+    clamp_is_dead,
+    /* The upper set is not moving anymore*/
+    upper_set_is_dead
      )
 
 
@@ -180,6 +187,7 @@ FSM_START_WITH (CLAMP_START)
 #define TIMEOUT_RECENTRAGE 100
 #define TIMEOUT_BLOCKED 100
 #define TIMEOUT_IDLE 70
+#define TIMEOUT_UPPER_SET_DOWN 1000
 
 /*-------------------------------------
         ROTATON SPEED DEFINITION
@@ -224,6 +232,10 @@ struct clamp_t
     uint8_t cpt_blocked;
     /** Request from top FSM to be processed once in IDLE state. */
     uint16_t idle_request;
+    /** Compting how many times the upper set is blocked*/
+    uint8_t upper_set_blocked_cpt;
+    uint8_t unblocking_upper_set;
+    uint8_t upper_set_is_dead;
 };
 
 /*Global context. */
@@ -349,6 +361,10 @@ FSM_TRANS_TIMEOUT (CLAMP_INIT_CLOSE_ALL_CLAMPS, 5*TIMEOUT_OPEN_CLAMPS, CLAMP_INI
 {
     /*Findig the 0 position. */
     ctx.current_pos = 0;
+    /* Init of the upper set blocked cpt */
+    ctx.upper_set_blocked_cpt = 0;
+    ctx.unblocking_upper_set = 0;
+    ctx.upper_set_is_dead = 0;
     move_needed2(8000,SLOW_ROTATION,1);
     return FSM_NEXT_TIMEOUT (CLAMP_INIT_CLOSE_ALL_CLAMPS);
 }
@@ -567,6 +583,8 @@ FSM_TRANS (CLAMP_IDLE, tree_detected,CLAMP_BOTTOM_CLAMP_HIDE_POS)
 }
 
 
+
+
 FSM_TRANS (CLAMP_BOTTOM_CLAMP_HIDE_POS, lower_clamp_rotation_success, CLAMP_UNFOLD_UPPER_SET)
 {
     radar_def_upper_clamp_moving (1);
@@ -594,6 +612,12 @@ FSM_TRANS (CLAMP_UNFOLD_UPPER_SET, upper_set_down, CLAMP_BOTTOM_CLAMP_READY)
 
     return FSM_NEXT (CLAMP_UNFOLD_UPPER_SET, upper_set_down);
 
+}
+
+/** If the upper set doesn't go down*/
+FSM_TRANS_TIMEOUT (CLAMP_UNFOLD_UPPER_SET, TIMEOUT_UPPER_SET_DOWN, CLAMP_UPPER_SET_BLOCKED_UP)
+{
+    return FSM_NEXT_TIMEOUT (CLAMP_UNFOLD_UPPER_SET);
 }
 
 FSM_TRANS (CLAMP_BOTTOM_CLAMP_READY, lower_clamp_rotation_success, CLAMP_READY_TO_EMPTY_TREE)
@@ -811,6 +835,7 @@ FSM_TRANS (CLAMP_READY_TO_EMPTY_TREE, stop_tree_approach, CLAMP_REARRANGE_CD)
 
 /*---------------------------------------------------------------------------------*/
 /*     Parts of the FSM that takes care of the bottom clamp when it's blocked      */
+/*     with the uppser set up                                                      */
 /*---------------------------------------------------------------------------------*/
 
 
@@ -837,6 +862,49 @@ FSM_TRANS (CLAMP_OPEN_BOTTOM_CLAMPS, clamp_unblock, CLAMP_WAIT)
     }
     return FSM_NEXT (CLAMP_OPEN_BOTTOM_CLAMPS, clamp_unblock);
 }
+
+FSM_TRANS (CLAMP_OPEN_BOTTOM_CLAMPS, tree_detected, CLAMP_OPEN_BOTTOM_CLAMPS)
+{
+    fsm_queue_post_event (FSM_EVENT (AI, clamp_blocked));
+    return FSM_NEXT (CLAMP_OPEN_BOTTOM_CLAMPS, tree_detected);
+}
+
+FSM_TRANS (CLAMP_OPEN_BOTTOM_CLAMPS, robot_is_back, CLAMP_OPEN_BOTTOM_CLAMPS)
+{
+    fsm_queue_post_event (FSM_EVENT (AI, clamp_blocked));
+    return FSM_NEXT (CLAMP_OPEN_BOTTOM_CLAMPS, robot_is_back);
+}
+
+FSM_TRANS (CLAMP_OPEN_BOTTOM_CLAMPS, clean_start, CLAMP_OPEN_BOTTOM_CLAMPS)
+{
+    fsm_queue_post_event (FSM_EVENT (AI,  clamp_blocked));
+    return FSM_NEXT (CLAMP_OPEN_BOTTOM_CLAMPS, clean_start);
+}
+
+FSM_TRANS (CLAMP_OPEN_BOTTOM_CLAMPS,clean_catch, CLAMP_OPEN_BOTTOM_CLAMPS)
+{
+    fsm_queue_post_event (FSM_EVENT (AI,  clamp_blocked));
+    return FSM_NEXT (CLAMP_OPEN_BOTTOM_CLAMPS, clean_catch);
+}
+
+FSM_TRANS (CLAMP_OPEN_BOTTOM_CLAMPS,clean_load, CLAMP_OPEN_BOTTOM_CLAMPS)
+{
+    fsm_queue_post_event (FSM_EVENT (AI,  clamp_blocked));
+    return FSM_NEXT (CLAMP_OPEN_BOTTOM_CLAMPS, clean_load);
+}
+
+FSM_TRANS (CLAMP_OPEN_BOTTOM_CLAMPS,empty_tree, CLAMP_OPEN_BOTTOM_CLAMPS)
+{
+    fsm_queue_post_event (FSM_EVENT (AI,  clamp_blocked));
+    return FSM_NEXT (CLAMP_OPEN_BOTTOM_CLAMPS, empty_tree);
+}
+
+FSM_TRANS (CLAMP_OPEN_BOTTOM_CLAMPS,stop_tree_approach, CLAMP_OPEN_BOTTOM_CLAMPS)
+{
+    fsm_queue_post_event (FSM_EVENT (AI,  clamp_blocked));
+    return FSM_NEXT (CLAMP_OPEN_BOTTOM_CLAMPS, stop_tree_approach);
+}
+
 
 FSM_TRANS (CLAMP_OPEN_BOTTOM_CLAMPS,clamp_is_dead, CLAMP_SHITTY_STATE)
 {
@@ -870,10 +938,33 @@ FSM_TRANS_TIMEOUT (CLAMP_TURN_BACKWARD,TIMEOUT_BLOCKED, CLAMP_TURN_FORWARD)
 }
 
 
-FSM_TRANS (CLAMP_TURN_FORWARD,lower_clamp_rotation_success, CLAMP_WAIT_BEFORE_IDLE)
+FSM_TRANS (CLAMP_TURN_FORWARD,lower_clamp_rotation_success, 
+           back_to_idle,CLAMP_WAIT_BEFORE_IDLE,
+           back_to_empty_tree, CLAMP_BOTTOM_CLAMP_HIDE_POS)
 {
-    ctx.cpt_blocked = 0;
-    return FSM_NEXT (CLAMP_TURN_FORWARD, lower_clamp_rotation_success);
+    if (ctx.unblocking_upper_set)
+    {
+        /*Hidding the clamp inside the robot*/
+        if (is_clamp_1_down(ctx.current_pos))
+        {
+            move_needed2(HIDE_POS_TREE,FAST_ROTATION,1);
+        }
+        else
+        {
+            move_needed2(HIDE_POS_TREE,FAST_ROTATION,1);
+        }    
+        ctx.unblocking_upper_set = 0;
+        return FSM_NEXT (CLAMP_TURN_FORWARD, lower_clamp_rotation_success, back_to_empty_tree);
+    }
+    else
+    {
+        ctx.cpt_blocked = 0;
+        if (ctx.upper_set_is_dead)
+        {
+            fsm_queue_post_event (FSM_EVENT (AI, upper_set_is_dead));
+        }
+        return FSM_NEXT (CLAMP_TURN_FORWARD, lower_clamp_rotation_success,back_to_idle);
+    }
 }
 
 
@@ -889,5 +980,59 @@ FSM_TRANS (CLAMP_TURN_FORWARD,lower_clamp_rotation_failure, CLAMP_BLOCKED)
     ctx.cpt_blocked += 1;
     return FSM_NEXT (CLAMP_TURN_FORWARD, lower_clamp_rotation_failure);
 }
+/*---------------------------------------------------------------------------------*/
+/*     Parts of the FSM that takes care of the upper set when it's not going down  */
+/*---------------------------------------------------------------------------------*/
+FSM_TRANS_TIMEOUT (CLAMP_UPPER_SET_BLOCKED_UP, TIMEOUT_OPEN_CLAMPS, 
+           branch_upper_set_is_dead, CLAMP_UPPER_SET_DEAD,
+           branch_try_to_deblock, CLAMP_UPPER_SET_FOLD_BACK)
+{
+    ctx.upper_set_blocked_cpt ++;
+    IO_CLR (OUTPUT_UPPER_CLAMP_DOWN);
+    IO_SET (OUTPUT_UPPER_CLAMP_UP);
+    if (ctx.upper_set_blocked_cpt>=2)
+        {
+            return FSM_NEXT_TIMEOUT (CLAMP_UPPER_SET_BLOCKED_UP, branch_upper_set_is_dead);
+        }
+    else
+        {
+            return FSM_NEXT_TIMEOUT (CLAMP_UPPER_SET_BLOCKED_UP,branch_try_to_deblock);
+        }
+}
+
+FSM_TRANS_TIMEOUT (CLAMP_UPPER_SET_DEAD,TIMEOUT_OPEN_CLAMPS, CLAMP_BLOCKED)
+{
+    ctx.upper_set_is_dead = 1;
+    return FSM_NEXT_TIMEOUT (CLAMP_UPPER_SET_DEAD);
+}
+
+FSM_TRANS (CLAMP_UPPER_SET_FOLD_BACK,upper_set_up, CLAMP_TRY_ROTATION)
+{
+    ctx.upper_set_is_dead = 1;
+    mimot_move_motor0_absolute (ctx.current_pos-4000, MEDIUM_ROTATION);
+    return FSM_NEXT (CLAMP_UPPER_SET_FOLD_BACK,upper_set_up);
+}
+
+FSM_TRANS (CLAMP_TRY_ROTATION,lower_clamp_rotation_success,CLAMP_BOTTOM_CLAMP_HIDE_POS)
+{
+    /*Hidding the clamp inside the robot*/
+    if (is_clamp_1_down(ctx.current_pos))
+    {
+       move_needed2(HIDE_POS_TREE,FAST_ROTATION,1);
+    }
+    else
+    {
+        move_needed2(HIDE_POS_TREE,FAST_ROTATION,1);
+    }
+    return FSM_NEXT (CLAMP_TRY_ROTATION,lower_clamp_rotation_success);
+}
+
+FSM_TRANS (CLAMP_TRY_ROTATION,lower_clamp_rotation_failure,CLAMP_BLOCKED)
+{
+    ctx.unblocking_upper_set = 1;
+    return FSM_NEXT (CLAMP_TRY_ROTATION,lower_clamp_rotation_failure);
+}
+
+
 
 /* vim: set cino={0\:0t0(0 et: */
