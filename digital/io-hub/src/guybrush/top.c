@@ -106,9 +106,7 @@ FSM_STATES (
 	    TOP_BOTTLE_GOING_BACK,
 
 	    /* Going to an unload position. */
-	    TOP_UNLOAD_GOING,
-	    /* Unloading, waiting for elements to fall. */
-	    TOP_UNLOADING)
+	    TOP_UNLOAD_GOING)
 
 FSM_START_WITH (TOP_START)
 
@@ -593,18 +591,13 @@ FSM_TRANS (TOP_BOTTLE_APPROACHING, robot_move_failure,
 
 /** UNLOAD */
 
-FSM_TRANS (TOP_UNLOAD_GOING, move_success, TOP_UNLOADING)
+FSM_TRANS (TOP_UNLOAD_GOING, move_success, TOP_DECISION)
 {
     IO_SET (OUTPUT_DOOR_OPEN);
     IO_CLR (OUTPUT_DOOR_CLOSE);
-    return FSM_NEXT (TOP_UNLOAD_GOING, move_success);
-}
-
-FSM_TRANS_TIMEOUT (TOP_UNLOADING, 250, TOP_DECISION)
-{
     strat_success ();
     top.close_door = 1;
-    return FSM_NEXT_TIMEOUT (TOP_UNLOADING);
+    return FSM_NEXT (TOP_UNLOAD_GOING, move_success);
 }
 
 /** UNLOAD failures. */
