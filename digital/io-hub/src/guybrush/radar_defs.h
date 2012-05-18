@@ -38,4 +38,7 @@
 #define RADAR_SENSOR_BACK_FIRST 3
 #define RADAR_SENSOR_BACK_NB 1
 
+void
+radar_def_upper_clamp_moving (uint8_t moving);
+
 #endif /* radar_defs_h */
