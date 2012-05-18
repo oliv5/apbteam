@@ -100,3 +100,5 @@ class ProtoGuybrush (Proto):
         self.proto.send('e')
     def robot_is_back(self):
         self.proto.send('r')
+    def unblock_bottom_clamp(self):
+        self.proto.send('u')

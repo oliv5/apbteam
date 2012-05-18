@@ -395,6 +395,10 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	/* Simulate the robot_is_back command. */
 	fsm_queue_post_event (FSM_EVENT (AI, robot_is_back));
 	break;
+      case c ('u',0):
+	/* Simulate the unblock command. */
+	fsm_queue_post_event (FSM_EVENT (AI, clamp_unblock));
+	break;
       case c ('c', 1):
 	/* Simulate clean_start (00), clean_catch (01), clean_load (02). */
 	if (args[0] == 0)

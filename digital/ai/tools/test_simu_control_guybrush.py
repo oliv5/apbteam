@@ -97,6 +97,10 @@ class TestSimuControl (TestSimu):
                 text = 'Robot is back', padx = 0, pady = 0,
                 command = self.robot_is_back)
         self.robot_is_back_button.pack()
+        self.unblock_button = Button (self.control_frame,
+                text = 'unblock bottom clamp', padx = 0, pady = 0,
+                command = self.unblock_bottom_clamp)
+        self.unblock_button.pack()
         self.backward_var = IntVar ()
         self.backward_button = Checkbutton (self.control_frame,
                 text = 'Backward', variable = self.backward_var)
@@ -145,6 +149,9 @@ class TestSimuControl (TestSimu):
 
     def robot_is_back(self):
         self.io.robot_is_back()
+
+    def unblock_bottom_clamp(self):
+        self.io.unblock_bottom_clamp()
 
 if __name__ == '__main__':
     run ('guybrush', TestSimuControl)
