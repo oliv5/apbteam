@@ -119,6 +119,7 @@ FSM_STATES (
     CLAMP_BOTTOM_CLAMP_BACK,
 
     /*------------------------ Clamp blocked------------------------------. */
+    CLAMP_BLOCKED_UPPER_SET_DOWN,
     CLAMP_BLOCKED,
     CLAMP_OPEN_BOTTOM_CLAMPS,
     CLAMP_TURN_BACKWARD,
@@ -626,10 +627,8 @@ FSM_TRANS (CLAMP_BOTTOM_CLAMP_READY, lower_clamp_rotation_success, CLAMP_READY_T
 
 }
 
-FSM_TRANS (CLAMP_BOTTOM_CLAMP_READY, lower_clamp_rotation_failure, CLAMP_BLOCKED)
+FSM_TRANS (CLAMP_BOTTOM_CLAMP_READY, lower_clamp_rotation_failure, CLAMP_BLOCKED_UPPER_SET_DOWN)
 {
-    /*The clamp is blocked somehow.*/
-    clamp_blocked();
     return FSM_NEXT (CLAMP_BOTTOM_CLAMP_HIDE_POS, lower_clamp_rotation_failure);
 }
 
@@ -836,6 +835,23 @@ FSM_TRANS (CLAMP_READY_TO_EMPTY_TREE, stop_tree_approach, CLAMP_REARRANGE_CD)
 
 /*---------------------------------------------------------------------------------*/
 /*     Parts of the FSM that takes care of the bottom clamp when it's blocked      */
+/*     with the uppser set is DOWN                                                 */
+/*---------------------------------------------------------------------------------*/
+FSM_TRANS (CLAMP_BLOCKED_UPPER_SET_DOWN, upper_set_up, CLAMP_BLOCKED)
+{
+    return FSM_NEXT (CLAMP_BLOCKED_UPPER_SET_DOWN, upper_set_up);
+}
+
+FSM_TRANS_TIMEOUT (CLAMP_BLOCKED_UPPER_SET_DOWN, TIMEOUT_UPPER_SET_DOWN, CLAMP_BLOCKED)
+{
+    /** folding upper set */
+    IO_CLR (OUTPUT_UPPER_CLAMP_DOWN);
+    IO_SET (OUTPUT_UPPER_CLAMP_UP);
+    return FSM_NEXT_TIMEOUT (CLAMP_BLOCKED_UPPER_SET_DOWN);
+}
+
+/*---------------------------------------------------------------------------------*/
+/*     Parts of the FSM that takes care of the bottom clamp when it's blocked      */
 /*     with the uppser set up                                                      */
 /*---------------------------------------------------------------------------------*/
 
@@ -843,9 +859,20 @@ FSM_TRANS (CLAMP_READY_TO_EMPTY_TREE, stop_tree_approach, CLAMP_REARRANGE_CD)
 FSM_TRANS_TIMEOUT (CLAMP_BLOCKED,TIMEOUT_OPEN_CLAMPS,CLAMP_OPEN_BOTTOM_CLAMPS)
 {
     fsm_queue_post_event (FSM_EVENT (AI, clamp_blocked));
-    /* Opening the 2 clamps. */
-    IO_CLR (OUTPUT_LOWER_CLAMP_1_CLOSE);
-    IO_CLR (OUTPUT_LOWER_CLAMP_2_CLOSE);
+    /* Opening OR Closing the 2 clamps. */
+    if (ctx.cpt_blocked%2==0)
+    {
+        IO_CLR (OUTPUT_LOWER_CLAMP_1_CLOSE);
+        IO_CLR (OUTPUT_LOWER_CLAMP_2_CLOSE);
+    }
+    else
+    {
+        IO_SET (OUTPUT_LOWER_CLAMP_1_CLOSE);
+        IO_SET (OUTPUT_LOWER_CLAMP_2_CLOSE);  
+    }
+    /*Setting upper clamp up*/
+    IO_CLR (OUTPUT_UPPER_CLAMP_DOWN);
+    IO_SET (OUTPUT_UPPER_CLAMP_UP);
     return FSM_NEXT_TIMEOUT (CLAMP_BLOCKED);
 }
 
@@ -914,6 +941,17 @@ FSM_TRANS (CLAMP_OPEN_BOTTOM_CLAMPS,clamp_is_dead, CLAMP_SHITTY_STATE)
 
 FSM_TRANS (CLAMP_WAIT,lower_clamp_rotation_success, CLAMP_TURN_BACKWARD)
 {
+    /* Opening OR Closing the 2 clamps. */
+    if (ctx.cpt_blocked%2==1)
+    {
+        IO_CLR (OUTPUT_LOWER_CLAMP_1_CLOSE);
+        IO_CLR (OUTPUT_LOWER_CLAMP_2_CLOSE);
+    }
+    else
+    {
+        IO_SET (OUTPUT_LOWER_CLAMP_1_CLOSE);
+        IO_SET (OUTPUT_LOWER_CLAMP_2_CLOSE);  
+    }
     return FSM_NEXT (CLAMP_WAIT, lower_clamp_rotation_success);
 }
 
