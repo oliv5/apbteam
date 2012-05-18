@@ -315,7 +315,7 @@ FSM_TRANS (TOP_TOTEM_GOING, move_success, TOP_TOTEM_CLEAN_STARTING)
 
 FSM_TRANS (TOP_TOTEM_CLEAN_STARTING, clamps_ready, TOP_TOTEM_CLEAN_APPROACHING)
 {
-    int16_t move = top.totem_distance - BOT_SIZE_LOWER_CLAMP_FRONT - 140;
+    int16_t move = top.totem_distance - BOT_SIZE_LOWER_CLAMP_FRONT - 135;
     top.totem_distance -= move;
     asserv_set_speed (BOT_SPEED_APPROACH);
     asserv_move_linearly (move);
