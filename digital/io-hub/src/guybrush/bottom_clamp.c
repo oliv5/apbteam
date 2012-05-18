@@ -211,6 +211,7 @@ FSM_START_WITH (CLAMP_START)
 #define CLAMP_1_UP 1929
 #define POS_TO_DROP 800
 #define HIDE_POS_TREE 550
+#define HIDE_POS_TREE_PLUS (HIDE_POS_TREE + 100)
 #define DECALAGE_CD_BAS 319
 #define LET_UPPER_SET_UP 500
 #define DECALAGE_INIT 1662
@@ -394,7 +395,6 @@ FSM_TRANS (CLAMP_INIT_HIDE_CLAMP, lower_clamp_rotation_success,
         return FSM_NEXT (CLAMP_INIT_HIDE_CLAMP,lower_clamp_rotation_success,demo_start);
 }
 
-
 FSM_TRANS (CLAMP_INIT_READY,init_start_round, CLAMP_GOING_IDLE)
 {
     return FSM_NEXT (CLAMP_INIT_READY, init_start_round);
@@ -460,7 +460,6 @@ FSM_TRANS_TIMEOUT (CLAMP_WAIT_BEFORE_IDLE, TIMEOUT_IDLE,
         return FSM_NEXT_TIMEOUT (CLAMP_WAIT_BEFORE_IDLE, idle);
     }
 }
-
 /*---------------------------------------------------------*/
 /*  parts of the FSM that Clean areas                      */
 /*---------------------------------------------------------*/
@@ -496,8 +495,6 @@ FSM_TRANS (CLAMP_READY_TO_LOAD, clean_load,CLAMP_TAKE_COIN)
     return FSM_NEXT(CLAMP_READY_TO_LOAD,clean_load);
 }
 
-
-
 /*---------------------------------------------------------*/
 /*  parts of the FSM that Takes coin                       */
 /*---------------------------------------------------------*/
@@ -517,7 +514,6 @@ FSM_TRANS (CLAMP_IDLE, coin_detected,CLAMP_TAKE_COIN)
     fsm_queue_post_event (FSM_EVENT (AI, taking_coin));
     return FSM_NEXT (CLAMP_IDLE, coin_detected);
 }
-
 
 FSM_TRANS_TIMEOUT (CLAMP_TAKE_COIN, TIMEOUT_CLOSE_CLAMPS, CLAMP_TURN_HALF_WAY)
 {
@@ -572,19 +568,19 @@ FSM_TRANS (CLAMP_DROP_CD, lower_clamp_rotation_failure, CLAMP_BLOCKED)
 
 FSM_TRANS (CLAMP_IDLE, tree_detected,CLAMP_BOTTOM_CLAMP_HIDE_POS)
 {
-    /*Hidding the clamp inside the robot*/
-    if (is_clamp_1_down(ctx.current_pos))
+    uint16_t rotation;
+    if (ctx.upper_set_blocked_cpt>1)
     {
-       move_needed2(HIDE_POS_TREE,FAST_ROTATION,1);
+        rotation = HIDE_POS_TREE_PLUS;
     }
     else
     {
-        move_needed2(HIDE_POS_TREE,FAST_ROTATION,1);
+        rotation = HIDE_POS_TREE;
     }
+    /*Hidding the clamp inside the robot*/
+    move_needed2(rotation,FAST_ROTATION,1);
     return FSM_NEXT (CLAMP_IDLE, tree_detected);
 }
-
-
 
 
 FSM_TRANS (CLAMP_BOTTOM_CLAMP_HIDE_POS, lower_clamp_rotation_success, CLAMP_UNFOLD_UPPER_SET)
