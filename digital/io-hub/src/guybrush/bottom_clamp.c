@@ -832,6 +832,9 @@ FSM_TRANS (CLAMP_READY_TO_EMPTY_TREE, stop_tree_approach, CLAMP_REARRANGE_CD)
     IO_SET (OUTPUT_LOWER_CLAMP_1_CLOSE);
     /*We need to close both clamp to have an easier turn around. */
     IO_SET (OUTPUT_LOWER_CLAMP_2_CLOSE);
+
+    /*Closing upper & middle clamps.*/
+    IO_CLR (OUTPUT_UPPER_CLAMP_OPEN);
     return FSM_NEXT (CLAMP_READY_TO_EMPTY_TREE, stop_tree_approach);
 }
 
