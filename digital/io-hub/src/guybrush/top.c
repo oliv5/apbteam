@@ -465,6 +465,12 @@ FSM_TRANS (TOP_TOTEM_CLEAN_STARTING, clamp_blocked,
     return FSM_NEXT (TOP_TOTEM_CLEAN_STARTING, clamp_blocked);
 }
 
+FSM_TRANS_TIMEOUT (TOP_TOTEM_CLEAN_STARTING, 5 * 250, TOP_DECISION)
+{
+    strat_bad_failure ();
+    return FSM_NEXT_TIMEOUT (TOP_TOTEM_CLEAN_STARTING);
+}
+
 FSM_TRANS (TOP_TOTEM_CLEAN_CATCH_WAITING, clamp_blocked,
 	   TOP_TOTEM_CLAMP_ERROR_GOING_BACK)
 {
@@ -487,6 +493,12 @@ FSM_TRANS (TOP_TOTEM_CLAMP_DOWNING, clamp_blocked,
     strat_failure ();
     top_chaos_move ();
     return FSM_NEXT (TOP_TOTEM_CLAMP_DOWNING, clamp_blocked);
+}
+
+FSM_TRANS_TIMEOUT (TOP_TOTEM_CLAMP_DOWNING, 5 * 250, TOP_DECISION)
+{
+    strat_bad_failure ();
+    return FSM_NEXT_TIMEOUT (TOP_TOTEM_CLAMP_DOWNING);
 }
 
 FSM_TRANS (TOP_TOTEM_APPROACHING, robot_move_failure,
