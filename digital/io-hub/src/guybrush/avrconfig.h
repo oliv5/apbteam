@@ -136,7 +136,7 @@
 /** Use mimot board. */
 #define AC_AI_TWI_MASTER_MIMOT 1
 /** Use beacon board. */
-#define AC_AI_TWI_MASTER_BEACON 1
+#define AC_AI_TWI_MASTER_BEACON 0
 
 /* beacon. */
 /** Number of beacon positions. */
