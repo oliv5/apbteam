@@ -201,7 +201,7 @@ FSM_START_WITH (CLAMP_START)
 #define CLAMP_1_UP 1863
 #define POS_TO_DROP 800
 #define HIDE_POS_TREE 550
-#define DECALAGE_CD_BAS 200
+#define DECALAGE_CD_BAS 319
 #define LET_UPPER_SET_UP 500
 #define DECALAGE_INIT 1662
 /*-------------------------------------
