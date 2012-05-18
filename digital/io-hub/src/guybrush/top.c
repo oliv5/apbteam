@@ -121,6 +121,10 @@ struct top_t
     int16_t totem_distance;
     /** Close door when out of unloading zone. */
     uint8_t close_door;
+    /** Check door is closed once this reach 0. */
+    uint8_t close_door_check;
+    /** Close the door once this reach 0. */
+    uint8_t close_door_wait;
 };
 
 /** Global context. */
@@ -140,12 +144,34 @@ top_update (void)
 	    IO_CLR (OUTPUT_DOOR_OPEN);
 	    IO_SET (OUTPUT_DOOR_CLOSE);
 	    top.close_door = 0;
+	    top.close_door_check = 250;
 	  }
       }
     /* If door is closed, cut air to save power. */
     if (!IO_GET (CONTACT_DOOR_CLOSE))
       {
 	IO_CLR (OUTPUT_DOOR_CLOSE);
+      }
+    /* Else, test if it should be closed. */
+    else if (top.close_door_check)
+      {
+	top.close_door_check--;
+	if (!top.close_door_check)
+	  {
+	    IO_SET (OUTPUT_DOOR_OPEN);
+	    IO_CLR (OUTPUT_DOOR_CLOSE);
+	    top.close_door_wait = 250;
+	  }
+      }
+    /* Close door after a delay. */
+    if (top.close_door_wait)
+      {
+	top.close_door_wait--;
+	if (!top.close_door_wait)
+	  {
+	    IO_CLR (OUTPUT_DOOR_OPEN);
+	    IO_SET (OUTPUT_DOOR_CLOSE);
+	  }
       }
 }
 
