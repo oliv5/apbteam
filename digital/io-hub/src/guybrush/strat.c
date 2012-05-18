@@ -191,6 +191,9 @@ strat_place_score (uint8_t i)
     if (strat.upper_clamp_dead
 	&& strat_place[i].decision == STRAT_DECISION_TOTEM)
 	score -= 3000;
+    if (strat.load <= 4
+	&& (i == STRAT_PLACE_CAPTAIN0 || i == STRAT_PLACE_CAPTAIN1))
+	score += 2000;
     return score;
 }
 
