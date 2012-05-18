@@ -65,4 +65,8 @@ strat_giveup (void);
 void
 strat_clamp_dead (void);
 
+/** Upper clamp is dead. */
+void
+strat_upper_clamp_dead (void);
+
 #endif /* strat_h */

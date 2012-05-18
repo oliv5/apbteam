@@ -305,6 +305,12 @@ FSM_TRANS (TOP_CLAMP_ERROR_DECISION, clamp_blocked,
       }
 }
 
+FSM_TRANS (TOP_CLAMP_ERROR_DECISION, upper_set_is_dead, TOP_DECISION)
+{
+    strat_upper_clamp_dead ();
+    return FSM_NEXT (TOP_CLAMP_ERROR_DECISION, upper_set_is_dead);
+}
+
 /** TOTEM */
 
 FSM_TRANS (TOP_TOTEM_GOING, move_success, TOP_TOTEM_CLEAN_STARTING)

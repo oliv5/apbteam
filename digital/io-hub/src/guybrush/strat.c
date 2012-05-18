@@ -290,3 +290,12 @@ strat_clamp_dead (void)
     /* TODO */
 }
 
+void
+strat_upper_clamp_dead (void)
+{
+    strat.place[STRAT_PLACE_TOTEM0].valid = 0;
+    strat.place[STRAT_PLACE_TOTEM1].valid = 0;
+    strat.place[STRAT_PLACE_TOTEM2].valid = 0;
+    strat.place[STRAT_PLACE_TOTEM3].valid = 0;
+}
+
