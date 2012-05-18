@@ -75,7 +75,7 @@ static const struct robot_t guybrush_robot =
      * table. */
     simu_table_test_guybrush,
     /** Robot corners, from front left, then clockwise. */
-    { { 150, 171.5 }, { 150, -171.5 }, { -134, -121.5 }, { -134, 121.5 },
+    { { 150, 171.5 }, { 150, -171.5 }, { -135, -121.5 }, { -135, 121.5 },
 	{ 150, 0 } },
     /** Initialisation function. */
     NULL,
