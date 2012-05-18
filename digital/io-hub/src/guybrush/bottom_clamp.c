@@ -31,6 +31,7 @@
 #include "main.h"
 #include "bottom_clamp.h"
 #include "pressure.h"
+#include "strat.h"
 #include "radar_defs.h"
 
 
@@ -502,6 +503,7 @@ FSM_TRANS (CLAMP_READY_TO_LOAD, clean_load,CLAMP_TAKE_COIN)
 /*---------------------------------------------------------*/
 FSM_TRANS (CLAMP_IDLE, coin_detected,CLAMP_TAKE_COIN)
 {
+    strat_coin_taken ();
     if (is_clamp_1_down(ctx.current_pos))
     {
         /*Close it.*/

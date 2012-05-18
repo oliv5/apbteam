@@ -196,7 +196,7 @@ strat_decision (vect_t *pos)
       }
     /* Else compute the best decision. */
     uint8_t min, max;
-    if (strat.load > 0)
+    if (strat.load > 3)
       {
 	min = 0;
 	max = STRAT_PLACE_UNLOAD_NB;
@@ -239,7 +239,7 @@ strat_success (void)
     switch (strat.last_decision)
       {
       case STRAT_DECISION_TOTEM:
-	strat.load++;
+	strat.load += 4;
 	/* no break; */
       case STRAT_DECISION_BOTTLE:
 	strat.place[strat.last_place].valid = 0;
@@ -282,6 +282,12 @@ strat_giveup (void)
       case STRAT_DECISION_UNLOAD:
 	assert (0);
       }
+}
+
+void
+strat_coin_taken (void)
+{
+    strat.load++;
 }
 
 void

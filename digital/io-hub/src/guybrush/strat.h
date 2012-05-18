@@ -61,6 +61,10 @@ strat_failure (void);
 void
 strat_giveup (void);
 
+/** Signal a coin has been taken. */
+void
+strat_coin_taken (void);
+
 /** Clamp is dead stop using it. */
 void
 strat_clamp_dead (void);
