@@ -28,6 +28,8 @@
 /*function to put the clamp in the "clam_mode" (i.e putting the global var ctx.calm_mode at 1)*/
 void clamp_calm_mode(int mode);
 
+uint8_t clamp_calm_mode_read(void);
+
 /*function to find out how many times the clamp has been blocked*/
 uint8_t clamp_read_blocked_cpt(void);
 
