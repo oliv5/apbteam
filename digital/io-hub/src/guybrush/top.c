@@ -138,8 +138,10 @@ top_update (void)
       {
 	position_t robot_pos;
 	asserv_get_position (&robot_pos);
-	if (robot_pos.v.x > PG_HOLD_NORTH_X + BOT_SIZE_BACK
-	    && robot_pos.v.x < PG_MIRROR_X (PG_HOLD_NORTH_X + BOT_SIZE_BACK))
+	int16_t limit = robot_pos.v.y < PG_LENGTH - PG_CAPTAIN_ROOM_LENGTH_MM
+	    ? PG_HOLD_NORTH_X + BOT_SIZE_BACK
+	    : PG_CAPTAIN_ROOM_LENGTH_MM + BOT_SIZE_BACK;
+	if (robot_pos.v.x > limit && robot_pos.v.x < PG_MIRROR_X (limit))
 	  {
 	    IO_CLR (OUTPUT_DOOR_OPEN);
 	    IO_SET (OUTPUT_DOOR_CLOSE);
