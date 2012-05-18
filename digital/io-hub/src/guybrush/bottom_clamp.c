@@ -569,7 +569,7 @@ FSM_TRANS (CLAMP_DROP_CD, lower_clamp_rotation_failure, CLAMP_BLOCKED)
 FSM_TRANS (CLAMP_IDLE, tree_detected,CLAMP_BOTTOM_CLAMP_HIDE_POS)
 {
     uint16_t rotation;
-    if (ctx.upper_set_blocked_cpt>1)
+    if (ctx.upper_set_blocked_cpt>0)
     {
         rotation = HIDE_POS_TREE_PLUS;
     }
