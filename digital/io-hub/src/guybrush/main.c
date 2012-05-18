@@ -43,6 +43,7 @@
 #include "output.h"
 #include "radar.h"
 #include "pressure.h"
+#include "logger.h"
 
 #define FSM_NAME AI
 #include "fsm.h"
@@ -139,6 +140,7 @@ main_init (void)
     contact_init ();
     output_init ();
     usdist_init ();
+    logger_init ();
     /* Send some debug aid in case of TWI synchronisation failure.
      * If !Z is sent, but not !z, this means that a slave is missing or is not
      * functioning. */
@@ -315,6 +317,7 @@ main_loop (void)
 	/* Is match over? */
 	if (chrono_is_match_over ())
 	  {
+
 	    /* Open everything. */
 	    IO_SET (OUTPUT_UPPER_CLAMP_OPEN);
 	    IO_CLR (OUTPUT_LOWER_CLAMP_1_CLOSE);
@@ -342,6 +345,7 @@ main_loop (void)
 	    simu_send_pos_report (main_obstacles_pos, main_obstacles_nb, 0);
 	  }
 	pressure_update ();
+	logger_update ();
 	/* Update AI modules. */
 	top_update ();
 	path_decay ();

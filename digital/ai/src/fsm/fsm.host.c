@@ -1143,7 +1143,10 @@ fsm_build_gen_avr_c (fsm_build_t *fsm, uint embedded_strings)
 
     /* Introduction. */
     fprintf (f, "/* This file has been generated, do not edit. */\n\n");
+    fprintf (f, "#include \"common.h\"\n\n");
+    fprintf (f, "#include \"io.h\"\n\n");
     fprintf (f, "#include \"fsm_%s_gen.h\"\n\n", fsm->name);
+    fprintf (f, "#include \"logger.h\"\n\n");
     fprintf (f, "#include \"modules/proto/proto.h\"\n\n");
 
     /* Gen state strings. */
@@ -1357,6 +1360,9 @@ fsm_build_gen_avr_c (fsm_build_t *fsm, uint embedded_strings)
              fsm->name,
              fsm->name,
              fsm->name);
+    fprintf (f, "\t\t\tlogger_log (old_state, e, "
+	     "fsm_%s_active_states[i]);\n",
+	     fsm->name);
     fprintf (f, "\t\t\tproto_send3b ('F', old_state, e, "
 	     "fsm_%s_active_states[i]);\n",
 	     fsm->name);

@@ -6,6 +6,7 @@ PROGS = io_hub
 io_hub_SOURCES = main.c top.c strat.c \
 		 radar_defs.c radar.c path.c move.c \
 		 pressure.c \
+		 logger.avr.c \
 		 init.c fsm.host.c fsm_AI_gen.avr.c fsm_queue.c \
 		 contact.avr.c contact.host.c \
 		 output.c output.host.c \
