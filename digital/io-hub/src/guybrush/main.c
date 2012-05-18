@@ -212,6 +212,8 @@ main_coin_detected_ok (void)
     int16_t limit = robot_pos.v.y < PG_LENGTH - PG_CAPTAIN_ROOM_LENGTH_MM
 	? PG_HOLD_NORTH_X + BOT_SIZE_FRONT
 	: PG_CAPTAIN_ROOM_LENGTH_MM + BOT_SIZE_FRONT;
+    if (main_demo)
+	return 1;
     if (robot_pos.v.x < limit || robot_pos.v.x > PG_MIRROR_X (limit))
 	return 0;
     if (robot_pos.v.y > PG_COIN_QUARTET_Y - 100
