@@ -337,6 +337,7 @@ FSM_TRANS (TOP_CLAMP_ERROR_DECISION, clamp_blocked,
     else
       {
 	strat_clamp_dead ();
+	strat_bad_failure ();
 	FSM_HANDLE (AI, clamp_is_dead);
 	return FSM_NEXT (TOP_CLAMP_ERROR_DECISION, clamp_blocked, dead);
       }

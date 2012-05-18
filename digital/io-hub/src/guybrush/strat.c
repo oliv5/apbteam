@@ -277,6 +277,20 @@ strat_failure (void)
 }
 
 void
+strat_bad_failure (void)
+{
+    switch (strat.last_decision)
+      {
+      default:
+	if (strat.place[strat.last_place].fail_nb < 256 - 20)
+	    strat.place[strat.last_place].fail_nb += 20;
+	break;
+      case STRAT_DECISION_UNLOAD:
+	break;
+      }
+}
+
+void
 strat_giveup (void)
 {
     switch (strat.last_decision)

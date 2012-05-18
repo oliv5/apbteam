@@ -57,6 +57,10 @@ strat_success (void);
 void
 strat_failure (void);
 
+/** Report a really bad failure. */
+void
+strat_bad_failure (void);
+
 /** Report a failure of last decision, never try again. */
 void
 strat_giveup (void);
