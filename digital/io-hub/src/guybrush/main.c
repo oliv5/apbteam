@@ -108,6 +108,9 @@ static uint8_t main_stats_usdist_, main_stats_usdist_cpt_;
 /** Pressure stats counters. */
 static uint8_t main_stats_pressure_, main_stats_pressure_cpt_;
 
+/** Chrono stats. */
+static uint8_t main_stats_chrono_, main_stats_chrono_last_s_;
+
 /** Clamp zero stats. */
 static uint8_t main_stats_clamp_zero_;
 
@@ -383,6 +386,12 @@ main_loop (void)
 	    proto_send1w ('F', pressure_get ());
 	    main_stats_pressure_cpt_ = main_stats_pressure_;
 	  }
+	if (main_stats_chrono_
+	    && main_stats_chrono_last_s_ != chrono_remaining_time () / 1000)
+	  {
+	    main_stats_chrono_last_s_ = chrono_remaining_time () / 1000;
+	    proto_send1b ('C', main_stats_chrono_last_s_);
+	  }
 	if (main_stats_clamp_zero_
 	    && IO_GET (CONTACT_LOWER_CLAMP_ZERO)
 	    != main_stats_clamp_zero_last_io_)
@@ -507,6 +516,14 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
       case c ('F', 1):
 	/* Pressure stats. */
 	main_stats_pressure_ = main_stats_pressure_cpt_ = args[0];
+	break;
+      case c ('C', 1):
+	/* Chrono stats.
+	 * - b: start chrono. */
+	main_stats_chrono_ = 1;
+	main_stats_chrono_last_s_ = 0;
+	if (args[0])
+	    chrono_start ();
 	break;
       case c ('Z', 1):
 	/* Clamp zero stat. */
