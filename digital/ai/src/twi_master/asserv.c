@@ -420,6 +420,19 @@ asserv_set_speed (uint16_t linear_high, uint16_t angular_high,
 }
 
 void
+asserv_set_acc (uint16_t linear, uint16_t angular)
+{
+    uint8_t *buffer = twi_master_get_buffer (TWI_MASTER_ID_ASSERV);
+    buffer[0] = 'p';
+    buffer[1] = 'a';
+    buffer[2] = v16_to_v8 (linear, 1);
+    buffer[3] = v16_to_v8 (linear, 0);
+    buffer[4] = v16_to_v8 (angular, 1);
+    buffer[5] = v16_to_v8 (angular, 0);
+    twi_master_send_buffer (6);
+}
+
+void
 asserv_set_position (int32_t x, int32_t y, int16_t angle)
 {
     x = fixed_mul_f824 (x, asserv_scale_inv);

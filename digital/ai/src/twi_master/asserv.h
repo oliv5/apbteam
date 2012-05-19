@@ -271,6 +271,10 @@ void
 asserv_set_speed (uint16_t linear_high, uint16_t angular_high,
 		  uint16_t linear_low, uint16_t angular_low);
 
+/** Set acceleration. */
+void
+asserv_set_acc (uint16_t linear, uint16_t angular);
+
 /**
  * Set the complete position of the bot.
  * This is an helpful function preventing you from calling multiples other
