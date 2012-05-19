@@ -108,7 +108,9 @@ FSM_STATES (
 	    TOP_BOTTLE_GOING_BACK,
 
 	    /* Going to an unload position. */
-	    TOP_UNLOAD_GOING)
+	    TOP_UNLOAD_GOING,
+	    /* Going back in unload zone. */
+	    TOP_UNLOAD_GOING_BACK)
 
 FSM_START_WITH (TOP_START)
 
@@ -647,13 +649,41 @@ FSM_TRANS (TOP_BOTTLE_APPROACHING, robot_move_failure,
 
 /** UNLOAD */
 
-FSM_TRANS (TOP_UNLOAD_GOING, move_success, TOP_DECISION)
+static void
+top_do_unload (void)
 {
     IO_SET (OUTPUT_DOOR_OPEN);
     IO_CLR (OUTPUT_DOOR_CLOSE);
     strat_success ();
     top.close_door = 1;
-    return FSM_NEXT (TOP_UNLOAD_GOING, move_success);
+}
+
+FSM_TRANS (TOP_UNLOAD_GOING, move_success,
+	   hold, TOP_DECISION,
+	   captain, TOP_UNLOAD_GOING_BACK)
+{
+    if (top.decision_pos.y < PG_LENGTH - PG_CAPTAIN_ROOM_LENGTH_MM)
+      {
+	top_do_unload ();
+	return FSM_NEXT (TOP_UNLOAD_GOING, move_success, hold);
+      }
+    else
+      {
+	asserv_move_linearly (-50);
+	return FSM_NEXT (TOP_UNLOAD_GOING, move_success, captain);
+      }
+}
+
+FSM_TRANS (TOP_UNLOAD_GOING_BACK, robot_move_success, TOP_DECISION)
+{
+    top_do_unload ();
+    return FSM_NEXT (TOP_UNLOAD_GOING_BACK, robot_move_success);
+}
+
+FSM_TRANS (TOP_UNLOAD_GOING_BACK, robot_move_failure, TOP_DECISION)
+{
+    top_do_unload ();
+    return FSM_NEXT (TOP_UNLOAD_GOING_BACK, robot_move_failure);
 }
 
 /** UNLOAD failures. */
