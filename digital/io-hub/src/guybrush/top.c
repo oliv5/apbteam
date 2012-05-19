@@ -234,7 +234,7 @@ top_go_unload (void)
     if (pos.v.y > PG_LENGTH - PG_CAPTAIN_ROOM_LENGTH_MM)
 	pos.a = PG_A_DEG (0);
     else
-	pos.a = PG_A_DEG (70);
+	pos.a = PG_A_DEG (45);
     move_start (pos, 0);
 }
 
@@ -663,12 +663,12 @@ top_do_unload (void)
 }
 
 FSM_TRANS (TOP_UNLOAD_GOING, move_success,
-	   hold, TOP_DECISION,
+	   hold, TOP_UNLOAD_GOING_BACK,
 	   captain, TOP_UNLOAD_GOING_BACK)
 {
     if (top.decision_pos.y < PG_LENGTH - PG_CAPTAIN_ROOM_LENGTH_MM)
       {
-	top_do_unload ();
+	asserv_move_linearly (-100);
 	return FSM_NEXT (TOP_UNLOAD_GOING, move_success, hold);
       }
     else
