@@ -32,7 +32,6 @@
 #include "bottom_clamp.h"
 #include "pressure.h"
 #include "strat.h"
-#include "radar_defs.h"
 
 
 #define FSM_NAME AI
@@ -586,7 +585,6 @@ FSM_TRANS (CLAMP_IDLE, tree_detected,CLAMP_BOTTOM_CLAMP_HIDE_POS)
 
 FSM_TRANS (CLAMP_BOTTOM_CLAMP_HIDE_POS, lower_clamp_rotation_success, CLAMP_UNFOLD_UPPER_SET)
 {
-    radar_def_upper_clamp_moving (1);
     IO_CLR (OUTPUT_UPPER_CLAMP_UP);
     IO_SET (OUTPUT_UPPER_CLAMP_DOWN);
     return FSM_NEXT (CLAMP_BOTTOM_CLAMP_HIDE_POS, lower_clamp_rotation_success);
@@ -602,7 +600,6 @@ FSM_TRANS (CLAMP_BOTTOM_CLAMP_HIDE_POS, lower_clamp_rotation_failure, CLAMP_BLOC
 
 FSM_TRANS (CLAMP_UNFOLD_UPPER_SET, upper_set_down, CLAMP_BOTTOM_CLAMP_READY)
 {
-    radar_def_upper_clamp_moving (0);
     /*Putting the bottom clamp back to ready.*/
     move_needed2(DECALAGE_CD_BAS,FAST_ROTATION,-1);    
     
@@ -691,7 +688,6 @@ FSM_TRANS (CLAMP_BOTTOM_CLAMP_HIDE_POS2, lower_clamp_rotation_failure, CLAMP_BLO
 
 FSM_TRANS_TIMEOUT (CLAMP_RELEASE_ASSERV, TIMEOUT_FREE_ASSERV, CLAMP_FOLD_UPPER_SET)
 {
-    radar_def_upper_clamp_moving (1);
     IO_CLR (OUTPUT_UPPER_CLAMP_DOWN);
     IO_SET (OUTPUT_UPPER_CLAMP_UP);
     return FSM_NEXT_TIMEOUT (CLAMP_RELEASE_ASSERV);
@@ -699,7 +695,6 @@ FSM_TRANS_TIMEOUT (CLAMP_RELEASE_ASSERV, TIMEOUT_FREE_ASSERV, CLAMP_FOLD_UPPER_S
 }
 FSM_TRANS (CLAMP_FOLD_UPPER_SET, upper_set_up, CLAMP_OPEN_UPPER_CLAMPS)
 {
-    radar_def_upper_clamp_moving (0);
     IO_SET (OUTPUT_UPPER_CLAMP_OPEN);
     IO_CLR (OUTPUT_UPPER_CLAMP_IN);
     IO_SET (OUTPUT_UPPER_CLAMP_OUT);
@@ -798,7 +793,6 @@ FSM_TRANS (CLAMP_BOTTOM_CLAMP_BACK,lower_clamp_rotation_failure,CLAMP_BLOCKED)
 
 FSM_TRANS (CLAMP_UNFOLD_UPPER_SET, stop_tree_approach,CLAMP_RELEASE_ASSERV)
 {
-    radar_def_upper_clamp_moving (0);
     ctx.stop_tree_approach = 1;
     return FSM_NEXT (CLAMP_UNFOLD_UPPER_SET, stop_tree_approach);
 

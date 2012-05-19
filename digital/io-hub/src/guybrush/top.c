@@ -40,6 +40,7 @@
 #include "strat.h"
 #include "path.h"
 #include "bottom_clamp.h"
+#include "radar_defs.h"
 
 #include "output_defs.h"
 
@@ -290,6 +291,7 @@ FSM_TRANS_TIMEOUT (TOP_DECISION, 1,
 		   bottle, TOP_BOTTLE_GOING,
 		   unload, TOP_UNLOAD_GOING)
 {
+    radar_def_upper_clamp_moving (1);
     if (FSM_CAN_HANDLE (AI, clamp_unblock))
       {
 	top_chaos_move ();
@@ -311,6 +313,7 @@ FSM_TRANS_TIMEOUT (TOP_DECISION, 1,
 FSM_TRANS (TOP_CLAMP_ERROR_MOVING_DECISION, robot_move_success,
 	   TOP_CLAMP_ERROR_DECISION)
 {
+    radar_def_upper_clamp_moving (1);
     FSM_HANDLE (AI, clamp_unblock);
     return FSM_NEXT (TOP_CLAMP_ERROR_MOVING_DECISION, robot_move_success);
 }
@@ -355,6 +358,7 @@ FSM_TRANS (TOP_CLAMP_ERROR_DECISION, upper_set_is_dead, TOP_DECISION)
 
 FSM_TRANS (TOP_TOTEM_GOING, move_success, TOP_TOTEM_CLEAN_STARTING)
 {
+    radar_def_upper_clamp_moving (0);
     clamp_request (FSM_EVENT (AI, clean_start));
     return FSM_NEXT (TOP_TOTEM_GOING, move_success);
 }
