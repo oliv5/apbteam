@@ -194,7 +194,7 @@ top_chaos_move (void)
       }
     else
       {
-	int16_t dist = ((top.chaos + 3) % 8 + 1) * 100;
+	int16_t dist = ((top.chaos + 3) % 8 + 1) * 10;
 	if (!(top.chaos % 2))
 	    dist = -dist;
 	asserv_move_linearly (dist);
