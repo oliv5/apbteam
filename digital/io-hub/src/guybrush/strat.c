@@ -25,6 +25,7 @@
 #include "common.h"
 #include "strat.h"
 
+#include "contact.h"
 #include "playground_2012.h"
 #include "bot.h"
 #include "path.h"
@@ -262,7 +263,10 @@ strat_success (void)
     switch (strat.last_decision)
       {
       case STRAT_DECISION_TOTEM:
-	strat.load += 4;
+	if (!IO_GET (CONTACT_GOLD_BAR))
+	    strat.load += 4;
+	else
+	    strat.load++;
 	/* no break; */
       case STRAT_DECISION_BOTTLE:
 	strat.place[strat.last_place].valid = 0;
