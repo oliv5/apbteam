@@ -30,7 +30,7 @@
  */
 
 /** Duration of a match in milliseconds, with margin. */
-#define CHRONO_MATCH_DURATION_MS (90000 - 1500)
+#define CHRONO_MATCH_DURATION_MS (90000 - 3500)
 
 /** Start chrono count down. */
 void
