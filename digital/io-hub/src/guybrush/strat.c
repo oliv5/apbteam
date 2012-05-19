@@ -117,6 +117,8 @@ struct strat_t
     vect_t prepared_pos;
     /** Robot content estimation. */
     uint8_t load;
+    /** Number of time the robot unloaded. */
+    uint8_t unload_nb;
     /** Upper clamp is dead. */
     uint8_t upper_clamp_dead;
     /** Places information. */
@@ -210,7 +212,7 @@ strat_place_score (uint8_t i)
     if (strat.upper_clamp_dead
 	&& strat_place[i].decision == STRAT_DECISION_TOTEM)
 	score -= 3000;
-    if (strat.load <= 4
+    if (strat.load <= 4 && strat.unload_nb != 0
 	&& (i == STRAT_PLACE_CAPTAIN0 || i == STRAT_PLACE_CAPTAIN1))
 	score += 2000;
     return score;
@@ -273,6 +275,7 @@ strat_success (void)
 	break;
       case STRAT_DECISION_UNLOAD:
 	strat.load = 0;
+	strat.unload_nb++;
 	if (strat.last_place == STRAT_PLACE_CAPTAIN0
 	    || strat.last_place == STRAT_PLACE_CAPTAIN1)
 	  {
