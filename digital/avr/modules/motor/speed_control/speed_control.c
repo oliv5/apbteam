@@ -58,13 +58,17 @@ speed_control_compute_max_speed_f (int32_t d, int32_t cur_f, int16_t acc_f,
 				   int16_t max)
 {
     int16_t s;
-    int32_t s_f;
+    int32_t d_abs, s_f;
     /* Compute maximum speed in order to be able to brake in time.
      * The "+ 0xff" is to ceil result.
      * s = sqrt (2 * a * d) */
-    s = fixed_sqrt_ui32 ((2 * UTILS_ABS (d) * acc_f + 0xff) >> 8);
+    d_abs = UTILS_ABS (d);
+    s = fixed_sqrt_ui32 ((2 * d_abs * acc_f + 0xff) >> 8);
     /* Apply consign. */
     s = UTILS_MIN (max, s);
+    /* Check it do not overshoot distance. */
+    if (s > d_abs)
+	s = d_abs;
     /* Apply sign. */
     if (d < 0)
 	s = -s;
