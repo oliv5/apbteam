@@ -599,7 +599,6 @@ FSM_TRANS (TOP_BOTTLE_PUSHING, robot_move_success, TOP_BOTTLE_GOING_BACK)
     asserv_stop_motor ();
     strat_success ();
     move_start_noangle (top.decision_pos, 0, 0);
-    strat_prepare ();
     return FSM_NEXT (TOP_BOTTLE_PUSHING, robot_move_success);
 }
 
@@ -609,7 +608,6 @@ FSM_TRANS (TOP_BOTTLE_PUSHING, robot_move_failure, TOP_BOTTLE_GOING_BACK)
     asserv_stop_motor ();
     strat_success ();
     move_start_noangle (top.decision_pos, 0, 0);
-    strat_prepare ();
     return FSM_NEXT (TOP_BOTTLE_PUSHING, robot_move_failure);
 }
 
