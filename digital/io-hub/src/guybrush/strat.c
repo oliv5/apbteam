@@ -265,10 +265,15 @@ strat_success (void)
     switch (strat.last_decision)
       {
       case STRAT_DECISION_TOTEM:
+#ifdef HOST
+	/* Hack for simulator. */
+	strat.load += 4;
+#else
 	if (!IO_GET (CONTACT_GOLD_BAR))
 	    strat.load += 4;
 	else
 	    strat.load++;
+#endif
 	/* no break; */
       case STRAT_DECISION_BOTTLE:
 	strat.place[strat.last_place].valid = 0;
