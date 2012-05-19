@@ -439,14 +439,13 @@ FSM_TRANS (TOP_TOTEM_PUSHING, robot_move_success, TOP_TOTEM_EMPTYING)
 
 FSM_TRANS (TOP_TOTEM_EMPTYING, clamps_ready, TOP_TOTEM_GOING_BACK)
 {
-    strat_success ();
     move_start_noangle (top.decision_pos, ASSERV_BACKWARD, 0);
-    strat_prepare ();
     return FSM_NEXT (TOP_TOTEM_EMPTYING, clamps_ready);
 }
 
 FSM_TRANS (TOP_TOTEM_GOING_BACK, move_success, TOP_TOTEM_CLAMP_UPPING)
 {
+    strat_success ();
     FSM_HANDLE (AI, robot_is_back);
     return FSM_NEXT (TOP_TOTEM_GOING_BACK, move_success);
 }
