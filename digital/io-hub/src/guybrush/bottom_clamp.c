@@ -975,6 +975,8 @@ FSM_TRANS (CLAMP_TURN_FORWARD,lower_clamp_rotation_success,
            back_to_idle,CLAMP_WAIT_BEFORE_IDLE,
            back_to_empty_tree, CLAMP_BOTTOM_CLAMP_HIDE_POS)
 {
+    IO_CLR (OUTPUT_LOWER_CLAMP_1_CLOSE);
+    IO_CLR (OUTPUT_LOWER_CLAMP_2_CLOSE);
     if (ctx.unblocking_upper_set)
     {
         /*Hidding the clamp inside the robot*/
