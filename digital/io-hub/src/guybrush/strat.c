@@ -30,6 +30,7 @@
 #include "path.h"
 
 #include "asserv.h"
+#include "chrono.h"
 
 /*
  * This file implements strategic decisions.
@@ -193,11 +194,18 @@ strat_place_score (uint8_t i)
       }
     if (i < STRAT_PLACE_UNLOAD_NB)
       {
-	if (strat.load > 3)
+	if (strat.load && chrono_remaining_time () < 7000)
+	    score += strat.load * 4000;
+	else if (strat.load && chrono_remaining_time () < 15000)
+	    score += strat.load * 2000;
+	else if (strat.load > 3)
 	    score += 7000;
 	else
 	    score -= 7000;
       }
+    if (strat_place[i].decision == STRAT_DECISION_TOTEM
+	&& chrono_remaining_time () < 20000)
+	score -= 2000;
     if (strat.upper_clamp_dead
 	&& strat_place[i].decision == STRAT_DECISION_TOTEM)
 	score -= 3000;
