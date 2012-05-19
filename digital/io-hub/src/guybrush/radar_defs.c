@@ -47,8 +47,7 @@ uint8_t radar_def_upper_clamp_moving_;
 uint8_t
 radar_valid (vect_t p, uint8_t sensor)
 {
-    if (radar_def_upper_clamp_moving_
-	&& (sensor == RADAR_SENSOR_LEFT || sensor == RADAR_SENSOR_RIGHT))
+    if (radar_def_upper_clamp_moving_ && sensor != RADAR_SENSOR_BACK)
 	return 0;
     return p.x >= RADAR_MARGIN_MM && p.x < PG_WIDTH - RADAR_MARGIN_MM
 	&& p.y >= RADAR_MARGIN_MM && p.y < PG_LENGTH - RADAR_MARGIN_MM
