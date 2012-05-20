@@ -84,7 +84,10 @@ chrono_is_match_over (void)
 uint32_t
 chrono_remaining_time (void)
 {
-    return chrono_tick_left_ * TIMER_PERIOD_MS;
+    if (!chrono_started_)
+	return CHRONO_MATCH_DURATION_MS;
+    else
+	return chrono_tick_left_ * TIMER_PERIOD_MS;
 }
 
 void
