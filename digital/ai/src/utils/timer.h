@@ -62,7 +62,7 @@ uint8_t
 timer_wait (void);
 
 /** Get a tick value, incremented at each tick, never reset. */
-uint8_t
+uint16_t
 timer_get_tick (void);
 
 #endif /* timer_h */

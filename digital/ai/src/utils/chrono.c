@@ -44,7 +44,7 @@
 static uint32_t chrono_tick_left_;
 
 /** Last timer tick value. */
-static uint8_t chrono_last_tick_;
+static uint16_t chrono_last_tick_;
 
 /** Is chrono started? */
 static uint8_t chrono_started_;
@@ -62,8 +62,8 @@ chrono_update (void)
 {
     if (chrono_started_)
       {
-	uint8_t new_tick = timer_get_tick ();
-	uint8_t diff = new_tick - chrono_last_tick_;
+	uint16_t new_tick = timer_get_tick ();
+	uint16_t diff = new_tick - chrono_last_tick_;
 	chrono_last_tick_ = new_tick;
 	if (diff > chrono_tick_left_)
 	    chrono_tick_left_ = 0;

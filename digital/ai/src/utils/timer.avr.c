@@ -33,7 +33,7 @@
 static volatile uint8_t timer_overflow;
 
 /** Incremented when timer overflowed. */
-static volatile uint8_t timer_tick;
+static volatile uint16_t timer_tick;
 
 ISR (TIMER0_OVF_vect)
 {
@@ -79,9 +79,13 @@ timer_wait (void)
     return late;
 }
 
-uint8_t
+uint16_t
 timer_get_tick (void)
 {
-    return timer_tick;
+    uint16_t tick;
+    intr_flags_t flags = intr_lock ();
+    tick = timer_tick;
+    intr_restore (flags);
+    return tick;
 }
 
