@@ -29,9 +29,18 @@
 #define SERVO_ANGLE_MIN 	69
 #define SERVO_ANGLE_MAX 	254
 
+#define SERVO_ANGLE_POSITION_TOLERANCE 	5
+
+#define WAVE_TASK_PERIOD 	15L
+#define SERVO_WAVE_OFFSET 	(uint16_t)6
+
+
 #define SERVO_1_ANGLE_POSITION 			0
+#ifdef LOL_NUMBER_3
 #define SERVO_2_ANGLE_POSITION 			270
-#define SERVO_ANGLE_POSITION_TOLERANCE 	20
+#else
+#define SERVO_2_ANGLE_POSITION 			90
+#endif
 
 
 #define RISING			1
@@ -94,5 +103,14 @@ int8_t servo_get_scanning_sense(TServo_ID servo_id);
 
 /* This function inverses the scanning sense of the servo */
 void servo_inverse_scanning_sense(TServo_ID servo_id);
+
+/* This function generates a wave scanning */
+void servo_waveform_scanning(TServo_ID servo_id, uint8_t average_value);
+
+/* Wave Task */
+void servo_wave_task(void);
+
+/* Start wave task */
+void servo_start_wave_task(void);
 
 #endif

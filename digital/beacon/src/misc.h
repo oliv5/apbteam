@@ -32,4 +32,7 @@ void reset_avr(void);
 /* This function simulates the jack's state and send it over the air */
 void jack_on_off(void);
 
+/* This function sends the jack status to the slave beacons*/
+void jack_update_status(uint8_t value);
+
 #endif

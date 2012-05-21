@@ -28,7 +28,7 @@
 #include "calibration.h"
 #include "servo.h"
 #include "motor.h"
-
+#include "codewheel.h"
 
 HAL_AppTimer_t calibrationTimer;		// TIMER descripor used by the DEBUG task
 calibration_s calibration;
@@ -45,6 +45,7 @@ void calibration_init_structure(void)
 /* This function starts the calibration task */
 void calibration_start_task(void)
 {
+	calibration.state = CALIBRATION_INIT;
 	calibrationTimer.interval = CALIBRATION_FAST_TASK_PERIOD;
 	calibrationTimer.mode     = TIMER_REPEAT_MODE;
 	calibrationTimer.callback = calibration_task;
@@ -59,7 +60,6 @@ void calibration_stop_task(void)
 {
 	HAL_StopAppTimer(&calibrationTimer);
 	motor_stop();
-	calibration.state = CALIBRATION_INIT;
 }
 
 /* This function starts or stops the calibration task depending on the current state */
@@ -90,8 +90,6 @@ void calibration_change_task_frequency(uint32_t frequency)
 void calibration_task(void)
 {	
 	TServo_ID servo;
-	static uint16_t top = 0;
-	static uint16_t bottom = 0;
 
 	/* Select which servo need to be calibrated */
 	if(servo_get_state(SERVO_1) == servo_get_state(SERVO_2))
@@ -110,20 +108,16 @@ void calibration_task(void)
 		case CALIBRATION_FAST_SCANNING:
 			
 			/* Check if the laser catchs something */
-			if(calibration_get_laser_flag() == CLEAR) 
-			{
-				/* Nothing appended, update the state and continue scanning */
-				servo_set_state(servo,SERVO_SCANNING_FAST_IN_PROGRESS);
-				calibration_scanning(servo);
-			}
-			else
+			if(calibration_get_laser_flag() == servo)
 			{
 				/* Clear the laser flag */
 				calibration_set_laser_flag(CLEAR);
 				
 				/* Laser detected the aim, reset the servo with the previous value and update the servo status */
-				servo_set_value(servo,servo_get_value(servo)+servo_get_scanning_sense(servo)*FAST_SCANNING_OFFSET);
+				servo_set_value(servo,servo_get_value(servo) - servo_get_scanning_sense(servo)*FAST_SCANNING_OFFSET);
 				servo_set_state(servo,SERVO_SCANNING_FAST_FINISHED);
+				
+				uprintf("servo[%d] FAST finished\r\n",servo);
 				
 				if((servo_get_state(SERVO_1) == SERVO_SCANNING_FAST_FINISHED) && (servo_get_state(SERVO_2) == SERVO_SCANNING_FAST_FINISHED))
 				{
@@ -134,44 +128,50 @@ void calibration_task(void)
 					calibration_change_task_frequency(CALIBRATION_SLOW_TASK_PERIOD);
 				}
 			}
+			else
+			{
+				/* Nothing appended, update the state and continue scanning */
+				servo_set_state(servo,SERVO_SCANNING_FAST_IN_PROGRESS);
+				calibration_scanning(servo);
+			}
 			break;
 			
 		case CALIBRATION_SLOW_SCANNING:
 			
 			/* Check if the laser catched something */
-			if(calibration_get_laser_flag() == CLEAR)
-			{
-				/* Nothing appended, update the state and continue scanning */
-				calibration_scanning(servo);
-				servo_set_state(servo,SERVO_SCANNING_SLOW_IN_PROGRESS);
-			}
-			else
+			if(calibration_get_laser_flag() == servo)
 			{
 				/* Clear the laser flag */
 				calibration_set_laser_flag(CLEAR);
 				
-				/* Check if it TOP AIM was already found */
-				if(top == 0)
+				/* Laser detected the aim, reset the servo with the previous value and update the servo status */
+				servo_set_value(servo,servo_get_value(servo) + servo_get_scanning_sense(servo)*10);
+				servo_set_state(servo,SERVO_SCANNING_SLOW_FINISHED);
+				
+				uprintf("servo[%d] SLOW finished\r\n",servo);
+				
+				if((servo_get_state(SERVO_1) == SERVO_SCANNING_SLOW_FINISHED) && (servo_get_state(SERVO_2) == SERVO_SCANNING_SLOW_FINISHED))
 				{
-					/* If no save the value */
-					top = servo_get_value(servo);
+					/* If both servo have finished FAST SCANNING go to SLOW SCANNING state */
+					calibration.state = SCANNING_STATE_CALIBRATED;
+#ifdef LOL_NUMBER_1					
+					codewheel_set_rebase_offset(496);
+#elif LOL_NUMBER_2
+					codewheel_set_rebase_offset(3);
+#elif LOL_NUMBER_3
+					codewheel_set_rebase_offset(CODEWHEEL_CPR*3/4);
+#endif
+					codewheel_set_state(CODEWHEEL_REQUEST_REBASE);
+					calibration_stop_task();
+					servo_start_wave_task();
+					uprintf("Calibration finished\r\n");
 				}
-				else
-				{
-					/* If top TOP AIM was already found, avarage the TOP & BOTTOM value and update the servo status */
-					bottom = servo_get_value(servo);
-					servo_set_value(servo,(top+bottom)/2);
-					servo_set_state(servo,SERVO_SCANNING_SLOW_FINISHED);
-					top = 0;
-					bottom = 0;
-					
-					/* If both servo have finished FAST SCANNING go to SLOW SCANNING*/
-					if((servo_get_state(SERVO_1) == SERVO_SCANNING_SLOW_FINISHED) && (servo_get_state(SERVO_2) == SERVO_SCANNING_SLOW_FINISHED))
-					{
-						calibration.state = SCANNING_STATE_CALIBRATED;
-						calibration_stop_task();
-					}
-				}
+			}
+			else
+			{
+				/* Nothing appended, update the state and continue scanning */
+				calibration_scanning(servo);
+				servo_set_state(servo,SERVO_SCANNING_SLOW_IN_PROGRESS);
 			}
 			break;
 		case SCANNING_STATE_CALIBRATED:

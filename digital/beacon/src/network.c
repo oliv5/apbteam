@@ -30,7 +30,9 @@
 #include "network.h"
 #include "debug_avr.h"
 #include "led.h"
-
+#include "motor.h"
+#include "position.h"
+#include "misc.h"
 
 // Endpoint parameters
 static SimpleDescriptor_t simpleDescriptor = { APP_ENDPOINT, APP_PROFILE_ID, 1, 1, 0, 0 , NULL, 0, NULL };
@@ -120,7 +122,7 @@ void ZDO_StartNetworkConf(ZDO_StartNetworkConf_t* confirmInfo)
 		config.clusterId = APP_CLUSTER_ID;						// Desctination cluster ID
 		config.srcEndpoint = APP_ENDPOINT;						// Source endpoint
 		config.asdu = &zigbit_tx_buffer.message;							// application message pointer
-		config.asduLength = 3 + sizeof(zigbit_tx_buffer.message.messageId);		// actual application message length
+		config.asduLength = 4 + sizeof(zigbit_tx_buffer.message.messageId);		// actual application message length
 		config.txOptions.acknowledgedTransmission = 0;				// Acknowledged transmission enabled
 		config.radius = 0;										// Use maximal possible radius
 		config.APS_DataConf = APS_DataConf;						// Confirm handler    Z
@@ -144,7 +146,6 @@ void network_leave(void)
 	ZDO_MgmtLeaveReq_t *zdpLeaveReq = &leaveReq.req.reqPayload.mgmtLeaveReq;
 	APS_UnregisterEndpointReq_t unregEndpoint;
 
-	appState = APP_NETWORK_LEAVING_STATE;
 
 	unregEndpoint.endpoint = endpointParams.simpleDescriptor->endpoint;
 	APS_UnregisterEndpointReq(&unregEndpoint);
@@ -164,9 +165,6 @@ void network_leave(void)
 /* Leave network response */
 void zdpLeaveResp(ZDO_ZdpResp_t *zdpResp)
 {
-	// Try to rejoin the network
-	appState = APP_NETWORK_JOIN_REQUEST;
-
 	(void)zdpResp;
 }
 
@@ -199,11 +197,7 @@ void ZDO_MgmtNwkUpdateNotf(ZDO_MgmtNwkUpdateNotf_t *nwkParams)
 			break;
 		case ZDO_NETWORK_LOST_STATUS:
 		{
-			APS_UnregisterEndpointReq_t unregEndpoint;
-			unregEndpoint.endpoint = endpointParams.simpleDescriptor->endpoint;
-			APS_UnregisterEndpointReq(&unregEndpoint);
-			
-			// try to rejoin the network
+			network_leave();
 			appState = APP_NETWORK_JOIN_REQUEST;
 			break;
 		}
@@ -242,20 +236,25 @@ int8_t network_get_rssi(void)
 /* This function must be used to send data through zigbee network */
 void network_send_data(TMessage_type type, uint16_t data)
 {
-	/* Message type*/
-	zigbit_tx_buffer.message.data[NETWORK_MSG_TYPE_FIELD] = type;
 	
-	/* Source address */
-	zigbit_tx_buffer.message.data[NETWORK_MSG_ADDR_FIELD] = CS_NWK_ADDR;
-	
-	/* LSB Data */
-	zigbit_tx_buffer.message.data[NETWORK_MSG_DATA_LSB_FIELD] = data;
-	
-	/* MSB Data */
-	zigbit_tx_buffer.message.data[NETWORK_MSG_DATA_MSB_FIELD] = data >> 8;
-	
-	/* Bitcloud sending request */
-	APS_DataReq(&config);
+	if(network_get_status() == APP_NETWORK_JOINED_STATE)
+	{
+		led_inverse(2);
+		/* Message type*/
+		zigbit_tx_buffer.message.data[NETWORK_MSG_TYPE_FIELD] = type;
+		
+		/* Source address */
+		zigbit_tx_buffer.message.data[NETWORK_MSG_ADDR_FIELD] = CS_NWK_ADDR;
+		
+		/* LSB Data */
+		zigbit_tx_buffer.message.data[NETWORK_MSG_DATA_LSB_FIELD] = data;
+		
+		/* MSB Data */
+		zigbit_tx_buffer.message.data[NETWORK_MSG_DATA_MSB_FIELD] = data >> 8;
+		
+		/* Bitcloud sending request */
+		APS_DataReq(&config);
+	}
 }
 
 
@@ -269,6 +268,7 @@ void APS_DataConf(APS_DataConf_t* confInfo)
 		if (MAX_RETRIES_BEFORE_REJOIN == retryCounter)
 		{
 			network_leave();
+			appState = APP_NETWORK_JOIN_REQUEST;
 		}
 		else
 		{
@@ -284,20 +284,38 @@ void APS_DataConf(APS_DataConf_t* confInfo)
 /* APS data indication handler */
 void APS_DataIndication(APS_DataInd_t* indData)
 {
+	uint8_t beacon = 0;
 	uint16_t angle = 0;
+	uint16_t angle_id = 0;
 	AppMessage_t *appMessage = (AppMessage_t *) indData->asdu;
 	
 	// Data received indication
 	switch(appMessage->data[NETWORK_MSG_TYPE_FIELD])
 	{
 		case NETWORK_JACK_STATE:
+			motor_start_stop_control();
 			break;
 		case NETWORK_OPPONENT_NUMBER:
 			break;
 		case NETWORK_ANGLE_RAW:
-			angle = codewheel_convert_angle_raw2degrees((appMessage->data[NETWORK_MSG_DATA_MSB_FIELD]<<8) + appMessage->data[NETWORK_MSG_DATA_LSB_FIELD]);
+			
+			/* Beacon address */
+			beacon = appMessage->data[NETWORK_MSG_ADDR_FIELD];
+			
+			/* Angle ID */
+			angle_id = appMessage->data[NETWORK_MSG_DATA_MSB_FIELD] >> 1;
+			
+			/* Angle value */
+			angle = ((appMessage->data[NETWORK_MSG_DATA_MSB_FIELD]&0x01) << 8) + appMessage->data[NETWORK_MSG_DATA_LSB_FIELD];
+			
+			/* For debug */
+			uprintf("[%d] angle[%d] = %f\r\n",beacon,angle_id,codewheel_convert_angle_raw2degrees(angle));
+			
 			/* New angle is avaiiable, update position */
-// 			update_position(appMessage->data[NETWORK_MSG_ADDR_FIELD],appMessage->data[NETWORK_MSG_DATA_FIELD]);
+			update_position(beacon,angle_id,codewheel_convert_angle_raw2radians(angle));
+			break;
+		case NETWORK_RESET:
+			reset_avr();
 			break;
 		default:
 			uprintf("Unknown data type received = %x\r\n",appMessage->data[NETWORK_MSG_TYPE_FIELD]);

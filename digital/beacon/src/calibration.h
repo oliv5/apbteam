@@ -28,16 +28,17 @@
 
 #include "servo.h"
 
-#define CALIBRATION_FAST_TASK_PERIOD 		11L
-#define CALIBRATION_SLOW_TASK_PERIOD 	110L
+#define CALIBRATION_FAST_TASK_PERIOD 		22L
+#define CALIBRATION_SLOW_TASK_PERIOD 	22L
 
-#define FAST_SCANNING_OFFSET 		10
+#define FAST_SCANNING_OFFSET 		20
 #define SCANNING_STEP 			1
 
 typedef enum
 {
-	CLEAR,
-	SET
+	SET_SERVO_1,
+	SET_SERVO_2,
+	CLEAR
 } TLaser_flag_type;
 
 typedef enum

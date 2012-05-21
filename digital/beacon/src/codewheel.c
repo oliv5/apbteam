@@ -23,10 +23,13 @@
  *
  * }}} */
 
-#include <types.h>
 #include <avr/interrupt.h>
+#include <types.h>
+#include <math.h>
 #include "debug_avr.h"
 #include "codewheel.h"
+#include "laser.h"
+#include "network.h"
 
 codewheel_s codewheel;
 
@@ -92,6 +95,12 @@ float codewheel_convert_angle_raw2degrees(uint16_t raw_value)
 	return  (float)raw_value*(float)360/(float)CODEWHEEL_CPR;
 }
 
+/* This function converts the angle value from row format to radians */
+float codewheel_convert_angle_raw2radians(uint16_t raw_value)
+{
+	return  (float)raw_value*(float)(2*M_PI)/(float)CODEWHEEL_CPR;
+}
+
 /* Codewheel complete turn IRQ vector for CodeWheel*/
 ISR(TIMER3_COMPA_vect)
 {
@@ -99,7 +108,11 @@ ISR(TIMER3_COMPA_vect)
 	{
 		OCR3A = codewheel_get_rebase_offset();
 		codewheel_set_state(CODEWHEEL_REBASED);
+		uprintf("Rebased\r\n");
 	}	
 	else
-		OCR3A = CODEWHEEL_CPR;	
+	{
+		OCR3A = CODEWHEEL_CPR;
+	}
+	laser_reset_angle_id();
 }

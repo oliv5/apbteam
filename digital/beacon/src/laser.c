@@ -28,7 +28,9 @@
 #include "debug_avr.h"
 #include "laser.h"
 #include "servo.h"
+#include "network.h"
 #include "codewheel.h"
+#include "calibration.h"
 
 laser_s laser;
 
@@ -37,6 +39,7 @@ void laser_init(void)
 {	
 	/* Init laser structiure */
 	laser_set_angle(0);
+	laser_reset_angle_id();
 	
 	/* Configure Input compare interrupts for Laser Interrupt*/
 	TCCR3B |= (1<<ICNC3)|(1<<ICES3);
@@ -85,14 +88,7 @@ void laser_inhibit_angle_confirmation(void)
 /* This function configures the AVR OC3B interrupt that will send the angle LASER_SENDING_OFFSET after the latest rising edge */
 void laser_engage_angle_confirmation(uint16_t value)
 {
-	if(value > CODEWHEEL_CPR - LASER_CONFIRMATION_OFFSET)
-	{
-		OCR3B = LASER_CONFIRMATION_OFFSET - (CODEWHEEL_CPR - value);
-	}
-	else
-	{
-		OCR3B = value + LASER_CONFIRMATION_OFFSET;
-	}
+	OCR3B = (value + LASER_CONFIRMATION_OFFSET)%CODEWHEEL_CPR;
 	
 	/* Enable interrupt */
 	TIMSK3 |= (1<<OCIE3B);
@@ -119,35 +115,53 @@ void laser_set_angle(uint16_t angle)
 	laser.angle = angle;
 }
 
+/* This function resets the angle id variable */
+void laser_reset_angle_id(void)
+{
+	laser.angle_id = 1;
+}
 
 /* Zigbee sending IRQ vector */
 ISR(TIMER3_COMPB_vect)
 {
+	uint16_t angle_to_send;
+	
+	/*  For debug */
+	uprintf("angle[degree] = %f  ---   angle[raw] = %d\r\n",laser_get_angle_degree(),laser_get_angle_raw());
+	
 	if(calibration_get_state() != SCANNING_STATE_CALIBRATED)
 	{
 		if(codewheel_get_state() == CODEWHEEL_INIT)
 		{
 			codewheel_set_rebase_offset(laser_get_angle_raw());
 			codewheel_set_state(CODEWHEEL_REQUEST_REBASE);
-			calibration_set_laser_flag(SET);
 		}
 		else
 		{
 			/* If mire 1 is spotted */
-			if(((laser_get_angle_degree() <= SERVO_1_ANGLE_POSITION + SERVO_ANGLE_POSITION_TOLERANCE) && (laser_get_angle_degree() >= 360 - SERVO_ANGLE_POSITION_TOLERANCE)) && ((servo_get_state(SERVO_1) == SERVO_SCANNING_FAST_IN_PROGRESS) || (servo_get_state(SERVO_1) == SERVO_SCANNING_SLOW_IN_PROGRESS)))
+			if(((laser_get_angle_degree() <= SERVO_1_ANGLE_POSITION + SERVO_ANGLE_POSITION_TOLERANCE) || (laser_get_angle_degree() >= 360 - SERVO_ANGLE_POSITION_TOLERANCE)) && ((servo_get_state(SERVO_1) == SERVO_SCANNING_FAST_IN_PROGRESS) || (servo_get_state(SERVO_1) == SERVO_SCANNING_SLOW_IN_PROGRESS)))
 			{
-				calibration_set_laser_flag(SET);
+				calibration_set_laser_flag(SET_SERVO_1);
 			}
 			/* If mire 2 is spotted */
 			else if(((laser_get_angle_degree() <= SERVO_2_ANGLE_POSITION + SERVO_ANGLE_POSITION_TOLERANCE) && (laser_get_angle_degree() >= SERVO_2_ANGLE_POSITION - SERVO_ANGLE_POSITION_TOLERANCE)) && ((servo_get_state(SERVO_2) == SERVO_SCANNING_FAST_IN_PROGRESS) || (servo_get_state(SERVO_2) == SERVO_SCANNING_SLOW_IN_PROGRESS)))
 			{
-				calibration_set_laser_flag(SET);
+				calibration_set_laser_flag(SET_SERVO_2);		
 			}
 		}
 	}
 	else
 	{
-		// TODO: Send  angle
+		angle_to_send = laser_get_angle_raw() + (laser.angle_id << 9);
+#ifdef LOL_NUMBER_2
+		angle_to_send = (CODEWHEEL_CPR/4 - laser_get_angle_raw()) + (laser.angle_id << 9);
+#endif
+		network_send_data(NETWORK_ANGLE_RAW,angle_to_send);
+		if((laser_get_angle_degree() > 30) && (laser_get_angle_degree() < 70))
+		{
+			uprintf("angle[%d] = %f\r\n",laser.angle_id,laser_get_angle_degree());
+			laser.angle_id++;
+		}
 	}
 	
 	/* Disable the interrupt */
@@ -159,6 +173,7 @@ ISR(TIMER3_COMPB_vect)
 ISR(TIMER3_CAPT_vect)
 {
 	static uint16_t virtual_angle = 0;
+	uint16_t icr3_temp = ICR3;
 	TLaser_edge_type current_edge;
 	
 	/* Check which kind of edge triggered the interrupt */
@@ -171,29 +186,44 @@ ISR(TIMER3_CAPT_vect)
 	{
 		/* First rising edge of a reflector */
 		case LASER_FIRST_RISING_EDGE:
-			virtual_angle = ICR3;
+			virtual_angle = icr3_temp;
 			break;
 			
 		/* Common rising edge of a reflector  */
 		case LASER_RISING_EDGE:
 			
 			/* Recompute the angle value */
-			virtual_angle = (virtual_angle + ICR3) / 2;
+			if(ICR3 < virtual_angle)
+			{
+				virtual_angle = ((virtual_angle + icr3_temp + CODEWHEEL_CPR) / 2)%(CODEWHEEL_CPR+1);
+			}
+			else
+			{
+				virtual_angle = (virtual_angle + icr3_temp) / 2;
+			}
 			break;
 			
 		/* Falling edge detected */
 		case LASER_FALLING_EDGE:
 			
 			/* Recompute the angle value */
-			virtual_angle = (virtual_angle + ICR3) / 2;
-			/* UseI ICR3 for now*/
-			virtual_angle = ICR3;
+			if(ICR3 < virtual_angle)
+			{
+				virtual_angle = ((virtual_angle + icr3_temp + CODEWHEEL_CPR) / 2)%(CODEWHEEL_CPR+1);
+			}
+			else
+			{
+				virtual_angle = (virtual_angle + icr3_temp) / 2;
+			}
+			
+			/* For now we use directly ICR3 */
+			virtual_angle = icr3_temp;
 			
 			/* It's a falling edge so potentially current_angle could be a real one */
 			laser_set_angle(virtual_angle);
 			
 			/* Start virtual angle confirmation */
-			laser_engage_angle_confirmation(ICR3);
+			laser_engage_angle_confirmation(icr3_temp);
 			break;
 			
 		default:

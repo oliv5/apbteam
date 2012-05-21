@@ -1,5 +1,5 @@
-/* recovery.h */
-/* Beacon recovery mode. {{{
+/* twi_specific.h */
+/* twi specific funtion. {{{
  *
  * Copyright (C) 2012 Florent Duchon
  *
@@ -23,23 +23,46 @@
  *
  * }}} */
 
-#ifndef _RECOVERY_H
-#define _RECOVERY_H
+#ifndef _TWI_SPECIFIC_H
+#define _TWI_SPECIFIC_H
 
-#include "position.h"
+#define TWI_TASK_PERIOD 	4L
 
-#define MAX_POINT_RECOVERY  					100
-#define RECOVERY_TRICKY_THRESHOLD  			MAX_POINT_RECOVERY/3
 
-/* Status returns */
-typedef enum 
+typedef enum
 {
-	RECOVERY_IN_PROGRESS,
-	RECOVERY_FINISHED,
-	RECOVERY_IGNORE_ANGLE_NEXT_TIME
-} TRecoveryStatus;
+	TWI_RX_CRC_FIELD,
+	TWI_RX_SEQ_FIELD,
+	TWI_RX_JACK_FIELD,
+	TWI_RX_NB_ADV_FIELD,
+	TWI_RX_X_MSB_FIELD,
+	TWI_RX_X_LSB_FIELD,
+	TWI_RX_Y_MSB_FIELD,
+	TWI_RX_Y_LSB_FIELD
+} TTWI_RX_field;
 
-/* This function is used to calculate all obstacle positions from sractch */
-TRecoveryStatus recovery(coord_s * new_point,opponent_s result[MAX_OBSTACLE]);
+typedef enum
+{
+	TWI_TX_CRC_FIELD,
+	TWI_TX_RFU1_FIELD,
+	TWI_TX_RFU2_FIELD,
+	TWI_TX_SEQ_FIELD,
+	TWI_TX_X1_MSB_FIELD,
+	TWI_TX_X1_LSB_FIELD,
+	TWI_TX_Y1_MSB_FIELD,
+	TWI_TX_Y1_LSB_FIELD,
+	TWI_TX_TRUST1_FIELD,
+	TWI_TX_X2_MSB_FIELD,
+	TWI_TX_X2_LSB_FIELD,
+	TWI_TX_Y2_MSB_FIELD,
+	TWI_TX_Y2_LSB_FIELD,
+	TWI_TX_TRUST2_FIELD
+} TTWI_TX_field;
+
+/* This function manages the TWI RX/RX transferts */
+void twi_task(void);
+
+/* Initialisze specific TWI */
+void twi_init_specific(void);
 
 #endif

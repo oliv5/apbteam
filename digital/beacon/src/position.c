@@ -23,6 +23,7 @@
  *
  * }}} */
 
+#include <stdint.h>
 #include "position.h"
 #include "debug_simu.h"
 #include "recovery.h"
@@ -34,7 +35,7 @@ beacon_s beacon[MAX_BEACON+1];
 opponent_s opponent[MAX_OBSTACLE+1];
 
 /* This function is used to initialize all needed structures */
-void init_struct(void)
+void position_init_struct(void)
 {
 	int i = 0;
 	int j = 0;
@@ -55,18 +56,19 @@ void init_struct(void)
 	}
 }
 
-int update_position(int beaconID, int angleID, double angle)
+/* This function update the opponent position when a new angle is avalaible */
+int update_position(uint16_t beaconID, uint16_t angleID, float angle)
 {
-	static int last_ID[2] = {0};
-	int last_valid_id = 0;
-	int which_formula = 0;	
+	static uint16_t last_ID[2] = {0};
+	uint16_t last_valid_id = 0;
+	uint16_t which_formula = 0;	
 	coord_s temp_position[MAX_TEMP_POSITION];
-	int i = 0;
+	uint16_t i = 0;
 	
-	int formula_status = 0;
-	int global_status = 0;
-	int update_status = UPDATE_OBSTACLE_NOT_FOUND;
-	int recovery_status = 0;
+	uint16_t formula_status = 0;
+	uint16_t global_status = 0;
+	uint16_t update_status = UPDATE_OBSTACLE_NOT_FOUND;
+	uint16_t recovery_status = 0;
 	
 	DEBUG_POSITION("Update_position with beaconID = %d and angleID = %d and angle = %f\n",(int)beaconID,(int) angleID, (double)angle);
 	DEBUG_POSITION("last_ID[0]  = %d  last_ID[1]  = %d\n",(int)last_ID[0],(int)last_ID[1]);
@@ -152,4 +154,26 @@ int update_position(int beaconID, int angleID, double angle)
 		last_ID[0] = beaconID;
 	}
 	return 0;
+}
+
+/* This function returns the requested coord according to the opponent number */
+int16_t position_get_coord(TOpponent_ID id, TCoord_type type)
+{
+	switch(type)
+	{
+		case X:
+			return opponent[id].x;
+			break;
+		case Y:
+			return opponent[id].y;
+			break;
+		default:
+			return 0;
+	}
+}
+
+/* This function returns the trust according to opponent number */
+int8_t position_get_trust(TOpponent_ID id)
+{
+	return opponent[id].trust;
 }

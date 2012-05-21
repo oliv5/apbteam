@@ -26,7 +26,9 @@
 #ifndef _POSITION_H
 #define _POSITION_H
 
-#define MAX_OBSTACLE 		2
+#include <stdint.h>
+
+#define MAX_OBSTACLE 		1
 #define MAX_BEACON			3
 #define MAX_TEMP_POSITION	MAX_OBSTACLE * 2
 #define OBSTACLE_RADIUS		100
@@ -38,21 +40,31 @@ typedef enum{
 	POSITION_IGNORE_ANGLE
 } TPositionStatus;
 
+typedef enum{
+	OPPONENT_1 = 1,
+	OPPONENT_2
+} TOpponent_ID;
+
+typedef enum{
+	X,
+	Y
+} TCoord_type;
+
 /* Structures definition */
 
 /* Beacon Structure */
 typedef struct
 {
-	int angleNumber;					
+	uint16_t angleNumber;					
 	float angle[MAX_OBSTACLE+1];
 }beacon_s;
 
 /* Obstacle structure */
 typedef struct
 {
-	int x;
-	int y;
-	int trust;
+	int16_t x;
+	int16_t y;
+	int8_t trust;
 }opponent_s;
 
 /* Coordinates structure */
@@ -71,6 +83,15 @@ typedef struct
 }recovery_s;
 
 /* This function is used to initialize all needed structures */
-void init_struct(void);
+void position_init_struct(void);
+
+/* This function update the opponent position when a new angle is avalaible */
+int update_position(uint16_t beaconID, uint16_t angleID, float angle);
+
+/* This function returns the requested coord according to the opponent number */
+int16_t position_get_coord(TOpponent_ID id, TCoord_type type);
+
+/* This function returns the trust according to opponent number */
+int8_t position_get_trust(TOpponent_ID id);
 
 #endif

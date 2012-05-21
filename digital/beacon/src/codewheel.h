@@ -65,4 +65,7 @@ void codewheel_set_rebase_offset(uint16_t offset);
 /* This function converts the angle value from row format to degrees */
 float codewheel_convert_angle_raw2degrees(uint16_t raw_value);
 
+/* This function converts the angle value from row format to radians */
+float codewheel_convert_angle_raw2radians(uint16_t raw_value);
+
 #endif
