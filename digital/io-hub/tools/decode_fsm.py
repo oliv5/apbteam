@@ -31,7 +31,7 @@ def parse_proto(states, events):
                 old = states[old]
                 event = events[event]
                 new = states[new]
-            except 1:
+            except KeyError:
                 print "unknown transition"
             else:
                 print "%s -> %s -> %s" % (old, event, new)
