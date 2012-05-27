@@ -71,7 +71,7 @@ beacon_status_cb (uint8_t *status)
 void
 beacon_on (uint8_t on_off)
 {
-    beacon.on = on_off;
+    beacon.on = !!on_off;
 }
 
 void
