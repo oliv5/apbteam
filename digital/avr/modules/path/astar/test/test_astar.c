@@ -125,6 +125,20 @@ main (int argc, const char **argv)
       {
 	printf ("failure\n");
       }
+    /* Print every nodes path weight. */
+    printf ("\n");
+    astar_dijkstra_prepare (nodes, test_width * test_height, initial, goal);
+    for (y = 0; y < test_height; y++)
+      {
+	printf ("///");
+	for (x = 0; x < test_width; x++)
+	  {
+	    uint16_t w = astar_dijkstra_finish
+		(nodes, test_width * test_height, y * test_width + x);
+	    printf (" %5d", (int16_t) w);
+	  }
+	printf ("\n");
+      }
     return 0;
 }
 
@@ -147,6 +161,8 @@ test_neighbor_callback (uint8_t node, struct astar_neighbor_t *neighbors)
 	y = node / test_width;
     if (ASTAR_DEBUG)
 	printf ("neighbors %d, %d\n", x, y);
+    if (test_map[node] == 'X')
+	return 0;
     int neighbors_nb = 0;
     int i;
     for (i = 0; i < (int) UTILS_COUNT (n); i++)

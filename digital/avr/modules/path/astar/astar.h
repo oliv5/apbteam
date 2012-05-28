@@ -92,4 +92,30 @@ uint8_t
 astar (struct astar_node_t *nodes, uint8_t nodes_nb, uint8_t initial,
        uint8_t goal);
 
+/** Not A* algorithm, to be used when a large number of goals must be tested.
+ * - nodes: array of all nodes.
+ * - nodes_nb: number of nodes.
+ * - initial: initial node index.
+ * - goal: goal node index, this node is not ready yet.
+ *
+ * This function will prepare nodes so that a large number of goal can be
+ * tested using the astar_dijkstra_finish function.  The goal node is never
+ * inspected as it is not supposed to be ready yet.
+ *
+ * This is not using the A* algorithm, but put here anyway as it uses the same
+ * structures and callbacks. */
+void
+astar_dijkstra_prepare (struct astar_node_t *nodes, uint8_t nodes_nb,
+			uint8_t initial, uint8_t goal);
+
+/** Not A* algorithm, to be called after astar_dijkstra_prepare to get the
+ * weight of the path to the goal node in a efficient way when a large number
+ * of goals must be tested.
+ * - nodes: array of all nodes.
+ * - nodes_nb: number of nodes.
+ * - goal: goal node index. */
+uint16_t
+astar_dijkstra_finish (struct astar_node_t *nodes, uint8_t nodes_nb,
+		       uint8_t goal);
+
 #endif /* astar_h */
