@@ -82,7 +82,7 @@ astar (struct astar_node_t *nodes, uint8_t nodes_nb, uint8_t initial,
 	    if (nodes[neighbor].score == ASTAR_NODE_SCORE_CLOSED)
 		continue;
 	    /* See if our lowest_node is better to arrive to this neighbor
-	     * node (node not considered yet, of new score is better).  Note
+	     * node (node not considered yet, or new score is better).  Note
 	     * that due to the score assigned to unvisited nodes, there is
 	     * only one test. */
 	    uint16_t tentative_score = lowest_score + neighbors[i].weight;
