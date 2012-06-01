@@ -111,7 +111,9 @@ FSM_STATES (
 	    /* Going to an unload position. */
 	    TOP_UNLOAD_GOING,
 	    /* Going back in unload zone. */
-	    TOP_UNLOAD_GOING_BACK)
+	    TOP_UNLOAD_GOING_BACK,
+	    /* Unloading, waiting for elements to fall. */
+	    TOP_UNLOADING)
 
 FSM_START_WITH (TOP_START)
 
@@ -678,16 +680,21 @@ FSM_TRANS (TOP_UNLOAD_GOING, move_success,
       }
 }
 
-FSM_TRANS (TOP_UNLOAD_GOING_BACK, robot_move_success, TOP_DECISION)
+FSM_TRANS (TOP_UNLOAD_GOING_BACK, robot_move_success, TOP_UNLOADING)
 {
     top_do_unload ();
     return FSM_NEXT (TOP_UNLOAD_GOING_BACK, robot_move_success);
 }
 
-FSM_TRANS (TOP_UNLOAD_GOING_BACK, robot_move_failure, TOP_DECISION)
+FSM_TRANS (TOP_UNLOAD_GOING_BACK, robot_move_failure, TOP_UNLOADING)
 {
     top_do_unload ();
     return FSM_NEXT (TOP_UNLOAD_GOING_BACK, robot_move_failure);
+}
+
+FSM_TRANS_TIMEOUT (TOP_UNLOADING, 250, TOP_DECISION)
+{
+    return FSM_NEXT_TIMEOUT (TOP_UNLOADING);
 }
 
 /** UNLOAD failures. */
