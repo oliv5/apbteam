@@ -73,8 +73,11 @@ path_update (void);
 uint8_t
 path_get_next (vect_t *p);
 
+void
+path_prepare_score (void);
+
 uint16_t
-path_get_score ();
+path_get_score (void);
 
 #if AC_PATH_REPORT
 

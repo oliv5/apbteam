@@ -486,13 +486,23 @@ path_get_next (vect_t *p)
 	return 0;
 }
 
-uint16_t
-path_get_score ()
+void
+path_prepare_score (void)
 {
-    if (path.found)
-	return path.astar_nodes[PATH_SRC_NODE_INDEX].score;
-    else
-	return (uint16_t) -1;
+    path_blocked_update ();
+    astar_dijkstra_prepare (path.astar_nodes, PATH_NODES_NB,
+			    PATH_SRC_NODE_INDEX, PATH_DST_NODE_INDEX);
+    path.escape_factor = 0;
+}
+
+uint16_t
+path_get_score (void)
+{
+    uint16_t score;
+    score = astar_dijkstra_finish (path.astar_nodes, PATH_NODES_NB,
+				   PATH_DST_NODE_INDEX);
+    path.escape_factor = 0;
+    return score;
 }
 
 /** Neighbors callback for nodes in grid. */
@@ -582,7 +592,8 @@ path_astar_neighbor_callback_other (uint8_t node,
 	  }
       }
     /* Check if direct path OK. */
-    if (!path_blocking (node, PATH_SRC_NODE_INDEX, &d))
+    if (node != PATH_SRC_NODE_INDEX
+	&& !path_blocking (node, PATH_SRC_NODE_INDEX, &d))
       {
 	/* Add this neighbor. */
 	neighbors[neighbors_nb].node = PATH_SRC_NODE_INDEX;

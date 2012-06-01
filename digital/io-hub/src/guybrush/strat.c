@@ -133,6 +133,7 @@ strat_init (void)
 {
     uint8_t i;
     strat.last_decision = -1;
+    strat.prepared = 0;
     for (i = 0; i < STRAT_PLACE_NB; i++)
 	strat.place[i].valid = 1;
     if (team_color)
@@ -151,40 +152,55 @@ strat_init (void)
       }
 }
 
-/** Compute score for a path to the given position. */
-static int32_t
-strat_position_score (const vect_t *pos)
+/** Compute all path scores for valid places. */
+static void
+strat_path_score_prepare (uint16_t *score)
 {
-    uint16_t path_score;
-    /* Find a path to position. */
+    uint8_t i, escape = 0;
     position_t current_pos;
     asserv_get_position (&current_pos);
-    path_endpoints (current_pos.v, *pos);
-    path_update ();
-    path_score = path_get_score ();
-    if (path_score != (uint16_t) -1)
-	return path_score;
-    else
+    /* First pass, without escaping. */
+    path_endpoints (current_pos.v, current_pos.v);
+    path_prepare_score ();
+    for (i = 0; i < STRAT_PLACE_NB; i++)
+      {
+	if (!strat.place[i].valid)
+	    score[i] = (uint16_t) -1;
+	else
+	  {
+	    path_endpoints (current_pos.v, strat_place[i].pos);
+	    score[i] = path_get_score ();
+	    if (score[i] == (uint16_t) -1)
+		escape = 1;
+	  }
+      }
+    /* Second pass if needed with escaping. */
+    if (escape)
       {
 	path_escape (8);
-	path_update ();
-	path_score = path_get_score ();
-	if (path_score != (uint16_t) -1)
-	    return 4 * path_score;
-	else
-	    return -1;
+	path_endpoints (current_pos.v, current_pos.v);
+	path_prepare_score ();
+	for (i = 0; i < STRAT_PLACE_NB; i++)
+	  {
+	    if (strat.place[i].valid && score[i] == (uint16_t) -1)
+	      {
+		path_escape (8);
+		path_endpoints (current_pos.v, strat_place[i].pos);
+		score[i] = path_get_score ();
+	      }
+	  }
       }
 }
 
 /** Compute score for a given place. */
 static int32_t
-strat_place_score (uint8_t i)
+strat_place_score (uint16_t path_score, uint8_t i)
 {
     if (!strat.place[i].valid)
 	return -1;
-    int32_t position_score = strat_position_score (&strat_place[i].pos);
-    if (position_score == -1)
+    if (path_score == (uint16_t) -1)
 	return -1;
+    int32_t position_score = path_score;
     int32_t score = 10000ll - position_score + strat_place[i].score
 	- 100ll * strat.place[i].fail_nb;
     if (team_color)
@@ -234,9 +250,11 @@ strat_decision (vect_t *pos)
 	return strat.last_decision;
       }
     /* Else compute the best decision. */
+    uint16_t path_score[STRAT_PLACE_NB];
+    strat_path_score_prepare (path_score);
     for (i = 0; i < STRAT_PLACE_NB; i++)
       {
-	int32_t score = strat_place_score (i);
+	int32_t score = strat_place_score (path_score[i], i);
 	if (score > best_score)
 	  {
 	    best_score = score;
