@@ -118,7 +118,7 @@
 /** Report function name. */
 #define AC_PATH_REPORT_CALLBACK simu_send_path
 /** Number of possible obstacles. */
-#define AC_PATH_OBSTACLES_NB 2
+#define AC_PATH_OBSTACLES_NB 4
 
 /* astar - A* path finding module. */
 /** Neighbor callback. */
@@ -136,7 +136,7 @@
 /** Use mimot board. */
 #define AC_AI_TWI_MASTER_MIMOT 1
 /** Use beacon board. */
-#define AC_AI_TWI_MASTER_BEACON 0
+#define AC_AI_TWI_MASTER_BEACON 1
 
 /* beacon. */
 /** Number of beacon positions. */

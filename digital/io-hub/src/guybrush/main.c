@@ -27,6 +27,7 @@
 #include "modules/utils/utils.h"
 #include "modules/uart/uart.h"
 #include "modules/proto/proto.h"
+#include "modules/math/geometry/distance.h"
 
 #include "modules/devices/usdist/usdist.h"
 
@@ -70,7 +71,7 @@
 enum team_color_e team_color;
 
 /** Obstacles positions, updated using radar module. */
-vect_t main_obstacles_pos[2];
+vect_t main_obstacles_pos[AC_PATH_OBSTACLES_NB];
 
 /** Number of obstacles in main_obstacles_pos. */
 uint8_t main_obstacles_nb;
@@ -154,9 +155,8 @@ main_init (void)
     /* TWI communications */
     asserv_init ();
     mimot_init ();
-#if AC_AI_TWI_MASTER_BEACON
-    beacon_init ();
-#endif
+    if (AC_AI_TWI_MASTER_BEACON)
+	beacon_init ();
     twi_master_init ();
     /* AI modules. */
     path_init ();
@@ -242,6 +242,29 @@ main_coin_detected_ok (void)
 	  }
       }
     return 1;
+}
+
+static void
+main_obstacles_merge (vect_t *obs_pos, uint8_t obs_nb)
+{
+    uint8_t i, j;
+    for (i = 0; i < obs_nb; i++)
+      {
+	/* Look at existing obstacles. */
+	for (j = 0; j < main_obstacles_nb; j++)
+	  {
+	    /* If same obstacle, break. */
+	    if (distance_point_point (&obs_pos[i],
+				      &main_obstacles_pos[j]) < 150)
+		break;
+	  }
+	/* Else, add it. */
+	if (j == main_obstacles_nb)
+	  {
+	    main_obstacles_pos[main_obstacles_nb] = obs_pos[i];
+	    main_obstacles_nb++;
+	  }
+      }
 }
 
 /** Main events management. */
@@ -349,7 +372,24 @@ main_loop (void)
 	  {
 	    position_t robot_pos;
 	    asserv_get_position (&robot_pos);
-	    main_obstacles_nb = radar_update (&robot_pos, main_obstacles_pos);
+	    /* Get obstacles from beacon system. */
+	    main_obstacles_nb = 0;
+	    if (AC_AI_TWI_MASTER_BEACON)
+	      {
+		uint8_t i;
+		for (i = 0; i < AC_BEACON_POSITION_NB; i++)
+		  {
+		    if (beacon_get_position
+			(i, &main_obstacles_pos[main_obstacles_nb]) > 70)
+			main_obstacles_nb++;
+		  }
+		beacon_send_position (&robot_pos.v);
+	      }
+	    /* Get obstacles from radar. */
+	    vect_t radar_obs_pos[2];
+	    uint8_t radar_obs_nb = radar_update (&robot_pos, radar_obs_pos);
+	    main_obstacles_merge (radar_obs_pos, radar_obs_nb);
+	    /* Set as move obstacles. */
 	    move_obstacles_update ();
 	    simu_send_pos_report (main_obstacles_pos, main_obstacles_nb, 0);
 	  }

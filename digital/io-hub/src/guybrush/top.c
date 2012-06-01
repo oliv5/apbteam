@@ -41,6 +41,7 @@
 #include "path.h"
 #include "bottom_clamp.h"
 #include "radar_defs.h"
+#include "beacon.h"
 
 #include "output_defs.h"
 
@@ -284,6 +285,7 @@ FSM_TRANS (TOP_INIT_DOOR, init_done, TOP_INIT)
 FSM_TRANS (TOP_INIT, init_start_round, TOP_DECISION)
 {
     main_usdist = 1;
+    beacon_on (1);
     return FSM_NEXT (TOP_INIT, init_start_round);
 }
 
