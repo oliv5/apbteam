@@ -31,10 +31,27 @@ avr:
 		$(MAKE) -C makefiles/ -f Makefile_$(CONFIG_NAME) all APP_NAME=beacon_$$count BITCLOUD_PATH=$(BITCLOUD_PATH) APB_AVR_PATH=$(APB_AVR_PATH) LOL_NUMBER=$$count;\
 	done;\
 
-flash:
-	../../dev2/tools/dev2ctl.py -s $(DEV2)
-	avrdude -c stk500v2 -P /dev/ttyUSB1 -p atmega1281 -B3 -U flash:w:obj/beacon_$(TARGET).hex
+flash0:
+	make NUMBER=0 avr
+	../../dev2/tools/dev2ctl.py -s 1
+	avrdude -c stk500v2 -P /dev/ttyUSB1 -p atmega1281 -B3 -U flash:w:obj/beacon_0.hex
 
+flash1:
+	make NUMBER=1 avr
+	../../dev2/tools/dev2ctl.py -s 1
+	avrdude -c stk500v2 -P /dev/ttyUSB1 -p atmega1281 -B3 -U flash:w:obj/beacon_1.hex
+	
+flash2:
+	make NUMBER=2 avr
+	../../dev2/tools/dev2ctl.py -s 1
+	avrdude -c stk500v2 -P /dev/ttyUSB1 -p atmega1281 -B3 -U flash:w:obj/beacon_2.hex
+	
+flash3:
+	make NUMBER=3 avr
+	../../dev2/tools/dev2ctl.py -s 1
+	avrdude -c stk500v2 -P /dev/ttyUSB1 -p atmega1281 -B3 -U flash:w:obj/beacon_3.hex
+	
+	
 clean:
 	for count in $(NUMBER); do\
 		$(MAKE) -C makefiles/$(PROJECT_NAME) -f Makefile_$(CONFIG_NAME) clean APP_NAME=beacon_$$count BITCLOUD_PATH=$(BITCLOUD_PATH);\
