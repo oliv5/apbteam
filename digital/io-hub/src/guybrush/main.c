@@ -111,6 +111,9 @@ static uint8_t main_stats_pressure_, main_stats_pressure_cpt_;
 /** Chrono stats. */
 static uint8_t main_stats_chrono_, main_stats_chrono_last_s_;
 
+/** Timer stats. */
+static uint8_t main_stats_timer_, main_stats_timer_cpt_;
+
 /** Clamp zero stats. */
 static uint8_t main_stats_clamp_zero_;
 
@@ -311,10 +314,12 @@ main_event_to_fsm (void)
 static void
 main_loop (void)
 {
+    uint8_t timer[6];
     while (1)
       {
 	/* Wait until next cycle. */
 	timer_wait ();
+	timer[0] = timer_get ();
 	/* Update chrono. */
 	chrono_update ();
 	/* Is match over? */
@@ -338,6 +343,7 @@ main_loop (void)
 	while (uart0_poll ())
 	    proto_accept (uart0_getc ());
 	/* Update IO modules. */
+	timer[1] = timer_get ();
 	contact_update ();
 	if ((main_demo || main_usdist) && usdist_update ())
 	  {
@@ -350,15 +356,20 @@ main_loop (void)
 	pressure_update ();
 	logger_update ();
 	/* Update AI modules. */
+	timer[2] = timer_get ();
 	top_update ();
 	path_decay ();
 	/* Only manage events if slaves are synchronised. */
-	if (twi_master_sync () && main_fsm_debug_mode != MAIN_FSM_DEBUG_STOP)
+	timer[3] = timer_get ();
+	uint8_t sync = twi_master_sync ();
+	timer[4] = timer_get ();
+	if (sync && main_fsm_debug_mode != MAIN_FSM_DEBUG_STOP)
 	  {
 	    if (main_event_to_fsm ()
 		&& main_fsm_debug_mode == MAIN_FSM_DEBUG_STEP)
 		main_fsm_debug_mode = MAIN_FSM_DEBUG_STOP;
 	  }
+	timer[5] = timer_get ();
 	/* Send stats if requested. */
 	if (main_stats_asserv_ && !--main_stats_asserv_cpt_)
 	  {
@@ -391,6 +402,11 @@ main_loop (void)
 	  {
 	    main_stats_chrono_last_s_ = chrono_remaining_time () / 1000;
 	    proto_send1b ('C', main_stats_chrono_last_s_);
+	  }
+	if (main_stats_timer_ && !--main_stats_timer_cpt_)
+	  {
+	    proto_send ('T', UTILS_COUNT (timer), timer);
+	    main_stats_timer_cpt_ = main_stats_timer_;
 	  }
 	if (main_stats_clamp_zero_
 	    && IO_GET (CONTACT_LOWER_CLAMP_ZERO)
@@ -524,6 +540,10 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	main_stats_chrono_last_s_ = 0;
 	if (args[0])
 	    chrono_start ();
+	break;
+      case c ('T', 1):
+	/* Timer stats. */
+	main_stats_timer_ = main_stats_timer_cpt_ = args[0];
 	break;
       case c ('Z', 1):
 	/* Clamp zero stat. */

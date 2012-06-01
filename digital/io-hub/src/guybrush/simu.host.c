@@ -90,6 +90,12 @@ timer_wait (void)
 }
 
 uint8_t
+timer_get (void)
+{
+    return 0;
+}
+
+uint8_t
 timer_get_tick (void)
 {
     return mex_node_date () / 4;

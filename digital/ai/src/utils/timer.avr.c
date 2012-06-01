@@ -79,6 +79,12 @@ timer_wait (void)
     return late;
 }
 
+uint8_t
+timer_get (void)
+{
+    return TCNT0;
+}
+
 uint16_t
 timer_get_tick (void)
 {

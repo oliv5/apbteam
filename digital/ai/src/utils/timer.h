@@ -61,6 +61,10 @@ timer_init (void);
 uint8_t
 timer_wait (void);
 
+/** Return current timer value, for performance measurement. */
+uint8_t
+timer_get (void);
+
 /** Get a tick value, incremented at each tick, never reset. */
 uint16_t
 timer_get_tick (void);
