@@ -433,6 +433,7 @@ path_update (void)
     path_blocked_update ();
     path.found = astar (path.astar_nodes, PATH_NODES_NB, PATH_DST_NODE_INDEX,
 			PATH_SRC_NODE_INDEX);
+    path.escape_factor = 0;
     path.get = PATH_SRC_NODE_INDEX;
     if (path.found)
 	path_optimize ();
