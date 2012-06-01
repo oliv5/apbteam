@@ -25,10 +25,13 @@
  *
  * }}} */
 
+#include "chrono.h"
+
 /** Log a serie of bytes. */
 #define logger_log(args...) \
     do { \
 	logger_write_event_counter (); \
+	logger_write (chrono_remaining_time () / 1000); \
 	PREPROC_FOR (logger_log_, ## args) \
     } while (0)
 #define logger_log_(b) logger_write (b);
