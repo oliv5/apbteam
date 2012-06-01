@@ -49,7 +49,7 @@
 /** Stop bits : 1, 2. */
 #define AC_UART0_STOP_BITS 1
 /** Send buffer size, should be power of 2 for RING mode. */
-#define AC_UART0_SEND_BUFFER_SIZE 32
+#define AC_UART0_SEND_BUFFER_SIZE 64
 /** Recv buffer size, should be power of 2 for RING mode. */
 #define AC_UART0_RECV_BUFFER_SIZE 32
 /** If the send buffer is full when putc:

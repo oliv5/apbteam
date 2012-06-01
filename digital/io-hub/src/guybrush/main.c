@@ -97,6 +97,12 @@ enum
 /** Current FSM debug mode. */
 uint8_t main_fsm_debug_mode;
 
+/** Robot position stats. */
+static uint8_t main_stats_pos_ = 75, main_stats_pos_cpt_ = 1;
+
+/** Obstacles stats. */
+static uint8_t main_stats_obstacles_ = 75, main_stats_obstacles_cpt_ = 1;
+
 /** Asserv stats counters. */
 static uint8_t main_stats_asserv_, main_stats_asserv_cpt_;
 
@@ -392,6 +398,34 @@ main_loop (void)
 	    /* Set as move obstacles. */
 	    move_obstacles_update ();
 	    simu_send_pos_report (main_obstacles_pos, main_obstacles_nb, 0);
+	    /* Send stats. */
+	    if (main_usdist && main_stats_pos_ && !--main_stats_pos_cpt_)
+	      {
+		proto_send2w ('R', robot_pos.v.x, robot_pos.v.y);
+		logger_log (0xef,
+			    v16_to_v8 (robot_pos.v.x, 1),
+			    v16_to_v8 (robot_pos.v.x, 0),
+			    v16_to_v8 (robot_pos.v.y, 1),
+			    v16_to_v8 (robot_pos.v.y, 0));
+		main_stats_pos_cpt_ = main_stats_pos_;
+	      }
+	    if (main_obstacles_nb
+		&& main_stats_obstacles_ && !--main_stats_obstacles_cpt_)
+	      {
+		uint8_t i;
+		for (i = 0; i < main_obstacles_nb; i++)
+		  {
+		    proto_send2w ('O', main_obstacles_pos[i].x, main_obstacles_pos[i].y);
+		    logger_log (0xe0 | i,
+				v16_to_v8 (main_obstacles_pos[i].x, 1),
+				v16_to_v8 (main_obstacles_pos[i].x, 0),
+				v16_to_v8 (main_obstacles_pos[i].y, 1),
+				v16_to_v8 (main_obstacles_pos[i].y, 0));
+		  }
+		main_stats_obstacles_cpt_ = main_stats_obstacles_;
+	      }
+	    else if (main_stats_obstacles_cpt_ > 1)
+		main_stats_obstacles_cpt_--;
 	  }
 	pressure_update ();
 	logger_update ();
