@@ -68,6 +68,7 @@ void calibration_start_stop_task(void)
 	if(calibration_get_state() != CALIBRATION_INIT)
 	{
 		calibration_stop_task();
+		calibration.state = SCANNING_STATE_CALIBRATED;
 	}
 	else
 	{
