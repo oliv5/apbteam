@@ -286,6 +286,7 @@ FSM_TRANS (TOP_INIT, init_start_round, TOP_DECISION)
 {
     main_usdist = 1;
     beacon_on (1);
+    beacon_robot_nb (IO_GET (CONTACT_NB_ROBOTS) ? 1 : 2);
     return FSM_NEXT (TOP_INIT, init_start_round);
 }
 
