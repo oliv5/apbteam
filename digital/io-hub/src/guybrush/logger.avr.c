@@ -37,7 +37,7 @@
  * */
 
 /** Maximum buffer size. */
-#define LOGGER_BUF_SIZE 32
+#define LOGGER_BUF_SIZE 64
 
 /** Maximum log size. */
 #define LOGGER_SIZE (E2END + 1)
