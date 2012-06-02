@@ -121,8 +121,6 @@ move_obstacles_update (void)
       {
 	path_obstacle (i, main_obstacles_pos[i], MOVE_OBSTACLE_RADIUS, 0,
 		       MOVE_OBSTACLE_VALIDITY);
-	proto_send2w ('o', main_obstacles_pos[i].x,
-		      main_obstacles_pos[i].y);
       }
 }
 
