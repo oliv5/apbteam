@@ -85,12 +85,13 @@ beacon_send_position (vect_t *position)
 {
     uint8_t *buffer = twi_master_get_buffer (TWI_MASTER_ID_BEACON);
     buffer[0] = beacon.on;
-    buffer[1] = beacon.robot_nb;
-    buffer[2] = v16_to_v8 (position->x, 1);
-    buffer[3] = v16_to_v8 (position->x, 0);
-    buffer[4] = v16_to_v8 (position->y, 1);
-    buffer[5] = v16_to_v8 (position->y, 0);
-    twi_master_send_transient_buffer (6);
+    buffer[1] = team_color;
+    buffer[2] = beacon.robot_nb;
+    buffer[3] = v16_to_v8 (position->x, 1);
+    buffer[4] = v16_to_v8 (position->x, 0);
+    buffer[5] = v16_to_v8 (position->y, 1);
+    buffer[6] = v16_to_v8 (position->y, 0);
+    twi_master_send_transient_buffer (7);
 }
 
 uint8_t
