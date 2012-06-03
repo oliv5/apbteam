@@ -23,7 +23,8 @@ def parse_header(fsm_name, fname):
 def parse_proto(states, events):
     """Parse proto output from stdin and output FSM transitions."""
     fsm_re = re.compile(r'!F([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})')
-    obstacle_re = re.compile(r'!o([0-9a-f]{4})([0-9a-f]{4})')
+    robot_re = re.compile(r'!R([0-9a-f]{4})([0-9a-f]{4})')
+    obstacle_re = re.compile(r'!O([0-9a-f]{4})([0-9a-f]{4})')
     for l in sys.stdin:
         for m in fsm_re.finditer(l):
             old, event, new = [ int(i, 16) for i in m.groups() ]
@@ -35,6 +36,9 @@ def parse_proto(states, events):
                 print "unknown transition"
             else:
                 print "%s -> %s -> %s" % (old, event, new)
+        for m in robot_re.finditer(l):
+            x, y = [ int(i, 16) for i in m.groups() ]
+            print "robot %s %s" % (x, y)
         for m in obstacle_re.finditer(l):
             x, y = [ int(i, 16) for i in m.groups() ]
             print "obstacle %s %s" % (x, y)
