@@ -36,6 +36,7 @@ class Test (Drawable):
         self.draw_circle ((40, -40), 10)
         self.draw_oval ((40, -40), 10, 5)
         self.draw_arc ((-40, 0), 20, start = pi / 4, extent = pi / 2)
+        self.draw_text ((10, 0), text = "hello world")
 
 class App (DrawableCanvas):
 

@@ -94,6 +94,10 @@ class Drawable:
             import math
         return self.__onto.__draw_arc (p, r, **kw)
 
+    def __draw_text (self, p, **kw):
+        p = self.trans_apply (p)
+        return self.__onto.__draw_text (p, **kw)
+
     def draw_rectangle (self, *p, **kw):
         """Draw a rectangle."""
         self.__items.append (self.__draw_rectangle (*p, **kw))
@@ -118,6 +122,10 @@ class Drawable:
     def draw_arc (self, p, r, **kw):
         """Draw a arc of the given radius centered on p."""
         self.__items.append (self.__draw_arc (p, r, **kw))
+
+    def draw_text (self, p, **kw):
+        """Draw text at given position."""
+        self.__items.append (self.__draw_text (p, **kw))
 
     def reset (self):
         """Clear all drawn items, reset transformations."""
@@ -207,6 +215,10 @@ class DrawableCanvas(Tkinter.Canvas):
                 kw = kw.copy ()
                 kw[k] = degrees (kw[k])
         return self.create_arc (p1, p2, **kw)
+
+    def _Drawable__draw_text (self, p, **kw):
+        p, = self.__coord (p)
+        return self.create_text (p, **kw)
 
     def _Drawable__delete (self, *list):
         self.delete (*list)
