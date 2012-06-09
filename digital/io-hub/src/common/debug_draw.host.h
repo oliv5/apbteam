@@ -53,6 +53,10 @@ debug_draw_segment (const vect_t *p1, const vect_t *p2, uint8_t color);
 void
 debug_draw_point (const vect_t *p, uint8_t color);
 
+/** Append a debug number. */
+void
+debug_draw_number (const vect_t *p, int32_t number);
+
 #endif
 
 #endif /* debug_draw_host_h */

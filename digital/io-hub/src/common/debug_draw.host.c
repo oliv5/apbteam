@@ -74,3 +74,9 @@ debug_draw_point (const vect_t *p, uint8_t color)
     mex_msg_push (debug_draw_msg, "Bhhb", 'p', p->x, p->y, color);
 }
 
+void
+debug_draw_number (const vect_t *p, int32_t number)
+{
+    mex_msg_push (debug_draw_msg, "Bhhl", 'n', p->x, p->y, number);
+}
+

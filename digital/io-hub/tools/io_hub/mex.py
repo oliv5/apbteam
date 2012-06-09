@@ -245,6 +245,9 @@ class Mex:
                 elif t == 'p':
                     x, y, c = msg.pop ('hhb')
                     self.drawing.append (['point', x, y, c])
+                elif t == 'n':
+                    x, y, t = msg.pop ('hhl')
+                    self.drawing.append (['text', x, y, str (t)])
                 else:
                     raise ValueError
             self.notify ()

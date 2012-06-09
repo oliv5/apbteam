@@ -51,6 +51,8 @@ class DebugDraw (Drawable):
                         (x - s, y - s), (x + s, y + s),
                         (x - s, y + s), (x + s, y - s),
                         (x - s, y - s), fill = self.__colors[d[3]])
+            elif d[0] == 'text':
+                self.draw_text ((d[1], d[2]), text = d[3])
             else:
                 raise ValueError
 

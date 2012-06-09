@@ -33,6 +33,12 @@
 #include "asserv.h"
 #include "chrono.h"
 
+#define STRAT_DEBUG_DRAW 0
+
+#if STRAT_DEBUG_DRAW
+#include "debug_draw.host.h"
+#endif
+
 /*
  * This file implements strategic decisions.
  */
@@ -249,6 +255,9 @@ strat_decision (vect_t *pos)
 	*pos = strat.prepared_pos;
 	return strat.last_decision;
       }
+#if STRAT_DEBUG_DRAW
+    debug_draw_start ();
+#endif
     /* Else compute the best decision. */
     uint16_t path_score[STRAT_PLACE_NB];
     strat_path_score_prepare (path_score);
@@ -260,7 +269,13 @@ strat_decision (vect_t *pos)
 	    best_score = score;
 	    best_place = i;
 	  }
+#if STRAT_DEBUG_DRAW
+	debug_draw_number (&strat_place[i].pos, score);
+#endif
       }
+#if STRAT_DEBUG_DRAW
+    debug_draw_send ();
+#endif
     if (best_score != -1)
       {
 	*pos = strat_place[best_place].pos;
