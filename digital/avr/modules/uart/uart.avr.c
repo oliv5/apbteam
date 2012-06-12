@@ -190,9 +190,9 @@
 
 /* Stop bits. */
 #if AC_UART (STOP_BITS) == 1
-#define STOP_BITS 0
+#define STOP 0
 #elif AC_UART (STOP_BITS) == 2
-#define STOP_BITS _BV (USBS)
+#define STOP _BV (USBS)
 #else
 #error "uart: bad stop bits value"
 #endif
@@ -253,7 +253,7 @@ uart_init (void)
     UBRRL = UBRR_VAL & 0xff;
     UCSRA = 0;
     /* Set format and enable uart. */
-    UCSRC = SELECTOR | PARITY | STOP_BITS | CHAR_SIZE;
+    UCSRC = SELECTOR | PARITY | STOP | CHAR_SIZE;
     UCSRB = RECV_IE | _BV (RXEN) | _BV (TXEN);
 #if RECV_MODE == RING
     uart_recv_head = 0;
