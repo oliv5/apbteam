@@ -96,9 +96,11 @@ chrono_end_match (uint8_t block)
 {
     vect_t v = { 0, 0 };
     /* Stop beacon system. */
-    beacon_on (0);
     if (AC_AI_TWI_MASTER_BEACON)
+      {
+	beacon_on (0);
 	beacon_send_position (&v);
+      }
     /* Make the bot stop moving */
     asserv_stop_motor ();
     /* Wait until complete */
