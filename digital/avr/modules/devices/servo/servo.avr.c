@@ -74,7 +74,7 @@ volatile uint8_t servo_position_[SERVO_NUMBER];
 /**
  * Overflow of timer/counter 2 handler.
  */
-SIGNAL (SIG_OVERFLOW2);
+ISR (TIMER2_OVF_vect);
 
 /** @} */
 
@@ -127,7 +127,7 @@ servo_get_position (uint8_t servo)
 }
 
 /* Overflow of timer/counter 2 handler. */
-SIGNAL (SIG_OVERFLOW2)
+ISR (TIMER2_OVF_vect)
 {
     /* Overflow count (used when we wait in the lower state).
        -1 is used for the first count where we wait less than a complete

@@ -72,8 +72,6 @@
 #  define UCSRB UCSR1B
 #  define UCSRC UCSR1C
 #  define UDR UDR1
-#  define SIG_UART_RECV SIG_UART1_RECV
-#  define SIG_UART_DATA SIG_UART1_DATA
 #  define USART_RX_vect USART1_RX_vect
 #  define USART_UDRE_vect USART1_UDRE_vect
 # else
