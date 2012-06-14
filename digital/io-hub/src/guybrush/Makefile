@@ -23,7 +23,7 @@ CONFIGFILE = avrconfig.h
 AVR_MCU = at90usb1287
 # Optimize for speed.
 OPTIMIZE = -O2
-HOST_LIBS = -lm
+LIBS = -lm
 
 vpath %.c ../common
 vpath %.h ../common

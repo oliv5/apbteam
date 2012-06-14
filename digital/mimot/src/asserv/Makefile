@@ -14,7 +14,7 @@ AVR_MCU = atmega32
 # -O2 : speed
 # -Os : size
 OPTIMIZE = -Os
-HOST_LIBS = -lm
+LIBS = -lm
 
 vpath %.c ../../../asserv/src/asserv
 INCLUDES += -I. -I../../../asserv/src/asserv

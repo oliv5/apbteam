@@ -14,7 +14,7 @@ AVR_MCU = atmega128
 # -O2 : speed
 # -Os : size
 OPTIMIZE = -O2
-HOST_LIBS = -lm
+LIBS = -lm
 
 AVR_DEFS = $(EEPROM_DEFAULTS:%=-DEEPROM_DEFAULTS=\"%\")
 

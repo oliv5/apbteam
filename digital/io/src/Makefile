@@ -20,7 +20,7 @@ CONFIGFILE = avrconfig.h
 AVR_MCU = atmega128
 # Optimize for speed.
 OPTIMIZE = -O2
-HOST_LIBS = -lm
+LIBS = -lm
 
 vpath %.c $(AI_MODULES:%=../../ai/src/%)
 vpath %.h $(AI_MODULES:%=../../ai/src/%)
