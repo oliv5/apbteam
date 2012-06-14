@@ -150,7 +150,7 @@ static void
 simu_step (void)
 {
     int i;
-    double old_left_th, old_right_th, old_aux_th[AC_ASSERV_AUX_NB];
+    double old_left_th, old_right_th;
     /* Convert pwm value into voltage. */
     simu_left_model.u = simu_robot->u_max
 	* ((double) output_left.cur / (OUTPUT_MAX + 1));
@@ -168,7 +168,6 @@ simu_step (void)
     motor_model_step (&simu_right_model);
     for (i = 0; i < AC_ASSERV_AUX_NB; i++)
       {
-	old_aux_th[i] = simu_aux_model[i].th;
 	if (simu_robot->aux_motor[i])
 	    motor_model_step (&simu_aux_model[i]);
       }
