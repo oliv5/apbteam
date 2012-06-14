@@ -311,7 +311,7 @@ twi_proto_params (u8 *buf, u8 size)
 	    cs_main.speed_alpha.max = v8_to_v16 (buf[2], buf[3]);
 	    cs_main.speed_theta.slow = v8_to_v16 (buf[4], buf[5]);
 	    cs_main.speed_alpha.slow = v8_to_v16 (buf[6], buf[7]);
-	    eat = 4;
+	    eat = 8;
 	    break;
 	  case 'a':
 	    /* Set acceleration.
@@ -321,6 +321,7 @@ twi_proto_params (u8 *buf, u8 size)
 		return 1;
 	    cs_main.speed_theta.acc_f = v8_to_v16 (buf[0], buf[1]);
 	    cs_main.speed_alpha.acc_f = v8_to_v16 (buf[2], buf[3]);
+	    eat = 4;
 	    break;
 	  default:
 	    return 1;
