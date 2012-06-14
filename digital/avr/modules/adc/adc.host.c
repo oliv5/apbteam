@@ -28,7 +28,7 @@
 #include "modules/utils/utils.h"
 
 /** Simulate hardware register. */
-uint16_t ADCW;
+uint16_t ADC;
 
 /** Table that the user can update to simulate an ADC. */
 uint16_t adc_values[8];
@@ -45,6 +45,6 @@ void
 adc_start (uint8_t c)
 {
     assert (c < UTILS_COUNT (adc_values));
-    ADCW = adc_values[c];
+    ADC = adc_values[c];
 }
 

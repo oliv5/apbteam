@@ -34,7 +34,7 @@
 # define ADCSRA 1
 # define ADIF 0
 
-extern uint16_t ADCW;
+extern uint16_t ADC;
 
 /** Table that the user can update to simulate an ADC. */
 extern uint16_t adc_values[8];
@@ -53,6 +53,6 @@ adc_start (uint8_t c);
 #define adc_checkf() bit_is_set (ADCSR, ADIF)
 
 /** Read measure. */
-#define adc_read() ADCW
+#define adc_read() ADC
 
 #endif /* adc_h */
