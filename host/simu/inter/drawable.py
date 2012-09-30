@@ -49,24 +49,34 @@ class Drawable:
         self.children = self.__children
         self.__onto.__children.append (self)
 
+    def __trans_apply_kw (self, kw):
+        if 'width' in kw:
+            kw = kw.copy ()
+            kw['width'] = self.trans_apply_distance (kw['width'])
+        return kw
+
     def __draw_rectangle (self, p1, p2, **kw):
         if 'outline' not in kw:
             kw = kw.copy ()
             kw['outline'] = 'black'
+        kw = self.__trans_apply_kw (kw)
         p = self.trans_apply (p1, (p2[0], p1[1]), p2, (p1[0], p2[1]))
         return self.__onto.__draw_polygon (*p, **kw)
 
     def __draw_line (self, *p, **kw):
         p = self.trans_apply (*p)
+        kw = self.__trans_apply_kw (kw)
         return self.__onto.__draw_line (*p, **kw)
 
     def __draw_polygon (self, *p, **kw):
         p = self.trans_apply (*p)
+        kw = self.__trans_apply_kw (kw)
         return self.__onto.__draw_polygon (*p, **kw)
 
     def __draw_circle (self, p, r, **kw):
         p = self.trans_apply (p)
         r = self.trans_apply_distance (r)
+        kw = self.__trans_apply_kw (kw)
         return self.__onto.__draw_circle (p, r, **kw)
 
     def __draw_oval (self, p, rx, ry, **kw):
@@ -83,6 +93,7 @@ class Drawable:
         if 'outline' not in kw:
             kw['outline'] = 'black'
         kw['smooth'] = True
+        kw = self.__trans_apply_kw (kw)
         return self.__draw_polygon (*v, **kw)
 
     def __draw_arc (self, p, r, **kw):
@@ -91,7 +102,7 @@ class Drawable:
         if 'start' in kw:
             kw = kw.copy ()
             kw['start'] = self.trans_apply_angle (kw['start'])
-            import math
+        kw = self.__trans_apply_kw (kw)
         return self.__onto.__draw_arc (p, r, **kw)
 
     def __draw_text (self, p, **kw):
@@ -190,12 +201,20 @@ class DrawableCanvas(Tkinter.Canvas):
         # Redraw.
         self.draw ()
 
+    def __trans_apply_kw (self, kw):
+        if 'width' in kw:
+            kw = kw.copy ()
+            kw['width'] *= self.__scale
+        return kw
+
     def _Drawable__draw_line (self, *p, **kw):
         p = self.__coord (*p)
+        kw = self.__trans_apply_kw (kw)
         return self.create_line (*p, **kw)
 
     def _Drawable__draw_polygon (self, *p, **kw):
         p = self.__coord (*p)
+        kw = self.__trans_apply_kw (kw)
         return self.create_polygon (*p, **kw)
 
     def _Drawable__draw_circle (self, p, r, **kw):
@@ -203,6 +222,7 @@ class DrawableCanvas(Tkinter.Canvas):
         r = r * self.__scale
         p1 = (p[0] - r, p[1] - r)
         p2 = (p[0] + r, p[1] + r)
+        kw = self.__trans_apply_kw (kw)
         return self.create_oval (p1, p2, **kw)
 
     def _Drawable__draw_arc (self, p, r, **kw):
@@ -214,6 +234,7 @@ class DrawableCanvas(Tkinter.Canvas):
             if k in kw:
                 kw = kw.copy ()
                 kw[k] = degrees (kw[k])
+        kw = self.__trans_apply_kw (kw)
         return self.create_arc (p1, p2, **kw)
 
     def _Drawable__draw_text (self, p, **kw):
