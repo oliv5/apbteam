@@ -1,6 +1,5 @@
 #ifndef @FILEDEF@
 #define @FILEDEF@
-// @FILE@
 // @=GetReadme()@ {{{
 //
 // Copyright (C) @YEAR@ @AUTHOR@

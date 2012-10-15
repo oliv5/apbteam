@@ -1,4 +1,3 @@
-// @FILE@
 // @=GetReadme()@ {{{
 //
 // Copyright (C) @YEAR@ @AUTHOR@

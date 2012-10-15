@@ -41,7 +41,7 @@ function! APBTeam()
    syn on
    " Plugins.
    let g:template_variant = "apbteam"
-   let g:ghph_GrabComments = 1
+   let g:ghph_GrabComments = 0
    let g:ghph_Reformat = 1
    let g:ghph_PutAfter = 1
    let g:ghph_SplitReturn = 1
@@ -55,7 +55,14 @@ function! APBTeamProg()
    setlocal cindent
    setlocal fo-=o fo-=r
    setlocal com-=:// com+=:///,://
-   " Call GHPH
+endfunction
+
+function! APBTeamCpp()
+   call APBTeamProg()
+   " C++ specific options.
+   setlocal expandtab
+   setlocal cino=:0,g.5s,h.5s,t0,(s
+   " Call GHPH.
    nmap <buffer> <Leader>g :GHPH g<CR>
    nmap <buffer> <Leader>h :GHPH p<CR>
 endfunction
@@ -80,7 +87,7 @@ if exists('g:no_apbteam') | finish | endif
 call APBTeam()
 
 au FileType c call APBTeamProg()
-au FileType cpp call APBTeamProg()
+au FileType cpp call APBTeamCpp()
 au FileType python call APBTeamPython()
 au BufNewFile README Template README
 au BufNewFile *.c,*.cc,*.tcc,*.icc,*.h,*.hh,*.hpp,*.C,*.cxx TemplateHeader
