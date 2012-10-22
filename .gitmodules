@@ -1,0 +1,3 @@
+[submodule "digital/ucoolib/lib/libopencm3"]
+	path = digital/ucoolib/lib/libopencm3
+	url = ./libopencm3
