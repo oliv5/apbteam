@@ -4,6 +4,8 @@ tags
 *.avr.elf
 *.avr.lst
 *.simu.elf
+*.stm32f4.elf
+*.stm32f4.lst
 *.hex
 *.host
 .*.swp
