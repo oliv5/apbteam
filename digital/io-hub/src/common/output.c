@@ -27,6 +27,19 @@
 
 #include "simu.host.h"
 
+/** Output context. */
+struct output_t
+{
+    /** If not zero, toggle outputs after this number of update. */
+    uint16_t transient_duration;
+    /** Mask for transient toggle. */
+    uint32_t transient_mask;
+};
+
+/** Global context. */
+static struct output_t output_global;
+#define ctx output_global
+
 void
 output_init (void)
 {
@@ -69,5 +82,20 @@ output_toggle (uint32_t toggle)
 } while (0); // <- do not copy this code unless you know why!
     OUTPUT_LIST
 #undef OUTPUT
+}
+
+void
+output_toggle_transient (uint32_t toggle, uint16_t duration)
+{
+    output_toggle (toggle);
+    ctx.transient_mask = toggle;
+    ctx.transient_duration = duration;
+}
+
+void
+output_update (void)
+{
+    if (ctx.transient_duration && !--ctx.transient_duration)
+	output_toggle (ctx.transient_mask);
 }
 

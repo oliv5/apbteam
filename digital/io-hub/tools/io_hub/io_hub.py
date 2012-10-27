@@ -58,6 +58,9 @@ class Proto:
             action = m[action]
         self.proto.send ('o', 'Lb', mask, action)
 
+    def output_transient (self, mask, duration):
+        self.proto.send ('o', 'LH', mask, duration)
+
     def close (self):
         self.reset ()
         self.proto.wait (lambda: True)

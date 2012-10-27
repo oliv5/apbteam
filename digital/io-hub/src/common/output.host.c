@@ -28,8 +28,8 @@
 #include "modules/host/host.h"
 #include "modules/host/mex.h"
 
-/** Output context. */
-struct output_t
+/** Host output context. */
+struct output_host_t
 {
     /** Previous sent state. */
     uint32_t previous;
@@ -38,8 +38,8 @@ struct output_t
 };
 
 /** Global context. */
-struct output_t output_global;
-#define ctx output_global
+static struct output_host_t output_host_global;
+#define ctx output_host_global
 
 void
 output_host_init (void)

@@ -48,6 +48,15 @@ output_clear (uint32_t clear);
 void
 output_toggle (uint32_t toggle);
 
+/** Toggle state of any number of output, then toggle again after a number of
+ * update. */
+void
+output_toggle_transient (uint32_t toggle, uint16_t duration);
+
+/** Update internal state, used for transient toggles. */
+void
+output_update (void);
+
 #ifdef HOST
 
 /** On host, initialise host part. */

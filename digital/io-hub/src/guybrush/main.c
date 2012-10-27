@@ -429,6 +429,7 @@ main_loop (void)
 	  }
 	pressure_update ();
 	logger_update ();
+	output_update ();
 	/* Update AI modules. */
 	timer[2] = timer_get ();
 	top_update ();
@@ -583,6 +584,14 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 		return;
 	      }
 	  }
+	break;
+      case c ('o', 6):
+	/* Toggle outputs for a short time.
+	 * - 1d: mask.
+	 * - 1w: duration. */
+	output_toggle_transient (v8_to_v32 (args[0], args[1], args[2],
+					    args[3]),
+				 v8_to_v16 (args[4], args[5]));
 	break;
       case c ('f', 2):
 	/* Set low pressure threshold.
