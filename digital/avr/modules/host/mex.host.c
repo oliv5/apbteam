@@ -529,6 +529,7 @@ mex_node_reserve (const char *mtype_str)
     /* Return allocated message type. */
     u8 mtype;
     mex_msg_pop (rsp, "B", &mtype);
+    mex_msg_delete (rsp);
     return mtype;
 }
 
