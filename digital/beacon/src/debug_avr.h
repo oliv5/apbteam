@@ -34,7 +34,7 @@
 #define WRITE_USART          		HAL_WriteUsart
 #define READ_USART           		HAL_ReadUsart
 #define USART_CHANNEL    		APP_USART_CHANNEL
-#define DEBUG_TASK_PERIOD 	700L
+#define DEBUG_TASK_PERIOD 	100L
 
 typedef enum
 {
