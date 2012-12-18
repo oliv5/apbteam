@@ -27,8 +27,8 @@
 #define _FORMULA_H
 
 /* Formula calibration */
-#define LARGEUR_TABLE 						2000
-#define LONGUEUR_TABLE 						3000
+#define LARGEUR_TABLE 						2070
+#define LONGUEUR_TABLE 						3070
 #define LARGEUR_DEMI_TABLE 					LARGEUR_TABLE/2
 
 #define BLIND_ZONE_PRECISION					0.18 //10 degrees
