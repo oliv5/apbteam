@@ -126,7 +126,10 @@ void usartRXCallback(uint16_t bytesToRead)
 			calibration_start_stop_task();
 			break;
 		case 'q':
-// 			calibration_set_laser_flag(SET);
+			calibration_set_laser_flag(SET_SERVO_1);
+			break;
+		case 's':
+			calibration_set_laser_flag(SET_SERVO_2);
 			break;
 		case 'r':
 			reset_avr();
