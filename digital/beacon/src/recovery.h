@@ -28,7 +28,7 @@
 
 #include "position.h"
 
-#define MAX_POINT_RECOVERY  					100
+#define MAX_POINT_RECOVERY  					5
 #define RECOVERY_TRICKY_THRESHOLD  			MAX_POINT_RECOVERY/3
 
 /* Status returns */
