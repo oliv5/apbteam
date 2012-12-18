@@ -76,6 +76,10 @@ void twi_task(void)
 		if (crc_compute (RXbuffer + 1, RXlen - 1) == RXbuffer[0])
 		{
 			jack_update_status(RXbuffer[TWI_RX_JACK_FIELD]);
+			if(RXbuffer[TWI_RX_JACK_FIELD] == 1)
+			{
+				color_set_value(RXbuffer[TWI_RX_COLOR_FIELD]);
+			}
 		}
 		else
 		{
