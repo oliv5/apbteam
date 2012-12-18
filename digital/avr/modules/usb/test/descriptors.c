@@ -50,9 +50,9 @@ USB_Descriptor_Device_t PROGMEM DeviceDescriptor =
     SubClass: 0x00,
     Protocol: 0x00,
     Endpoint0Size: 8,
-    /* Taken from LUFA IDs. */
-    VendorID: 0x03EB,
-    ProductID: 0x204E,
+    /* Theses are APBTeam IDs, given by Openmoko! */
+    VendorID: 0x1d50,
+    ProductID: 0x6052,
     ReleaseNumber: 0x0000,
     ManufacturerStrIndex: 0x01,
     ProductStrIndex: 0x02,
@@ -157,7 +157,7 @@ USB_Descriptor_String_t PROGMEM ManufacturerString =
 USB_Descriptor_String_t PROGMEM ProductString =
 {
 	Header: { Size: USB_STRING_LEN (16), Type: DTYPE_String },
-	UnicodeString: L"Dual Serial Echo"
+	UnicodeString: L"test usb"
 };
 
 uint16_t

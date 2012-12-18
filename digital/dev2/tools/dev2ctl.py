@@ -57,7 +57,7 @@ if options.gpio is not None and (options.gpio[0] < 0 or options.gpio[0] > 0xff
 d = None
 for bus in usb.busses ():
     for dev in bus.devices:
-        if dev.idVendor == 0x03eb and dev.idProduct == 0x204e:
+        if dev.idVendor == 0x1d50 and dev.idProduct == 0x6052:
             d = dev.open ()
 if d is None:
     print >> sys.stderr, 'device not found'
