@@ -27,6 +27,7 @@
 #include "trust.h"
 #include "update.h"
 #include "debug_simu.h"
+#include "debug_avr.h"
 
 /* Globals Declaration */
 extern opponent_s opponent[MAX_OBSTACLE];
@@ -47,10 +48,11 @@ TUpdateStatus update(coord_s * point)
 		dy = opponent[j].y - point->y;
 		if (dx * dx + dy * dy < OBSTACLE_RADIUS * OBSTACLE_RADIUS)
 		{
-			DEBUG_UPDATE("Opponent found (%.4d ; %.4d)\n",opponent[j].x,opponent[j].y);
-			opponent[j].x = point->x;
-			opponent[j].y = point->y;
+// 			uprintf("Opponent found (%.4d ; %.4d)\r\n",opponent[j].x,opponent[j].y);
+			opponent[j].x = (opponent[j].x + point->x)/2;
+			opponent[j].y = (opponent[j].y + point->y)/2;
 			trust_increase(j);
+			uprintf("%.4d;%.4d;%d\r\n",opponent[j].x,opponent[j].y,opponent[j].trust);
 			return UPDATE_OBSTACLE_FOUND;
 		}
 	}
