@@ -131,7 +131,7 @@ ISR(TIMER3_COMPB_vect)
 	
 	if(calibration_get_state() != SCANNING_STATE_CALIBRATED)
 	{
-		if(codewheel_get_state() == CODEWHEEL_INIT)
+		if((codewheel_get_state() == CODEWHEEL_INIT)&&((laser_get_angle_degree() < 15)||(laser_get_angle_degree() > 345)))
 		{
 			codewheel_set_rebase_offset(laser_get_angle_raw());
 			codewheel_set_state(CODEWHEEL_REQUEST_REBASE);
