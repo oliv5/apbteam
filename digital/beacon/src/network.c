@@ -304,11 +304,13 @@ void APS_DataIndication(APS_DataInd_t* indData)
 		case NETWORK_JACK_STATE:
 			if(appMessage->data[NETWORK_MSG_DATA_LSB_FIELD])
 			{
+				uprintf("JACK ON\r\n");
 				motor_start();
 				servo_start_wave_task();
 			}
 			else
 			{
+				uprintf("JACK OFF\r\n");
 				motor_stop();
 				servo_stop_wave_task();
 			}
