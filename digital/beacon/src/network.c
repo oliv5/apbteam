@@ -48,6 +48,7 @@ AppMessageBuffer_t zigbit_tx_buffer;
 extern AppState_t appState;
 extern DeviceType_t deviceType;
 
+extern uint8_t debug_network;
 
 // Leave request, used for router to leave the network when communication was interrupted
 static ZDO_ZdpReq_t leaveReq;
@@ -329,7 +330,8 @@ void APS_DataIndication(APS_DataInd_t* indData)
 			angle = ((appMessage->data[NETWORK_MSG_DATA_MSB_FIELD]&0x01) << 8) + appMessage->data[NETWORK_MSG_DATA_LSB_FIELD];
 			
 			/* For debug */
-			uprintf("[%d] angle[%d] = %f\r\n",beacon,angle_id,codewheel_convert_angle_raw2degrees(angle));
+			if(debug_network == 1)
+				uprintf("[%d] angle[%d] = %f\r\n",beacon,angle_id,codewheel_convert_angle_raw2degrees(angle));
 			
 			/* New angle is avaiiable, update position */
 			update_position(beacon,angle_id,codewheel_convert_angle_raw2radians(angle));
