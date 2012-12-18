@@ -146,7 +146,7 @@ void calibration_task(void)
 				calibration_set_laser_flag(CLEAR);
 				
 				/* Laser detected the aim, reset the servo with the previous value and update the servo status */
-				servo_set_value(servo,servo_get_value(servo) + servo_get_scanning_sense(servo)*10);
+				servo_set_value(servo,servo_get_value(servo) + servo_get_scanning_sense(servo)*9);
 				servo_set_state(servo,SERVO_SCANNING_SLOW_FINISHED);
 				
 				uprintf("servo[%d] SLOW finished\r\n",servo);
@@ -157,14 +157,16 @@ void calibration_task(void)
 					calibration.state = SCANNING_STATE_CALIBRATED;
 #ifdef LOL_NUMBER_1					
 					codewheel_set_rebase_offset(496);
+					servo_set_value(SERVO_1,servo_get_value(SERVO_1) + servo_get_scanning_sense(SERVO_1)*8);
 #elif LOL_NUMBER_2
 					codewheel_set_rebase_offset(3);
+					servo_set_value(SERVO_2,servo_get_value(SERVO_2) + servo_get_scanning_sense(SERVO_2)*8);
 #elif LOL_NUMBER_3
 					codewheel_set_rebase_offset(CODEWHEEL_CPR*3/4);
 #endif
 					codewheel_set_state(CODEWHEEL_REQUEST_REBASE);
-					calibration_stop_task();
-					uprintf("Calibration finished\r\n");
+					
+					servo_start_wave_task();
 				}
 			}
 			else
