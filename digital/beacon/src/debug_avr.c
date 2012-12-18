@@ -36,18 +36,17 @@
 #include "misc.h"
 #include "position.h"
 
-HAL_UsartDescriptor_t appUsartDescriptor;          			// USART descriptor (required by stack)
-HAL_AppTimer_t debugTimer;						// TIMER descripor used by the DEBUG task
+static HAL_UsartDescriptor_t appUsartDescriptor;          			// USART descriptor (required by stack)
+static HAL_AppTimer_t debugTimer;						// TIMER descripor used by the DEBUG task
 
-uint8_t usartRxBuffer[APP_USART_RX_BUFFER_SIZE];   	// USART Rx buffer
-uint8_t usartTxBuffer[APP_USART_TX_BUFFER_SIZE];   	// USART Tx buffer
+static uint8_t usartRxBuffer[APP_USART_RX_BUFFER_SIZE];   	// USART Rx buffer
+static uint8_t usartTxBuffer[APP_USART_TX_BUFFER_SIZE];   	// USART Tx buffer
 
-TUSART_buffer_level TXbuffer_level = EMPTY;		// TX buffer state
-TUSART_bus_state TXbus_state = FREE;				// TX line state
+static TUSART_buffer_level TXbuffer_level = EMPTY;		// TX buffer state
+static TUSART_bus_state TXbus_state = FREE;				// TX line state
 
-uint16_t start_offset = 0;							// Start offset for TX buffer
-uint16_t end_offset = 0;								// Stop offset for TX buffer
-
+static uint16_t start_offset = 0;							// Start offset for TX buffer
+static uint16_t end_offset = 0;								// Stop offset for TX buffer
 
 
 /* This function initializes the USART interface for debugging on avr */
