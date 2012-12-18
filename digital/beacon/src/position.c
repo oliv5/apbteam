@@ -52,7 +52,7 @@ void position_init_struct(void)
 	{
 		opponent[i].x = 0;
 		opponent[i].y = 0;
-		opponent[i].trust = TRUST_MIN;
+		opponent[i].trust = 100;
 	}
 }
 
