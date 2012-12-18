@@ -49,7 +49,7 @@ void jack_on_off(void)
 /* This function sends the jack status to the slave beacons*/
 void jack_update_status(uint8_t value)
 {
-	uint8_t old_jack = 0;
+	static uint8_t old_jack = 0;
 	if(value != old_jack)
 	{
 		network_send_data(NETWORK_JACK_STATE,value);
