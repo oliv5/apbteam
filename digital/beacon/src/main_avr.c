@@ -62,19 +62,23 @@ void APL_TaskHandler(void)
 			switch(deviceType)
 			{
 				case DEVICE_TYPE_COORDINATOR:
-						network_init();
-						twi_init_specific();
 						position_init_struct();
-						uprintf("COORDINATOR initialisation OK !\n\r");
+						twi_init_specific();
+						trust_decrease_task();
+						start_codewheel_timer_task();
+						network_init();
+// 						debug_start_stop_task();
+						uprintf("coord initialisation OK !%d\n\r",(int)0);
 					break;
 				case DEVICE_TYPE_END_DEVICE:
 						servo_init();
 						codewheel_init();
 						laser_init();
  						network_init();
-						motor_init();
+// 						motor_init();
 						uprintf("LOL_%d initialisation OK !\n\r",CS_NWK_ADDR);
-						calibration_start_task();
+// 						calibration_start_task();
+						motor_stop();
 					break;
 				default:
 					break;
