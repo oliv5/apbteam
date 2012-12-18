@@ -26,8 +26,10 @@
 #include "position.h"
 #include "trust.h"
 #include "debug_simu.h"
+#include "debug_avr.h"
 
 extern opponent_s opponent[MAX_OBSTACLE];
+static HAL_AppTimer_t trustTimer;
 
 
 /* This function returns the trust level */
@@ -68,6 +70,16 @@ TTrustStatus trust_decrease(void)
  			opponent[i].trust--;
 		}
 	}
+	
 	return TRUST_LEVEL_OK;
+}
+
+
+void trust_decrease_task(void)
+{
+	trustTimer.interval = TRUST_DECREASE_TASK_PERIOD;
+	trustTimer.mode     = TIMER_REPEAT_MODE;
+	trustTimer.callback = trust_decrease;
+	HAL_StartAppTimer(&trustTimer);
 }
 
