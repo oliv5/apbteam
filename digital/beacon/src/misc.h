@@ -26,6 +26,9 @@
 #ifndef _MISC_H
 #define _MISC_H
 
+#define COLOR_LEFT 1
+#define COLOR_RIGHT 0
+
 /* This function resets the avr using the embedded watchdog */
 void reset_avr(void);
 
@@ -34,5 +37,11 @@ void jack_on_off(void);
 
 /* This function sends the jack status to the slave beacons*/
 void jack_update_status(uint8_t value);
+
+void color_set_value(uint8_t value);
+
+uint8_t color_get_value(void);
+
+
 
 #endif

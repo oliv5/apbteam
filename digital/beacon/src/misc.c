@@ -26,6 +26,7 @@
 #include "misc.h"
 #include "network.h"
 
+static int8_t color = -1;
 /* This function resets the avr using the embedded watchdog */
 void reset_avr(void)
 {
@@ -56,3 +57,12 @@ void jack_update_status(uint8_t value)
 	}	
 }
 
+void color_set_value(uint8_t value)
+{
+	color = value;
+}
+
+uint8_t color_get_value(void)
+{
+	return color;
+}
