@@ -205,7 +205,14 @@ void ZDO_MgmtNwkUpdateNotf(ZDO_MgmtNwkUpdateNotf_t *nwkParams)
 		}
 		case ZDO_NWK_UPDATE_STATUS:
 			break;
+		case ZDO_CHILD_JOINED_STATUS:
+			uprintf("CHILD %d joined\r\n",nwkParams->childAddr);
+			break;
+		case ZDO_CHILD_REMOVED_STATUS:
+			uprintf("CHILD quit\r\n");
+			break;
 		default:
+			uprintf("network status = 0x%x\r\n",nwkParams->status);
 			break;
 	}
 }
