@@ -27,7 +27,7 @@
 #define _TRUST_H
 
 #define TRUST_MIN			0
-#define TRUST_THRESHOLD		30
+#define TRUST_THRESHOLD		70
 #define TRUST_MAX			100
 #define TRUST_DECREASE_TASK_PERIOD	500L
 
