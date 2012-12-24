@@ -48,6 +48,7 @@ static TUSART_bus_state TXbus_state = FREE;				// TX line state
 static uint16_t start_offset = 0;							// Start offset for TX buffer
 static uint16_t end_offset = 0;								// Stop offset for TX buffer
 
+uint8_t debug_network = 0;
 
 /* This function initializes the USART interface for debugging on avr */
  void initSerialInterface(void)
@@ -150,6 +151,19 @@ void usartRXCallback(uint16_t bytesToRead)
 		case 'x':
 			motor_set_target_speed(motor_get_target_speed()+1);
 			uprintf("target speed = %d\r\n",motor_get_target_speed());
+			break;
+		case 'f':
+			uprintf("plop = %d\r\n",plop);
+			if(debug_network_enable == 1)
+			{
+				debug_network_enable = 0;
+				debug_network = 0;
+			}
+			else
+			{
+				debug_network_enable = 1;
+				debug_network = 1;
+			}
 			break;
 		/* Default */
 		default :
