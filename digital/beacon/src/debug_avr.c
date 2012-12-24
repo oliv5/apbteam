@@ -153,7 +153,6 @@ void usartRXCallback(uint16_t bytesToRead)
 			uprintf("target speed = %d\r\n",motor_get_target_speed());
 			break;
 		case 'f':
-			uprintf("plop = %d\r\n",plop);
 			if(debug_network_enable == 1)
 			{
 				debug_network_enable = 0;
