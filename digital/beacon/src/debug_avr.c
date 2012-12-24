@@ -49,6 +49,7 @@ static uint16_t start_offset = 0;							// Start offset for TX buffer
 static uint16_t end_offset = 0;								// Stop offset for TX buffer
 
 uint8_t debug_network = 0;
+uint8_t debug_network_enable = 0;
 
 /* This function initializes the USART interface for debugging on avr */
  void initSerialInterface(void)
