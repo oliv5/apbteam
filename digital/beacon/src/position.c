@@ -24,15 +24,18 @@
  * }}} */
 
 #include <stdint.h>
+#include <math.h>
 #include "position.h"
 #include "debug_simu.h"
 #include "recovery.h"
 #include "update.h"
 #include "formula.h"
 #include "trust.h"
+#include "misc.h"
 
 beacon_s beacon[MAX_BEACON+1];
 opponent_s opponent[MAX_OBSTACLE+1];
+apb_s apb_pos;
 
 /* This function is used to initialize all needed structures */
 void position_init_struct(void)
@@ -54,6 +57,12 @@ void position_init_struct(void)
 		opponent[i].y = 0;
 		opponent[i].trust = 100;
 	}
+	
+	apb_pos.x = 0;
+	apb_pos.y = 0;
+	apb_pos.angle[1] = 0;
+	apb_pos.angle[2] = 0;
+	apb_pos.angle[3] = 0;
 }
 
 /* This function update the opponent position when a new angle is avalaible */
