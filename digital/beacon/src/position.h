@@ -67,6 +67,15 @@ typedef struct
 	int8_t trust;
 }opponent_s;
 
+/* Obstacle structure */
+typedef struct
+{
+	int16_t x;
+	int16_t y;
+	float angle[MAX_BEACON+1];
+}apb_s;
+
+
 /* Coordinates structure */
 typedef struct
 {

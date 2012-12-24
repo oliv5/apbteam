@@ -82,6 +82,8 @@ int update_position(uint16_t beaconID, uint16_t angleID, float angle)
 	DEBUG_POSITION("Update_position with beaconID = %d and angleID = %d and angle = %f\n",(int)beaconID,(int) angleID, (double)angle);
 	DEBUG_POSITION("last_ID[0]  = %d  last_ID[1]  = %d\n",(int)last_ID[0],(int)last_ID[1]);
 
+	//TODO : checker nombre de catadioptre. Si c'est le notre, return 0
+	
 	/* Calculate which formula need to be used to compute position */
 	for(i = 0 ; i < 2; i++)
 	{
@@ -119,6 +121,8 @@ int update_position(uint16_t beaconID, uint16_t angleID, float angle)
 		}
 		else /* Need Recovery */
 		{
+// 			opponent[1].x = 0;
+// 			opponent[1].y = 0;
 			/* Compute all hypotheticals positions and save them into temporary_position tab*/
 			for(i = 1 ; i <= beacon[last_valid_id].angleNumber ; i++)
 			{				
@@ -171,10 +175,28 @@ int16_t position_get_coord(TOpponent_ID id, TCoord_type type)
 	switch(type)
 	{
 		case X:
-			return opponent[id].x;
+			if(color_get_value() == COLOR_LEFT)
+			{
+// 				return 2500;
+				return (opponent[id].x - 35);
+			}
+			else
+			{
+// 				return 2500;
+				return (LONGUEUR_TABLE - opponent[id].x + 35);
+			}
 			break;
 		case Y:
-			return opponent[id].y;
+			if(color_get_value() == COLOR_LEFT)
+			{
+// 				return 1000;
+				return (opponent[id].y - 35);
+			}
+			else
+			{
+// 				return 1000;
+				return (LARGEUR_TABLE - opponent[id].y + 35);
+			}
 			break;
 		default:
 			return 0;
@@ -185,4 +207,30 @@ int16_t position_get_coord(TOpponent_ID id, TCoord_type type)
 int8_t position_get_trust(TOpponent_ID id)
 {
 	return opponent[id].trust;
+}
+
+void formula_update_apb_position(uint16_t x,uint16_t y)
+{
+	if(color_get_value() == COLOR_RIGHT)
+	{
+		apb_pos.x = LONGUEUR_TABLE - x;
+		apb_pos.y = LARGEUR_TABLE - y;
+	}
+	else
+	{
+		apb_pos.x = x;
+		apb_pos.y = y;
+	}
+	
+	apb_pos.angle[1] = atan(apb_pos.x / (LARGEUR_TABLE - apb_pos.y));
+	apb_pos.angle[2] = atan(apb_pos.x/apb_pos.y);
+	
+	if(y <= LARGEUR_DEMI_TABLE)
+	{
+		apb_pos.angle[3] = atan((LONGUEUR_TABLE - apb_pos.x) / (LARGEUR_DEMI_TABLE - apb_pos.y));
+	}
+	else
+	{
+		apb_pos.angle[3] = M_PI/2 + atan((apb_pos.y - LARGEUR_DEMI_TABLE) / (LONGUEUR_TABLE-apb_pos.x));
+	}
 }
