@@ -79,6 +79,7 @@ void twi_task(void)
 			if(RXbuffer[TWI_RX_JACK_FIELD] == 1)
 			{
 				color_set_value(RXbuffer[TWI_RX_COLOR_FIELD]);
+				formula_update_apb_position((RXbuffer[TWI_RX_X_MSB_FIELD]<<8)+RXbuffer[TWI_RX_X_LSB_FIELD],(RXbuffer[TWI_RX_Y_MSB_FIELD]<<8)+RXbuffer[TWI_RX_Y_LSB_FIELD]);
 			}
 		}
 		else
