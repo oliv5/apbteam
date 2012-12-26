@@ -1,0 +1,145 @@
+COMPONENTS_PATH = $(BITCLOUD_PATH)/Components
+CONFIG_NAME = All_ZigBit_Atmega1281_Rf230_8Mhz_Gcc
+LIST_PATH = $(CONFIG_NAME)/List
+EXE_PATH = $(CONFIG_NAME)/Exe
+OBJ_PATH = $(CONFIG_NAME)/Obj
+
+include $(BITCLOUD_PATH)/lib/Makerules_Atmega1281_Gcc
+
+DEFINES = \
+  -DBOARD_MESHBEAN \
+  -DATMEGA1281 \
+  -DHAL_8MHz \
+  -DAT86RF230 \
+  -DNO_SECURITY_MODE \
+  -DSTACK_TYPE_ALL 
+
+ifeq ($(LOL_NUMBER),0)
+	DEFINES += -DLOL_NUMBER_0
+else ifeq ($(LOL_NUMBER),1)
+	DEFINES += -DLOL_NUMBER_1
+else ifeq ($(LOL_NUMBER),2)
+	DEFINES += -DLOL_NUMBER_2
+else ifeq ($(LOL_NUMBER),3)
+	DEFINES += -DLOL_NUMBER_3
+endif
+
+INCLUDES = \
+  -I$(PROJECT_BASE) \
+  -I$(BITCLOUD_PATH)/Components/BSP/MESHBEAN/include \
+  -I$(BITCLOUD_PATH)/lib \
+  -I$(BITCLOUD_PATH)/Components/HAL/include \
+  -I$(BITCLOUD_PATH)/Components/BSP \
+  -I$(BITCLOUD_PATH)/Components/BSP/include \
+  -I$(BITCLOUD_PATH)/Components/NWK/include \
+  -I$(BITCLOUD_PATH)/Components/NWK/include/private \
+  -I$(BITCLOUD_PATH)/Components/ZDO/include \
+  -I$(BITCLOUD_PATH)/Components/ZDO/include/private \
+  -I$(BITCLOUD_PATH)/Components/APS/include \
+  -I$(BITCLOUD_PATH)/Components/APS/include/private \
+  -I$(BITCLOUD_PATH)/Components/SystemEnvironment/include \
+  -I$(BITCLOUD_PATH)/Components/ConfigServer/include \
+  -I$(BITCLOUD_PATH)/Components/ConfigServer/include/private \
+  -I$(BITCLOUD_PATH)/Components/PersistDataServer/include \
+  -I$(BITCLOUD_PATH)/Components/PersistDataServer/include/private \
+  -I$(BITCLOUD_PATH)/Components/Security/TrustCentre/include \
+  -I$(BITCLOUD_PATH)/Components/Security/ServiceProvider/include \
+  -I$(BITCLOUD_PATH)/Components/HAL/avr/atmega1281/common/include \
+  -I$(BITCLOUD_PATH)/Components/HAL/avr/atmega1281/zigBit/include \
+  -I$(BITCLOUD_PATH)/Components/MAC_PHY/include \
+  -I$(BITCLOUD_PATH)/Components/MAC_PHY/MAC_ENV/include \
+  -I$(BITCLOUD_PATH)/Components/MAC_PHY/MAC_HWI/include \
+  -I$(BITCLOUD_PATH)/Components/MAC_PHY/MAC_HWD_PHY/include \
+  -I$(BITCLOUD_PATH)/Components/MAC_PHY/MAC_HWD_PHY/RF230/PHY/include \
+  -I$(BITCLOUD_PATH)/Components/MAC_PHY/MAC_HWD_PHY/RF230/MAC_HWD/include \
+  -I$(APB_AVR_PATH) \
+  -I$(APB_AVR_PATH)/common \
+  -I$(APB_AVR_PATH)/modules/twi
+
+LIBS = \
+  $(BITCLOUD_PATH)/lib/libHAL_ZigBit_Atmega1281_8Mhz_Gcc_Amp.a \
+  $(BITCLOUD_PATH)/lib/libBc_All_Atmega1281_Rf230_Gcc.a \
+  $(BITCLOUD_PATH)/lib/WdtInitatmega1281_Gcc.o 
+
+SRCS = \
+  $(BITCLOUD_PATH)/Components/PersistDataServer/src/pdsWriteData.c \
+  $(BITCLOUD_PATH)/Components/PersistDataServer/src/pdsDataServer.c \
+  $(BITCLOUD_PATH)/Components/PersistDataServer/src/pdsCrcService.c \
+  $(BITCLOUD_PATH)/Components/BSP/MESHBEAN/src/fakeBSP.c \
+  $(BITCLOUD_PATH)/Components/BSP/MESHBEAN/src/bspTaskManager.c \
+  $(BITCLOUD_PATH)/Components/ConfigServer/src/csPersistentMem.c \
+  $(BITCLOUD_PATH)/Components/ConfigServer/src/csMem.c \
+  $(BITCLOUD_PATH)/Components/ConfigServer/src/configServer.c \
+  $(APB_AVR_PATH)/modules/twi/twi_hard.avr.c \
+  $(APB_AVR_PATH)/modules/twi/twi.c
+
+PREINCLUDE = MakerulesBc_All_Atmega1281_Rf230_Gcc.h
+
+SRCS += $(wildcard $(PROJECT_BASE)/*.c)
+SRCS += $(wildcard ./../../common/src/*.c)
+
+CSRCS = $(filter %.c, $(SRCS))
+OBJS = $(addprefix $(OBJ_PATH)/, $(notdir %/$(subst .c,.o,$(CSRCS))))
+
+ASM_FILE_EXT = s
+
+ifneq (, $(findstring .$(ASM_FILE_EXT), $(SRCS)))
+  ASRCS = $(filter %.$(ASM_FILE_EXT), $(SRCS))
+  OBJS += $(addprefix $(OBJ_PATH)/, $(notdir %$(subst .$(ASM_FILE_EXT),.o,$(ASRCS))))
+endif
+
+CFLAGS += $(DEFINES)
+CFLAGS += $(INCLUDES)
+CFLAGS += -include $(PREINCLUDE)
+CFLAGS += -g
+
+# APB sources need to be compiled without this option in order to manage correctly APB inline functions
+APB_CFLAGS := $(filter-out -std=gnu99,$(CFLAGS))
+
+ASFLAGS = $(INCLUDES)
+ASFLAGS += $(filter -mmcu%,$(CFLAGS))
+
+LD = $(CC)
+LINKER_FLAGS = -Wl,-Map=$(LIST_PATH)/$(APP_NAME).map -Wl,--gc-sections
+LINKER_FLAGS += -Wl,--script=$(PROJECT_BASE)/atmega1281.ld
+LINKER_FLAGS += $(filter -mmcu%,$(CFLAGS))
+LINKER_FLAGS += -Wl,-u,vfprintf -lprintf_flt -lm
+
+.PHONY: all directories clean size root_files
+
+all: directories $(EXE_PATH)/$(APP_NAME).elf $(EXE_PATH)/$(APP_NAME).hex $(EXE_PATH)/$(APP_NAME).srec $(EXE_PATH)/$(APP_NAME).bin root_files size
+
+$(OBJ_PATH)/%.o: $(SRCS)
+	$(CC) $(CFLAGS) $(filter %/$(subst .o,.c,$(notdir $@)), $(SRCS)) -o $@
+All_ZigBit_Atmega1281_Rf230_8Mhz_Gcc/Obj/twi_hard.avr.o: CFLAGS=$(APB_CFLAGS)
+
+
+$(EXE_PATH)/$(APP_NAME).elf: $(OBJS)
+	$(LD) $(LINKER_FLAGS) $(OBJS) -lm -Wl,-\( $(LIBS) -Wl,-\) -o $@
+
+$(EXE_PATH)/$(APP_NAME).srec: $(EXE_PATH)/$(APP_NAME).elf
+	$(OBJCOPY) -O srec --srec-len 128 $^ $@
+
+$(EXE_PATH)/$(APP_NAME).hex: $(EXE_PATH)/$(APP_NAME).elf
+	$(OBJCOPY) -O ihex -R .eeprom $^ $@
+
+$(EXE_PATH)/$(APP_NAME).bin: $(EXE_PATH)/$(APP_NAME).elf
+	$(OBJCOPY) -O binary --strip-debug --strip-unneeded -R .eeprom $^ $@
+
+root_files:
+	cp -f $(EXE_PATH)/*.* $(PROJECT_BASE)/obj
+
+clean:
+	echo $(PROJECT_BASE)
+	rm -rf $(CONFIG_NAME) $(PROJECT_BASE)/obj/$(APP_NAME).elf $(PROJECT_BASE)/obj/$(APP_NAME).hex $(PROJECT_BASE)/obj/$(APP_NAME).srec $(PROJECT_BASE)/obj/$(APP_NAME).bin
+
+directories:
+	@mkdir -p $(LIST_PATH)
+	@mkdir -p $(EXE_PATH)
+	@mkdir -p $(OBJ_PATH)
+
+size: $(EXE_PATH)/$(APP_NAME).elf
+	@echo
+	@$(SIZE) -td $(EXE_PATH)/$(APP_NAME).elf
+
+# eof Makefile
