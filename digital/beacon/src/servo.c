@@ -26,7 +26,7 @@
 #include <types.h>
 #include <irq.h>
 #include "servo.h" 
-#include "debug_avr.h"
+#include "print.h"
 
 servo_s servo1;
 servo_s servo2;

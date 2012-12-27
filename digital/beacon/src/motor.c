@@ -23,7 +23,7 @@
  *
  * }}} */
 
-#include "debug_avr.h"
+#include "print.h"
 #include "motor.h"
 #include "codewheel.h"
 

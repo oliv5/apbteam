@@ -26,7 +26,7 @@
 #include "position.h"
 #include "trust.h"
 #include "debug_simu.h"
-#include "debug_avr.h"
+#include "print.h"
 
 extern opponent_s opponent[MAX_OBSTACLE];
 static HAL_AppTimer_t trustTimer;

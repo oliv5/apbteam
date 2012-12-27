@@ -28,7 +28,7 @@
 #include <zdo.h>
 #include "configuration.h"
 #include "network.h"
-#include "debug_avr.h"
+#include "print.h"
 #include "led.h"
 #include "motor.h"
 #include "position.h"

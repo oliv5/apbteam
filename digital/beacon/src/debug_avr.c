@@ -26,6 +26,7 @@
 #include <string.h>
 #include <appTimer.h>
 #include "configuration.h"
+#include "print.h"
 #include "calibration.h"
 #include "debug_avr.h"
 #include "servo.h"
@@ -36,17 +37,11 @@
 #include "misc.h"
 #include "position.h"
 
-static HAL_UsartDescriptor_t appUsartDescriptor;          			// USART descriptor (required by stack)
+HAL_UsartDescriptor_t appUsartDescriptor;          			// USART descriptor (required by stack)
 static HAL_AppTimer_t debugTimer;						// TIMER descripor used by the DEBUG task
 
-static uint8_t usartRxBuffer[APP_USART_RX_BUFFER_SIZE];   	// USART Rx buffer
-static uint8_t usartTxBuffer[APP_USART_TX_BUFFER_SIZE];   	// USART Tx buffer
-
-static TUSART_buffer_level TXbuffer_level = EMPTY;		// TX buffer state
-static TUSART_bus_state TXbus_state = FREE;				// TX line state
-
-static uint16_t start_offset = 0;							// Start offset for TX buffer
-static uint16_t end_offset = 0;								// Stop offset for TX buffer
+uint8_t usartRxBuffer[APP_USART_RX_BUFFER_SIZE];   	// USART Rx buffer
+uint8_t usartTxBuffer[APP_USART_TX_BUFFER_SIZE];   	// USART Tx buffer
 
 uint8_t debug_network = 0;
 uint8_t debug_network_enable = 0;
@@ -69,25 +64,6 @@ uint8_t debug_network_enable = 0;
 	appUsartDescriptor.flowControl     = USART_FLOW_CONTROL_NONE;
 	OPEN_USART(&appUsartDescriptor);
  }
-
-/* TX USART Callback */
-void usartTXCallback(void)
-{
-	/* If buffer is not empty continue to send via USART line */ 
-	if(TXbuffer_level != EMPTY)
-	{
-		WRITE_USART(&appUsartDescriptor,usartTxBuffer+start_offset,end_offset);
-		TXbuffer_level = EMPTY;
-	}
-	else
-	{
-		/* Bus is free so reset variables and flags */
-		memset(usartTxBuffer,0,APP_USART_TX_BUFFER_SIZE);
-		start_offset = 0;
-		end_offset = 0;
-		TXbus_state = FREE;
-	}
-}
 
 /* RX USART Callback */
 void usartRXCallback(uint16_t bytesToRead)
@@ -170,32 +146,6 @@ void usartRXCallback(uint16_t bytesToRead)
 			uprintf(" ?? Unknown command ??\r\n");
 			break;
 	}
-}
-
-/* This function sends data string via the USART interface */
-void uprintf(char *format, ...)
-{
-	va_list args;
-	va_start(args,format);
-	
-	if(end_offset+strlen(format)+strlen(args) < APP_USART_TX_BUFFER_SIZE)
-	{
-		vsprintf(usartTxBuffer+end_offset,format,args);
-		end_offset = strlen(usartTxBuffer);
-		
-		/* Check if the bus is busy */
-		if(TXbus_state == FREE)
-		{
-			WRITE_USART(&appUsartDescriptor,usartTxBuffer+start_offset,end_offset);
-			start_offset = end_offset;
-			TXbus_state = BUSY;
-		}
-		else
-		{
-			TXbuffer_level = FILLED;
-		}
-	}
-	va_end(args);
 }
 
 /* This function starts the debug task */

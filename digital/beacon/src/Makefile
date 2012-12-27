@@ -16,6 +16,7 @@ include $(BASE)/make/Makefile.gen
 BITCLOUD_BASE = $(APB_REPO_PATH)/digital/zigbit/bitcloud
 BITCLOUD_MAKEFILE = $(BITCLOUD_BASE)/makefiles
 BITCLOUD_STACK = $(BITCLOUD_BASE)/stack
+BITCLOUD_COMMON_SOURCES = $(APB_REPO_PATH)/digital/zigbit/common
 PROJECT_BASE = $(APB_REPO_PATH)/digital/beacon/src
 
 CONFIG_NAME = All_ZigBit_Atmega1281_Rf230_8Mhz_Gcc
@@ -34,7 +35,7 @@ simu:host
 avr:
 	for count in $(NUMBER); do\
 		$(MAKE) -C $(BITCLOUD_MAKEFILE) -f Makefile_$(CONFIG_NAME) clean BITCLOUD_PATH=$(BITCLOUD_STACK);\
-		$(MAKE) -C $(BITCLOUD_MAKEFILE) -f Makefile_$(CONFIG_NAME) all APP_NAME=beacon_$$count BITCLOUD_PATH=$(BITCLOUD_STACK) APB_AVR_PATH=$(BASE) PROJECT_BASE=$(PROJECT_BASE) LOL_NUMBER=$$count;\
+		$(MAKE) -C $(BITCLOUD_MAKEFILE) -f Makefile_$(CONFIG_NAME) all APP_NAME=beacon_$$count BITCLOUD_PATH=$(BITCLOUD_STACK) APB_AVR_PATH=$(BASE) PROJECT_BASE=$(PROJECT_BASE) BITCLOUD_COMMON_SOURCES=$(BITCLOUD_COMMON_SOURCES) LOL_NUMBER=$$count;\
 	done;\
 
 flash0:

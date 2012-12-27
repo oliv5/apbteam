@@ -29,7 +29,7 @@
 #include "twi_specific.h"
 #include "calibration.h"
 #include "codewheel.h"
-#include "debug_avr.h"
+#include "print.h"
 #include "network.h"
 #include "position.h"
 #include "motor.h"

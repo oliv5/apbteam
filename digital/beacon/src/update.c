@@ -27,7 +27,7 @@
 #include "trust.h"
 #include "update.h"
 #include "debug_simu.h"
-#include "debug_avr.h"
+#include "print.h"
 
 /* Globals Declaration */
 extern opponent_s opponent[MAX_OBSTACLE];

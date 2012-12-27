@@ -25,7 +25,7 @@
 
 #include <types.h>
 #include <avr/interrupt.h>
-#include "debug_avr.h"
+#include "print.h"
 #include "laser.h"
 #include "servo.h"
 #include "network.h"
