@@ -26,6 +26,7 @@ endif
 
 INCLUDES = \
   -I$(PROJECT_BASE) \
+  -I$(BITCLOUD_COMMON_SOURCES) \
   -I$(BITCLOUD_PATH)/Components/BSP/MESHBEAN/include \
   -I$(BITCLOUD_PATH)/lib \
   -I$(BITCLOUD_PATH)/Components/HAL/include \
@@ -70,6 +71,7 @@ SRCS = \
   $(BITCLOUD_PATH)/Components/ConfigServer/src/csPersistentMem.c \
   $(BITCLOUD_PATH)/Components/ConfigServer/src/csMem.c \
   $(BITCLOUD_PATH)/Components/ConfigServer/src/configServer.c \
+  $(BITCLOUD_COMMON_SOURCES)/print.c \
   $(APB_AVR_PATH)/modules/twi/twi_hard.avr.c \
   $(APB_AVR_PATH)/modules/twi/twi.c
 
