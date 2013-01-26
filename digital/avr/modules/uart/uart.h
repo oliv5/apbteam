@@ -29,6 +29,10 @@
 void
 uart0_init (void);
 
+/** Change uart speed after init. */
+void
+uart0_set_speed (uint32_t speed);
+
 /** Read a char. */
 uint8_t
 uart0_getc (void);
@@ -44,6 +48,10 @@ uart0_poll (void);
 /** Initialise uart. */
 void
 uart1_init (void);
+
+/** Change uart speed after init. */
+void
+uart1_set_speed (uint32_t speed);
 
 /** Read a char. */
 uint8_t

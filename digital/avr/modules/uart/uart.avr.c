@@ -245,9 +245,7 @@ void
 uart_init (void)
 {
     /* Set baud rate. */
-#if (UBRR_VAL >> 8) != 0
     UBRRH = UBRR_VAL >> 8;
-#endif
     UBRRL = UBRR_VAL & 0xff;
     UCSRA = 0;
     /* Set format and enable uart. */
@@ -261,6 +259,15 @@ uart_init (void)
     uart_send_head = 0;
     uart_send_tail = 0;
 #endif
+}
+
+/** Change uart speed after init. */
+void
+uart_set_speed (uint32_t speed)
+{
+    uint16_t ubrr_val = AC_FREQ / 16 / speed - 1;
+    UBRRH = ubrr_val >> 8;
+    UBRRL = ubrr_val & 0xff;
 }
 
 /** Read a char. */

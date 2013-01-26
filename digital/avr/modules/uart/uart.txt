@@ -40,6 +40,9 @@ Only one port can be configured to be used in the STDIO mode.  In this mode,
 there is an automatic conversion between carriage returns and line feeds (this
 is also not good if you plan to use it for binary transfers.
 
+On AVR, there is also a ``uartN_set_speed`` to change speed after the UART was
+initialized.
+
 API
 ===
 

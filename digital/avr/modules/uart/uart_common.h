@@ -40,6 +40,7 @@
 #define uart_error_code uart (error_code)
 #define uart_getc uart (getc)
 #define uart_init uart (init)
+#define uart_set_speed uart (set_speed)
 #define uart_poll uart (poll)
 #define uart_putc uart (putc)
 #define uart_recv_buffer uart (recv_buffer)
