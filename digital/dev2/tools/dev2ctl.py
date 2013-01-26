@@ -26,6 +26,7 @@
 import sys
 from optparse import OptionParser
 import usb
+import struct
 
 # Parse options.
 opt = OptionParser (description = __doc__)
@@ -35,6 +36,8 @@ opt.add_option ('-u', '--unselect', action = 'store_true', default = False,
         help = 'unselect outputs')
 opt.add_option ('-g', '--gpio', type = 'int', nargs = 2,
         help = 'set DDR and PORT', metavar = 'DDR PORT')
+opt.add_option ('-S', '--serial', type = 'int',
+        help = 'send serial parameters', metavar = 'SPEED')
 opt.add_option ('-d', '--dfu', action = 'store_true', default = False,
         help = 'go to DFU boot loader')
 
@@ -43,6 +46,7 @@ if args:
     opt.error ('too many arguments')
 if ((options.select is not None) + options.unselect
         + (options.gpio is not None)
+        + (options.serial is not None)
         + options.dfu != 1):
     opt.error ('choose one of available options')
 if options.select is not None and (options.select < 1 or options.select > 4):
@@ -79,5 +83,11 @@ elif options.gpio is not None:
         sys.exit (1)
     d.controlMsg (usb.TYPE_VENDOR | usb.RECIP_DEVICE, 0x80, 0,
             value = options.gpio[0] | (options.gpio[1] << 8))
+elif options.serial is not None:
+    if 'serial' not in prod:
+        print >> sys.stderr, 'not a serial device'
+        sys.exit (1)
+    d.controlMsg (usb.TYPE_VENDOR | usb.RECIP_DEVICE, 0x70,
+            struct.pack ('L', options.serial))
 else:
     assert 0

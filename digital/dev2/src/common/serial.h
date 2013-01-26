@@ -25,11 +25,19 @@
  *
  * }}} */
 
+struct serial_parameters_t
+{
+    uint32_t speed;
+};
+
 void
 serial_init (void);
 
 void
 serial_uninit (void);
+
+void
+serial_set_params (struct serial_parameters_t *params);
 
 void
 serial_task (void);

@@ -135,6 +135,20 @@ EVENT_HANDLER (USB_UnhandledControlPacket)
 	    Endpoint_ClearSetupIN ();
 	  }
 	break;
+	/* Set serial parameters. */
+      case 0x70:
+	if (bmRequestType == (REQDIR_HOSTTODEVICE | REQTYPE_VENDOR |
+			      REQREC_DEVICE))
+	  {
+	    Endpoint_ClearSetupReceived ();
+	    /* Set serial parameters. */
+	    struct serial_parameters_t params;
+	    Endpoint_Read_Control_Stream_LE (&params, sizeof (params));
+	    serial_set_params (&params);
+	    /* Send acknowledgement. */
+	    Endpoint_ClearSetupIN ();
+	  }
+	break;
       }
 }
 

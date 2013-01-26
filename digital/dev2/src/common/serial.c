@@ -52,6 +52,12 @@ serial_uninit (void)
 }
 
 void
+serial_set_params (struct serial_parameters_t *params)
+{
+    uart0_set_speed (params->speed);
+}
+
+void
 serial_task (void)
 {
     Endpoint_SelectEndpoint (SERIAL_RX_EPNUM);
