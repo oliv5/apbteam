@@ -73,7 +73,11 @@ typedef enum
   USART_BAUDRATE_9600 =  (unsigned)((F_CPU * (USART_DOUBLE_SPEED + 1ul)) / (16ul * 9600ul) - 1ul), // 9600 baud rate
   USART_BAUDRATE_19200 =  (unsigned)((F_CPU * (USART_DOUBLE_SPEED + 1ul)) / (16ul * 19200ul) - 1ul), // 19200 baud rate
   USART_BAUDRATE_38400 = (unsigned)((F_CPU * (USART_DOUBLE_SPEED + 1ul)) / (16ul * 38400ul) - 1ul), // 38400 baud rate
-  USART_BAUDRATE_115200 = (unsigned)((F_CPU * (USART_DOUBLE_SPEED + 1ul)) / (16ul * 115200ul)), // 115200 baud rate
+  USART_BAUDRATE_100000 =  (unsigned)((F_CPU * (USART_DOUBLE_SPEED + 1ul)) / (16ul * 100000ul) - 1ul), // 100000 baud rate
+  USART_BAUDRATE_200000 =  (unsigned)((F_CPU * (USART_DOUBLE_SPEED + 1ul)) / (16ul * 200000ul) - 1ul), // 200000ul baud rate
+  USART_BAUDRATE_250000 =  (unsigned)((F_CPU * (USART_DOUBLE_SPEED + 1ul)) / (16ul * 250000ul) - 1ul), // 250000ul baud rate
+  USART_BAUDRATE_500000 =  (unsigned)((F_CPU * (USART_DOUBLE_SPEED + 1ul)) / (16ul * 500000ul) - 1ul), // 500000ul baud rate
+  USART_BAUDRATE_1000000 =  (unsigned)((F_CPU * (USART_DOUBLE_SPEED + 1ul)) / (16ul * 1000000ul) - 1ul), // 500000ul baud rate
   USART_SYNC_BAUDRATE_1200  =  (uint16_t)((F_CPU / (2ul * 1200ul)) - 1ul),
   USART_SYNC_BAUDRATE_2400  =  (uint16_t)((F_CPU / (2ul * 2400ul)) - 1ul),
   USART_SYNC_BAUDRATE_4800  =  (uint16_t)((F_CPU / (2ul * 4800ul)) - 1ul),
