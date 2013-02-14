@@ -27,12 +27,6 @@
 #include "network.h"
 
 static int8_t color = -1;
-/* This function resets the avr using the embedded watchdog */
-void reset_avr(void)
-{
-	wdt_enable (WDTO_15MS);
-	while (1);
-}
 
 /* This function simulates the jack's state and send it over the air */
 void jack_on_off(void)

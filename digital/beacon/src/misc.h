@@ -29,9 +29,6 @@
 #define COLOR_LEFT 1
 #define COLOR_RIGHT 0
 
-/* This function resets the avr using the embedded watchdog */
-void reset_avr(void);
-
 /* This function simulates the jack's state and send it over the air */
 void jack_on_off(void);
 
