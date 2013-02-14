@@ -206,6 +206,7 @@ int8_t network_get_rssi(ShortAddr_t nodeAddr)
 void APS_DataIndication(APS_DataInd_t* indData)
 {
 	led_inverse(NETWORK_ACTIVITY_LED);
+	network_specific_DataIndicationcallback(indData);
 }
 
 
