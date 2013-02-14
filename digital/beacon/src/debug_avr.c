@@ -32,10 +32,10 @@
 #include "servo.h"
 #include "codewheel.h"
 #include "laser.h"
-#include "network.h"
+#include "network_specific.h"
 #include "motor.h"
-#include "misc.h"
 #include "position.h"
+#include "reset.h"
 
 HAL_UsartDescriptor_t appUsartDescriptor;          			// USART descriptor (required by stack)
 static HAL_AppTimer_t debugTimer;						// TIMER descripor used by the DEBUG task
@@ -172,9 +172,7 @@ void debug_task(void)
 {
  	uprintf("------------------------- debug TASK -------------------------\r\n");
 	uprintf("## Network\r\n");
-	uprintf("Status : 0x%x - ",network_get_status());
-	uprintf("LQI = %d - ",network_get_lqi());
-	uprintf("RSSI = %d - \r\n",network_get_rssi());
+	uprintf("Status : 0x%x - ",network_get_state());
 #ifdef TYPE_COOR
 	uprintf("X = %d   ---   ",position_get_coord(OPPONENT_1,X));
 	uprintf("Y = %d   ---   ",position_get_coord(OPPONENT_1,Y));

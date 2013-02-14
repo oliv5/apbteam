@@ -38,18 +38,11 @@
 #include "led.h"
 #include "twi.h"
 
-// Application related parameters
-AppState_t appState = APP_INITIAL_STATE;  // application state
-
-#ifdef TYPE_COOR
-	DeviceType_t deviceType = DEVICE_TYPE_COORDINATOR;
-#else
- 	DeviceType_t deviceType = DEVICE_TYPE_END_DEVICE;
-#endif
+static uint8_t uid;
 
 void APL_TaskHandler(void)
 {
-	switch (appState)
+	switch (network_get_state())
 	{
 		case APP_INITIAL_STATE:
 			
@@ -59,40 +52,46 @@ void APL_TaskHandler(void)
 			/* Init Serial Interface for debug */ 
   			initSerialInterface();          
 			
-			switch(deviceType)
+			uid = get_uid();
+			
+			/* Init network */
+			network_init(uid);
+			
+			if(get_device_type(uid) == DEVICE_TYPE_COORDINATOR)
 			{
-				case DEVICE_TYPE_COORDINATOR:
-						position_init_struct();
-						twi_init_specific();
-						trust_decrease_task();
-						start_codewheel_timer_task();
-						network_init();
-// 						debug_start_stop_task();
-						uprintf("coord initialisation OK !%d\n\r",(int)0);
-					break;
-				case DEVICE_TYPE_END_DEVICE:
-						servo_init();
-						codewheel_init();
-						laser_init();
- 						network_init();
-// 						motor_init();
-						uprintf("LOL_%d initialisation OK !\n\r",CS_NWK_ADDR);
-// 						calibration_start_task();
-						motor_stop();
-					break;
-				default:
-					break;
+				position_init_struct();
+				twi_init_specific();
+				trust_decrease_task();
+				start_codewheel_timer_task();
+// 				debug_start_stop_task();
 			}
- 			appState = APP_NETWORK_JOIN_REQUEST;
+			else
+			{
+				servo_init();
+				codewheel_init();
+				laser_init();
+// 				motor_init();
+// 				calibration_start_task();
+				motor_stop();
+			}
+ 			network_set_state(APP_NETWORK_JOIN_REQUEST);
 			break;
 		case APP_NETWORK_JOIN_REQUEST:
+			
+			/* Activate the network status led blink */
+			led_start_blink();
+			
+			/* St	art network */
 			network_start();
-			appState = APP_NETWORK_JOINING_STATE;
+			
+			network_set_state(APP_NETWORK_JOINING_STATE);
+			
 		case APP_NETWORK_JOINING_STATE:
 			break;
 		case APP_NETWORK_LEAVING_STATE:
 			break;
 		case APP_NETWORK_JOINED_STATE:
+			led_stop_blink();
 			break;
 		default:
 			break;
