@@ -84,39 +84,6 @@
 // first suitable network that they discover.
 #define CS_EXT_PANID 0xAAAAAAAAAAAA1337LL
 
-// 64-bit Unique Identifier (UID) determining the device extended address. If this
-// value is 0 stack will try to read hardware UID from external UID or EEPROM chip.
-// at startup. Location of hardware UID is platform dependend and it may not be
-// available on all platforms. If the latter case then UID value must be provided
-// by user via this parameter. This parameter must be unique for each device in a
-// network.
-// Specifies short (network) address if CS_NWK_UNIQUE_ADDR equals 1
-// 
-//  If static addressing is applied the stack uses the value of the parameter as a
-// short address. Otherwise, the stack assigns the parameter to a randomly chosen
-// value unique within the network. In both cases after the network start the
-// parameter holds actual short address of the device. While the device is in the
-// network its value must not be changed.
-#ifdef LOL_NUMBER_0
-	#define CS_UID 0x1LL
-	#define CS_NWK_ADDR 0x0000
-	#define TYPE_COOR
-#elif LOL_NUMBER_1
-	#define CS_UID 0x1LL
-	#define CS_NWK_ADDR 0x0001
-	#define TYPE_END
-#elif LOL_NUMBER_2
-	#define CS_UID 0x2LL
-	#define CS_NWK_ADDR 0x0002
-	#define TYPE_END
-#elif LOL_NUMBER_3
-	#define CS_UID 0x3LL
-	#define CS_NWK_ADDR 0x0003
-	#define TYPE_END
-#else
-	#error NO_ADDR_DEFINED
-#endif
-
 // The maximum number of direct children that a given device (the coordinator or a
 // router) can have.
 // 
