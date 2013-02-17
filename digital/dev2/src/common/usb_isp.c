@@ -28,6 +28,7 @@
 
 #include "usb_isp.h"
 #include "descriptors.h"
+#include "serial.h"
 
 #include "modules/isp/isp.h"
 #include "modules/isp/isp_frame.h"
@@ -61,6 +62,9 @@ usb_isp_send_char (uint8_t c)
 void
 usb_isp_spi_enable (void)
 {
+    /* May have to disable serial. */
+    if (AC_DEV2_SERIAL_ISP_SHARED)
+	serial_uninit ();
     /* Reset slave AVR. */
     IO_DDR (RESET) |= IO_BV (RESET);
     /* Set SCK to low. */
@@ -80,6 +84,9 @@ usb_isp_spi_disable (void)
     spi_uninit ();
     /* Release reset, SCK is handled by SPI driver. */
     IO_DDR (RESET) &= ~IO_BV (RESET);
+    /* May have to enable serial. */
+    if (AC_DEV2_SERIAL_ISP_SHARED)
+	serial_init ();
 }
 
 void

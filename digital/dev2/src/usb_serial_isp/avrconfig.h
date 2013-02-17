@@ -123,4 +123,8 @@
 /* usb */
 #include "modules/usb/lufaconfig.h"
 
+/* dev2 */
+/** Set to 1 if ISP and serial pins are connected together. */
+#define AC_DEV2_SERIAL_ISP_SHARED 0
+
 #endif /* avrconfig_h */
