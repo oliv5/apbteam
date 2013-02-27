@@ -7,7 +7,7 @@ io_hub_SOURCES = main.c top.c strat.c \
 		 radar_defs.c radar.c path.c move.c \
 		 pressure.c \
 		 logger.avr.c \
-		 init.c fsm.host.c fsm_AI_gen.avr.c fsm_queue.c \
+		 init.c angfsm.host.c fsm_AI_gen.avr.c fsm_queue.c \
 		 contact.avr.c contact.host.c \
 		 output.c output.host.c \
 		 twi_master.c asserv.c mimot.c beacon.c \
@@ -31,7 +31,7 @@ vpath %.c $(AI_MODULES:%=../../../ai/src/%)
 vpath %.h $(AI_MODULES:%=../../../ai/src/%)
 INCLUDES += -I. -I../common $(AI_MODULES:%=-I../../../ai/src/%)
 
-EXTRA_CLEAN_FILES = fsm_AI_gen.h fsm_AI_gen.avr.c \
+EXTRA_CLEAN_FILES = angfsm_gen_avr_AI.h fsm_AI_gen.avr.c \
 		    dot_AI_1.dot dot_AI_1.png dot_AI_1.svg
 
 include $(BASE)/make/Makefile.gen
@@ -39,4 +39,4 @@ include $(BASE)/make/Makefile.gen
 # FSM generation.
 include ../../../ai/src/fsm/Makefile.fsm
 
-obj/main.avr.o: fsm_AI_gen.h
+obj/main.avr.o: angfsm_gen_avr_AI.h

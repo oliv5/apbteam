@@ -34,8 +34,8 @@
 #include "strat.h"
 
 
-#define FSM_NAME AI
-#include "fsm.h"
+#define ANGFSM_NAME AI
+#include "angfsm.h"
 #include "fsm_queue.h"
 
 /*
