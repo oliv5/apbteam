@@ -23,9 +23,9 @@
  *
  * }}} */
 
-#define FSM_NAME AI
+#define ANGFSM_NAME AI
 
-#include "fsm.h"
+#include "angfsm.h"
 #include "common.h"
 #include "defs.h"
 #include "top.h"

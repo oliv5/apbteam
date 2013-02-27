@@ -48,8 +48,8 @@
 #include "mimot.h"
 #include "twi_master.h"
 #include "eeprom.h"	/* Parameters loaded/stored in the EEPROM */
-#define FSM_NAME AI
-#include "fsm.h"
+#define ANGFSM_NAME AI
+#include "angfsm.h"
 #include "fsm_queue.h"
 #include "bot.h"
 #include "radar.h"
@@ -676,16 +676,8 @@ int
 main (int argc, char **argv)
 {
     /* produce AVR's FSM headers. */
-#ifdef HOST
-    int i;
-    if (argc > 1)
-	for (i = 1; i < argc; i++)
-	    if (strcmp (argv[i], "--gen") == 0)
-	    {
-		FSM_GENERATE (AVR, 0);
-		return 0;
-	    }
-#endif
+    if (ANGFSM_OPTIONS (argc, argv))
+        return 0;
 
     avr_init (argc, argv);
 

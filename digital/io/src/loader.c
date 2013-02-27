@@ -22,11 +22,11 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * }}} */
-#define FSM_NAME AI
+#define ANGFSM_NAME AI
 
 #include "common.h"
 #include "loader.h"
-#include "fsm.h"
+#include "angfsm.h"
 #include "asserv.h"
 #include "mimot.h"
 #include "bot.h"

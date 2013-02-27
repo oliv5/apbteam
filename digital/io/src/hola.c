@@ -23,10 +23,10 @@
  *
  * }}} */
 
-#define FSM_NAME AI
+#define ANGFSM_NAME AI
 
 #include "common.h"
-#include "fsm.h"
+#include "angfsm.h"
 #include "asserv.h"
 #include "mimot.h"
 #include "bot.h"
