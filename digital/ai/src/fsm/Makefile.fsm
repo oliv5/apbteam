@@ -1,8 +1,8 @@
-fsm_AI_gen.avr.c: fsm_AI_gen.h
+fsm_AI_gen.avr.c: angfsm_gen_avr_AI.h
 dot_AI_1.dot: fsm_AI_gen.h
-fsm_AI_gen.h: io_hub.host
-	./$< --gen
-	mv fsm_AI_gen.c fsm_AI_gen.avr.c
+angfsm_gen_avr_AI.h: io_hub.host
+	./$< --ang-gen avr
+	mv angfsm_gen_avr_AI.c fsm_AI_gen.avr.c
 
 view: dot_AI_1.view
 png: dot_AI_1.png
