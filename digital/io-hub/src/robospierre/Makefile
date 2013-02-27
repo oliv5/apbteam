@@ -8,7 +8,7 @@ io_hub_SOURCES = main.c top.c \
 		 clamp.c logistic.c element.c pawn_sensor.c \
 		 codebar.avr.c codebar.host.c \
 		 radar_defs.c radar.c path.c move.c \
-		 init.c fsm.host.c fsm_AI_gen.avr.c fsm_queue.c \
+		 init.c angfsm.host.c fsm_AI_gen.avr.c fsm_queue.c \
 		 pwm.avr.c pwm.host.c \
 		 contact.avr.c contact.host.c \
 		 twi_master.c asserv.c mimot.c \
@@ -33,7 +33,7 @@ vpath %.c $(AI_MODULES:%=../../../ai/src/%)
 vpath %.h $(AI_MODULES:%=../../../ai/src/%)
 INCLUDES += -I. -I../common $(AI_MODULES:%=-I../../../ai/src/%)
 
-EXTRA_CLEAN_FILES = fsm_AI_gen.h fsm_AI_gen.avr.c
+EXTRA_CLEAN_FILES = angfsm_gen_avr_AI.h fsm_AI_gen.avr.c
 
 include $(BASE)/make/Makefile.gen
 
@@ -41,5 +41,5 @@ include $(BASE)/make/Makefile.gen
 obj/main.avr.o: fsm_AI_gen.h
 fsm_AI_gen.avr.c: fsm_AI_gen.h
 fsm_AI_gen.h: io_hub.host
-	./$< --gen
-	mv fsm_AI_gen.c fsm_AI_gen.avr.c
+	./$< --ang-gen avr
+	mv angfsm_gen_avr_AI.c fsm_AI_gen.avr.c

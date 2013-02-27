@@ -32,8 +32,8 @@
 #include "element.h"
 #include "playground_2011.h"
 
-#define FSM_NAME AI
-#include "fsm.h"
+#define ANGFSM_NAME AI
+#include "angfsm.h"
 #include "fsm_queue.h"
 
 #include "logistic.h"

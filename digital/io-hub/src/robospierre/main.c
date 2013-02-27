@@ -44,8 +44,8 @@
 #include "pawn_sensor.h"
 #include "radar.h"
 
-#define FSM_NAME AI
-#include "fsm.h"
+#define ANGFSM_NAME AI
+#include "angfsm.h"
 #ifdef HOST
 # include <string.h>
 #endif
@@ -375,17 +375,9 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 int
 main (int argc, char **argv)
 {
-#ifdef HOST
-    /* Produce AVR's FSM headers. */
-    int i;
-    if (argc > 1)
-	for (i = 1; i < argc; i++)
-	    if (strcmp (argv[i], "--gen") == 0)
-	      {
-		FSM_GENERATE (AVR, 0);
-		return 0;
-	      }
-#endif
+    /* produce AVR's FSM headers. */
+    if (ANGFSM_OPTIONS (argc, argv))
+        return 0;
     avr_init (argc, argv);
     main_init ();
     main_loop ();

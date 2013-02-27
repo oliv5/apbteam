@@ -28,8 +28,8 @@
 #include "playground_2011.h"
 #include "asserv.h"
 
-#define FSM_NAME AI
-#include "fsm.h"
+#define ANGFSM_NAME AI
+#include "angfsm.h"
 
 #include "logistic.h"
 #include "move.h"
