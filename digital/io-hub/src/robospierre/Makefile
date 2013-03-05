@@ -33,7 +33,7 @@ vpath %.c $(AI_MODULES:%=../../../ai/src/%)
 vpath %.h $(AI_MODULES:%=../../../ai/src/%)
 INCLUDES += -I. -I../common $(AI_MODULES:%=-I../../../ai/src/%)
 
-EXTRA_CLEAN_FILES = angfsm_gen_avr_AI.h fsm_AI_gen.avr.c
+EXTRA_CLEAN_FILES = angfsm_gen_avr_AI.h fsm_AI_gen.avr.c AI.dot AI.png AI.svg
 
 include $(BASE)/make/Makefile.gen
 
@@ -41,5 +41,17 @@ include $(BASE)/make/Makefile.gen
 obj/main.avr.o: fsm_AI_gen.h
 fsm_AI_gen.avr.c: fsm_AI_gen.h
 fsm_AI_gen.h: io_hub.host
-	./$< --ang-gen avr
+	./$< --ang-gen avr --ang-dot AI.dot
 	mv angfsm_gen_avr_AI.c fsm_AI_gen.avr.c
+
+# Image generation
+view: AI.view
+png: AI.png
+svg: AI.svg
+
+%.view: %.dot
+	dot -Txlib $<
+%.png: %.dot
+	dot -Tpng $< > $@
+%.svg: %.dot
+	dot -Tsvg $< > $@

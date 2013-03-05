@@ -181,7 +181,7 @@ pawn_sensor_bumper (uint8_t bumped, uint16_t dx, uint16_t dy)
 	  }
 	/* OK, take it. */
 	pawn_sensor_global.last_bumped = bumped_pawn;
-	fsm_queue_post_event (FSM_EVENT (AI, top_bumper));
+	fsm_queue_post_event (FSM_EVENT (top_bumper));
 	pawn_sensor_global.bump_wait = 3 * 250;
       }
 }

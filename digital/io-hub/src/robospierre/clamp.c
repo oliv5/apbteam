@@ -240,7 +240,7 @@ clamp_move (uint8_t pos)
 	FSM_HANDLE (AI, clamp_move);
       }
     else
-	fsm_queue_post_event (FSM_EVENT (AI, clamp_move_success));
+	fsm_queue_post_event (FSM_EVENT (clamp_move_success));
 }
 
 void
@@ -550,7 +550,7 @@ clamp_blocked (void)
     mimot_motor_free (0, 1);
     mimot_motor_free (1, 1);
     /* Signal problem. */
-    fsm_queue_post_event (FSM_EVENT (AI, clamp_move_failure));
+    fsm_queue_post_event (FSM_EVENT (clamp_move_failure));
 }
 
 #define CLAMP_DECISION_MOVE_ELEMENT 0
@@ -580,14 +580,14 @@ clamp_decision (uint8_t unblock)
 	else
 	  {
 	    ctx.working = 0;
-	    fsm_queue_post_event (FSM_EVENT (AI, clamp_done));
+	    fsm_queue_post_event (FSM_EVENT (clamp_done));
 	    return CLAMP_DECISION_CLAMP_LOCKED;
 	  }
       }
     else
       {
 	ctx.working = 0;
-	fsm_queue_post_event (FSM_EVENT (AI, clamp_done));
+	fsm_queue_post_event (FSM_EVENT (clamp_done));
 	return CLAMP_DECISION_DONE;
       }
 }
@@ -601,7 +601,6 @@ FSM_TRANS (CLAMP_START, init_actuators, CLAMP_INIT_OPENING)
     pwm_set_timed (BOT_PWM_DOOR_BACK_BOTTOM, BOT_PWM_DOOR_INIT);
     pwm_set_timed (BOT_PWM_DOOR_BACK_TOP, BOT_PWM_DOOR_INIT);
     pwm_set_timed (BOT_PWM_CLAMP, BOT_PWM_CLAMP_INIT);
-    return FSM_NEXT (CLAMP_START, init_actuators);
 }
 
 FSM_TRANS_TIMEOUT (CLAMP_INIT_OPENING, BOT_PWM_CLAMP_DOOR_INIT,
@@ -610,14 +609,12 @@ FSM_TRANS_TIMEOUT (CLAMP_INIT_OPENING, BOT_PWM_CLAMP_DOOR_INIT,
     mimot_move_motor0_absolute (mimot_get_motor0_position () +
 				BOT_CLAMP_INIT_ELEVATION_STEP,
 				BOT_CLAMP_INIT_ELEVATION_SPEED);
-    return FSM_NEXT_TIMEOUT (CLAMP_INIT_OPENING);
 }
 
 FSM_TRANS (CLAMP_INIT_GOING_MIDDLE, clamp_elevation_success,
 	   CLAMP_INIT_FINDING_ROTATION_EDGE)
 {
     mimot_motor1_find_zero (BOT_CLAMP_INIT_ROTATION_SPEED, 0, 0);
-    return FSM_NEXT (CLAMP_INIT_GOING_MIDDLE, clamp_elevation_success);
 }
 
 FSM_TRANS (CLAMP_INIT_FINDING_ROTATION_EDGE, clamp_rotation_success,
@@ -625,8 +622,6 @@ FSM_TRANS (CLAMP_INIT_FINDING_ROTATION_EDGE, clamp_rotation_success,
 {
     mimot_motor0_find_zero (BOT_CLAMP_INIT_ELEVATION_SPEED, 1,
 			    BOT_CLAMP_INIT_ELEVATION_SWITCH_STEP);
-    return FSM_NEXT (CLAMP_INIT_FINDING_ROTATION_EDGE,
-		     clamp_rotation_success);
 }
 
 FSM_TRANS (CLAMP_INIT_FINDING_TOP, clamp_elevation_success,
@@ -636,14 +631,12 @@ FSM_TRANS (CLAMP_INIT_FINDING_TOP, clamp_elevation_success,
     if (IO_GET (CONTACT_STRAT))
       {
 	clamp_move (CLAMP_BAY_SIDE_ENTER_LEAVE);
-	return FSM_NEXT (CLAMP_INIT_FINDING_TOP, clamp_elevation_success,
-			 rest);
+	return FSM_BRANCH (rest);
       }
     else
       {
 	clamp_move (logistic_global.clamp_pos_idle);
-	return FSM_NEXT (CLAMP_INIT_FINDING_TOP, clamp_elevation_success,
-			 demo);
+	return FSM_BRANCH (demo);
       }
 }
 
@@ -651,7 +644,6 @@ FSM_TRANS (CLAMP_INIT_GOING_REST, clamp_move_success, CLAMP_INIT_READY)
 {
     mimot_motor_free (0, 1);
     mimot_motor_free (1, 1);
-    return FSM_NEXT (CLAMP_INIT_GOING_REST, clamp_move_success);
 }
 
 FSM_TRANS (CLAMP_INIT_READY, init_start_round, CLAMP_GOING_IDLE)
@@ -661,29 +653,25 @@ FSM_TRANS (CLAMP_INIT_READY, init_start_round, CLAMP_GOING_IDLE)
     pwm_set (BOT_PWM_DOOR_BACK_BOTTOM, BOT_PWM_DOOR_INIT_START);
     pwm_set (BOT_PWM_DOOR_BACK_TOP, BOT_PWM_DOOR_INIT_START);
     clamp_move (logistic_global.clamp_pos_idle);
-    return FSM_NEXT (CLAMP_INIT_READY, init_start_round);
 }
 
 FSM_TRANS (CLAMP_GOING_IDLE, clamp_move_success, CLAMP_IDLE)
 {
     ctx.working = 0;
-    fsm_queue_post_event (FSM_EVENT (AI, clamp_done));
-    return FSM_NEXT (CLAMP_GOING_IDLE, clamp_move_success);
+    fsm_queue_post_event (FSM_EVENT (clamp_done));
 }
 
 FSM_TRANS (CLAMP_GOING_IDLE, clamp_move_failure, CLAMP_BLOCKED)
 {
-    fsm_queue_post_event (FSM_EVENT (AI, clamp_blocked));
-    return FSM_NEXT (CLAMP_GOING_IDLE, clamp_move_failure);
+    fsm_queue_post_event (FSM_EVENT (clamp_blocked));
 }
 
 FSM_TRANS (CLAMP_IDLE, clamp_new_element, CLAMP_TAKING_DOOR_CLOSING)
 {
     ctx.working = 1;
-    fsm_queue_post_event (FSM_EVENT (AI, clamp_working));
+    fsm_queue_post_event (FSM_EVENT (clamp_working));
     pwm_set_timed (clamp_slot_door[ctx.pos_new],
 		   BOT_PWM_DOOR_CLOSE (ctx.pos_new));
-    return FSM_NEXT (CLAMP_IDLE, clamp_new_element);
 }
 
 FSM_TRANS (CLAMP_IDLE, clamp_prepare,
@@ -697,13 +685,13 @@ FSM_TRANS (CLAMP_IDLE, clamp_prepare,
       {
       default:
       case CLAMP_DECISION_MOVE_ELEMENT:
-	return FSM_NEXT (CLAMP_IDLE, clamp_prepare, move_element);
+	return FSM_BRANCH (move_element);
       case CLAMP_DECISION_MOVE_TO_IDLE:
-	return FSM_NEXT (CLAMP_IDLE, clamp_prepare, move_to_idle);
+	return FSM_BRANCH (move_to_idle);
       case CLAMP_DECISION_CLAMP_LOCKED:
-	return FSM_NEXT (CLAMP_IDLE, clamp_prepare, clamp_locked);
+	return FSM_BRANCH (clamp_locked);
       case CLAMP_DECISION_DONE:
-	return FSM_NEXT (CLAMP_IDLE, clamp_prepare, done);
+	return FSM_BRANCH (done);
       }
 }
 
@@ -714,7 +702,6 @@ FSM_TRANS (CLAMP_IDLE, clamp_drop, CLAMP_DROPING_DOOR_OPENING)
 	? CLAMP_SLOT_BACK_BOTTOM : CLAMP_SLOT_FRONT_BOTTOM;
     pwm_set_timed (clamp_slot_door[bay + 0], BOT_PWM_DOOR_OPEN (bay + 0));
     pwm_set_timed (clamp_slot_door[bay + 2], BOT_PWM_DOOR_OPEN (bay + 2));
-    return FSM_NEXT (CLAMP_IDLE, clamp_drop);
 }
 
 FSM_TRANS_TIMEOUT (CLAMP_TAKING_DOOR_CLOSING, BOT_PWM_DOOR_CLOSE_TIME,
@@ -729,13 +716,13 @@ FSM_TRANS_TIMEOUT (CLAMP_TAKING_DOOR_CLOSING, BOT_PWM_DOOR_CLOSE_TIME,
       {
       default:
       case CLAMP_DECISION_MOVE_ELEMENT:
-	return FSM_NEXT_TIMEOUT (CLAMP_TAKING_DOOR_CLOSING, move_element);
+	return FSM_BRANCH (move_element);
       case CLAMP_DECISION_MOVE_TO_IDLE:
-	return FSM_NEXT_TIMEOUT (CLAMP_TAKING_DOOR_CLOSING, move_to_idle);
+	return FSM_BRANCH (move_to_idle);
       case CLAMP_DECISION_CLAMP_LOCKED:
-	return FSM_NEXT_TIMEOUT (CLAMP_TAKING_DOOR_CLOSING, clamp_locked);
+	return FSM_BRANCH (clamp_locked);
       case CLAMP_DECISION_DONE:
-	return FSM_NEXT_TIMEOUT (CLAMP_TAKING_DOOR_CLOSING, done);
+	return FSM_BRANCH (done);
       }
 }
 
@@ -750,31 +737,25 @@ FSM_TRANS (CLAMP_MOVING_ELEMENT, clamp_move_success,
       {
       default:
       case CLAMP_DECISION_MOVE_ELEMENT:
-	return FSM_NEXT (CLAMP_MOVING_ELEMENT, clamp_move_success,
-			 move_element);
+	return FSM_BRANCH (move_element);
       case CLAMP_DECISION_MOVE_TO_IDLE:
-	return FSM_NEXT (CLAMP_MOVING_ELEMENT, clamp_move_success,
-			 move_to_idle);
+	return FSM_BRANCH (move_to_idle);
       case CLAMP_DECISION_CLAMP_LOCKED:
-	return FSM_NEXT (CLAMP_MOVING_ELEMENT, clamp_move_success,
-			 clamp_locked);
+	return FSM_BRANCH (clamp_locked);
       case CLAMP_DECISION_DONE:
-	return FSM_NEXT (CLAMP_MOVING_ELEMENT, clamp_move_success,
-			 done);
+	return FSM_BRANCH (done);
       }
 }
 
 FSM_TRANS (CLAMP_MOVING_ELEMENT, clamp_move_failure, CLAMP_BLOCKED)
 {
-    fsm_queue_post_event (FSM_EVENT (AI, clamp_blocked));
-    return FSM_NEXT (CLAMP_MOVING_ELEMENT, clamp_move_failure);
+    fsm_queue_post_event (FSM_EVENT (clamp_blocked));
 }
 
 FSM_TRANS_TIMEOUT (CLAMP_DROPING_DOOR_OPENING, BOT_PWM_CLAMP_OPEN_TIME,
 		   CLAMP_DROPING_WAITING_ROBOT)
 {
-    fsm_queue_post_event (FSM_EVENT (AI, clamp_drop_waiting));
-    return FSM_NEXT_TIMEOUT (CLAMP_DROPING_DOOR_OPENING);
+    fsm_queue_post_event (FSM_EVENT (clamp_drop_waiting));
 }
 
 FSM_TRANS (CLAMP_DROPING_WAITING_ROBOT, clamp_drop_clear,
@@ -788,17 +769,13 @@ FSM_TRANS (CLAMP_DROPING_WAITING_ROBOT, clamp_drop_clear,
       {
       default:
       case CLAMP_DECISION_MOVE_ELEMENT:
-	return FSM_NEXT (CLAMP_DROPING_WAITING_ROBOT, clamp_drop_clear,
-			 move_element);
+	return FSM_BRANCH (move_element);
       case CLAMP_DECISION_MOVE_TO_IDLE:
-	return FSM_NEXT (CLAMP_DROPING_WAITING_ROBOT, clamp_drop_clear,
-			 move_to_idle);
+	return FSM_BRANCH (move_to_idle);
       case CLAMP_DECISION_CLAMP_LOCKED:
-	return FSM_NEXT (CLAMP_DROPING_WAITING_ROBOT, clamp_drop_clear,
-			 clamp_locked);
+	return FSM_BRANCH (clamp_locked);
       case CLAMP_DECISION_DONE:
-	return FSM_NEXT (CLAMP_DROPING_WAITING_ROBOT, clamp_drop_clear,
-			 done);
+	return FSM_BRANCH (done);
       }
 }
 
@@ -808,7 +785,6 @@ FSM_TRANS (CLAMP_LOCKED, clamp_new_element, CLAMP_LOCKED)
 		   BOT_PWM_DOOR_CLOSE (ctx.pos_new));
     logistic_element_new (ctx.pos_new, ctx.new_element_type);
     clamp_taken_pawn (ctx.new_element_type);
-    return FSM_NEXT (CLAMP_LOCKED, clamp_new_element);
 }
 
 FSM_TRANS (CLAMP_LOCKED, clamp_drop, CLAMP_DROPING_DOOR_OPENING)
@@ -818,7 +794,6 @@ FSM_TRANS (CLAMP_LOCKED, clamp_drop, CLAMP_DROPING_DOOR_OPENING)
 	? CLAMP_SLOT_BACK_BOTTOM : CLAMP_SLOT_FRONT_BOTTOM;
     pwm_set_timed (clamp_slot_door[bay + 0], BOT_PWM_DOOR_OPEN (bay + 0));
     pwm_set_timed (clamp_slot_door[bay + 2], BOT_PWM_DOOR_OPEN (bay + 2));
-    return FSM_NEXT (CLAMP_LOCKED, clamp_drop);
 }
 
 FSM_TRANS (CLAMP_BLOCKED, clamp_prepare,
@@ -830,11 +805,11 @@ FSM_TRANS (CLAMP_BLOCKED, clamp_prepare,
       {
       default:
       case CLAMP_DECISION_MOVE_TO_IDLE:
-	return FSM_NEXT (CLAMP_BLOCKED, clamp_prepare, move_to_idle);
+	return FSM_BRANCH (move_to_idle);
       case CLAMP_DECISION_CLAMP_LOCKED:
-	return FSM_NEXT (CLAMP_BLOCKED, clamp_prepare, clamp_locked);
+	return FSM_BRANCH (clamp_locked);
       case CLAMP_DECISION_DONE:
-	return FSM_NEXT (CLAMP_BLOCKED, clamp_prepare, done);
+	return FSM_BRANCH (done);
       }
 }
 
@@ -848,19 +823,19 @@ FSM_TRANS (CLAMP_MOVE_IDLE, clamp_move,
     if (ctx.moving_to == CLAMP_POS_NB)
       {
 	clamp_route ();
-	return FSM_NEXT (CLAMP_MOVE_IDLE, clamp_move, move);
+	return FSM_BRANCH (move);
       }
     else
       {
 	if (ctx.pos_current != ctx.pos_request)
 	  {
 	    clamp_route ();
-	    return FSM_NEXT (CLAMP_MOVE_IDLE, clamp_move, move_element);
+	    return FSM_BRANCH (move_element);
 	  }
 	else
 	  {
 	    clamp_openclose (0);
-	    return FSM_NEXT (CLAMP_MOVE_IDLE, clamp_move, move_element_here);
+	    return FSM_BRANCH (move_element_here);
 	  }
       }
 }
@@ -871,15 +846,13 @@ FSM_TRANS (CLAMP_MOVE_ROUTING, clamp_elevation_rotation_success,
 {
     if (ctx.pos_current == ctx.pos_request)
       {
-	fsm_queue_post_event (FSM_EVENT (AI, clamp_move_success));
-	return FSM_NEXT (CLAMP_MOVE_ROUTING, clamp_elevation_rotation_success,
-			 done);
+	fsm_queue_post_event (FSM_EVENT (clamp_move_success));
+	return FSM_BRANCH (done);
       }
     else
       {
 	clamp_route ();
-	return FSM_NEXT (CLAMP_MOVE_ROUTING, clamp_elevation_rotation_success,
-			 next);
+	return FSM_BRANCH (next);
       }
 }
 
@@ -887,7 +860,6 @@ FSM_TRANS (CLAMP_MOVE_ROUTING, clamp_elevation_or_rotation_failure,
 	   CLAMP_MOVE_IDLE)
 {
     clamp_blocked ();
-    return FSM_NEXT (CLAMP_MOVE_ROUTING, clamp_elevation_or_rotation_failure);
 }
 
 FSM_TRANS (CLAMP_MOVE_SRC_ROUTING, clamp_elevation_rotation_success,
@@ -897,21 +869,18 @@ FSM_TRANS (CLAMP_MOVE_SRC_ROUTING, clamp_elevation_rotation_success,
 {
     if (clamp_tower_check ())
       {
-	fsm_queue_post_event (FSM_EVENT (AI, clamp_move_success));
-	return FSM_NEXT (CLAMP_MOVE_SRC_ROUTING, clamp_elevation_rotation_success,
-			 cancel);
+	fsm_queue_post_event (FSM_EVENT (clamp_move_success));
+	return FSM_BRANCH (cancel);
       }
     else if (ctx.pos_current == ctx.pos_request)
       {
 	clamp_openclose (0);
-	return FSM_NEXT (CLAMP_MOVE_SRC_ROUTING,
-			 clamp_elevation_rotation_success, done);
+	return FSM_BRANCH (done);
       }
     else
       {
 	clamp_route ();
-	return FSM_NEXT (CLAMP_MOVE_SRC_ROUTING,
-			 clamp_elevation_rotation_success, next);
+	return FSM_BRANCH (next);
       }
 }
 
@@ -919,26 +888,24 @@ FSM_TRANS (CLAMP_MOVE_SRC_ROUTING, clamp_elevation_or_rotation_failure,
 	   CLAMP_MOVE_IDLE)
 {
     clamp_blocked ();
-    return FSM_NEXT (CLAMP_MOVE_SRC_ROUTING,
-		     clamp_elevation_or_rotation_failure);
 }
 
 FSM_TRANS_TIMEOUT (CLAMP_MOVE_SRC_CLAMP_CLOSING, BOT_PWM_CLAMP_CLOSE_TIME,
 		   open_door, CLAMP_MOVE_SRC_DOOR_OPENDING,
 		   move, CLAMP_MOVE_DST_ROUTING)
 {
-    fsm_queue_post_event (FSM_EVENT (AI, clamp_taken));
+    fsm_queue_post_event (FSM_EVENT (clamp_taken));
     if (clamp_slot_door[ctx.pos_current] != 0xff)
       {
 	pwm_set_timed (clamp_slot_door[ctx.pos_current],
 		       BOT_PWM_DOOR_OPEN (ctx.pos_current));
-	return FSM_NEXT_TIMEOUT (CLAMP_MOVE_SRC_CLAMP_CLOSING, open_door);
+	return FSM_BRANCH (open_door);
       }
     else
       {
 	ctx.pos_request = ctx.moving_to;
 	clamp_route ();
-	return FSM_NEXT_TIMEOUT (CLAMP_MOVE_SRC_CLAMP_CLOSING, move);
+	return FSM_BRANCH (move);
       }
 }
 
@@ -947,7 +914,6 @@ FSM_TRANS_TIMEOUT (CLAMP_MOVE_SRC_DOOR_OPENDING, BOT_PWM_DOOR_OPEN_TIME,
 {
     ctx.pos_request = ctx.moving_to;
     clamp_route ();
-    return FSM_NEXT_TIMEOUT (CLAMP_MOVE_SRC_DOOR_OPENDING);
 }
 
 FSM_TRANS (CLAMP_MOVE_DST_ROUTING, clamp_elevation_rotation_success,
@@ -962,23 +928,18 @@ FSM_TRANS (CLAMP_MOVE_DST_ROUTING, clamp_elevation_rotation_success,
 	  {
 	    pwm_set_timed (clamp_slot_door[ctx.pos_current],
 			   BOT_PWM_DOOR_CLOSE (ctx.pos_current));
-	    return FSM_NEXT (CLAMP_MOVE_DST_ROUTING,
-			     clamp_elevation_rotation_success,
-			     done_close_door);
+	    return FSM_BRANCH (done_close_door);
 	  }
 	else
 	  {
 	    clamp_openclose (1);
-	    return FSM_NEXT (CLAMP_MOVE_DST_ROUTING,
-			     clamp_elevation_rotation_success,
-			     done_open_clamp);
+	    return FSM_BRANCH (done_open_clamp);
 	  }
       }
     else
       {
 	clamp_route ();
-	return FSM_NEXT (CLAMP_MOVE_DST_ROUTING,
-			 clamp_elevation_rotation_success, next);
+	return FSM_BRANCH (next);
       }
 }
 
@@ -986,21 +947,17 @@ FSM_TRANS (CLAMP_MOVE_DST_ROUTING, clamp_elevation_or_rotation_failure,
 	   CLAMP_MOVE_IDLE)
 {
     clamp_blocked ();
-    return FSM_NEXT (CLAMP_MOVE_DST_ROUTING,
-		     clamp_elevation_or_rotation_failure);
 }
 
 FSM_TRANS_TIMEOUT (CLAMP_MOVE_DST_DOOR_CLOSING, BOT_PWM_DOOR_CLOSE_TIME,
 		   CLAMP_MOVE_DST_CLAMP_OPENING)
 {
     clamp_openclose (1);
-    return FSM_NEXT_TIMEOUT (CLAMP_MOVE_DST_DOOR_CLOSING);
 }
 
 FSM_TRANS_TIMEOUT (CLAMP_MOVE_DST_CLAMP_OPENING, BOT_PWM_CLAMP_OPEN_TIME,
 		   CLAMP_MOVE_IDLE)
 {
-    fsm_queue_post_event (FSM_EVENT (AI, clamp_move_success));
-    return FSM_NEXT_TIMEOUT (CLAMP_MOVE_DST_CLAMP_OPENING);
+    fsm_queue_post_event (FSM_EVENT (clamp_move_success));
 }
 

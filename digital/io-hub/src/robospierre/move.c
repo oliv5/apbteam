@@ -83,7 +83,7 @@ move_start (position_t position, uint8_t backward)
     /* Reset try counter. */
     move_data.try_again_counter = 3;
     /* Start the FSM. */
-    fsm_queue_post_event (FSM_EVENT (AI, move_start));
+    fsm_queue_post_event (FSM_EVENT (move_start));
 }
 
 void
@@ -98,14 +98,14 @@ move_start_noangle (vect_t position, uint8_t backward, int16_t shorten)
     /* Reset try counter. */
     move_data.try_again_counter = 3;
     /* Start the FSM. */
-    fsm_queue_post_event (FSM_EVENT (AI, move_start));
+    fsm_queue_post_event (FSM_EVENT (move_start));
 }
 
 void
 move_stop (void)
 {
     /* Stop the FSM. */
-    fsm_queue_post_event (FSM_EVENT (AI, move_stop));
+    fsm_queue_post_event (FSM_EVENT (move_stop));
 }
 
 void
@@ -318,14 +318,14 @@ FSM_TRANS (MOVE_IDLE, move_start,
     if (next)
       {
 	if (next == 2)
-	    return FSM_NEXT (MOVE_IDLE, move_start, path_found_rotate);
+	    return FSM_BRANCH (path_found_rotate);
 	else
-	    return FSM_NEXT (MOVE_IDLE, move_start, path_found);
+	    return FSM_BRANCH (path_found);
       }
     else
       {
-	fsm_queue_post_event (FSM_EVENT (AI, move_failure));
-	return FSM_NEXT (MOVE_IDLE, move_start, no_path_found);
+	fsm_queue_post_event (FSM_EVENT (move_failure));
+	return FSM_BRANCH (no_path_found);
       }
 }
 
@@ -334,7 +334,6 @@ FSM_TRANS (MOVE_ROTATING,
 	   MOVE_MOVING)
 {
     move_go ();
-    return FSM_NEXT (MOVE_ROTATING, robot_move_success);
 }
 
 FSM_TRANS (MOVE_ROTATING,
@@ -342,20 +341,17 @@ FSM_TRANS (MOVE_ROTATING,
 	   MOVE_MOVING)
 {
     move_go ();
-    return FSM_NEXT (MOVE_ROTATING, robot_move_failure);
 }
 
 FSM_TRANS_TIMEOUT (MOVE_ROTATING, 1250,
 		   MOVE_MOVING)
 {
     move_go ();
-    return FSM_NEXT_TIMEOUT (MOVE_ROTATING);
 }
 
 FSM_TRANS (MOVE_ROTATING, move_stop, MOVE_IDLE)
 {
     asserv_stop_motor ();
-    return FSM_NEXT (MOVE_ROTATING, move_stop);
 }
 
 FSM_TRANS (MOVE_MOVING, robot_move_success,
@@ -366,18 +362,18 @@ FSM_TRANS (MOVE_MOVING, robot_move_success,
 {
     if (move_data.final_move)
       {
-	fsm_queue_post_event (FSM_EVENT (AI, move_success));
-	return FSM_NEXT (MOVE_MOVING, robot_move_success, done);
+	fsm_queue_post_event (FSM_EVENT (move_success));
+	return FSM_BRANCH (done);
       }
     else
       {
 	uint8_t next = move_path_next ();
 	if (next == 2)
-	    return FSM_NEXT (MOVE_MOVING, robot_move_success, path_found_rotate);
+	    return FSM_BRANCH (path_found_rotate);
 	else
-	    return FSM_NEXT (MOVE_MOVING, robot_move_success, path_found);
+	    return FSM_BRANCH (path_found);
       }
-    //return FSM_NEXT (MOVE_MOVING, robot_move_success, no_path_found);
+    //return FSM_BRANCH (no_path_found);
 }
 
 static void
@@ -405,14 +401,12 @@ FSM_TRANS (MOVE_MOVING,
 	   MOVE_MOVING_BACKWARD_TO_TURN_FREELY)
 {
     move_moving_backward_to_turn_freely ();
-    return FSM_NEXT (MOVE_MOVING, robot_move_failure);
 }
 
 FSM_TRANS_TIMEOUT (MOVE_MOVING, 2500,
 		   MOVE_MOVING_BACKWARD_TO_TURN_FREELY)
 {
     move_moving_backward_to_turn_freely ();
-    return FSM_NEXT_TIMEOUT (MOVE_MOVING);
 }
 
 FSM_TRANS (MOVE_MOVING, obstacle_in_front,
@@ -423,17 +417,16 @@ FSM_TRANS (MOVE_MOVING, obstacle_in_front,
     asserv_stop_motor ();
     if (--move_data.try_again_counter == 0)
       {
-	fsm_queue_post_event (FSM_EVENT (AI, move_failure));
-	return FSM_NEXT (MOVE_MOVING, obstacle_in_front, tryout);
+	fsm_queue_post_event (FSM_EVENT (move_failure));
+	return FSM_BRANCH (tryout);
       }
     else
-	return FSM_NEXT (MOVE_MOVING, obstacle_in_front, tryagain);
+	return FSM_BRANCH (tryagain);
 }
 
 FSM_TRANS (MOVE_MOVING, move_stop, MOVE_IDLE)
 {
     asserv_stop_motor ();
-    return FSM_NEXT (MOVE_MOVING, move_stop);
 }
 
 FSM_TRANS (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, robot_move_success,
@@ -444,8 +437,8 @@ FSM_TRANS (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, robot_move_success,
 {
     if (--move_data.try_again_counter == 0)
       {
-	fsm_queue_post_event (FSM_EVENT (AI, move_failure));
-	return FSM_NEXT (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, robot_move_success, tryout);
+	fsm_queue_post_event (FSM_EVENT (move_failure));
+	return FSM_BRANCH (tryout);
       }
     else
       {
@@ -453,14 +446,14 @@ FSM_TRANS (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, robot_move_success,
 	if (next)
 	  {
 	    if (next == 2)
-		return FSM_NEXT (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, robot_move_success, path_found_rotate);
+		return FSM_BRANCH (path_found_rotate);
 	    else
-		return FSM_NEXT (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, robot_move_success, path_found);
+		return FSM_BRANCH (path_found);
 	  }
 	else
 	  {
-	    fsm_queue_post_event (FSM_EVENT (AI, move_failure));
-	    return FSM_NEXT (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, robot_move_success, no_path_found);
+	    fsm_queue_post_event (FSM_EVENT (move_failure));
+	    return FSM_BRANCH (no_path_found);
 	  }
       }
 }
@@ -474,8 +467,8 @@ FSM_TRANS (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, robot_move_failure,
 {
     if (--move_data.try_again_counter == 0)
       {
-	fsm_queue_post_event (FSM_EVENT (AI, move_failure));
-	return FSM_NEXT (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, robot_move_failure, tryout);
+	fsm_queue_post_event (FSM_EVENT (move_failure));
+	return FSM_BRANCH (tryout);
       }
     else
       {
@@ -483,19 +476,19 @@ FSM_TRANS (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, robot_move_failure,
 	if (next)
 	  {
 	    if (next == 2)
-		return FSM_NEXT (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, robot_move_failure, path_found_rotate);
+		return FSM_BRANCH (path_found_rotate);
 	    else
-		return FSM_NEXT (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, robot_move_failure, path_found);
+		return FSM_BRANCH (path_found);
 	  }
 	else
 	  {
 	    if (--move_data.try_again_counter == 0)
 	      {
-		fsm_queue_post_event (FSM_EVENT (AI, move_failure));
-		return FSM_NEXT (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, robot_move_failure, no_path_found_tryout);
+		fsm_queue_post_event (FSM_EVENT (move_failure));
+		return FSM_BRANCH (no_path_found_tryout);
 	      }
 	    else
-		return FSM_NEXT (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, robot_move_failure, no_path_found_tryagain);
+		return FSM_BRANCH (no_path_found_tryagain);
 	  }
       }
 }
@@ -503,7 +496,6 @@ FSM_TRANS (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, robot_move_failure,
 FSM_TRANS (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, move_stop, MOVE_IDLE)
 {
     asserv_stop_motor ();
-    return FSM_NEXT (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, move_stop);
 }
 
 FSM_TRANS_TIMEOUT (MOVE_WAIT_FOR_CLEAR_PATH, 250,
@@ -517,25 +509,24 @@ FSM_TRANS_TIMEOUT (MOVE_WAIT_FOR_CLEAR_PATH, 250,
     if (next)
       {
 	if (next == 2)
-	    return FSM_NEXT_TIMEOUT (MOVE_WAIT_FOR_CLEAR_PATH, path_found_rotate);
+	    return FSM_BRANCH (path_found_rotate);
 	else
-	    return FSM_NEXT_TIMEOUT (MOVE_WAIT_FOR_CLEAR_PATH, path_found);
+	    return FSM_BRANCH (path_found);
       }
     else
       {
 	/* Error, no new position, should we try again? */
 	if (--move_data.try_again_counter == 0)
 	  {
-	    fsm_queue_post_event (FSM_EVENT (AI, move_failure));
-	    return FSM_NEXT_TIMEOUT (MOVE_WAIT_FOR_CLEAR_PATH, no_path_found_tryout);
+	    fsm_queue_post_event (FSM_EVENT (move_failure));
+	    return FSM_BRANCH (no_path_found_tryout);
 	  }
 	else
-	    return FSM_NEXT_TIMEOUT (MOVE_WAIT_FOR_CLEAR_PATH, no_path_found_tryagain);
+	    return FSM_BRANCH (no_path_found_tryagain);
       }
 }
 
 FSM_TRANS (MOVE_WAIT_FOR_CLEAR_PATH, move_stop, MOVE_IDLE)
 {
-    return FSM_NEXT (MOVE_WAIT_FOR_CLEAR_PATH, move_stop);
 }
 

@@ -104,25 +104,21 @@ FSM_TRANS (TOP_START, init_start_round, TOP_GOING_OUT1)
     ctx.green_again = 3;
     asserv_goto (PG_X (PG_GREEN_WIDTH_MM + 100),
 		 PG_Y (PG_LENGTH - 200), 0);
-    return FSM_NEXT (TOP_START, init_start_round);
 }
 
 FSM_TRANS (TOP_GOING_OUT1, robot_move_success, TOP_GOING_OUT2)
 {
     asserv_goto (PG_X (1500 - 2 * 350), PG_Y (PG_LENGTH - 350), 0);
-    return FSM_NEXT (TOP_GOING_OUT1, robot_move_success);
 }
 
 FSM_TRANS (TOP_GOING_OUT1, robot_move_failure, TOP_GOING_OUT1_BLOCK_WAIT)
 {
-    return FSM_NEXT (TOP_GOING_OUT1, robot_move_failure);
 }
 
 FSM_TRANS_TIMEOUT (TOP_GOING_OUT1_BLOCK_WAIT, 250, TOP_GOING_OUT1)
 {
     asserv_goto (PG_X (PG_GREEN_WIDTH_MM + 100),
 		 PG_Y (PG_LENGTH - 200 - (++ctx.chaos % 4) * 10), 0);
-    return FSM_NEXT_TIMEOUT (TOP_GOING_OUT1_BLOCK_WAIT);
 }
 
 static uint8_t
@@ -232,17 +228,16 @@ FSM_TRANS (TOP_GOING_OUT2, robot_move_success,
 	   element, TOP_GOING_TO_ELEMENT)
 {
     if (clamp_working ())
-	return FSM_NEXT (TOP_GOING_TO_ELEMENT, move_success, clamp_working);
+	return FSM_BRANCH (clamp_working);
     switch (top_decision ())
       {
-      default: return FSM_NEXT (TOP_GOING_OUT2, robot_move_success, drop);
-      case 1: return FSM_NEXT (TOP_GOING_OUT2, robot_move_success, element);
+      default: return FSM_BRANCH (drop);
+      case 1: return FSM_BRANCH (element);
       }
 }
 
 FSM_TRANS (TOP_GOING_OUT2, robot_move_failure, TOP_GOING_OUT2_BLOCK_WAIT)
 {
-    return FSM_NEXT (TOP_GOING_OUT2, robot_move_failure);
 }
 
 FSM_TRANS_TIMEOUT (TOP_GOING_OUT2_BLOCK_WAIT, 250,
@@ -251,11 +246,11 @@ FSM_TRANS_TIMEOUT (TOP_GOING_OUT2_BLOCK_WAIT, 250,
 		   element, TOP_GOING_TO_ELEMENT)
 {
     if (clamp_working ())
-	return FSM_NEXT_TIMEOUT (TOP_GOING_OUT2_BLOCK_WAIT, clamp_working);
+	return FSM_BRANCH (clamp_working);
     switch (top_decision ())
       {
-      default: return FSM_NEXT_TIMEOUT (TOP_GOING_OUT2_BLOCK_WAIT, drop);
-      case 1: return FSM_NEXT_TIMEOUT (TOP_GOING_OUT2_BLOCK_WAIT, element);
+      default: return FSM_BRANCH (drop);
+      case 1: return FSM_BRANCH (element);
       }
 }
 
@@ -266,14 +261,14 @@ FSM_TRANS (TOP_GOING_TO_DROP, move_success,
     if (logistic_global.ready)
       {
 	if (clamp_drop (logistic_global.collect_direction))
-	    return FSM_NEXT (TOP_GOING_TO_DROP, move_success, ready);
+	    return FSM_BRANCH (ready);
 	else
-	    return FSM_NEXT (TOP_GOING_TO_DROP, move_success, wait_clamp);
+	    return FSM_BRANCH (wait_clamp);
       }
     else
       {
 	clamp_prepare (top_prepare_level ());
-	return FSM_NEXT (TOP_GOING_TO_DROP, move_success, wait_clamp);
+	return FSM_BRANCH (wait_clamp);
       }
 }
 
@@ -285,18 +280,17 @@ FSM_TRANS (TOP_GOING_TO_DROP, move_failure,
     if (ctx.target_element_id != 0xff)
 	element_failure (ctx.target_element_id);
     if (clamp_working ())
-	return FSM_NEXT (TOP_GOING_TO_DROP, move_failure, clamp_working);
+	return FSM_BRANCH (clamp_working);
     switch (top_decision ())
       {
-      default: return FSM_NEXT (TOP_GOING_TO_DROP, move_failure, drop);
-      case 1: return FSM_NEXT (TOP_GOING_TO_DROP, move_failure, element);
+      default: return FSM_BRANCH (drop);
+      case 1: return FSM_BRANCH (element);
       }
 }
 
 FSM_TRANS (TOP_GOING_TO_DROP, clamp_working, TOP_WAITING_CLAMP)
 {
     move_stop ();
-    return FSM_NEXT (TOP_GOING_TO_DROP, clamp_working);
 }
 
 FSM_TRANS (TOP_GOING_TO_ELEMENT, move_success,
@@ -307,7 +301,7 @@ FSM_TRANS (TOP_GOING_TO_ELEMENT, move_success,
     if (ctx.target_element_id != 0xff)
 	element_failure (ctx.target_element_id); /* Do not take this one again. */
     if (clamp_working ())
-	return FSM_NEXT (TOP_GOING_TO_ELEMENT, move_success, clamp_working);
+	return FSM_BRANCH (clamp_working);
     if (ctx.green_again)
       {
 	ctx.green_again--;
@@ -316,8 +310,8 @@ FSM_TRANS (TOP_GOING_TO_ELEMENT, move_success,
       }
     switch (top_decision ())
       {
-      default: return FSM_NEXT (TOP_GOING_TO_ELEMENT, move_success, drop);
-      case 1: return FSM_NEXT (TOP_GOING_TO_ELEMENT, move_success, element);
+      default: return FSM_BRANCH (drop);
+      case 1: return FSM_BRANCH (element);
       }
 }
 
@@ -329,7 +323,7 @@ FSM_TRANS (TOP_GOING_TO_ELEMENT, move_failure,
     if (ctx.target_element_id != 0xff)
 	element_failure (ctx.target_element_id);
     if (clamp_working ())
-	return FSM_NEXT (TOP_GOING_TO_ELEMENT, move_failure, clamp_working);
+	return FSM_BRANCH (clamp_working);
     if (ctx.green_again)
       {
 	ctx.green_again--;
@@ -338,8 +332,8 @@ FSM_TRANS (TOP_GOING_TO_ELEMENT, move_failure,
       }
     switch (top_decision ())
       {
-      default: return FSM_NEXT (TOP_GOING_TO_ELEMENT, move_failure, drop);
-      case 1: return FSM_NEXT (TOP_GOING_TO_ELEMENT, move_failure, element);
+      default: return FSM_BRANCH (drop);
+      case 1: return FSM_BRANCH (element);
       }
 }
 
@@ -352,7 +346,6 @@ FSM_TRANS (TOP_GOING_TO_ELEMENT, clamp_working, TOP_WAITING_CLAMP)
 	if (ctx.green_again == 0)
 	    element_no_more_green ();
       }
-    return FSM_NEXT (TOP_GOING_TO_ELEMENT, clamp_working);
 }
 
 FSM_TRANS (TOP_GOING_TO_ELEMENT, top_bumper, TOP_GOING_TO_ELEMENT)
@@ -362,7 +355,6 @@ FSM_TRANS (TOP_GOING_TO_ELEMENT, top_bumper, TOP_GOING_TO_ELEMENT)
     move_stop ();
     ctx.target_element_id = 0xff;
     top_go_this_element (pawn_sensor_get_last_bumped (), BOT_ELEMENT_RADIUS - 50);
-    return FSM_NEXT (TOP_GOING_TO_ELEMENT, top_bumper);
 }
 
 FSM_TRANS (TOP_WAITING_CLAMP, clamp_done,
@@ -371,14 +363,13 @@ FSM_TRANS (TOP_WAITING_CLAMP, clamp_done,
 {
     switch (top_decision ())
       {
-      default: return FSM_NEXT (TOP_WAITING_CLAMP, clamp_done, drop);
-      case 1: return FSM_NEXT (TOP_WAITING_CLAMP, clamp_done, element);
+      default: return FSM_BRANCH (drop);
+      case 1: return FSM_BRANCH (element);
       }
 }
 
 FSM_TRANS (TOP_WAITING_CLAMP, clamp_blocked, TOP_UNBLOCKING_SHAKE_WAIT)
 {
-    return FSM_NEXT (TOP_WAITING_CLAMP, clamp_blocked);
 }
 
 FSM_TRANS (TOP_WAITING_CLAMP, clamp_taken, TOP_WAITING_CLAMP)
@@ -388,7 +379,6 @@ FSM_TRANS (TOP_WAITING_CLAMP, clamp_taken, TOP_WAITING_CLAMP)
     if (robot_pos.v.x < 400 || robot_pos.v.x > PG_WIDTH - 400)
 	asserv_move_linearly (ctx.go_to_element_direction
 			      == DIRECTION_FORWARD ? -50 : 50);
-    return FSM_NEXT (TOP_WAITING_CLAMP, clamp_taken);
 }
 
 FSM_TRANS_TIMEOUT (TOP_UNBLOCKING_SHAKE_WAIT, 250,
@@ -400,26 +390,24 @@ FSM_TRANS_TIMEOUT (TOP_UNBLOCKING_SHAKE_WAIT, 250,
 	int16_t dist = logistic_global.collect_direction
 	    == DIRECTION_FORWARD ? 100 : -100;
 	asserv_move_linearly (++ctx.chaos % 2 ? -dist : dist);
-	return FSM_NEXT_TIMEOUT (TOP_UNBLOCKING_SHAKE_WAIT, try_again);
+	return FSM_BRANCH (try_again);
       }
     else
       {
 	ctx.broken = 1;
 	clamp_prepare (3);
-	return FSM_NEXT_TIMEOUT (TOP_UNBLOCKING_SHAKE_WAIT, tryout);
+	return FSM_BRANCH (tryout);
       }
 }
 
 FSM_TRANS (TOP_UNBLOCKING_SHAKE, robot_move_success, TOP_WAITING_CLAMP)
 {
     clamp_prepare (0);
-    return FSM_NEXT (TOP_UNBLOCKING_SHAKE, robot_move_success);
 }
 
 FSM_TRANS (TOP_UNBLOCKING_SHAKE, robot_move_failure,
 	   TOP_UNBLOCKING_SHAKE_WAIT)
 {
-    return FSM_NEXT (TOP_UNBLOCKING_SHAKE, robot_move_failure);
 }
 
 FSM_TRANS (TOP_WAITING_READY, clamp_done,
@@ -427,14 +415,13 @@ FSM_TRANS (TOP_WAITING_READY, clamp_done,
 	   not_ready, TOP_WAITING_READY)
 {
     if (clamp_drop (logistic_global.collect_direction))
-	return FSM_NEXT (TOP_WAITING_READY, clamp_done, drop);
+	return FSM_BRANCH (drop);
     else
-	return FSM_NEXT (TOP_WAITING_READY, clamp_done, not_ready);
+	return FSM_BRANCH (not_ready);
 }
 
 FSM_TRANS (TOP_WAITING_READY, clamp_blocked, TOP_UNBLOCKING_SHAKE_WAIT)
 {
-    return FSM_NEXT (TOP_WAITING_CLAMP, clamp_blocked);
 }
 
 FSM_TRANS (TOP_DROP_DROPPING, clamp_drop_waiting, TOP_DROP_CLEARING)
@@ -447,7 +434,6 @@ FSM_TRANS (TOP_DROP_DROPPING, clamp_drop_waiting, TOP_DROP_CLEARING)
 	element_i_like_green ();
     asserv_move_linearly (logistic_global.collect_direction
 			  == DIRECTION_FORWARD ? 150 : -150);
-    return FSM_NEXT (TOP_DROP_DROPPING, clamp_drop_waiting);
 }
 
 FSM_TRANS (TOP_DROP_CLEARING, robot_move_success,
@@ -457,8 +443,8 @@ FSM_TRANS (TOP_DROP_CLEARING, robot_move_success,
     clamp_drop_clear ();
     switch (top_decision ())
       {
-      default: return FSM_NEXT (TOP_DROP_CLEARING, robot_move_success, drop);
-      case 1: return FSM_NEXT (TOP_DROP_CLEARING, robot_move_success, element);
+      default: return FSM_BRANCH (drop);
+      case 1: return FSM_BRANCH (element);
       }
 }
 
@@ -469,8 +455,8 @@ FSM_TRANS (TOP_DROP_CLEARING, robot_move_failure,
     clamp_drop_clear ();
     switch (top_decision ())
       {
-      default: return FSM_NEXT (TOP_DROP_CLEARING, robot_move_failure, drop);
-      case 1: return FSM_NEXT (TOP_DROP_CLEARING, robot_move_failure, element);
+      default: return FSM_BRANCH (drop);
+      case 1: return FSM_BRANCH (element);
       }
 }
 

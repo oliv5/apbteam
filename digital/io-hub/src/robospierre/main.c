@@ -267,7 +267,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	break;
       case c ('j', 0):
 	/* Simulate jack insertion. */
-	fsm_queue_post_event (FSM_EVENT (AI, jack_inserted));
+	fsm_queue_post_event (FSM_EVENT (jack_inserted));
 	break;
       case c ('w', 3):
 	/* Set PWM.
