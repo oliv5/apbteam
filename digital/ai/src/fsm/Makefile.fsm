@@ -1,12 +1,12 @@
 fsm_AI_gen.avr.c: angfsm_gen_avr_AI.h
 dot_AI_1.dot: fsm_AI_gen.h
 angfsm_gen_avr_AI.h: io_hub.host
-	./$< --ang-gen avr
+	./$< --ang-gen avr --ang-dot AI.dot
 	mv angfsm_gen_avr_AI.c fsm_AI_gen.avr.c
 
-view: dot_AI_1.view
-png: dot_AI_1.png
-svg: dot_AI_1.svg
+view: AI.view
+png: AI.png
+svg: AI.svg
 
 %.view: %.dot
 	dot -Txlib $<

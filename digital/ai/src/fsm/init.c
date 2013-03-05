@@ -88,61 +88,52 @@ FSM_START_WITH (INIT_START)
 
 FSM_TRANS (INIT_START, jack_inserted, INIT_WAITING_FIRST_JACK_OUT)
 {
-    return FSM_NEXT (INIT_START, jack_inserted);
 }
 
 FSM_TRANS (INIT_WAITING_FIRST_JACK_OUT, jack_removed,
 	   INIT_INITIALISING_ACTUATORS)
 {
-    fsm_queue_post_event (FSM_EVENT (AI, init_actuators));
-    return FSM_NEXT (INIT_WAITING_FIRST_JACK_OUT, jack_removed);
+    fsm_queue_post_event (FSM_EVENT (init_actuators));
 }
 
 FSM_TRANS (INIT_INITIALISING_ACTUATORS, jack_inserted, INIT_WAITING_HANDS_OUT)
 {
     team_color = contact_get_color ();
-    return FSM_NEXT (INIT_INITIALISING_ACTUATORS, jack_inserted);
 }
 
 FSM_TRANS_TIMEOUT (INIT_WAITING_HANDS_OUT, 225, INIT_FINDING_FIRST_WALL)
 {
     asserv_set_speed (BOT_SPEED_INIT);
     asserv_push_the_wall (INIT_FIRST_WALL_PUSH);
-    return FSM_NEXT_TIMEOUT (INIT_WAITING_HANDS_OUT);
 }
 
 FSM_TRANS (INIT_FINDING_FIRST_WALL, robot_move_success,
 	   INIT_GOING_AWAY_FIRST_WALL)
 {
     asserv_move_linearly (INIT_FIRST_WALL_AWAY);
-    return FSM_NEXT (INIT_FINDING_FIRST_WALL, robot_move_success);
 }
 
 FSM_TRANS (INIT_GOING_AWAY_FIRST_WALL, robot_move_success,
 	   INIT_FACING_SECOND_WALL)
 {
     asserv_goto_angle (INIT_SECOND_WALL_ANGLE);
-    return FSM_NEXT (INIT_GOING_AWAY_FIRST_WALL, robot_move_success);
 }
 
 FSM_TRANS (INIT_FACING_SECOND_WALL, robot_move_success,
 	   INIT_WAITING_AFTER_FACING_SECOND_WALL)
 {
-    return FSM_NEXT (INIT_FACING_SECOND_WALL, robot_move_success);
 }
 
 FSM_TRANS_TIMEOUT (INIT_WAITING_AFTER_FACING_SECOND_WALL, 225 / 2,
 		   INIT_FINDING_SECOND_WALL)
 {
     asserv_push_the_wall (INIT_SECOND_WALL_PUSH);
-    return FSM_NEXT_TIMEOUT (INIT_WAITING_AFTER_FACING_SECOND_WALL);
 }
 
 FSM_TRANS (INIT_FINDING_SECOND_WALL, robot_move_success,
 	   INIT_GOING_AWAY_SECOND_WALL)
 {
     asserv_move_linearly (INIT_SECOND_WALL_AWAY);
-    return FSM_NEXT (INIT_FINDING_SECOND_WALL, robot_move_success);
 }
 
 #ifdef INIT_START_POSITION_ANGLE
@@ -150,14 +141,12 @@ FSM_TRANS (INIT_GOING_AWAY_SECOND_WALL, robot_move_success,
 	   INIT_FACING_START_POSITION)
 {
     asserv_goto_angle (INIT_START_POSITION_ANGLE);
-    return FSM_NEXT (INIT_GOING_AWAY_SECOND_WALL, robot_move_success);
 }
 
 FSM_TRANS (INIT_FACING_START_POSITION, robot_move_success,
 	   INIT_GOING_TO_START_POSITION)
 {
     asserv_goto_xya (INIT_START_POSITION);
-    return FSM_NEXT (INIT_FACING_START_POSITION, robot_move_success);
 }
 
 #else
@@ -166,7 +155,6 @@ FSM_TRANS (INIT_GOING_AWAY_SECOND_WALL, robot_move_success,
 	   INIT_GOING_TO_START_POSITION)
 {
     asserv_goto_xya (INIT_START_POSITION);
-    return FSM_NEXT (INIT_GOING_AWAY_SECOND_WALL, robot_move_success);
 }
 
 #endif
@@ -174,15 +162,13 @@ FSM_TRANS (INIT_GOING_AWAY_SECOND_WALL, robot_move_success,
 FSM_TRANS (INIT_GOING_TO_START_POSITION, robot_move_success,
 	   INIT_WAITING_SECOND_JACK_OUT)
 {
-    fsm_queue_post_event (FSM_EVENT (AI, init_done));
+    fsm_queue_post_event (FSM_EVENT (init_done));
     asserv_set_speed (BOT_SPEED_NORMAL);
-    return FSM_NEXT (INIT_GOING_TO_START_POSITION, robot_move_success);
 }
 
 FSM_TRANS (INIT_WAITING_SECOND_JACK_OUT, jack_removed, INIT_FINISHED)
 {
     chrono_start ();
-    fsm_queue_post_event (FSM_EVENT (AI, init_start_round));
-    return FSM_NEXT (INIT_WAITING_SECOND_JACK_OUT, jack_removed);
+    fsm_queue_post_event (FSM_EVENT (init_start_round));
 }
 

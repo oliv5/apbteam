@@ -1,6 +1,6 @@
 /*
    AngFSM - Almost Non Generated Finite State Machine
-   Copyright 2011, 2012 Jerome Jutteau
+   Copyright 2011-2013 Jerome Jutteau
 
  This file is part of AngFSM.
 
@@ -17,8 +17,6 @@
  You should have received a copy of the GNU Lesser General Public License
  along with AngFSM. If not, see <http://www.gnu.org/licenses/>.
  */
-
-#ifdef HOST
 
 #include "angfsm.h"
 
@@ -37,7 +35,7 @@ void
 angfsm_build_print_help ()
 {
    printf (
-           "AngFSM Copyright (C) 2011, 2012  Jérôme Jutteau\n"
+           "AngFSM Copyright (C) 2011-2013  Jérôme Jutteau\n"
            "This program comes with ABSOLUTELY NO WARRANTY;\n"
            "This is free software, and you are welcome to redistribute it\n"
            "under certain conditions; consult license for details.\n"
@@ -71,10 +69,10 @@ angfsm_build_print_help ()
            "         for a selected fsm. Put this option before --ang-gen.\n"
            "--ang-no-sanity-check\n"
            "         Disable sanity check during execution on the selected fsm or on\n"
-           "         all fsm. Sanity checks are not embedded in generated code."
+           "         all fsm. Sanity checks are not embedded in generated code.\n"
            "--ang-print-transitions\n"
            "         Print transition to stdout each time one occurs. Not available for\n"
-           "         generated code."
+           "         generated code.\n"
            );
 }
 
@@ -145,10 +143,13 @@ angfsm_build_arg_free (char ***tab, int nb)
 }
 
 void
-angfsm_build_print (angfsm_build_t *fsm,
-                    angfsm_build_trans_t *trans,
-                    angfsm_build_branch_chain_t *branch)
+angfsm_build_print_trans (angfsm_build_t *fsm,
+                          angfsm_build_trans_t *trans,
+                          angfsm_build_branch_chain_t *branch)
 {
+   assert (fsm);
+   assert (trans);
+   assert (branch);
    if (branch->name == NULL)
       fprintf (stderr, "Transition: %s -- %s --> %s\n",
                trans->state->var_name,
@@ -361,13 +362,6 @@ angfsm_build_sanity_check (angfsm_build_t *fsm)
       }
       sc = sc->next;
    }
-
-   /* Sanity check 8: any transition output error ?
-    * for example, as we are in state s42, making a angfsm_NEXT (s1, e2) will
-    * work but this is a user's mistake.
-    *
-    * TODO Find a way to check this.
-    **/
 }
 
 void
@@ -385,6 +379,21 @@ angfsm_build_reset (angfsm_build_t *fsm)
    {
       fsm->run.active_states[i++] = &curs->state;
       curs = curs->next;
+   }
+
+   /* Reset timeouts. */
+   for (i = 0; i < fsm->max_active_states; i++)
+      fsm->run.timeout_counters[i] = -1;
+   for (i = 0; i < fsm->max_active_states; i++)
+   {
+      angfsm_build_timeout_chain_t *toc = fsm->timeouts;
+      while (toc != NULL)
+      {
+         if (fsm->run.active_states[i]->code
+             == toc->timeout.trans->state->code)
+            fsm->run.timeout_counters[i] = toc->timeout.timeout;
+         toc = toc->next;
+      }
    }
 }
 
@@ -476,16 +485,21 @@ angfsm_build_init (angfsm_build_t *fsm, char *name)
    fsm->trans = NULL;
    fsm->name = name;
    fsm->max_active_states = 0;
-   fsm->event_nb = 0;
+   fsm->max_events_per_states = 0;
+   fsm->max_branches_per_trans = 1;
    fsm->state_nb = 0;
+   fsm->event_nb = 0;
    fsm->starters = NULL;
    fsm->timeouts = NULL;
+   fsm->u_branch_nb = 0;
+   fsm->u_branch_name = NULL;
 
    fsm->run.trans_table = NULL;
    fsm->run.active_states = NULL;
    fsm->run.events_before_active_state = NULL;
    fsm->run.func_pool = NULL;
    fsm->run.timeout_counters = NULL;
+   fsm->run.trans_callback = NULL;
 
    /* Set default user's options. */
    fsm->options.embedded_strings = 0;
@@ -500,6 +514,84 @@ angfsm_build_init (angfsm_build_t *fsm, char *name)
    niou->fsm = fsm;
    niou->next = angfsm_build_all_fsm;
    angfsm_build_all_fsm = niou;
+}
+
+/* Compute last details about fsm. */
+void
+angfsm_build_init_finalize (angfsm_build_t *fsm)
+{
+   uint i, j, k;
+   uint *cpt;
+   char **t;
+   angfsm_build_trans_chain_t *tc;
+   angfsm_build_branch_chain_t *bc;
+   assert (fsm);
+
+   /* Compute maximal number of events per states. */
+   cpt = (uint *) calloc (fsm->state_nb, sizeof (uint));
+   tc = fsm->trans;
+   while (tc != NULL)
+   {
+       cpt[tc->trans.state->code]++;
+       tc = tc->next;
+   }
+   for (i = 0; i < fsm->state_nb; i++)
+       if (cpt[i] > fsm->max_events_per_states)
+           fsm->max_events_per_states = cpt[i];
+   free (cpt);
+
+   /* Populate every unique branch names. */
+   /* 1. count the number of branch with a name. */
+   j = 0;
+   tc = fsm->trans;
+   while (tc != NULL)
+   {
+      bc = tc->trans.output_branches;
+      while (bc != NULL)
+      {
+         if (bc->name != NULL)
+             j++;
+         bc = bc->next;
+      }
+      tc = tc->next;
+   }
+   /* 2. Create temporary array and fill it. */
+   if (j > 0)
+   {
+       t = (char **) calloc (j, sizeof (char *));
+       k = 0;
+       tc = fsm->trans;
+       /* In all transitions. */
+       while (tc != NULL)
+       {
+           bc = tc->trans.output_branches;
+           /* In all branches. */
+           while (bc != NULL)
+           {
+               if (bc->name != NULL)
+               {
+                   /* Check if this name already exists. */
+                   int exists = 0;
+                   for (i = 0; i < j; i++)
+                       if (t[i] && strcmp (bc->name, t[i]) == 0)
+                           exists = 1;
+                   /* Add to array. */
+                   if (!exists)
+                   {
+                       t[k] = bc->name;
+                       k++;
+                   }
+               }
+               bc = bc->next;
+           }
+           tc = tc->next;
+       }
+       /* 3. Rescale the array and store it. */
+       if (k < j)
+           t = (char **) realloc (t, k * sizeof (char *));
+       fsm->u_branch_nb = k;
+       fsm->u_branch_name = t;
+   }
 }
 
 /* Prepare the fsm to run (at very end). */
@@ -563,8 +655,9 @@ angfsm_build_run_init (angfsm_build_t *fsm)
       malloc (fsm->max_active_states * sizeof (int));
    for (i = 0; i < fsm->max_active_states; i++)
       fsm->run.timeout_counters[i] = -1;
-   angfsm_build_timeout_chain_t *toc = fsm->timeouts;
    for (i = 0; i < fsm->max_active_states; i++)
+   {
+      angfsm_build_timeout_chain_t *toc = fsm->timeouts;
       while (toc != NULL)
       {
          if (fsm->run.active_states[i]->code
@@ -572,6 +665,7 @@ angfsm_build_run_init (angfsm_build_t *fsm)
             fsm->run.timeout_counters[i] = toc->timeout.timeout;
          toc = toc->next;
       }
+   }
 }
 
 void
@@ -671,6 +765,23 @@ angfsm_build_get_state_by_code (angfsm_build_t *fsm, uint state)
    return NULL;
 }
 
+angfsm_build_trans_t*
+angfsm_build_get_trans (angfsm_build_t *fsm, uint state, uint event)
+{
+   assert (fsm);
+   assert (state < fsm->state_nb);
+   assert (event < fsm->event_nb);
+
+   angfsm_build_trans_chain_t *tc = fsm->trans;
+   while (tc != NULL)
+   {
+      if (tc->trans.event->code == event && tc->trans.state->code == state)
+          return &(tc->trans);
+      tc = tc->next;
+   }
+   return NULL;
+}
+
 uint16_t
 angfsm_build_get_event_code (angfsm_build_t *fsm, char *event)
 {
@@ -678,6 +789,35 @@ angfsm_build_get_event_code (angfsm_build_t *fsm, char *event)
    angfsm_build_event_t *e = angfsm_build_get_event (fsm, event);
    assert (e);
    return e->code;
+}
+
+angfsm_build_branch_chain_t*
+angfsm_build_get_event_branch (angfsm_build_t *fsm,
+                               angfsm_build_trans_t *trans,
+                               uint branch)
+{
+   assert (fsm);
+   assert (trans);
+   angfsm_build_branch_chain_t *b = trans->output_branches;
+   while (b != NULL)
+   {
+      if (angfsm_build_get_branch (fsm, b->name) == branch)
+         break;
+      b = b->next;
+   }
+   return b;
+}
+
+uint
+angfsm_build_get_branch (angfsm_build_t *fsm, char *branch)
+{
+   assert (fsm);
+   uint i;
+   if (branch && strlen (branch) > 0)
+       for (i = 0; i < fsm->u_branch_nb; i++)
+           if (strcmp (branch, fsm->u_branch_name[i]) == 0)
+               return i;
+   return fsm->u_branch_nb;
 }
 
 void
@@ -700,6 +840,11 @@ angfsm_build_trans (angfsm_build_t *fsm,
    assert (t.event);
 
    angfsm_build_arg_parse (output_branches, &args, &nb);
+
+   /* Are we the winner of the maximal branches per transitions ? */
+   if ((uint) ((nb / 2)) > fsm->max_branches_per_trans)
+       fsm->max_branches_per_trans = nb / 2;
+
    /* Only one output state. */
    if (nb == 1)
    {
@@ -717,6 +862,9 @@ angfsm_build_trans (angfsm_build_t *fsm,
             malloc (sizeof (angfsm_build_branch_chain_t));
          b->name = strdup (args[i]);
          b->state = angfsm_build_get_state (fsm, args[i + 1]);
+         if (!b->state)
+             fprintf (stderr, "Error: the state \"%s\" has not been declared in fsm %s.\n",
+                       args[i + 1], fsm->name);
          assert (b->state);
          b->next = t.output_branches;
          t.output_branches = b;
@@ -806,8 +954,12 @@ angfsm_build_handle (angfsm_build_t *fsm, angfsm_build_event_t *e)
 {
    angfsm_build_state_t *s = NULL;
    angfsm_build_timeout_chain_t *toc = NULL;
+   angfsm_build_state_t *out;
+   angfsm_build_branch_chain_t* bc;
    assert (e);
    uint i;
+   uint b = 0;
+   int mono;
    int handled = 0;
    for (i = 0; i < fsm->max_active_states; i++)
    {
@@ -815,7 +967,52 @@ angfsm_build_handle (angfsm_build_t *fsm, angfsm_build_event_t *e)
       if (s && fsm->run.trans_table[e->code][s->code])
       {
          fsm->run.events_before_active_state[i] = e;
-         fsm->run.active_states[i] = fsm->run.trans_table[e->code][s->code]();
+
+         /* Get transition. */
+         angfsm_build_trans_t *t = angfsm_build_get_trans (fsm, s->code, e->code);
+         assert (t);
+
+         /* Is it a mono or multi branch function ? */
+         assert (t->output_branches);
+         if (t->output_branches->next == NULL)
+            mono = 1;
+         else
+            mono = 0;
+
+         /* Get transition function. */
+         angfsm_build_run_strans_func_t f = fsm->run.trans_table[e->code][s->code];
+         angfsm_build_run_strans_func_branches_t fb = (angfsm_build_run_strans_func_branches_t) f;
+
+         /* Run transition. */
+         if (mono)
+             f ();
+         else
+             b = fb();
+
+         /* Get next branch. */
+         bc = NULL;
+         if (mono)
+            bc = t->output_branches;
+         else
+            bc = angfsm_build_get_event_branch (fsm, t, b);
+
+         if (bc == NULL)
+             fprintf (stderr, "FSM: %s STATE: %s EVENT: %s - Cannot handle given branch \"%s\" (%s)\n", fsm->name, s->var_name, e->var_name, (b < fsm->u_branch_nb ? fsm->u_branch_name[b] : ""), (b < fsm->u_branch_nb ? "wrong branch ?" : "bad branch name ?"));
+         assert (bc);
+         out = bc->state;
+         assert (out);
+
+         /* Transition print. */
+         if (fsm->options.print_trans)
+            angfsm_build_print_trans (fsm, t, bc);
+
+         /* Transition callback. */
+         if (fsm->run.trans_callback)
+            fsm->run.trans_callback (s->code, e->code, out->code, (mono ? -1 : (int) b));
+
+         /* Update active states. */
+         fsm->run.active_states[i] = out;
+
          /* Check the new state has a timeout or not. */
          toc = fsm->timeouts;
          fsm->run.timeout_counters[i] = -1;
@@ -903,57 +1100,6 @@ angfsm_build_handle_timeout (angfsm_build_t *fsm)
       }
    }
    return out;
-}
-
-angfsm_build_state_t*
-angfsm_build_get_next_state (angfsm_build_t *fsm,
-                             char *state,
-                             char *event,
-                             char *branch)
-{
-   angfsm_build_state_t *s;
-   angfsm_build_event_t *e;
-   angfsm_build_trans_chain_t *t_curs;
-   angfsm_build_branch_chain_t *b_curs;
-
-   /* Convert input data. */
-   s = angfsm_build_get_state (fsm, state);
-   e = angfsm_build_get_event (fsm, event);
-   assert (s && e);
-
-   /* Get transition. */
-   t_curs = fsm->trans;
-   while (t_curs != NULL)
-   {
-      if (s == t_curs->trans.state && e == t_curs->trans.event)
-         break;
-      t_curs = t_curs->next;
-   }
-   assert (t_curs);
-   assert (t_curs->trans.output_branches);
-
-   /* If we have only one branch. */
-   if (strlen (branch) == 0)
-   {
-      /* Branch has to be given is there are multiple branches. */
-      assert (t_curs->trans.output_branches->next == NULL);
-      if (fsm->options.print_trans)
-         angfsm_build_print (fsm, &t_curs->trans, t_curs->trans.output_branches);
-      return t_curs->trans.output_branches->state;
-   }
-
-   /* Find correct branch.  */
-   b_curs = t_curs->trans.output_branches;
-   while (b_curs != NULL)
-   {
-      if (strcmp (b_curs->name, branch) == 0)
-         break;
-      b_curs = b_curs->next;
-   }
-   assert (b_curs);
-   if (fsm->options.print_trans)
-      angfsm_build_print (fsm, &t_curs->trans, b_curs);
-   return b_curs->state;
 }
 
 int
@@ -1098,11 +1244,8 @@ angfsm_build_gen_no_opti_h (angfsm_build_t *fsm, angfsm_build_arch_t arch)
    angfsm_build_state_chain_t *sc;
    angfsm_build_event_chain_t *ec;
    angfsm_build_trans_chain_t *tc;
-   angfsm_build_branch_chain_t *bc;
-   angfsm_build_state_t *s;
-   angfsm_build_event_t *e;
    angfsm_build_chain_t *all_fsm;
-   uint i, j;
+   uint i;
    uint embedded_strings = fsm->options.embedded_strings;
 
    /* Open file. */
@@ -1135,6 +1278,16 @@ angfsm_build_gen_no_opti_h (angfsm_build_t *fsm, angfsm_build_arch_t arch)
             fsm->name,
             fsm->max_active_states);
 
+   /* Gen max number of events per states. */
+   fprintf (f, "#define angfsm_%s_max_events_per_states %u\n",
+            fsm->name,
+            fsm->max_events_per_states);
+
+   /* Gen max number of branches per transitions. */
+   fprintf (f, "#define angfsm_%s_max_branches_per_trans %u\n",
+            fsm->name,
+            fsm->max_branches_per_trans);
+
    /* Gen state enum. */
    fprintf (f, "typedef enum\n{\n");
    sc = fsm->states;
@@ -1143,8 +1296,11 @@ angfsm_build_gen_no_opti_h (angfsm_build_t *fsm, angfsm_build_arch_t arch)
       fprintf (f, "\tangfsm_STATE_%s_%s = %u,\n", fsm->name, sc->state.var_name, sc->state.code);
       sc = sc->next;
    }
-   fprintf (f, "\tangfsm_STATE_%s_NB_ = %u\n", fsm->name, fsm->state_nb);
+   fprintf (f, "\tangfsm_STATE_%s_NB = %u\n", fsm->name, fsm->state_nb);
    fprintf (f, "} angfsm_%s_state_t;\n\n", fsm->name);
+
+   /* Gen transition callback reference. */
+   fprintf (f, "extern void (*angfsm_%s_trans_callback) (int state, int event, int output_branch, int branch);\n", fsm->name);
 
    /* Gen event enum. */
    fprintf (f, "typedef enum\n{\n");
@@ -1154,133 +1310,106 @@ angfsm_build_gen_no_opti_h (angfsm_build_t *fsm, angfsm_build_arch_t arch)
       fprintf (f, "\tangfsm_EVENT_%s_%s = %u,\n", fsm->name, ec->event.var_name, ec->event.code);
       ec = ec->next;
    }
-   fprintf (f, "\tangfsm_EVENT_%s_NB_ = %u\n", fsm->name, fsm->event_nb);
+   fprintf (f, "\tangfsm_EVENT_%s_NB = %u\n", fsm->name, fsm->event_nb);
    fprintf (f, "} angfsm_%s_event_t;\n\n", fsm->name);
 
-   /* Gen state strings. */
+   /* Gen branches unique name enum. */
+   fprintf (f, "typedef enum\n{\n");
+   if (fsm->u_branch_nb > 0)
+   {
+      for (i = 0; i < fsm->u_branch_nb; i++)
+          fprintf (f, "\tangfsm_BRANCH_%s_%s = %u,\n",
+                   fsm->name,
+                   fsm->u_branch_name[i],
+                   i);
+   }
+   fprintf (f, "\tangfsm_BRANCH_%s_NB = %u\n", fsm->name, fsm->u_branch_nb);
+   fprintf (f, "} angfsm_%s_branch_t;\n\n", fsm->name);
+
+   /* Gen strings. */
    if (embedded_strings)
    {
-      sc = fsm->states;
-      while (sc != NULL)
-      {
-         fprintf (f, "extern char angfsm_%s_state_str_%s[%u];\n",
-                  fsm->name,
-                  sc->state.var_name,
-                  strlen (sc->state.var_name) + 1);
-         sc = sc->next;
-      }
-      fprintf (f, "extern char *angfsm_%s_state_str[%u];\n\n",
-               fsm->name,
-               fsm->state_nb);
+      fprintf (f, "extern char *angfsm_%s_state_str[];\n", fsm->name);
+      fprintf (f, "extern char *angfsm_%s_event_str[];\n", fsm->name);
+      fprintf (f, "extern char *angfsm_%s_branch_str[];\n", fsm->name);
 
-      /* Gen event strings. */
-      ec = fsm->events;
-      while (ec != NULL)
-      {
-         fprintf (f, "extern char angfsm_%s_event_str_%s[%u];\n",
-                  fsm->name,
-                  ec->event.var_name,
-                  strlen (ec->event.var_name) + 1);
-         ec = ec->next;
-      }
-      fprintf (f, "extern char *angfsm_%s_event_str[%u];\n\n",
-               fsm->name,
-               fsm->event_nb);
+      /* Convert an event in string. */
+      fprintf (f, "char *\nangfsm_%s_get_event_str (angfsm_%s_event_t e);\n", fsm->name, fsm->name);
+      /* Convert a state in string. */
+      fprintf (f, "char *\nangfsm_%s_get_state_str (angfsm_%s_state_t s);\n", fsm->name, fsm->name);
+      /* Convert a branch in string. */
+      fprintf (f, "char *\nangfsm_%s_get_branch_str (angfsm_%s_branch_t s);\n", fsm->name, fsm->name);
 
-      /* Create a RAM string able to store event or state string. */
-      j = 0;
-      for (i = 0; i < fsm->event_nb; i++)
-      {
-         e = angfsm_build_get_event_by_code (fsm, i);
-         if (strlen (e->var_name) > j)
-            j = strlen (e->var_name);
-      }
-      for (i = 0; i < fsm->state_nb; i++)
-      {
-         s = angfsm_build_get_state_by_code (fsm, i);
-         if (strlen (s->var_name) > j)
-            j = strlen (s->var_name);
-      }
-      fprintf (f, "extern char angfsm_%s_str_buff[%u];\n", fsm->name, j + 1);
-
-      /* Convert an event enum in string. */
-      fprintf (f, "char *\nangfsm_%s_get_event_string_from_enum \
-        (angfsm_%s_event_t e);\n", fsm->name, fsm->name);
-
-      /* Convert a event string in enum. */
-      fprintf (f, "angfsm_%s_event_t\nangfsm_%s_get_event_enum_from_string \
-        (char *str);\n", fsm->name, fsm->name);
-
-      /* Convert an state enum in string. */
-      fprintf (f, "char *\nangfsm_%s_get_state_string_from_enum \
-        (angfsm_%s_state_t s);\n", fsm->name, fsm->name);
-
-      /* Convert a state string in enum. */
-      fprintf (f, "angfsm_%s_state_t\nangfsm_%s_get_state_enum_from_string \
-        (char *str);\n", fsm->name, fsm->name);
+      fprintf (f, "\n");
    }
-
-   /* Gen transitions branches enum. */
-   fprintf (f, "typedef enum\n{\n");
-   tc = fsm->trans;
-   while (tc != NULL)
+   else
    {
-      bc = tc->trans.output_branches;
-      while (bc != NULL)
-      {
-         if (bc->name != NULL)
-            fprintf (f, "\tangfsm_BRANCH_%s_%s_%s_%s = %u,\n",
-                     fsm->name,
-                     tc->trans.state->var_name,
-                     tc->trans.event->var_name,
-                     bc->name,
-                     bc->state->code);
-         else
-            fprintf (f, "\tangfsm_BRANCH_%s_%s_%s_ = %u,\n",
-                     fsm->name,
-                     tc->trans.state->var_name,
-                     tc->trans.event->var_name,
-                     bc->state->code);
-         bc = bc->next;
-      }
-      tc = tc->next;
+      /* Disable string macros. */
+      fprintf (f, "#undef ANGFSM_STATE_STR\n#define ANGFSM_STATE_STR(s) ((char *)0)\n");
+      fprintf (f, "#undef ANGFSM_EVENT_STR\n#define ANGFSM_EVENT_STR(e) ((char *)0)\n");
+      fprintf (f, "#undef ANGFSM_BRANCH_STR\n#define ANGFSM_BRANCH_STR(b) ((char *)0)\n");
    }
-   fprintf (f, "} angfsm_%s_branch_t;\n\n", fsm->name);
 
    /* Gen function headers. */
    tc = fsm->trans;
    while (tc != NULL)
    {
-      fprintf (f, "angfsm_%s_branch_t angfsm_%s_trans_func_%s_%s (void);\n",
-               fsm->name,
-               fsm->name,
-               tc->trans.state->var_name,
-               tc->trans.event->var_name);
+      assert (tc->trans.output_branches);
+      /* Mono branch */
+      if (tc->trans.output_branches->next==NULL)
+         fprintf (f, "void angfsm_%s_trans_func_%s_%s ();\n",
+                  fsm->name,
+                  tc->trans.state->var_name,
+                  tc->trans.event->var_name);
+      else
+         fprintf (f, "angfsm_%s_branch_t angfsm_%s_trans_func_%s_%s ();\n",
+                  fsm->name,
+                  fsm->name,
+                  tc->trans.state->var_name,
+                  tc->trans.event->var_name);
       tc = tc->next;
    }
    fprintf (f, "\n");
 
-   /* Gen function table. */
-   fprintf (f, "typedef angfsm_%s_branch_t (*angfsm_%s_func_t)(void);\n", fsm->name,
+   /* Declare function type. */
+   fprintf (f, "typedef void (*angfsm_%s_func_t)();\n", fsm->name);
+   fprintf (f, "typedef angfsm_%s_branch_t (*angfsm_%s_func_branches_t)();\n\n",
+            fsm->name, fsm->name);
+
+   /* Gen branch structure. */
+   fprintf (f, "typedef struct\n{\n");
+   fprintf (f, "\tangfsm_%s_branch_t branch;\n", fsm->name);
+   fprintf (f, "\tangfsm_%s_state_t state;\n", fsm->name);
+   fprintf (f, "} angfsm_%s_next_t;\n\n", fsm->name);
+
+   /* Gen transition structure. */
+   fprintf (f, "typedef struct\n{\n");
+   fprintf (f, "\tangfsm_%s_event_t event;\n", fsm->name);
+   fprintf (f, "\tangfsm_%s_func_t func;\n", fsm->name);
+   fprintf (f, "\tangfsm_%s_next_t branches[angfsm_%s_max_branches_per_trans];\n",
+            fsm->name,
             fsm->name);
-   fprintf (f, "extern const angfsm_%s_func_t angfsm_%s_trans_table[%u][%u];\n",
+   fprintf (f, "} angfsm_%s_trans_t;\n\n", fsm->name);
+
+   /* Gen transition table. */
+   fprintf (f, "extern const angfsm_%s_trans_t angfsm_%s_trans_table[angfsm_STATE_%s_NB][angfsm_%s_max_events_per_states];\n\n",
             fsm->name,
             fsm->name,
-            fsm->event_nb,
-            fsm->state_nb);
+            fsm->name,
+            fsm->name);
+
    /* Gen read function for trans table. */
-   fprintf (f, "angfsm_%s_func_t angfsm_%s_read_trans (angfsm_%s_event_t event, "
-            "angfsm_%s_state_t state);\n\n",
+   fprintf (f, "inline angfsm_%s_trans_t* angfsm_%s_read_trans (angfsm_%s_event_t event, angfsm_%s_state_t state);\n\n",
             fsm->name,
             fsm->name,
             fsm->name,
             fsm->name);
 
    /* Gen active states array. */
-   fprintf (f, "extern angfsm_%s_state_t angfsm_%s_active_states[%u];\n\n",
+   fprintf (f, "extern angfsm_%s_state_t angfsm_%s_active_states[angfsm_%s_max_active_states];\n\n",
             fsm->name,
             fsm->name,
-            fsm->max_active_states);
+            fsm->name);
 
    /* Gen initialization function. */
    sc = fsm->starters;
@@ -1305,20 +1434,20 @@ angfsm_build_gen_no_opti_h (angfsm_build_t *fsm, angfsm_build_arch_t arch)
                fsm->name);
 
       /* Gen timeout values. */
-      fprintf (f, "extern int32_t angfsm_%s_timeout_values[angfsm_STATE_%s_NB_];\n",
+      fprintf (f, "extern int32_t angfsm_%s_timeout_values[angfsm_STATE_%s_NB];\n",
                fsm->name,
                fsm->name);
 
       /* Gen timeout corresponding events. */
-      fprintf (f, "extern angfsm_%s_event_t angfsm_%s_timeout_events[angfsm_STATE_%s_NB_];\n",
+      fprintf (f, "extern angfsm_%s_event_t angfsm_%s_timeout_events[angfsm_STATE_%s_NB];\n",
                fsm->name,
                fsm->name,
                fsm->name);
 
       /* Gen timeout counters array. */
-      fprintf (f, "extern int32_t angfsm_%s_timeout_counters[%u];\n\n",
+      fprintf (f, "extern int32_t angfsm_%s_timeout_counters[angfsm_%s_max_active_states];\n\n",
                fsm->name,
-               fsm->max_active_states);
+               fsm->name);
    }
 
    /* Conclusion. */
@@ -1332,14 +1461,15 @@ angfsm_build_gen_no_opti_h (angfsm_build_t *fsm, angfsm_build_arch_t arch)
 void
 angfsm_build_gen_no_opti_c (angfsm_build_t *fsm, angfsm_build_arch_t arch)
 {
+   assert (fsm);
    assert (arch < ANGFSM_BUILD_ARCH_NB);
    angfsm_build_state_chain_t *sc;
    angfsm_build_event_chain_t *ec;
    angfsm_build_trans_chain_t *tc;
    angfsm_build_timeout_chain_t *toc;
+   angfsm_build_branch_chain_t *bc;
    angfsm_build_state_t *s;
-   angfsm_build_event_t *e;
-   uint i, j, found;
+   uint i, j, k, count;
    uint embedded_strings = fsm->options.embedded_strings;
 
    /* Open file. */
@@ -1356,165 +1486,191 @@ angfsm_build_gen_no_opti_c (angfsm_build_t *fsm, angfsm_build_arch_t arch)
 	    angfsm_build_arch_name[arch],
 	    fsm->name);
 
-   /* Gen state strings. */
+   /* Gen strings if configured. */
    if (embedded_strings)
    {
-      sc = fsm->states;
-      while (sc != NULL)
-      {
-         fprintf (f, "char angfsm_%s_state_str_%s[] = \"%s\";\n",
-                  fsm->name,
-                  sc->state.var_name,
-                  sc->state.var_name);
-         sc = sc->next;
-      }
+      /* Gen state strings. */
       fprintf (f, "char *angfsm_%s_state_str[] =\n{\n", fsm->name);
       for (i = 0; i < fsm->state_nb; i++)
       {
-         s = angfsm_build_get_state_by_code (fsm, i);
-         fprintf (f, "\tangfsm_%s_state_str_%s", fsm->name, s->var_name);
-         if (i == fsm->state_nb - 1)
-            fprintf (f, "\n");
-         else
-            fprintf (f, ",\n");
+          sc = fsm->states;
+          while (sc != NULL)
+          {
+              if (sc->state.code == i)
+              {
+                  fprintf (f, "\t\"%s\"", sc->state.var_name);
+                  if (i != fsm->state_nb)
+                      fprintf (f, ", ");
+                  fprintf (f, "\n");
+              }
+              sc = sc->next;
+          }
       }
       fprintf (f, "};\n\n");
 
       /* Gen event strings. */
-      ec = fsm->events;
-      while (ec != NULL)
-      {
-         fprintf (f, "char angfsm_%s_event_str_%s[] = \"%s\";\n",
-                  fsm->name,
-                  ec->event.var_name,
-                  ec->event.var_name);
-         ec = ec->next;
-      }
       fprintf (f, "char *angfsm_%s_event_str[] =\n{\n", fsm->name);
       for (i = 0; i < fsm->event_nb; i++)
       {
-         e = angfsm_build_get_event_by_code (fsm, i);
-         fprintf (f, "\tangfsm_%s_event_str_%s", fsm->name, e->var_name);
-         if (i == fsm->event_nb - 1)
-            fprintf (f, "\n");
-         else
-            fprintf (f, ",\n");
+          ec = fsm->events;
+          while (ec != NULL)
+          {
+              if (ec->event.code == i)
+              {
+                  fprintf (f, "\t\"%s\"", ec->event.var_name);
+                  if (i != fsm->event_nb)
+                      fprintf (f, ", ");
+                  fprintf (f, "\n");
+              }
+              ec = ec->next;
+          }
       }
       fprintf (f, "};\n\n");
 
-      /* Create a RAM string able to store event or state string. */
-      j = 0;
-      for (i = 0; i < fsm->event_nb; i++)
+      /* Gen branch strings. */
+      fprintf (f, "char *angfsm_%s_branch_str[] =\n{\n", fsm->name);
+      for (i = 0; i < fsm->u_branch_nb; i++)
       {
-         e = angfsm_build_get_event_by_code (fsm, i);
-         if (strlen (e->var_name) > j)
-            j = strlen (e->var_name);
+         fprintf (f, "\t\"%s\"", fsm->u_branch_name[i]);
+         if (i != fsm->u_branch_nb - 1)
+             fprintf (f, ", ");
+         fprintf (f, "\n");
       }
-      for (i = 0; i < fsm->state_nb; i++)
-      {
-         s = angfsm_build_get_state_by_code (fsm, i);
-         if (strlen (s->var_name) > j)
-            j = strlen (s->var_name);
-      }
-      fprintf (f, "char angfsm_%s_str_buff[%u];\n", fsm->name, j + 1);
+      fprintf (f, "};\n\n");
 
+      /* Generate string read functions. */
       /* Convert an event enum in string. */
-      fprintf (f, "char *\nangfsm_%s_get_event_string_from_enum \
-        (angfsm_%s_event_t e)\n{\n", fsm->name, fsm->name);
-      fprintf (f, "\treturn strcpy (angfsm_%s_str_buff, \
-        (char *) (&(angfsm_%s_event_str[e])));\n", fsm->name, fsm->name);
+      fprintf (f, "inline char *\nangfsm_%s_get_event_str (angfsm_%s_event_t e)\n{\n", fsm->name, fsm->name);
+      fprintf (f, "\treturn angfsm_%s_event_str[e];\n", fsm->name);
       fprintf (f, "}\n\n");
-
-      /* Convert a event string in enum. */
-      fprintf (f, "angfsm_%s_event_t\nangfsm_%s_get_event_enum_from_string \
-        (char *str)\n{\n", fsm->name, fsm->name);
-      fprintf (f, "\tuint16_t i;\n");
-      fprintf (f, "\tfor (i = 0; i < angfsm_EVENT_%s_NB_; i++)\n", fsm->name);
-      fprintf (f, "\t\tif (strcpy (str, \
-        (char *) (&(angfsm_%s_event_str[i]))) == 0)\n", fsm->name);
-      fprintf (f, "\t\t\treturn i;\n");
-      fprintf (f, "\treturn angfsm_EVENT_%s_NB_;\n", fsm->name);
+      /* Convert a state enum in string. */
+      fprintf (f, "inline char *\nangfsm_%s_get_state_str (angfsm_%s_state_t s)\n{\n", fsm->name, fsm->name);
+      fprintf (f, "\treturn angfsm_%s_state_str[s];\n", fsm->name);
       fprintf (f, "}\n\n");
-
-      /* Convert an state enum in string. */
-      fprintf (f, "char *\nangfsm_%s_get_state_string_from_enum \
-        (angfsm_%s_state_t s)\n{\n", fsm->name, fsm->name);
-      fprintf (f, "\treturn strcpy (angfsm_%s_str_buff, \
-        (char *) (&(angfsm_%s_state_str[s])));\n", fsm->name, fsm->name);
-      fprintf (f, "}\n\n");
-
-      /* Convert a state string in enum. */
-      fprintf (f, "angfsm_%s_state_t\nangfsm_%s_get_state_enum_from_string \
-        (char *str)\n{\n", fsm->name, fsm->name);
-      fprintf (f, "\tuint16_t i;\n");
-      fprintf (f, "\tfor (i = 0; i < angfsm_STATE_%s_NB_; i++)\n", fsm->name);
-      fprintf (f, "\t\tif (strcpy (str, \
-        (char *) (&(angfsm_%s_state_str[i]))) == 0)\n", fsm->name);
-      fprintf (f, "\t\t\treturn i;\n");
-      fprintf (f, "\treturn angfsm_STATE_%s_NB_;\n", fsm->name);
+      /* Convert a branch enum in string. */
+      fprintf (f, "inline char *\nangfsm_%s_get_branch_str (angfsm_%s_branch_t b)\n{\n", fsm->name, fsm->name);
+      fprintf (f, "\treturn angfsm_%s_branch_str[b];\n", fsm->name);
       fprintf (f, "}\n\n");
    }
 
-   /* Gen function table. */
-   fprintf (f, "const angfsm_%s_func_t angfsm_%s_trans_table[%u][%u] = \n{\n",
+   /* Gen transition table. */
+   fprintf (f, "const angfsm_%s_trans_t angfsm_%s_trans_table[angfsm_STATE_%s_NB][angfsm_%s_max_events_per_states] = \n{\n",
             fsm->name,
             fsm->name,
-            fsm->event_nb,
-            fsm->state_nb);
-   /* for each events and state, see if it exists an associated transition. */
-   for (i = 0; i < fsm->event_nb; i++)
+            fsm->name,
+            fsm->name);
+   for (i = 0; i < fsm->state_nb; i++)
    {
-      e = angfsm_build_get_event_by_code (fsm, i);
-      fprintf (f, "\t{");
-      for (j = 0; j < fsm->state_nb; j++)
+      count = 0;
+      fprintf (f, "\t{\n");
+      tc = fsm->trans;
+      while (tc != NULL)
       {
-         s = angfsm_build_get_state_by_code (fsm, j);
-         tc = fsm->trans;
-         found = 0;
-         while (tc != NULL)
-         {
-            if (tc->trans.state == s && tc->trans.event == e)
-            {
-               found = 1;
-               fprintf (f, "&angfsm_%s_trans_func_%s_%s",
-                        fsm->name,
-                        tc->trans.state->var_name,
-                        tc->trans.event->var_name);
-               tc = tc->next;
-               break;
-            }
-            tc = tc->next;
-         }
-         if (!found)
-            fprintf (f, "(angfsm_%s_func_t) 0", fsm->name);
-         if (j == fsm->state_nb - 1)
-            fprintf (f, "}");
-         else
-            fprintf (f, ", ");
+          if (tc->trans.state->code == i)
+          {
+             fprintf (f, "\t\t{\n");
+             fprintf (f, "\t\t\tangfsm_EVENT_%s_%s,\n",
+                      fsm->name,
+                      tc->trans.event->var_name);
+             fprintf (f, "\t\t\t(angfsm_%s_func_t) &angfsm_%s_trans_func_%s_%s,\n",
+                      fsm->name,
+                      fsm->name,
+                      tc->trans.state->var_name,
+                      tc->trans.event->var_name);
+             /* Gen branche array */
+             fprintf (f, "\t\t\t{\n");
+             j = 0;
+             bc = tc->trans.output_branches;
+             while (bc != NULL)
+             {
+                fprintf (f, "\t\t\t\t{angfsm_BRANCH_%s_%s, angfsm_STATE_%s_%s}",
+                         fsm->name,
+                         (bc->name ? bc->name : "NB"),
+                         fsm->name,
+                         bc->state->var_name);
+                if (j != fsm->max_branches_per_trans - 1)
+                    fprintf (f, ", ");
+                fprintf (f, "\n");
+                j++;
+                bc = bc->next;
+             }
+             /* Fill blank branches. */
+             for (k = j; k < fsm->max_branches_per_trans; k++)
+             {
+                 fprintf (f, "\t\t\t\t{angfsm_BRANCH_%s_NB, angfsm_STATE_%s_NB}",
+                          fsm->name,
+                          fsm->name);
+                 if (k != fsm->max_branches_per_trans - 1)
+                    fprintf (f, ",");
+                 fprintf (f, "\n");
+             }
+
+             fprintf (f, "\t\t\t}\n");
+             if (tc->next != NULL || count != fsm->max_events_per_states)
+                 fprintf (f, "\t\t},\n");
+             else
+                 fprintf (f, "\t\t}\n");
+             count++;
+          }
+          tc = tc->next;
       }
-      if (i != fsm->event_nb - 1)
-         fprintf (f, ",");
-      fprintf (f, "\n");
+      /* Fill blank transitions. */
+      for (k = count; k < fsm->max_events_per_states; k++)
+      {
+          fprintf (f, "\t\t{\n");
+          fprintf (f, "\t\t\tangfsm_EVENT_%s_NB,\n",fsm->name);
+          fprintf (f, "\t\t\t(angfsm_%s_func_t) 0,\n", fsm->name);
+          fprintf (f, "\t\t\t{\n");
+          for (j = 0; j < fsm->max_branches_per_trans; j++)
+          {
+              fprintf (f, "\t\t\t\t{angfsm_BRANCH_%s_NB, angfsm_STATE_%s_NB}",
+                       fsm->name,
+                       fsm->name);
+              if (j != fsm->max_branches_per_trans - 1)
+                  fprintf (f, ",");
+              fprintf (f, "\n");
+          }
+          fprintf (f, "\t\t\t}\n");
+          if (k != fsm->max_events_per_states - 1)
+             fprintf (f, "\t\t},\n");
+          else
+              fprintf (f, "\t\t}\n");
+      }
+
+      if (i == fsm->state_nb - 1)
+          fprintf (f, "\t}\n");
+      else
+          fprintf (f, "\t},\n");
    }
    fprintf (f, "};\n\n");
 
-   /* Gen read function for trans table. */
-   fprintf (f, "angfsm_%s_func_t angfsm_%s_read_trans (angfsm_%s_event_t event, "
-            "angfsm_%s_state_t state)\n{\n",
-            fsm->name,
-            fsm->name,
-            fsm->name,
-            fsm->name);
-   fprintf (f, "\treturn (angfsm_%s_func_t) angfsm_%s_trans_table[event][state];\n",
-            fsm->name,
-            fsm->name);
-   fprintf (f, "}\n\n");
+   /* Transition callback. */
+   fprintf (f, "void (*angfsm_%s_trans_callback) (int state, int event, int output_branch, int branch);\n", fsm->name);
 
    /* Gen active states array. */
-   fprintf (f, "angfsm_%s_state_t angfsm_%s_active_states[%u];\n\n",
+   fprintf (f, "angfsm_%s_state_t angfsm_%s_active_states[angfsm_%s_max_active_states];\n\n",
             fsm->name,
             fsm->name,
-            fsm->max_active_states);
+            fsm->name);
+
+   /* Gen read transition from event and state. */
+   fprintf (f, "inline angfsm_%s_trans_t* angfsm_%s_read_trans "
+            "(angfsm_%s_event_t event, angfsm_%s_state_t state)\n{\n",
+            fsm->name,
+            fsm->name,
+            fsm->name,
+            fsm->name);
+   fprintf (f, "\tint i;\n");
+   fprintf (f, "\tangfsm_%s_trans_t* t;\n", fsm->name);
+   fprintf (f, "\tfor (i = 0; i < angfsm_%s_max_events_per_states; i++)\n\t{\n",
+            fsm->name);
+   fprintf (f, "\t\tt = (angfsm_%s_trans_t *) (&angfsm_%s_trans_table[state][i]);\n",
+            fsm->name,
+            fsm->name);
+   fprintf (f, "\t\tif (t->func == (angfsm_%s_func_t) 0)\n\t\t\tbreak;\n", fsm->name);
+   fprintf (f, "\t\tif (t->event == event)\n");
+   fprintf (f, "\t\t\treturn t;\n");
+   fprintf (f, "\t}\n\treturn (angfsm_%s_trans_t*) 0;\n}\n\n", fsm->name);
 
    /* Gen initialization function. */
    sc = fsm->starters;
@@ -1522,11 +1678,11 @@ angfsm_build_gen_no_opti_c (angfsm_build_t *fsm, angfsm_build_arch_t arch)
    fprintf (f, "void\nangfsm_%s_init ()\n{\n", fsm->name);
    while (sc != NULL)
    {
-      fprintf (f, "\tangfsm_%s_active_states[%u] = (angfsm_%s_state_t) %u;\n",
+      fprintf (f, "\tangfsm_%s_active_states[%u] = angfsm_STATE_%s_%s;\n",
                fsm->name,
                i,
                fsm->name,
-               sc->state.code);
+               sc->state.var_name);
       if (fsm->timeouts != NULL)
       {
          toc = fsm->timeouts;
@@ -1545,23 +1701,43 @@ angfsm_build_gen_no_opti_c (angfsm_build_t *fsm, angfsm_build_arch_t arch)
       i++;
       sc = sc->next;
    }
+   /* Set transition callback to NULL. */
+   fprintf (f, "\tangfsm_%s_trans_callback = (typeof (angfsm_%s_trans_callback)) 0;\n", fsm->name, fsm->name);
    fprintf (f, "}\n\n");
 
    /* Gen handle function. */
    fprintf (f, "int\nangfsm_%s_handle (angfsm_%s_event_t e)\n{\n",
             fsm->name,
             fsm->name);
-   fprintf (f, "\tuint16_t i;\n");
+   fprintf (f, "\tuint16_t i, j;\n");
    fprintf (f, "\tint handled = 0;\n");
+   fprintf (f, "\tangfsm_%s_branch_t b;\n", fsm->name);
    fprintf (f, "\tfor (i = 0; i < angfsm_%s_max_active_states; i++)\n\t{\n",
             fsm->name);
-   fprintf (f, "\t\tangfsm_%s_func_t trans = angfsm_%s_read_trans (e, angfsm_%s_active_states[i]);\n",
+   fprintf (f, "\t\tangfsm_%s_trans_t *trans = angfsm_%s_read_trans (e, angfsm_%s_active_states[i]);\n",
             fsm->name,
             fsm->name,
             fsm->name);
    fprintf (f, "\t\tif (trans)\n");
    fprintf (f, "\t\t{\n");
-   fprintf (f, "\t\t\tangfsm_%s_active_states[i] = (angfsm_%s_state_t) trans ();\n", fsm->name, fsm->name);
+   fprintf (f, "\t\t\tangfsm_%s_state_t s = angfsm_STATE_%s_NB;\n", fsm->name, fsm->name);
+   fprintf (f, "\t\t\tif (trans->branches[0].branch == angfsm_BRANCH_%s_NB)\n\t\t\t{\n", fsm->name);
+   fprintf (f, "\t\t\t\ttrans->func ();\n");
+   fprintf (f, "\t\t\t\ts = trans->branches[0].state;\n");
+   fprintf (f, "\t\t\t\tif (angfsm_%s_trans_callback)\n", fsm->name);
+   fprintf (f, "\t\t\t\t\tangfsm_%s_trans_callback(angfsm_%s_active_states[i], e, s, -1);\n", fsm->name, fsm->name);
+   fprintf (f, "\t\t\t}\n\t\t\telse\n\t\t\t{\n");
+   fprintf (f, "\t\t\t\tb = ((angfsm_%s_func_branches_t) trans->func) ();\n", fsm->name);
+   fprintf (f, "\t\t\t\tfor (j = 0; j < angfsm_%s_max_branches_per_trans; j++)\n", fsm->name);
+   fprintf (f, "\t\t\t\t\tif (trans->branches[j].branch == b)\n");
+   fprintf (f, "\t\t\t\t\t\ts = trans->branches[j].state;\n");
+   fprintf (f, "\t\t\t\t\tif (angfsm_%s_trans_callback)\n", fsm->name);
+   fprintf (f, "\t\t\t\t\t\tangfsm_%s_trans_callback(angfsm_%s_active_states[i], e, s, b);\n", fsm->name, fsm->name);
+   fprintf (f, "\t\t\t}\n");
+   fprintf (f, "\t\t\tif (s != angfsm_STATE_%s_NB)\n", fsm->name);
+   fprintf (f, "\t\t\t\tangfsm_%s_active_states[i] = s;\n", fsm->name);
+   fprintf (f, "\t\t\telse\n");
+   fprintf (f, "\t\t\t\t{;} //XXX show some error ?\n");
    fprintf (f, "\t\t\thandled = 1;\n");
    if (fsm->timeouts != NULL)
    {
@@ -1593,12 +1769,12 @@ angfsm_build_gen_no_opti_c (angfsm_build_t *fsm, angfsm_build_arch_t arch)
    if (fsm->timeouts != NULL)
    {
       /* Gen timeout counters array. */
-      fprintf (f, "int32_t angfsm_%s_timeout_counters[%u];\n",
+      fprintf (f, "int32_t angfsm_%s_timeout_counters[angfsm_%s_max_active_states];\n",
                fsm->name,
-               fsm->max_active_states);
+               fsm->name);
 
       /* Gen timeout values array. */
-      fprintf (f, "int32_t angfsm_%s_timeout_values[angfsm_STATE_%s_NB_] =\n{\n",
+      fprintf (f, "int32_t angfsm_%s_timeout_values[angfsm_STATE_%s_NB] =\n{\n",
                fsm->name,
                fsm->name);
       int value;
@@ -1625,7 +1801,7 @@ angfsm_build_gen_no_opti_c (angfsm_build_t *fsm, angfsm_build_arch_t arch)
       fprintf (f, "};\n\n");
 
       /* Gen timeout corresponding events array. */
-      fprintf (f, "angfsm_%s_event_t angfsm_%s_timeout_events[angfsm_STATE_%s_NB_] =\n{\n",
+      fprintf (f, "angfsm_%s_event_t angfsm_%s_timeout_events[angfsm_STATE_%s_NB] =\n{\n",
                fsm->name,
                fsm->name,
                fsm->name);
@@ -1645,7 +1821,7 @@ angfsm_build_gen_no_opti_c (angfsm_build_t *fsm, angfsm_build_arch_t arch)
             toc = toc->next;
          }
          if (value == -1)
-            fprintf (f, "\t(angfsm_%s_event_t) angfsm_STATE_%s_NB_", fsm->name, fsm->name);
+            fprintf (f, "\t(angfsm_%s_event_t) angfsm_STATE_%s_NB", fsm->name, fsm->name);
          else
             fprintf (f, "\t(angfsm_%s_event_t) %u", fsm->name, value);
 
@@ -1692,10 +1868,10 @@ angfsm_build_gen_opti_avr_h (angfsm_build_t *fsm, angfsm_build_arch_t arch)
    angfsm_build_state_chain_t *sc;
    angfsm_build_event_chain_t *ec;
    angfsm_build_trans_chain_t *tc;
-   angfsm_build_branch_chain_t *bc;
+   angfsm_build_chain_t *all_fsm;
    angfsm_build_state_t *s;
    angfsm_build_event_t *e;
-   angfsm_build_chain_t *all_fsm;
+
    uint i, j;
    uint embedded_strings = fsm->options.embedded_strings;
 
@@ -1729,6 +1905,16 @@ angfsm_build_gen_opti_avr_h (angfsm_build_t *fsm, angfsm_build_arch_t arch)
             fsm->name,
             fsm->max_active_states);
 
+   /* Gen max number of events per states. */
+   fprintf (f, "#define angfsm_%s_max_events_per_states %u\n",
+            fsm->name,
+            fsm->max_events_per_states);
+
+   /* Gen max number of branches per transitions. */
+   fprintf (f, "#define angfsm_%s_max_branches_per_trans %u\n",
+            fsm->name,
+            fsm->max_branches_per_trans);
+
    /* Gen state enum. */
    fprintf (f, "typedef enum\n{\n");
    sc = fsm->states;
@@ -1737,8 +1923,11 @@ angfsm_build_gen_opti_avr_h (angfsm_build_t *fsm, angfsm_build_arch_t arch)
       fprintf (f, "\tangfsm_STATE_%s_%s = %u,\n", fsm->name, sc->state.var_name, sc->state.code);
       sc = sc->next;
    }
-   fprintf (f, "\tangfsm_STATE_%s_NB_ = %u\n", fsm->name, fsm->state_nb);
+   fprintf (f, "\tangfsm_STATE_%s_NB = %u\n", fsm->name, fsm->state_nb);
    fprintf (f, "} angfsm_%s_state_t;\n\n", fsm->name);
+
+   /* Gen transition callback reference. */
+   fprintf (f, "extern void (*angfsm_%s_trans_callback) (int state, int event, int output_branch, int branch);\n", fsm->name);
 
    /* Gen event enum. */
    fprintf (f, "typedef enum\n{\n");
@@ -1748,12 +1937,26 @@ angfsm_build_gen_opti_avr_h (angfsm_build_t *fsm, angfsm_build_arch_t arch)
       fprintf (f, "\tangfsm_EVENT_%s_%s = %u,\n", fsm->name, ec->event.var_name, ec->event.code);
       ec = ec->next;
    }
-   fprintf (f, "\tangfsm_EVENT_%s_NB_ = %u\n", fsm->name, fsm->event_nb);
+   fprintf (f, "\tangfsm_EVENT_%s_NB = %u\n", fsm->name, fsm->event_nb);
    fprintf (f, "} angfsm_%s_event_t;\n\n", fsm->name);
 
-   /* Gen state strings. */
+   /* Gen branches unique name enum. */
+   fprintf (f, "typedef enum\n{\n");
+   if (fsm->u_branch_nb > 0)
+   {
+      for (i = 0; i < fsm->u_branch_nb; i++)
+          fprintf (f, "\tangfsm_BRANCH_%s_%s = %u,\n",
+                   fsm->name,
+                   fsm->u_branch_name[i],
+                   i);
+   }
+   fprintf (f, "\tangfsm_BRANCH_%s_NB = %u\n", fsm->name, fsm->u_branch_nb);
+   fprintf (f, "} angfsm_%s_branch_t;\n\n", fsm->name);
+
+   /* Gen strings. */
    if (embedded_strings)
    {
+      /* Gen state strings header. */
       sc = fsm->states;
       while (sc != NULL)
       {
@@ -1767,7 +1970,7 @@ angfsm_build_gen_opti_avr_h (angfsm_build_t *fsm, angfsm_build_arch_t arch)
                fsm->name,
                fsm->state_nb);
 
-      /* Gen event strings. */
+      /* Gen event strings header. */
       ec = fsm->events;
       while (ec != NULL)
       {
@@ -1780,6 +1983,18 @@ angfsm_build_gen_opti_avr_h (angfsm_build_t *fsm, angfsm_build_arch_t arch)
       fprintf (f, "extern const char *angfsm_%s_event_str[%u] PROGMEM;\n\n",
                fsm->name,
                fsm->event_nb);
+
+      /* Gen branch strings header. */
+      for (i = 0; i < fsm->u_branch_nb; i++)
+      {
+         fprintf (f, "extern prog_char angfsm_%s_branch_str_%s[%u] PROGMEM;\n",
+                  fsm->name,
+                  fsm->u_branch_name[i],
+                  strlen (fsm->u_branch_name[i]) + 1);
+      }
+      fprintf (f, "extern const char *angfsm_%s_branch_str[%u] PROGMEM;\n\n",
+               fsm->name,
+               fsm->u_branch_nb);
 
       /* Create a RAM string able to store event or state string. */
       j = 0;
@@ -1795,86 +2010,88 @@ angfsm_build_gen_opti_avr_h (angfsm_build_t *fsm, angfsm_build_arch_t arch)
          if (strlen (s->var_name) > j)
             j = strlen (s->var_name);
       }
+      for (i = 0; i < fsm->u_branch_nb; i++)
+      {
+         if (strlen (fsm->u_branch_name[i]) > j)
+            j = strlen (fsm->u_branch_name[i]);
+      }
       fprintf (f, "extern char angfsm_%s_str_buff[%u];\n", fsm->name, j + 1);
 
-      /* Convert an event enum in string. */
-      fprintf (f, "char *\nangfsm_%s_get_event_string_from_enum \
-        (angfsm_%s_event_t e);\n", fsm->name, fsm->name);
-
-      /* Convert a event string in enum. */
-      fprintf (f, "angfsm_%s_event_t\nangfsm_%s_get_event_enum_from_string \
-        (char *str);\n", fsm->name, fsm->name);
-
-      /* Convert an state enum in string. */
-      fprintf (f, "char *\nangfsm_%s_get_state_string_from_enum \
-        (angfsm_%s_state_t s);\n", fsm->name, fsm->name);
-
-      /* Convert a state string in enum. */
-      fprintf (f, "angfsm_%s_state_t\nangfsm_%s_get_state_enum_from_string \
-        (char *str);\n", fsm->name, fsm->name);
+      /* Convert an event in string. */
+      fprintf (f, "char *\nangfsm_%s_get_event_str (angfsm_%s_event_t e);\n", fsm->name, fsm->name);
+      /* Convert a state in string. */
+      fprintf (f, "char *\nangfsm_%s_get_state_str (angfsm_%s_state_t s);\n", fsm->name, fsm->name);
+      /* Convert a branch in string. */
+      fprintf (f, "char *\nangfsm_%s_get_branch_str (angfsm_%s_branch_t s);\n", fsm->name, fsm->name);
    }
-
-   /* Gen transitions branches enum. */
-   fprintf (f, "typedef enum\n{\n");
-   tc = fsm->trans;
-   while (tc != NULL)
+   else
    {
-      bc = tc->trans.output_branches;
-      while (bc != NULL)
-      {
-         if (bc->name != NULL)
-            fprintf (f, "\tangfsm_BRANCH_%s_%s_%s_%s = %u,\n",
-                     fsm->name,
-                     tc->trans.state->var_name,
-                     tc->trans.event->var_name,
-                     bc->name,
-                     bc->state->code);
-         else
-            fprintf (f, "\tangfsm_BRANCH_%s_%s_%s_ = %u,\n",
-                     fsm->name,
-                     tc->trans.state->var_name,
-                     tc->trans.event->var_name,
-                     bc->state->code);
-         bc = bc->next;
-      }
-      tc = tc->next;
+      /* Disable string macros. */
+      fprintf (f, "#undef ANGFSM_STATE_STR\n#define ANGFSM_STATE_STR(s) ((char *)0)\n");
+      fprintf (f, "#undef ANGFSM_EVENT_STR\n#define ANGFSM_EVENT_STR(e) ((char *)0)\n");
+      fprintf (f, "#undef ANGFSM_BRANCH_STR\n#define ANGFSM_BRANCH_STR(b) ((char *)0)\n");
    }
-   fprintf (f, "} angfsm_%s_branch_t;\n\n", fsm->name);
 
    /* Gen function headers. */
    tc = fsm->trans;
    while (tc != NULL)
    {
-      fprintf (f, "angfsm_%s_branch_t angfsm_%s_trans_func_%s_%s (void);\n",
-               fsm->name,
-               fsm->name,
-               tc->trans.state->var_name,
-               tc->trans.event->var_name);
+      assert (tc->trans.output_branches);
+      /* Mono branch */
+      if (tc->trans.output_branches->next==NULL)
+         fprintf (f, "void angfsm_%s_trans_func_%s_%s ();\n",
+                  fsm->name,
+                  tc->trans.state->var_name,
+                  tc->trans.event->var_name);
+      else
+         fprintf (f, "angfsm_%s_branch_t angfsm_%s_trans_func_%s_%s ();\n",
+                  fsm->name,
+                  fsm->name,
+                  tc->trans.state->var_name,
+                  tc->trans.event->var_name);
       tc = tc->next;
    }
    fprintf (f, "\n");
 
-   /* Gen function table. */
-   fprintf (f, "typedef angfsm_%s_branch_t (*angfsm_%s_func_t)(void);\n", fsm->name,
+   /* Declare function type. */
+   fprintf (f, "typedef void (*angfsm_%s_func_t)();\n", fsm->name);
+   fprintf (f, "typedef angfsm_%s_branch_t (*angfsm_%s_func_branches_t)();\n\n",
+            fsm->name, fsm->name);
+
+   /* Gen branch structure. */
+   fprintf (f, "typedef struct\n{\n");
+   fprintf (f, "\tangfsm_%s_branch_t branch;\n", fsm->name);
+   fprintf (f, "\tangfsm_%s_state_t state;\n", fsm->name);
+   fprintf (f, "} angfsm_%s_next_t;\n\n", fsm->name);
+
+   /* Gen transition structure. */
+   fprintf (f, "typedef struct\n{\n");
+   fprintf (f, "\tangfsm_%s_event_t event;\n", fsm->name);
+   fprintf (f, "\tangfsm_%s_func_t func;\n", fsm->name);
+   fprintf (f, "\tangfsm_%s_next_t branches[angfsm_%s_max_branches_per_trans];\n",
+            fsm->name,
             fsm->name);
-   fprintf (f, "extern const angfsm_%s_func_t PROGMEM angfsm_%s_trans_table[%u][%u];\n",
+   fprintf (f, "} angfsm_%s_trans_t;\n\n", fsm->name);
+
+   /* Gen transition table. */
+   fprintf (f, "extern const angfsm_%s_trans_t PROGMEM angfsm_%s_trans_table[angfsm_STATE_%s_NB][angfsm_%s_max_events_per_states];\n\n",
             fsm->name,
             fsm->name,
-            fsm->event_nb,
-            fsm->state_nb);
+            fsm->name,
+            fsm->name);
+
    /* Gen read function for trans table. */
-   fprintf (f, "angfsm_%s_func_t angfsm_%s_read_trans (angfsm_%s_event_t event, "
-            "angfsm_%s_state_t state);\n\n",
+   fprintf (f, "inline angfsm_%s_trans_t* angfsm_%s_read_trans (angfsm_%s_event_t event, angfsm_%s_state_t state);\n\n",
             fsm->name,
             fsm->name,
             fsm->name,
             fsm->name);
 
    /* Gen active states array. */
-   fprintf (f, "extern angfsm_%s_state_t angfsm_%s_active_states[%u];\n\n",
+   fprintf (f, "extern angfsm_%s_state_t angfsm_%s_active_states[angfsm_%s_max_active_states];\n\n",
             fsm->name,
             fsm->name,
-            fsm->max_active_states);
+            fsm->name);
 
    /* Gen initialization function. */
    sc = fsm->starters;
@@ -1899,20 +2116,20 @@ angfsm_build_gen_opti_avr_h (angfsm_build_t *fsm, angfsm_build_arch_t arch)
                fsm->name);
 
       /* Gen timeout values. */
-      fprintf (f, "extern int32_t angfsm_%s_timeout_values[angfsm_STATE_%s_NB_];\n",
+      fprintf (f, "extern int32_t angfsm_%s_timeout_values[angfsm_STATE_%s_NB];\n",
                fsm->name,
                fsm->name);
 
       /* Gen timeout corresponding events. */
-      fprintf (f, "extern angfsm_%s_event_t angfsm_%s_timeout_events[angfsm_STATE_%s_NB_];\n",
+      fprintf (f, "extern angfsm_%s_event_t angfsm_%s_timeout_events[angfsm_STATE_%s_NB];\n",
                fsm->name,
                fsm->name,
                fsm->name);
 
       /* Gen timeout counters array. */
-      fprintf (f, "extern int32_t angfsm_%s_timeout_counters[%u];\n\n",
+      fprintf (f, "extern int32_t angfsm_%s_timeout_counters[angfsm_%s_max_active_states];\n\n",
                fsm->name,
-               fsm->max_active_states);
+               fsm->name);
    }
 
    /* Conclusion. */
@@ -1926,14 +2143,16 @@ angfsm_build_gen_opti_avr_h (angfsm_build_t *fsm, angfsm_build_arch_t arch)
 void
 angfsm_build_gen_opti_avr_c (angfsm_build_t *fsm, angfsm_build_arch_t arch)
 {
+   assert (fsm);
    assert (arch < ANGFSM_BUILD_ARCH_NB);
    angfsm_build_state_chain_t *sc;
    angfsm_build_event_chain_t *ec;
    angfsm_build_trans_chain_t *tc;
    angfsm_build_timeout_chain_t *toc;
+   angfsm_build_branch_chain_t *bc;
    angfsm_build_state_t *s;
    angfsm_build_event_t *e;
-   uint i, j, found;
+   uint i, j, k, count;
    uint embedded_strings = fsm->options.embedded_strings;
 
    /* Open file. */
@@ -1950,9 +2169,10 @@ angfsm_build_gen_opti_avr_c (angfsm_build_t *fsm, angfsm_build_arch_t arch)
 	    angfsm_build_arch_name[arch],
 	    fsm->name);
 
-   /* Gen state strings. */
+   /* Gen strings if configured. */
    if (embedded_strings)
    {
+      /* Gen state strings. */
       sc = fsm->states;
       while (sc != NULL)
       {
@@ -1996,6 +2216,25 @@ angfsm_build_gen_opti_avr_c (angfsm_build_t *fsm, angfsm_build_arch_t arch)
       }
       fprintf (f, "};\n\n");
 
+      /* Gen branch strings. */
+      for (i = 0; i < fsm->u_branch_nb; i++)
+      {
+         fprintf (f, "prog_char angfsm_%s_branch_str_%s[] PROGMEM = \"%s\";\n",
+                  fsm->name,
+                  fsm->u_branch_name[i],
+                  fsm->u_branch_name[i]);
+      }
+      fprintf (f, "const char *angfsm_%s_branch_str[] PROGMEM =\n{\n", fsm->name);
+      for (i = 0; i < fsm->u_branch_nb; i++)
+      {
+         fprintf (f, "\tangfsm_%s_branch_str_%s", fsm->name, fsm->u_branch_name[i]);
+         if (i == fsm->u_branch_nb - 1)
+            fprintf (f, "\n");
+         else
+            fprintf (f, ",\n");
+      }
+      fprintf (f, "};\n\n");
+
       /* Create a RAM string able to store event or state string. */
       j = 0;
       for (i = 0; i < fsm->event_nb; i++)
@@ -2010,106 +2249,152 @@ angfsm_build_gen_opti_avr_c (angfsm_build_t *fsm, angfsm_build_arch_t arch)
          if (strlen (s->var_name) > j)
             j = strlen (s->var_name);
       }
+      for (i = 0; i < fsm->u_branch_nb; i++)
+      {
+         if (strlen (fsm->u_branch_name[i]) > j)
+            j = strlen (fsm->u_branch_name[i]);
+      }
       fprintf (f, "char angfsm_%s_str_buff[%u];\n", fsm->name, j + 1);
 
+      /* Generate string read functions. */
       /* Convert an event enum in string. */
-      fprintf (f, "char *\nangfsm_%s_get_event_string_from_enum \
+      fprintf (f, "char *\nangfsm_%s_get_event_str \
         (angfsm_%s_event_t e)\n{\n", fsm->name, fsm->name);
       fprintf (f, "\treturn strcpy_P (angfsm_%s_str_buff, \
         (char *) pgm_read_word (&(angfsm_%s_event_str[e])));\n", fsm->name, fsm->name);
       fprintf (f, "}\n\n");
-
-      /* Convert a event string in enum. */
-      fprintf (f, "angfsm_%s_event_t\nangfsm_%s_get_event_enum_from_string \
-        (char *str)\n{\n", fsm->name, fsm->name);
-      fprintf (f, "\tuint16_t i;\n");
-      fprintf (f, "\tfor (i = 0; i < angfsm_EVENT_%s_NB_; i++)\n", fsm->name);
-      fprintf (f, "\t\tif (strcpy_P (str, \
-        (char *) pgm_read_word (&(angfsm_%s_event_str[i]))) == 0)\n", fsm->name);
-      fprintf (f, "\t\t\treturn i;\n");
-      fprintf (f, "\treturn angfsm_EVENT_%s_NB_;\n", fsm->name);
-      fprintf (f, "}\n\n");
-
-      /* Convert an state enum in string. */
-      fprintf (f, "char *\nangfsm_%s_get_state_string_from_enum \
+      /* Convert a state enum in string. */
+      fprintf (f, "char *\nangfsm_%s_get_state_str \
         (angfsm_%s_state_t s)\n{\n", fsm->name, fsm->name);
       fprintf (f, "\treturn strcpy_P (angfsm_%s_str_buff, \
         (char *) pgm_read_word (&(angfsm_%s_state_str[s])));\n", fsm->name, fsm->name);
       fprintf (f, "}\n\n");
-
-      /* Convert a state string in enum. */
-      fprintf (f, "angfsm_%s_state_t\nangfsm_%s_get_state_enum_from_string \
-        (char *str)\n{\n", fsm->name, fsm->name);
-      fprintf (f, "\tuint16_t i;\n");
-      fprintf (f, "\tfor (i = 0; i < angfsm_STATE_%s_NB_; i++)\n", fsm->name);
-      fprintf (f, "\t\tif (strcpy_P (str, \
-        (char *) pgm_read_word (&(angfsm_%s_state_str[i]))) == 0)\n", fsm->name);
-      fprintf (f, "\t\t\treturn i;\n");
-      fprintf (f, "\treturn angfsm_STATE_%s_NB_;\n", fsm->name);
+      /* Convert a branch enum in string. */
+      fprintf (f, "char *\nangfsm_%s_get_branch_str \
+        (angfsm_%s_branch_t b)\n{\n", fsm->name, fsm->name);
+      fprintf (f, "\treturn strcpy_P (angfsm_%s_str_buff, \
+        (char *) pgm_read_word (&(angfsm_%s_branch_str[b])));\n", fsm->name, fsm->name);
       fprintf (f, "}\n\n");
    }
 
-   /* Gen function table. */
-   fprintf (f, "const angfsm_%s_func_t PROGMEM angfsm_%s_trans_table[%u][%u] = \n{\n",
+   /* Gen transition table. */
+   fprintf (f, "const angfsm_%s_trans_t PROGMEM angfsm_%s_trans_table[angfsm_STATE_%s_NB][angfsm_%s_max_events_per_states] = \n{\n",
             fsm->name,
             fsm->name,
-            fsm->event_nb,
-            fsm->state_nb);
-   /* for each events and state, see if it exists an associated transition. */
-   for (i = 0; i < fsm->event_nb; i++)
+            fsm->name,
+            fsm->name);
+   for (i = 0; i < fsm->state_nb; i++)
    {
-      e = angfsm_build_get_event_by_code (fsm, i);
-      fprintf (f, "\t{");
-      for (j = 0; j < fsm->state_nb; j++)
+      count = 0;
+      fprintf (f, "\t{\n");
+      tc = fsm->trans;
+      while (tc != NULL)
       {
-         s = angfsm_build_get_state_by_code (fsm, j);
-         tc = fsm->trans;
-         found = 0;
-         while (tc != NULL)
-         {
-            if (tc->trans.state == s && tc->trans.event == e)
-            {
-               found = 1;
-               fprintf (f, "&angfsm_%s_trans_func_%s_%s",
-                        fsm->name,
-                        tc->trans.state->var_name,
-                        tc->trans.event->var_name);
-               tc = tc->next;
-               break;
-            }
-            tc = tc->next;
-         }
-         if (!found)
-            fprintf (f, "(angfsm_%s_func_t) 0", fsm->name);
-         if (j == fsm->state_nb - 1)
-            fprintf (f, "}");
-         else
-            fprintf (f, ", ");
+          if (tc->trans.state->code == i)
+          {
+             fprintf (f, "\t\t{\n");
+             fprintf (f, "\t\t\tangfsm_EVENT_%s_%s,\n",
+                      fsm->name,
+                      tc->trans.event->var_name);
+             fprintf (f, "\t\t\t(angfsm_%s_func_t) &angfsm_%s_trans_func_%s_%s,\n",
+                      fsm->name,
+                      fsm->name,
+                      tc->trans.state->var_name,
+                      tc->trans.event->var_name);
+             /* Gen branche array */
+             fprintf (f, "\t\t\t{\n");
+             j = 0;
+             bc = tc->trans.output_branches;
+             while (bc != NULL)
+             {
+                fprintf (f, "\t\t\t\t{angfsm_BRANCH_%s_%s, angfsm_STATE_%s_%s}",
+                         fsm->name,
+                         (bc->name ? bc->name : "NB"),
+                         fsm->name,
+                         bc->state->var_name);
+                if (j != fsm->max_branches_per_trans - 1)
+                    fprintf (f, ", ");
+                fprintf (f, "\n");
+                j++;
+                bc = bc->next;
+             }
+             /* Fill blank branches. */
+             for (k = j; k < fsm->max_branches_per_trans; k++)
+             {
+                 fprintf (f, "\t\t\t\t{angfsm_BRANCH_%s_NB, angfsm_STATE_%s_NB}",
+                          fsm->name,
+                          fsm->name);
+                 if (k != fsm->max_branches_per_trans - 1)
+                    fprintf (f, ",");
+                 fprintf (f, "\n");
+             }
+
+             fprintf (f, "\t\t\t}\n");
+             if (tc->next != NULL || count != fsm->max_events_per_states)
+                 fprintf (f, "\t\t},\n");
+             else
+                 fprintf (f, "\t\t}\n");
+             count++;
+          }
+          tc = tc->next;
       }
-      if (i != fsm->event_nb - 1)
-         fprintf (f, ",");
-      fprintf (f, "\n");
+      /* Fill blanch transitions. */
+      for (k = count; k < fsm->max_events_per_states; k++)
+      {
+          fprintf (f, "\t\t{\n");
+          fprintf (f, "\t\t\tangfsm_EVENT_%s_NB,\n",fsm->name);
+          fprintf (f, "\t\t\t(angfsm_%s_func_t) 0,\n", fsm->name);
+          fprintf (f, "\t\t\t{\n");
+          for (j = 0; j < fsm->max_branches_per_trans; j++)
+          {
+              fprintf (f, "\t\t\t\t{angfsm_BRANCH_%s_NB, angfsm_STATE_%s_NB}",
+                       fsm->name,
+                       fsm->name);
+              if (j != fsm->max_branches_per_trans - 1)
+                  fprintf (f, ",");
+              fprintf (f, "\n");
+          }
+          fprintf (f, "\t\t\t}\n");
+          if (k != fsm->max_events_per_states - 1)
+             fprintf (f, "\t\t},\n");
+          else
+              fprintf (f, "\t\t}\n");
+      }
+
+      if (i == fsm->state_nb - 1)
+          fprintf (f, "\t}\n");
+      else
+          fprintf (f, "\t},\n");
    }
    fprintf (f, "};\n\n");
 
-   /* Gen read function for trans table. */
-   fprintf (f, "angfsm_%s_func_t angfsm_%s_read_trans (angfsm_%s_event_t event, "
-            "angfsm_%s_state_t state)\n{\n",
-            fsm->name,
-            fsm->name,
-            fsm->name,
-            fsm->name);
-   fprintf (f, "\treturn (angfsm_%s_func_t) pgm_read_word "
-            "(&angfsm_%s_trans_table[event][state]);\n",
-            fsm->name,
-            fsm->name);
-   fprintf (f, "}\n\n");
+   /* Transition callback. */
+   fprintf (f, "void (*angfsm_%s_trans_callback) (int state, int event, int output_branch, int branch);\n", fsm->name);
 
    /* Gen active states array. */
-   fprintf (f, "angfsm_%s_state_t angfsm_%s_active_states[%u];\n\n",
+   fprintf (f, "angfsm_%s_state_t angfsm_%s_active_states[angfsm_%s_max_active_states];\n\n",
             fsm->name,
             fsm->name,
-            fsm->max_active_states);
+            fsm->name);
+
+   /* Gen read transition from event and state. */
+   fprintf (f, "inline angfsm_%s_trans_t* angfsm_%s_read_trans "
+            "(angfsm_%s_event_t event, angfsm_%s_state_t state)\n{\n",
+            fsm->name,
+            fsm->name,
+            fsm->name,
+            fsm->name);
+   fprintf (f, "\tint i;\n");
+   fprintf (f, "\tangfsm_%s_trans_t* t;\n", fsm->name);
+   fprintf (f, "\tfor (i = 0; i < angfsm_%s_max_events_per_states; i++)\n\t{\n",
+            fsm->name);
+   fprintf (f, "\t\tt = (angfsm_%s_trans_t *) pgm_read_word (&angfsm_%s_trans_table[state][i]);\n",
+            fsm->name,
+            fsm->name);
+   fprintf (f, "\t\tif (t->func == (angfsm_%s_func_t) 0)\n\t\t\tbreak;\n", fsm->name);
+   fprintf (f, "\t\tif (t->event == event)\n");
+   fprintf (f, "\t\t\treturn t;\n");
+   fprintf (f, "\t}\n\treturn (angfsm_%s_trans_t*) 0;\n}\n\n", fsm->name);
 
    /* Gen initialization function. */
    sc = fsm->starters;
@@ -2117,11 +2402,11 @@ angfsm_build_gen_opti_avr_c (angfsm_build_t *fsm, angfsm_build_arch_t arch)
    fprintf (f, "void\nangfsm_%s_init ()\n{\n", fsm->name);
    while (sc != NULL)
    {
-      fprintf (f, "\tangfsm_%s_active_states[%u] = (angfsm_%s_state_t) %u;\n",
+      fprintf (f, "\tangfsm_%s_active_states[%u] = angfsm_STATE_%s_%s;\n",
                fsm->name,
                i,
                fsm->name,
-               sc->state.code);
+               sc->state.var_name);
       if (fsm->timeouts != NULL)
       {
          toc = fsm->timeouts;
@@ -2140,23 +2425,43 @@ angfsm_build_gen_opti_avr_c (angfsm_build_t *fsm, angfsm_build_arch_t arch)
       i++;
       sc = sc->next;
    }
+   /* Set transition callback to NULL. */
+   fprintf (f, "\tangfsm_%s_trans_callback = (typeof (angfsm_%s_trans_callback)) 0;\n", fsm->name, fsm->name);
    fprintf (f, "}\n\n");
 
    /* Gen handle function. */
    fprintf (f, "int\nangfsm_%s_handle (angfsm_%s_event_t e)\n{\n",
             fsm->name,
             fsm->name);
-   fprintf (f, "\tuint16_t i;\n");
+   fprintf (f, "\tuint16_t i, j;\n");
    fprintf (f, "\tint handled = 0;\n");
+   fprintf (f, "\tangfsm_%s_branch_t b;\n", fsm->name);
    fprintf (f, "\tfor (i = 0; i < angfsm_%s_max_active_states; i++)\n\t{\n",
             fsm->name);
-   fprintf (f, "\t\tangfsm_%s_func_t trans = angfsm_%s_read_trans (e, angfsm_%s_active_states[i]);\n",
+   fprintf (f, "\t\tangfsm_%s_trans_t *trans = angfsm_%s_read_trans (e, angfsm_%s_active_states[i]);\n",
             fsm->name,
             fsm->name,
             fsm->name);
    fprintf (f, "\t\tif (trans)\n");
    fprintf (f, "\t\t{\n");
-   fprintf (f, "\t\t\tangfsm_%s_active_states[i] = (angfsm_%s_state_t) trans ();\n", fsm->name, fsm->name);
+   fprintf (f, "\t\t\tangfsm_%s_state_t s = angfsm_STATE_%s_NB;\n", fsm->name, fsm->name);
+   fprintf (f, "\t\t\tif (trans->branches[0].branch == angfsm_BRANCH_%s_NB)\n\t\t\t{\n", fsm->name);
+   fprintf (f, "\t\t\t\ttrans->func ();\n");
+   fprintf (f, "\t\t\t\ts = trans->branches[0].state;\n");
+   fprintf (f, "\t\t\t\tif (angfsm_%s_trans_callback)\n", fsm->name);
+   fprintf (f, "\t\t\t\t\tangfsm_%s_trans_callback(angfsm_%s_active_states[i], e, s, -1);\n", fsm->name, fsm->name);
+   fprintf (f, "\t\t\t}\n\t\t\telse\n\t\t\t{\n");
+   fprintf (f, "\t\t\t\tb = ((angfsm_%s_func_branches_t) trans->func) ();\n", fsm->name);
+   fprintf (f, "\t\t\t\tfor (j = 0; j < angfsm_%s_max_branches_per_trans; j++)\n", fsm->name);
+   fprintf (f, "\t\t\t\t\tif (trans->branches[j].branch == b)\n");
+   fprintf (f, "\t\t\t\t\t\ts = trans->branches[j].state;\n");
+   fprintf (f, "\t\t\t\t\tif (angfsm_%s_trans_callback)\n", fsm->name);
+   fprintf (f, "\t\t\t\t\t\tangfsm_%s_trans_callback(angfsm_%s_active_states[i], e, s, b);\n", fsm->name, fsm->name);
+   fprintf (f, "\t\t\t}\n");
+   fprintf (f, "\t\t\tif (s != angfsm_STATE_%s_NB)\n", fsm->name);
+   fprintf (f, "\t\t\t\tangfsm_%s_active_states[i] = s;\n", fsm->name);
+   fprintf (f, "\t\t\telse\n");
+   fprintf (f, "\t\t\t\t{;} //XXX show some error ?\n");
    fprintf (f, "\t\t\thandled = 1;\n");
    if (fsm->timeouts != NULL)
    {
@@ -2188,12 +2493,12 @@ angfsm_build_gen_opti_avr_c (angfsm_build_t *fsm, angfsm_build_arch_t arch)
    if (fsm->timeouts != NULL)
    {
       /* Gen timeout counters array. */
-      fprintf (f, "int32_t angfsm_%s_timeout_counters[%u];\n",
+      fprintf (f, "int32_t angfsm_%s_timeout_counters[angfsm_%s_max_active_states];\n",
                fsm->name,
-               fsm->max_active_states);
+               fsm->name);
 
       /* Gen timeout values array. */
-      fprintf (f, "int32_t angfsm_%s_timeout_values[angfsm_STATE_%s_NB_] =\n{\n",
+      fprintf (f, "int32_t angfsm_%s_timeout_values[angfsm_STATE_%s_NB] =\n{\n",
                fsm->name,
                fsm->name);
       int value;
@@ -2220,7 +2525,7 @@ angfsm_build_gen_opti_avr_c (angfsm_build_t *fsm, angfsm_build_arch_t arch)
       fprintf (f, "};\n\n");
 
       /* Gen timeout corresponding events array. */
-      fprintf (f, "angfsm_%s_event_t angfsm_%s_timeout_events[angfsm_STATE_%s_NB_] =\n{\n",
+      fprintf (f, "angfsm_%s_event_t angfsm_%s_timeout_events[angfsm_STATE_%s_NB] =\n{\n",
                fsm->name,
                fsm->name,
                fsm->name);
@@ -2240,7 +2545,7 @@ angfsm_build_gen_opti_avr_c (angfsm_build_t *fsm, angfsm_build_arch_t arch)
             toc = toc->next;
          }
          if (value == -1)
-            fprintf (f, "\t(angfsm_%s_event_t) angfsm_STATE_%s_NB_", fsm->name, fsm->name);
+            fprintf (f, "\t(angfsm_%s_event_t) angfsm_STATE_%s_NB", fsm->name, fsm->name);
          else
             fprintf (f, "\t(angfsm_%s_event_t) %u", fsm->name, value);
 
@@ -2429,6 +2734,11 @@ angfsm_build_free (angfsm_build_t *fsm)
       free (toc_tmp);
    }
 
+   /* Free unique branch names array. */
+   /* Strings are already free in transitions. */
+   if (fsm->u_branch_name)
+      free (fsm->u_branch_name);
+
    /* Free run data (trans_table). */
    for (i = 0; i < fsm->event_nb; i++)
       free (fsm->run.trans_table[i]);
@@ -2452,5 +2762,3 @@ angfsm_build_free (angfsm_build_t *fsm)
    /*Free run data (timeout counters). */
    free (fsm->run.timeout_counters);
 }
-
-#endif /* HOST */

@@ -1,6 +1,6 @@
 /*
    AngFSM - Almost Non Generated Finite State Machine
-   Copyright 2011, 2012 Jerome Jutteau
+   Copyright 2011-2013 Jerome Jutteau
 
  This file is part of AngFSM.
 
@@ -36,20 +36,33 @@
 ANGFSM_PASTE_EXPAND (a, ANGFSM_PASTE_EXPAND (b, c))
 #define FIRST(first, others...) first
 
+#define IFELSE_ARG1(yes, no, params...) \
+    IFELSE_ARG1_ (params, IFELSE_ARG1_SEQ_(yes, no))
+#define IFELSE_ARG1_(params...) \
+    IFELSE_ARG1__ (params)
+#define IFELSE_ARG1__( _a1, \
+    _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, \
+    _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, \
+    selector, ...) selector
+#define IFELSE_ARG1_SEQ_(yes, no) \
+    no, no, no, no, no, no, no, no, no, no, \
+    no, no, no, no, no, no, no, no, no, no, \
+    yes
+
 #ifdef __HOST_ARCH__
 /* Include generated header. */
-#include XSTR (ANGFSM_PASTE_EXPAND (angfsm_gen_host_, ANGFSM_NAME).h)
 #include "angfsm_generic.h"
+#include XSTR (ANGFSM_PASTE_EXPAND (angfsm_gen_host_, ANGFSM_NAME).h)
 
 #elif defined(__AVR_ARCH__)
 /* Include generated header. */
-#include XSTR (ANGFSM_PASTE_EXPAND (angfsm_gen_avr_, ANGFSM_NAME).h)
 #include "angfsm_generic.h"
+#include XSTR (ANGFSM_PASTE_EXPAND (angfsm_gen_avr_, ANGFSM_NAME).h)
 
 #elif defined(__arm__)
 /* Include generated header. */
-#include XSTR (ANGFSM_PASTE_EXPAND (angfsm_gen_arm_, ANGFSM_NAME).h)
 #include "angfsm_generic.h"
+#include XSTR (ANGFSM_PASTE_EXPAND (angfsm_gen_arm_, ANGFSM_NAME).h)
 
 #else
 /* Compiling for HOST but for direct execution. */

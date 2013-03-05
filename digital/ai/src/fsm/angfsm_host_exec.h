@@ -1,6 +1,6 @@
 /*
    AngFSM - Almost Non Generated Finite State Machine
-   Copyright 2011, 2012 Jerome Jutteau
+   Copyright 2011-2013 Jerome Jutteau
 
  This file is part of AngFSM.
 
@@ -103,8 +103,15 @@ typedef struct angfsm_build_trans_chain_t {
     struct angfsm_build_trans_chain_t *next;
 } angfsm_build_trans_chain_t;
 
-/* Pointer to a transition function. */
-typedef angfsm_build_state_t* (*angfsm_build_run_strans_func_t)(void);
+/* Pointer to a transition function.
+ * out_branch corresponds to function's return.
+ * Mono branch transitions do not return anything,
+ * It permits to avoid ugly warnings.
+ * Multi branches returns a uint, the function is transtyped as a
+ * angfsm_build_run_strans_func_branches_t
+ */
+typedef void (*angfsm_build_run_strans_func_t) ();
+typedef uint (*angfsm_build_run_strans_func_branches_t) ();
 
 /* Chain of transitions with associated function's pointer. */
 typedef struct angfsm_trans_func_chain_t {
@@ -146,6 +153,11 @@ typedef struct {
     /* Array of counters for timeout events.
      * -1 mean counter is off. */
     int *timeout_counters;
+    /* Callback to transitions. */
+    void (*trans_callback) (int state,
+                            int event,
+                            int output_branch,
+                            int branch);
 } angfsm_build_run_t;
 
 /* Store all Finite State Machine (fsm) informations. */
@@ -160,6 +172,10 @@ typedef struct {
     char *name;
     /* Maximal number of active states. */
     uint max_active_states;
+    /* Maximal number of events per states. */
+    uint max_events_per_states;
+    /* Maximal number of branches per transitions. */
+    uint max_branches_per_trans;
     /* Total number of events. */
     uint event_nb;
     /* Total number of states. */
@@ -168,6 +184,13 @@ typedef struct {
     angfsm_build_state_chain_t *starters;
     /* All timeout. */
     angfsm_build_timeout_chain_t *timeouts;
+    /* Total number of unique branch name. */
+    uint u_branch_nb;
+    /* List of unique branches strings.
+     * Unique number corresponding to string is the position of the string
+     *in the array.
+     */
+    char **u_branch_name;
     /* Data for running purposes. */
     angfsm_build_run_t run;
     /* User's options. */
@@ -189,7 +212,8 @@ void angfsm_build_init_all_fsm() __attribute__((constructor(101)));
  * function. This permits initilialization of the fsm. */
 extern angfsm_build_t ANGFSM_PASTE_EXPAND(angfsm_, ANGFSM_NAME);
 void ANGFSM_PASTE_EXPAND(angfsm_build_init_, ANGFSM_NAME)() __attribute__((constructor(102)));
-void ANGFSM_PASTE_EXPAND(angfsm_build_run_init_, ANGFSM_NAME)() __attribute__((constructor(107)));
+void ANGFSM_PASTE_EXPAND(angfsm_build_init_finalize_, ANGFSM_NAME)() __attribute__((constructor(107)));
+void ANGFSM_PASTE_EXPAND(angfsm_build_run_init_, ANGFSM_NAME)() __attribute__((constructor(108)));
 void ANGFSM_PASTE_EXPAND(angfsm_build_free_, ANGFSM_NAME)() __attribute__((destructor));
 
 #define ANGFSM_INIT \
@@ -197,6 +221,10 @@ void ANGFSM_PASTE_EXPAND(angfsm_build_free_, ANGFSM_NAME)() __attribute__((destr
     void ANGFSM_PASTE_EXPAND (angfsm_build_init_, ANGFSM_NAME)() \
     { \
         angfsm_build_init (ANGFSM_PASTE_EXPAND (&angfsm_, ANGFSM_NAME), XSTR(ANGFSM_NAME)); \
+    } \
+    void ANGFSM_PASTE_EXPAND (angfsm_build_init_finalize_, ANGFSM_NAME)() \
+    { \
+        angfsm_build_init_finalize (& ANGFSM_PASTE_EXPAND (angfsm_, ANGFSM_NAME)); \
     } \
     void ANGFSM_PASTE_EXPAND (angfsm_build_run_init_, ANGFSM_NAME)() \
     { \
@@ -262,23 +290,14 @@ extern angfsm_build_t angfsm_##fsm_name;
  * See examples for reel usage.
  */
 #define ANGFSM_TRANS(state, event, output_branches...) \
-angfsm_build_state_t* ANGFSM_PASTE3_EXPAND (angfsm_trans_, ANGFSM_NAME,_##state##_##event) (); \
+    IFELSE_ARG1(void, uint, output_branches) ANGFSM_PASTE3_EXPAND (angfsm_trans_, ANGFSM_NAME,_##state##_##event) (); \
     void ANGFSM_PASTE3_EXPAND (angfsm_build_trans_, ANGFSM_NAME,_##state##_##event)() __attribute__((constructor(105))); \
     void ANGFSM_PASTE3_EXPAND (angfsm_build_trans_, ANGFSM_NAME,_##state##_##event)() \
     { \
-        angfsm_build_trans (& ANGFSM_PASTE_EXPAND(angfsm_, ANGFSM_NAME), #state, #event, \
-            #output_branches, \
-            & ANGFSM_PASTE3_EXPAND (angfsm_trans_, ANGFSM_NAME,_##state##_##event)); \
+        angfsm_build_trans (& ANGFSM_PASTE_EXPAND(angfsm_, ANGFSM_NAME), #state, #event, #output_branches, \
+            (angfsm_build_run_strans_func_t) &ANGFSM_PASTE3_EXPAND (angfsm_trans_, ANGFSM_NAME,_##state##_##event)); \
     } \
-    angfsm_build_state_t* ANGFSM_PASTE3_EXPAND (angfsm_trans_, ANGFSM_NAME,_##state##_##event) ()
-
-/**
- * Used to return next state by giving the actual transition informations and
- * the branch (if there are several branches).
- * Not directly returning the state can avoid some errors. *
- */
-#define ANGFSM_NEXT(state, event, branch...) \
-    angfsm_build_get_next_state (& ANGFSM_PASTE_EXPAND (angfsm_, ANGFSM_NAME), #state, #event, #branch)
+    IFELSE_ARG1(void, uint, output_branches) ANGFSM_PASTE3_EXPAND (angfsm_trans_, ANGFSM_NAME,_##state##_##event) ()
 
 /**
  * Define a transition when a state times out.
@@ -296,28 +315,51 @@ angfsm_build_state_t* ANGFSM_PASTE3_EXPAND (angfsm_trans_, ANGFSM_NAME,_##state#
     ANGFSM_EVENTS (state##_TIMEOUT) \
     ANGFSM_TRANS (state, state##_TIMEOUT, output_branches)
 
-/**
- * Used to return next state after a timeout.
- * Same as ANGFSM_NEXT but without specifying an event.
- */
-#define ANGFSM_NEXT_TIMEOUT(state, branch...) \
-    ANGFSM_NEXT (state, state##_TIMEOUT, branch)
-
 /** Used to handle timeout events. */
 #define ANGFSM_HANDLE_TIMEOUT(fsm_name) \
-    angfsm_build_handle_timeout (& ANGFSM_PASTE_EXPAND (angfsm_, ANGFSM_NAME))
+    (angfsm_build_handle_timeout (& angfsm_##fsm_name))
 
-/** Transform an event in uint16_t. */
-#define ANGFSM_EVENT(fsm_name, event) \
-    angfsm_build_get_event_code (& ANGFSM_PASTE_EXPAND (angfsm_, ANGFSM_NAME), #event)
+/** Transform an event in a numeric value. */
+#define ANGFSM_EVENT(event) \
+    (angfsm_build_get_event_code (& ANGFSM_PASTE_EXPAND (angfsm_, ANGFSM_NAME), #event))
+#define ANGFSM_EVENT_F(fsm_name, event) \
+    (angfsm_build_get_event_code (& angfsm_##fsm_name, #event))
 
-/** Handle event from uint16_t. */
+/** Transform a state in a numeric value. */
+#define ANGFSM_STATE(state) \
+    (angfsm_build_get_state (& ANGFSM_PASTE_EXPAND (angfsm_, ANGFSM_NAME), #state)->code)
+#define ANGFSM_STATE_F(fsm_name, state) \
+    (angfsm_build_get_state (& angfsm_##fsm_name, #state)->code)
+
+/** Transform a branch in a numeric value. */
+#define ANGFSM_BRANCH(branch) \
+    (angfsm_build_get_branch (& ANGFSM_PASTE_EXPAND (angfsm_, ANGFSM_NAME), #branch))
+#define ANGFSM_BRANCH_F(fsm_name, branch) \
+    (angfsm_build_get_branch (& angfsm_##fsm_name, #branch))
+
+/** Handle event from numeric value. */
 #define ANGFSM_HANDLE_VAR(fsm, event) \
-    angfsm_build_handle_integer (& ANGFSM_PASTE_EXPAND (angfsm_, ANGFSM_NAME), event)
+    angfsm_build_handle_integer (& angfsm_##fsm, event)
 
-/* Can we handle event from uint16_t ? */
-#define ANGFSM_CAN_HANDLE_VAR(fSM, event) \
-    angfsm_build_can_handle_integer (& ANGFSM_PASTE_EXPAND (angfsm_, ANGFSM_NAME), event)
+/* Can we handle event from numeric value ? */
+#define ANGFSM_CAN_HANDLE_VAR(fsm, event) \
+    angfsm_build_can_handle_integer (& angfsm_##fsm, event)
+
+/* Callback for transitions. */
+#define ANGFSM_TRANS_CALLBACK(cb) \
+    ANGFSM_PASTE_EXPAND (angfsm_, ANGFSM_NAME).run.trans_callback = cb
+
+/* Get state string. */
+#define ANGFSM_STATE_STR(state) \
+    ((char *)((angfsm_build_get_state_by_code((& ANGFSM_PASTE_EXPAND (angfsm_, ANGFSM_NAME)), state))->var_name))
+
+/* Get event string. */
+#define ANGFSM_EVENT_STR(event) \
+    ((char *)((angfsm_build_get_event_by_code((& ANGFSM_PASTE_EXPAND (angfsm_, ANGFSM_NAME)), event))->var_name))
+
+/* Get branch string. */
+#define ANGFSM_BRANCH_STR(branch) \
+    ((char *)(ANGFSM_PASTE_EXPAND (angfsm_, ANGFSM_NAME).u_branch_name[branch]))
 
 /**
  * Parse a string who contains a list of arguments separated by comma.
@@ -339,15 +381,15 @@ void
 angfsm_build_arg_free(char ***tab, int nb);
 
 /**
- * This function is executed when a state is returned by a transition.
+ * Print transition.
  * \param  fsm  fsm
  * \param  trans transition where the return occurs
  * \param  branch  branch to transition has chosen.
  */
 void
-angfsm_build_print(angfsm_build_t *fsm,
-        angfsm_build_trans_t* trans,
-        angfsm_build_branch_chain_t* branch);
+angfsm_build_print_trans (angfsm_build_t *fsm,
+   angfsm_build_trans_t* trans,
+   angfsm_build_branch_chain_t* branch);
 
 /**
  * Test the fsm and search for errors.
@@ -370,6 +412,10 @@ angfsm_build_gen_dot(angfsm_build_t *fsm, char *output);
 /** Initialize the fsm. */
 void
 angfsm_build_init(angfsm_build_t *fsm, char *name);
+
+/** Finalize the preparation of the FSM informations. */
+void
+angfsm_build_init_finalize (angfsm_build_t *fsm);
 
 /** Initialize the running data of the fsm. */
 void
@@ -407,9 +453,23 @@ angfsm_build_get_event_by_code(angfsm_build_t *fsm, uint event);
 angfsm_build_state_t*
 angfsm_build_get_state_by_code(angfsm_build_t *fsm, uint state);
 
-/** Get event code as uint16_t */
+/** Get transition pointer by giving it's state and event. */
+angfsm_build_trans_t*
+angfsm_build_get_trans (angfsm_build_t *fsm, uint state, uint event);
+
+/** Get event code as a numeric value. */
 uint16_t
 angfsm_build_get_event_code(angfsm_build_t *fsm, char *event);
+
+/** Get branch pointer from transition and branch string. */
+angfsm_build_branch_chain_t*
+angfsm_build_get_event_branch (angfsm_build_t *fsm,
+                               angfsm_build_trans_t *trans,
+                               uint branch);
+
+/** Get branch unique code from branch name. */
+uint
+angfsm_build_get_branch (angfsm_build_t *fsm, char *branch);
 
 /**
  * Add a transition to the fsm.
@@ -481,13 +541,6 @@ angfsm_build_can_handle_integer(angfsm_build_t *fsm, uint16_t event);
  */
 int
 angfsm_build_handle_timeout(angfsm_build_t *fsm);
-
-/** Give the state at the transition output. */
-angfsm_build_state_t*
-angfsm_build_get_next_state(angfsm_build_t *fsm,
-        char *state,
-        char *event,
-        char *branch);
 
 /** Pass parameters to AngFSM at execution. Try --ang-help
  * \param  argc  argc from your main.
