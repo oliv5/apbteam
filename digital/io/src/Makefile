@@ -26,7 +26,7 @@ vpath %.c $(AI_MODULES:%=../../ai/src/%)
 vpath %.h $(AI_MODULES:%=../../ai/src/%)
 INCLUDES += -I. $(AI_MODULES:%=-I../../ai/src/%)
 
-EXTRA_CLEAN_FILES = angfsm_gen_avr_AI.h fsm_AI_gen.avr.c
+EXTRA_CLEAN_FILES = angfsm_gen_avr_AI.h fsm_AI_gen.avr.c AI.dot AI.png AI.svg
 
 include $(BASE)/make/Makefile.gen
 
@@ -34,8 +34,20 @@ include $(BASE)/make/Makefile.gen
 obj/main.avr.o: angfsm_gen_avr_AI.h
 fsm_AI_gen.avr.c: angfsm_gen_avr_AI.h
 angfsm_gen_avr_AI.h: io.host
-	./$< --ang-gen avr
+	./$< --ang-gen avr --ang-dot AI.dot
 	mv angfsm_gen_avr_AI.c fsm_AI_gen.avr.c
+
+# Image generation
+view: AI.view
+png: AI.png
+svg: AI.svg
+
+%.view: %.dot
+	dot -Txlib $<
+%.png: %.dot
+	dot -Tpng $< > $@
+%.svg: %.dot
+	dot -Tsvg $< > $@
 
 events.h events.host.c: trace.trc $(BASE)/../../tools/trace/lib/parser.py
 	PYTHONPATH=$(BASE)/../../host python $(BASE)/../../tools/trace/trace.py -t create -i $< -o

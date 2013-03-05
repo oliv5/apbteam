@@ -125,7 +125,6 @@ FSM_START_WITH (IDLE)
 /* Nothing to do. */
 FSM_TRANS (IDLE, start, WAIT_INIT_TO_FINISH)
 {
-    return FSM_NEXT (IDLE, start);
 }
 
 /*
@@ -139,7 +138,6 @@ FSM_TRANS (WAIT_INIT_TO_FINISH,
 {
     asserv_set_speed (BOT_MOVE_FAST);
     move_start_noangle (PG_VECT (375, 1503), 0, 0);
-    return FSM_NEXT (WAIT_INIT_TO_FINISH, init_match_is_started);
 }
 
 /*
@@ -152,7 +150,6 @@ FSM_TRANS (FIRST_GO_BEGIN_OF_LINE_FAST,
 {
     move_start_noangle (PG_VECT (2625, 253), 0, 0);
     loader_down ();
-    return FSM_NEXT (FIRST_GO_BEGIN_OF_LINE_FAST, move_fsm_succeed);
 }
 
 /*
@@ -165,7 +162,6 @@ FSM_TRANS (FIRST_GO_BEGIN_OF_LINE_FAST,
 {
     asserv_set_speed (BOT_MOVE_SLOW);
     move_start_noangle (PG_VECT (375, 1503), 0, 0);
-    return FSM_NEXT (FIRST_GO_BEGIN_OF_LINE_FAST, move_fsm_failed);
 }
 
 /*
@@ -176,7 +172,6 @@ FSM_TRANS (FIRST_GO_END_OF_LINE_FAST,
 	   FIRST_GO_END_OF_LINE_SLOW)
 {
     asserv_set_speed (BOT_MOVE_SLOW);
-    return FSM_NEXT (FIRST_GO_END_OF_LINE_FAST, in_field);
 }
 
 /*
@@ -189,7 +184,6 @@ FSM_TRANS (FIRST_GO_END_OF_LINE_FAST,
 {
     asserv_set_speed (BOT_MOVE_SLOW);
     loader_up ();
-    return FSM_NEXT (FIRST_GO_END_OF_LINE_FAST, move_fsm_succeed);
 }
 
 /*
@@ -202,7 +196,6 @@ FSM_TRANS (FIRST_GO_END_OF_LINE_FAST,
 {
     asserv_set_speed (BOT_MOVE_SLOW);
     move_start_noangle (PG_VECT (2625, 253), 0, 0);
-    return FSM_NEXT (FIRST_GO_END_OF_LINE_FAST, move_fsm_failed);
 }
 
 /*
@@ -213,7 +206,6 @@ FSM_TRANS (FIRST_GO_END_OF_LINE_SLOW,
 	   UNLOAD_LOADER_UP)
 {
     loader_up ();
-    return FSM_NEXT (FIRST_GO_END_OF_LINE_SLOW, move_fsm_succeed);
 }
 
 /*
@@ -224,7 +216,6 @@ FSM_TRANS (FIRST_GO_END_OF_LINE_SLOW,
 	   FIRST_GO_END_OF_LINE_SLOW)
 {
     move_start_noangle (PG_VECT (2625, 253), 0, 0);
-    return FSM_NEXT (FIRST_GO_END_OF_LINE_SLOW, move_fsm_failed);
 }
 
 /*
@@ -233,7 +224,6 @@ FSM_TRANS (FIRST_GO_END_OF_LINE_SLOW,
 FSM_TRANS (UNLOAD, move_fsm_succeed, UNLOAD_LOADER_UP)
 {
     loader_up ();
-    return FSM_NEXT (UNLOAD, move_fsm_succeed);
 }
 
 /*
@@ -242,7 +232,6 @@ FSM_TRANS (UNLOAD, move_fsm_succeed, UNLOAD_LOADER_UP)
 FSM_TRANS (UNLOAD, move_fsm_failed, UNLOAD)
 {
     move_start_noangle (PG_VECT (2625, 253), 0, 0);
-    return FSM_NEXT (UNLOAD, move_fsm_failed);
 }
 
 /*
@@ -251,7 +240,6 @@ FSM_TRANS (UNLOAD, move_fsm_failed, UNLOAD)
 FSM_TRANS (UNLOAD_LOADER_UP, loader_uped, UNLOAD_FACE_BIN)
 {
     asserv_goto_angle (PG_A_DEG (90));
-    return FSM_NEXT (UNLOAD_LOADER_UP, loader_uped);
 }
 
 /*
@@ -260,7 +248,6 @@ FSM_TRANS (UNLOAD_LOADER_UP, loader_uped, UNLOAD_FACE_BIN)
 FSM_TRANS (UNLOAD_LOADER_UP, loader_errored, UNLOAD_FACE_BIN)
 {
     asserv_goto_angle (PG_A_DEG (90));
-    return FSM_NEXT (UNLOAD_LOADER_UP, loader_errored);
 }
 
 /*
@@ -269,7 +256,6 @@ FSM_TRANS (UNLOAD_LOADER_UP, loader_errored, UNLOAD_FACE_BIN)
 FSM_TRANS (UNLOAD_FACE_BIN, bot_move_succeed, UNLOAD_BACK_BIN)
 {
     asserv_move_linearly (-(128 + 250 / 2 - BOT_SIZE_BACK - 50));
-    return FSM_NEXT (UNLOAD_FACE_BIN, bot_move_succeed);
 }
 
 /*
@@ -278,7 +264,6 @@ FSM_TRANS (UNLOAD_FACE_BIN, bot_move_succeed, UNLOAD_BACK_BIN)
 FSM_TRANS (UNLOAD_FACE_BIN, bot_move_failed, UNLOAD_FACE_BIN_UNBLOCK)
 {
     asserv_move_linearly (-40);
-    return FSM_NEXT (UNLOAD_FACE_BIN, bot_move_failed);
 }
 
 /*
@@ -287,7 +272,6 @@ FSM_TRANS (UNLOAD_FACE_BIN, bot_move_failed, UNLOAD_FACE_BIN_UNBLOCK)
 FSM_TRANS (UNLOAD_FACE_BIN_UNBLOCK, bot_move_succeed, UNLOAD_FACE_BIN)
 {
     asserv_goto_angle (PG_A_DEG (90));
-    return FSM_NEXT (UNLOAD_FACE_BIN_UNBLOCK, bot_move_succeed);
 }
 
 /*
@@ -296,7 +280,6 @@ FSM_TRANS (UNLOAD_FACE_BIN_UNBLOCK, bot_move_succeed, UNLOAD_FACE_BIN)
 FSM_TRANS (UNLOAD_FACE_BIN_UNBLOCK, bot_move_failed, UNLOAD_FACE_BIN)
 {
     asserv_goto_angle (PG_A_DEG (90));
-    return FSM_NEXT (UNLOAD_FACE_BIN_UNBLOCK, bot_move_failed);
 }
 
 /*
@@ -305,7 +288,6 @@ FSM_TRANS (UNLOAD_FACE_BIN_UNBLOCK, bot_move_failed, UNLOAD_FACE_BIN)
 FSM_TRANS (UNLOAD_BACK_BIN, bot_move_succeed, UNLOAD_UNLOAD)
 {
     asserv_move_motor1_absolute (0, BOT_GATE_SPEED);
-    return FSM_NEXT (UNLOAD_BACK_BIN, bot_move_succeed);
 }
 
 /*
@@ -314,7 +296,6 @@ FSM_TRANS (UNLOAD_BACK_BIN, bot_move_succeed, UNLOAD_UNLOAD)
 FSM_TRANS (UNLOAD_BACK_BIN, bot_move_failed, UNLOAD_UNLOAD)
 {
     asserv_move_motor1_absolute (0, BOT_GATE_SPEED);
-    return FSM_NEXT (UNLOAD_BACK_BIN, bot_move_failed);
 }
 
 /*
@@ -328,7 +309,6 @@ FSM_TRANS_TIMEOUT (UNLOAD_UNLOAD, 255, COLLECT)
     asserv_move_motor1_absolute (BOT_GATE_STROKE_STEP, BOT_GATE_SPEED);
     loader_down ();
     top_collect (1);
-    return FSM_NEXT_TIMEOUT (UNLOAD_UNLOAD);
 }
 
 /*
@@ -343,12 +323,12 @@ FSM_TRANS (COLLECT, move_fsm_succeed,
     if (slow_motion)
       {
 	FSM_HANDLE (AI, loader_element);
-	return FSM_NEXT (COLLECT, move_fsm_succeed, slow_motion);
+	return FSM_BRANCH (slow_motion);
       }
     else if (top_collect (0))
-	return FSM_NEXT (COLLECT, move_fsm_succeed, collect);
+	return FSM_BRANCH (collect);
     else
-	return FSM_NEXT (COLLECT, move_fsm_succeed, unload);
+	return FSM_BRANCH (unload);
 }
 
 /*
@@ -361,10 +341,10 @@ FSM_TRANS (COLLECT, move_fsm_failed,
     if (top_collect (0))
       {
 	food_cancel (top_food);
-	return FSM_NEXT (COLLECT, move_fsm_failed, collect);
+	return FSM_BRANCH (collect);
       }
     else
-	return FSM_NEXT (COLLECT, move_fsm_failed, unload);
+	return FSM_BRANCH (unload);
 }
 
 /*
@@ -375,7 +355,6 @@ FSM_TRANS (COLLECT, loader_black, COLLECT_BLACK)
 {
     asserv_move_linearly (-90);
     food_black (top_food);
-    return FSM_NEXT (COLLECT, loader_black);
 }
 
 /*
@@ -386,9 +365,9 @@ FSM_TRANS (COLLECT_SLOW_MOTION, loader_downed,
 	   collect, COLLECT)
 {
     if (top_collect (0))
-	return FSM_NEXT (COLLECT_SLOW_MOTION, loader_downed, collect);
+	return FSM_BRANCH (collect);
     else
-	return FSM_NEXT (COLLECT_SLOW_MOTION, loader_downed, unload);
+	return FSM_BRANCH (unload);
 }
 
 /*
@@ -399,9 +378,9 @@ FSM_TRANS (COLLECT_SLOW_MOTION, loader_errored,
 	   collect, COLLECT)
 {
     if (top_collect (0))
-	return FSM_NEXT (COLLECT_SLOW_MOTION, loader_errored, collect);
+	return FSM_BRANCH (collect);
     else
-	return FSM_NEXT (COLLECT_SLOW_MOTION, loader_errored, unload);
+	return FSM_BRANCH (unload);
 }
 
 /*
@@ -412,9 +391,9 @@ FSM_TRANS_TIMEOUT (COLLECT_SLOW_MOTION, 450,
 		   collect, COLLECT)
 {
     if (top_collect (0))
-	return FSM_NEXT_TIMEOUT (COLLECT_SLOW_MOTION, collect);
+	return FSM_BRANCH (collect);
     else
-	return FSM_NEXT_TIMEOUT (COLLECT_SLOW_MOTION, unload);
+	return FSM_BRANCH (unload);
 }
 
 /*
@@ -425,7 +404,6 @@ FSM_TRANS (COLLECT_SLOW_MOTION, loader_black, COLLECT_BLACK)
 {
     asserv_move_linearly (-90);
     food_black (top_food);
-    return FSM_NEXT (COLLECT_SLOW_MOTION, loader_black);
 }
 
 FSM_TRANS (COLLECT_BLACK, bot_move_succeed,
@@ -433,9 +411,9 @@ FSM_TRANS (COLLECT_BLACK, bot_move_succeed,
 	   collect, COLLECT)
 {
     if (top_collect (0))
-	return FSM_NEXT (COLLECT_BLACK, bot_move_succeed, collect);
+	return FSM_BRANCH (collect);
     else
-	return FSM_NEXT (COLLECT_BLACK, bot_move_succeed, unload);
+	return FSM_BRANCH (unload);
 }
 
 FSM_TRANS (COLLECT_BLACK, bot_move_failed,
@@ -443,8 +421,8 @@ FSM_TRANS (COLLECT_BLACK, bot_move_failed,
 	   collect, COLLECT)
 {
     if (top_collect (0))
-	return FSM_NEXT (COLLECT_BLACK, bot_move_failed, collect);
+	return FSM_BRANCH (collect);
     else
-	return FSM_NEXT (COLLECT_BLACK, bot_move_failed, unload);
+	return FSM_BRANCH (unload);
 }
 

@@ -132,21 +132,18 @@ FSM_START_WITH (LOADER_IDLE)
 
 FSM_TRANS (LOADER_IDLE, start, LOADER_WAIT_JACK_IN)
 {
-    return FSM_NEXT (LOADER_IDLE, start);
 }
 
 FSM_TRANS (LOADER_WAIT_JACK_IN,
 	   jack_inserted_into_bot,
 	   LOADER_WAIT_JACK_OUT)
 {
-    return FSM_NEXT (LOADER_WAIT_JACK_IN, jack_inserted_into_bot);
 }
 
 FSM_TRANS (LOADER_WAIT_JACK_IN,
 	   hola_start,
 	   LOADER_IDLE)
 {
-    return FSM_NEXT (LOADER_WAIT_JACK_IN, hola_start);
 }
 
 /*
@@ -162,14 +159,12 @@ FSM_TRANS (LOADER_WAIT_JACK_OUT,
     mimot_motor0_clamp (BOT_CLAMP_ZERO_SPEED, 0);
     mimot_motor1_clamp (BOT_CLAMP_ZERO_SPEED, 0);
     asserv_motor1_zero_position (-BOT_GATE_SPEED);
-    return FSM_NEXT (LOADER_WAIT_JACK_OUT, jack_removed_from_bot);
 }
 
 FSM_TRANS (LOADER_INIT_ELEVATOR_ZERO,
 	   elevator_succeed,
 	   LOADER_INIT_CLAMP_CLOSE)
 {
-    return FSM_NEXT (LOADER_INIT_ELEVATOR_ZERO, elevator_succeed);
 }
 
 /*
@@ -184,28 +179,24 @@ FSM_TRANS (LOADER_INIT_CLAMP_CLOSE,
 				 BOT_ELEVATOR_ZERO_SPEED);
     mimot_motor0_zero_position (-BOT_CLAMP_ZERO_SPEED);
     mimot_motor1_zero_position (-BOT_CLAMP_ZERO_SPEED);
-    return FSM_NEXT (LOADER_INIT_CLAMP_CLOSE, clamp_succeed);
 }
 
 FSM_TRANS (LOADER_INIT_CLAMP_ZERO,
 	   clamp_succeed,
 	   LOADER_INIT_GATE_ZERO)
 {
-    return FSM_NEXT (LOADER_INIT_CLAMP_ZERO, clamp_succeed);
 }
 
 FSM_TRANS (LOADER_INIT_GATE_ZERO,
 	   gate_succeed,
 	   LOADER_INIT_ELEVATOR_UP)
 {
-    return FSM_NEXT (LOADER_INIT_GATE_ZERO, gate_succeed);
 }
 
 FSM_TRANS (LOADER_INIT_ELEVATOR_UP,
 	   elevator_succeed,
 	   LOADER_INIT_GATE_WAIT)
 {
-    return FSM_NEXT (LOADER_INIT_ELEVATOR_UP, elevator_succeed);
 }
 
 /*
@@ -218,7 +209,6 @@ FSM_TRANS (LOADER_INIT_ELEVATOR_UP,
     /* Move so that the operator notice it. */
     asserv_move_motor0_absolute (BOT_ELEVATOR_STROKE_STEP / 3,
 				 BOT_ELEVATOR_ZERO_SPEED);
-    return FSM_NEXT (LOADER_INIT_ELEVATOR_UP, elevator_failed);
 }
 
 /*
@@ -228,14 +218,12 @@ FSM_TRANS_TIMEOUT (LOADER_INIT_GATE_WAIT, 225,
 		   LOADER_INIT_GATE_CLOSE)
 {
     asserv_move_motor1_absolute (BOT_GATE_STROKE_STEP, BOT_GATE_SPEED);
-    return FSM_NEXT_TIMEOUT (LOADER_INIT_GATE_WAIT);
 }
 
 FSM_TRANS (LOADER_INIT_GATE_CLOSE,
 	   gate_succeed,
 	   LOADER_UP)
 {
-    return FSM_NEXT (LOADER_INIT_GATE_CLOSE, gate_succeed);
 }
 
 /*
@@ -246,7 +234,6 @@ FSM_TRANS (LOADER_UP,
 	   LOADER_DOWNING)
 {
     asserv_move_motor0_absolute (BOT_ELEVATOR_DOWN_STEP, BOT_ELEVATOR_SPEED);
-    return FSM_NEXT (LOADER_UP, loader_down);
 }
 
 /*
@@ -257,7 +244,6 @@ FSM_TRANS (LOADER_DOWN,
 	   LOADER_UPING)
 {
     asserv_move_motor0_absolute (BOT_ELEVATOR_REST_STEP, BOT_ELEVATOR_SPEED);
-    return FSM_NEXT (LOADER_DOWN, loader_up);
 }
 
 /*
@@ -269,7 +255,6 @@ FSM_TRANS (LOADER_DOWN,
 {
     mimot_motor0_clamp (BOT_CLAMP_SPEED, BOT_CLAMP_PWM);
     mimot_motor1_clamp (BOT_CLAMP_SPEED, BOT_CLAMP_PWM);
-    return FSM_NEXT (LOADER_DOWN, loader_element);
 }
 
 /*
@@ -279,8 +264,7 @@ FSM_TRANS (LOADER_UPING,
 	   elevator_succeed,
 	   LOADER_UP)
 {
-    fsm_queue_post_event (FSM_EVENT (AI,loader_uped));
-    return FSM_NEXT (LOADER_UPING, elevator_succeed);
+    fsm_queue_post_event (FSM_EVENT (loader_uped));
 }
 
 /*
@@ -290,8 +274,7 @@ FSM_TRANS (LOADER_UPING,
 	   elevator_failed,
 	   LOADER_ERROR)
 {
-    fsm_queue_post_event (FSM_EVENT (AI, loader_errored));
-    return FSM_NEXT (LOADER_UPING, elevator_failed);
+    fsm_queue_post_event (FSM_EVENT (loader_errored));
 }
 
 /*
@@ -302,7 +285,6 @@ FSM_TRANS (LOADER_UPING,
 	   LOADER_DOWNING)
 {
     asserv_move_motor0_absolute (BOT_ELEVATOR_DOWN_STEP, BOT_ELEVATOR_SPEED);
-    return FSM_NEXT (LOADER_UPING, loader_down);
 }
 
 /*
@@ -314,8 +296,7 @@ FSM_TRANS (LOADER_DOWNING,
 	   LOADER_DOWN)
 {
     asserv_motor0_free ();
-    fsm_queue_post_event (FSM_EVENT (AI, loader_downed));
-    return FSM_NEXT (LOADER_DOWNING, elevator_succeed);
+    fsm_queue_post_event (FSM_EVENT (loader_downed));
 }
 
 /*
@@ -325,8 +306,7 @@ FSM_TRANS (LOADER_DOWNING,
 	   elevator_failed,
 	   LOADER_ERROR)
 {
-    fsm_queue_post_event (FSM_EVENT (AI, loader_errored));
-    return FSM_NEXT (LOADER_DOWNING, elevator_failed);
+    fsm_queue_post_event (FSM_EVENT (loader_errored));
 }
 
 /*
@@ -338,8 +318,7 @@ FSM_TRANS (LOADER_DOWNING,
 	   LOADER_ERROR)
 {
     asserv_motor0_free ();
-    fsm_queue_post_event (FSM_EVENT (AI, loader_errored));
-    return FSM_NEXT (LOADER_DOWNING, loader_element);
+    fsm_queue_post_event (FSM_EVENT (loader_errored));
 }
 
 /*
@@ -350,7 +329,6 @@ FSM_TRANS (LOADER_DOWNING,
 	   LOADER_UPING)
 {
     asserv_move_motor0_absolute (BOT_ELEVATOR_REST_STEP, BOT_ELEVATOR_SPEED);
-    return FSM_NEXT (LOADER_DOWNING, loader_up);
 }
 
 /*
@@ -361,7 +339,6 @@ FSM_TRANS (LOADER_ERROR,
 	   LOADER_ERROR_DOWNING)
 {
     asserv_move_motor0_absolute (BOT_ELEVATOR_DOWN_STEP, BOT_ELEVATOR_SPEED);
-    return FSM_NEXT (LOADER_ERROR, loader_down);
 }
 
 /*
@@ -372,7 +349,6 @@ FSM_TRANS (LOADER_ERROR,
 	   LOADER_ERROR_UPING)
 {
     asserv_move_motor0_absolute (BOT_ELEVATOR_STROKE_STEP, BOT_ELEVATOR_SPEED);
-    return FSM_NEXT (LOADER_ERROR, loader_up);
 }
 
 /*
@@ -386,7 +362,6 @@ FSM_TRANS (LOADER_ERROR_DOWNING,
     asserv_motor0_free ();
     mimot_move_motor0_absolute (BOT_CLAMP_OPEN_STEP, BOT_CLAMP_SPEED);
     mimot_move_motor1_absolute (BOT_CLAMP_OPEN_STEP, BOT_CLAMP_SPEED);
-    return FSM_NEXT (LOADER_ERROR_DOWNING, elevator_succeed);
 }
 
 /*
@@ -396,8 +371,7 @@ FSM_TRANS (LOADER_ERROR_DOWNING,
 	   elevator_failed,
 	   LOADER_ERROR)
 {
-    fsm_queue_post_event (FSM_EVENT (AI, loader_errored));
-    return FSM_NEXT (LOADER_ERROR_DOWNING, elevator_failed);
+    fsm_queue_post_event (FSM_EVENT (loader_errored));
 }
 
 /*
@@ -406,8 +380,7 @@ FSM_TRANS (LOADER_ERROR_DOWNING,
 FSM_TRANS_TIMEOUT (LOADER_ERROR_DOWNING, 225,
 		   LOADER_ERROR)
 {
-    fsm_queue_post_event (FSM_EVENT (AI, loader_errored));
-    return FSM_NEXT_TIMEOUT (LOADER_ERROR_DOWNING);
+    fsm_queue_post_event (FSM_EVENT (loader_errored));
 }
 
 /*
@@ -417,8 +390,7 @@ FSM_TRANS (LOADER_ERROR_DOWNING_OPEN,
 	   clamp_succeed,
 	   LOADER_DOWN)
 {
-    fsm_queue_post_event (FSM_EVENT (AI, loader_downed));
-    return FSM_NEXT (LOADER_ERROR_DOWNING_OPEN, clamp_succeed);
+    fsm_queue_post_event (FSM_EVENT (loader_downed));
 }
 
 /*
@@ -428,8 +400,7 @@ FSM_TRANS (LOADER_ERROR_DOWNING_OPEN,
 	   clamp_failed,
 	   LOADER_ERROR)
 {
-    fsm_queue_post_event (FSM_EVENT (AI, loader_errored));
-    return FSM_NEXT (LOADER_ERROR_DOWNING_OPEN, clamp_failed);
+    fsm_queue_post_event (FSM_EVENT (loader_errored));
 }
 
 /*
@@ -438,8 +409,7 @@ FSM_TRANS (LOADER_ERROR_DOWNING_OPEN,
 FSM_TRANS_TIMEOUT (LOADER_ERROR_DOWNING_OPEN, 225,
 		   LOADER_ERROR)
 {
-    fsm_queue_post_event (FSM_EVENT (AI, loader_errored));
-    return FSM_NEXT_TIMEOUT (LOADER_ERROR_DOWNING_OPEN);
+    fsm_queue_post_event (FSM_EVENT (loader_errored));
 }
 
 /*
@@ -451,7 +421,6 @@ FSM_TRANS (LOADER_ERROR_UPING,
 {
     mimot_move_motor0_absolute (BOT_CLAMP_OPEN_STEP, BOT_CLAMP_SPEED);
     mimot_move_motor1_absolute (BOT_CLAMP_OPEN_STEP, BOT_CLAMP_SPEED);
-    return FSM_NEXT (LOADER_ERROR_UPING, elevator_succeed);
 }
 
 /*
@@ -461,8 +430,7 @@ FSM_TRANS (LOADER_ERROR_UPING,
 	   elevator_failed,
 	   LOADER_ERROR)
 {
-    fsm_queue_post_event (FSM_EVENT (AI, loader_errored));
-    return FSM_NEXT (LOADER_ERROR_UPING, elevator_failed);
+    fsm_queue_post_event (FSM_EVENT (loader_errored));
 }
 
 /*
@@ -471,8 +439,7 @@ FSM_TRANS (LOADER_ERROR_UPING,
 FSM_TRANS_TIMEOUT (LOADER_ERROR_UPING, 225,
 		   LOADER_ERROR)
 {
-    fsm_queue_post_event (FSM_EVENT (AI, loader_errored));
-    return FSM_NEXT_TIMEOUT (LOADER_ERROR_UPING);
+    fsm_queue_post_event (FSM_EVENT (loader_errored));
 }
 
 /*
@@ -482,8 +449,7 @@ FSM_TRANS (LOADER_ERROR_UPING_OPEN,
 	   clamp_succeed,
 	   LOADER_UP)
 {
-    fsm_queue_post_event (FSM_EVENT (AI, loader_uped));
-    return FSM_NEXT (LOADER_ERROR_UPING_OPEN, clamp_succeed);
+    fsm_queue_post_event (FSM_EVENT (loader_uped));
 }
 
 /*
@@ -493,8 +459,7 @@ FSM_TRANS (LOADER_ERROR_UPING_OPEN,
 	   clamp_failed,
 	   LOADER_ERROR)
 {
-    fsm_queue_post_event (FSM_EVENT (AI, loader_errored));
-    return FSM_NEXT (LOADER_ERROR_UPING_OPEN, clamp_failed);
+    fsm_queue_post_event (FSM_EVENT (loader_errored));
 }
 
 /*
@@ -503,8 +468,7 @@ FSM_TRANS (LOADER_ERROR_UPING_OPEN,
 FSM_TRANS_TIMEOUT (LOADER_ERROR_UPING_OPEN, 225,
 		   LOADER_ERROR)
 {
-    fsm_queue_post_event (FSM_EVENT (AI, loader_errored));
-    return FSM_NEXT_TIMEOUT (LOADER_ERROR_UPING_OPEN);
+    fsm_queue_post_event (FSM_EVENT (loader_errored));
 }
 
 FSM_TRANS (LOADER_LOAD_CLOSING, clamp_succeed,
@@ -526,13 +490,13 @@ FSM_TRANS (LOADER_LOAD_CLOSING, clamp_succeed,
 	asserv_get_position (&robot_position);
 	food_taken (robot_position);
 	loader_elements++;
-	return FSM_NEXT (LOADER_LOAD_CLOSING, clamp_succeed, full);
+	return FSM_BRANCH (full);
       }
     else
       {
 	mimot_move_motor0_absolute (BOT_CLAMP_OPEN_STEP, BOT_CLAMP_SPEED);
 	mimot_move_motor1_absolute (BOT_CLAMP_OPEN_STEP, BOT_CLAMP_SPEED);
-	return FSM_NEXT (LOADER_LOAD_CLOSING, clamp_succeed, empty);
+	return FSM_BRANCH (empty);
       }
 }
 
@@ -545,7 +509,6 @@ FSM_TRANS (LOADER_LOAD_UPING,
 {
     mimot_move_motor0_absolute (BOT_CLAMP_OPEN_STEP, BOT_CLAMP_SPEED);
     mimot_move_motor1_absolute (BOT_CLAMP_OPEN_STEP, BOT_CLAMP_SPEED);
-    return FSM_NEXT (LOADER_LOAD_UPING, elevator_unload_position);
 }
 
 /*
@@ -561,20 +524,18 @@ FSM_TRANS (LOADER_LOAD_UPING,
       {
 	if (loader_elements)
 	    loader_elements--;
-	fsm_queue_post_event (FSM_EVENT (AI, loader_black));
+	fsm_queue_post_event (FSM_EVENT (loader_black));
       }
     else
-	fsm_queue_post_event (FSM_EVENT (AI, loader_errored));
+	fsm_queue_post_event (FSM_EVENT (loader_errored));
     mimot_move_motor0_absolute (BOT_CLAMP_OPEN_STEP, BOT_CLAMP_SPEED);
     mimot_move_motor1_absolute (BOT_CLAMP_OPEN_STEP, BOT_CLAMP_SPEED);
-    return FSM_NEXT (LOADER_LOAD_UPING, elevator_failed);
 }
 
 FSM_TRANS (LOADER_LOAD_UNLOADING,
 	   elevator_succeed,
 	   LOADER_LOAD_UNLOADING_OPEN)
 {
-    return FSM_NEXT (LOADER_LOAD_UNLOADING, elevator_succeed);
 }
 
 /*
@@ -585,10 +546,9 @@ FSM_TRANS (LOADER_LOAD_UNLOADING,
 	   elevator_failed,
 	   LOADER_ERROR)
 {
-    fsm_queue_post_event (FSM_EVENT (AI, loader_errored));
+    fsm_queue_post_event (FSM_EVENT (loader_errored));
     mimot_move_motor0_absolute (BOT_CLAMP_OPEN_STEP, BOT_CLAMP_SPEED);
     mimot_move_motor1_absolute (BOT_CLAMP_OPEN_STEP, BOT_CLAMP_SPEED);
-    return FSM_NEXT (LOADER_LOAD_UNLOADING, elevator_failed);
 }
 
 FSM_TRANS (LOADER_LOAD_UNLOADING_OPEN, clamp_succeed,
@@ -601,13 +561,13 @@ FSM_TRANS (LOADER_LOAD_UNLOADING_OPEN, clamp_succeed,
       {
 	asserv_move_motor0_absolute (BOT_ELEVATOR_REST_STEP,
 				     BOT_ELEVATOR_SPEED);
-	return FSM_NEXT (LOADER_LOAD_UNLOADING_OPEN, clamp_succeed, up);
+	return FSM_BRANCH (up);
       }
     else
       {
 	asserv_move_motor0_absolute (BOT_ELEVATOR_DOWN_STEP,
 				     BOT_ELEVATOR_SPEED);
-	return FSM_NEXT (LOADER_LOAD_UNLOADING_OPEN, clamp_succeed, down);
+	return FSM_BRANCH (down);
       }
 }
 
@@ -618,8 +578,7 @@ FSM_TRANS (LOADER_LOAD_UNLOADING_OPEN,
 	   clamp_failed,
 	   LOADER_ERROR)
 {
-    fsm_queue_post_event (FSM_EVENT (AI, loader_errored));
-    return FSM_NEXT (LOADER_LOAD_UNLOADING_OPEN, clamp_failed);
+    fsm_queue_post_event (FSM_EVENT (loader_errored));
 }
 
 FSM_TRANS (LOADER_LOAD_EMPTY_OPEN, clamp_succeed,
@@ -632,12 +591,12 @@ FSM_TRANS (LOADER_LOAD_EMPTY_OPEN, clamp_succeed,
       {
 	asserv_move_motor0_absolute (BOT_ELEVATOR_REST_STEP,
 				     BOT_ELEVATOR_SPEED);
-	return FSM_NEXT (LOADER_LOAD_EMPTY_OPEN, clamp_succeed, up);
+	return FSM_BRANCH (up);
       }
     else
       {
-	fsm_queue_post_event (FSM_EVENT (AI, loader_downed));
-	return FSM_NEXT (LOADER_LOAD_EMPTY_OPEN, clamp_succeed, down);
+	fsm_queue_post_event (FSM_EVENT (loader_downed));
+	return FSM_BRANCH (down);
       }
 }
 
@@ -648,6 +607,5 @@ FSM_TRANS (LOADER_LOAD_EMPTY_OPEN,
 	   clamp_failed,
 	   LOADER_ERROR)
 {
-    fsm_queue_post_event (FSM_EVENT (AI, loader_errored));
-    return FSM_NEXT (LOADER_LOAD_EMPTY_OPEN, clamp_failed);
+    fsm_queue_post_event (FSM_EVENT (loader_errored));
 }

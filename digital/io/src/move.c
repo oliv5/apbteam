@@ -299,14 +299,14 @@ FSM_TRANS (MOVE_IDLE, move_start,
     if (next)
       {
 	if (next == 2)
-	    return FSM_NEXT (MOVE_IDLE, move_start, path_found_rotate);
+	    return FSM_BRANCH (path_found_rotate);
 	else
-	    return FSM_NEXT (MOVE_IDLE, move_start, path_found);
+	    return FSM_BRANCH (path_found);
       }
     else
       {
-	fsm_queue_post_event (FSM_EVENT (AI, move_fsm_failed));
-	return FSM_NEXT (MOVE_IDLE, move_start, no_path_found);
+	fsm_queue_post_event (FSM_EVENT (move_fsm_failed));
+	return FSM_BRANCH (no_path_found);
       }
 }
 
@@ -319,7 +319,6 @@ FSM_TRANS (MOVE_ROTATING,
 {
     loader_down ();
     move_go ();
-    return FSM_NEXT (MOVE_ROTATING, bot_move_succeed);
 }
 
 /*
@@ -331,7 +330,6 @@ FSM_TRANS (MOVE_ROTATING,
 {
     loader_down ();
     move_go ();
-    return FSM_NEXT (MOVE_ROTATING, bot_move_failed);
 }
 
 /*
@@ -342,7 +340,6 @@ FSM_TRANS_TIMEOUT (MOVE_ROTATING, 1125,
 {
     loader_down ();
     move_go ();
-    return FSM_NEXT_TIMEOUT (MOVE_ROTATING);
 }
 
 /*
@@ -355,7 +352,6 @@ FSM_TRANS (MOVE_ROTATING,
 {
     asserv_move_linearly (-MOVE_LOADER_UNBLOCKING_DISTANCE);
     loader_up ();
-    return FSM_NEXT (MOVE_ROTATING, loader_errored);
 }
 
 FSM_TRANS (MOVE_MOVING, bot_move_succeed,
@@ -370,18 +366,18 @@ FSM_TRANS (MOVE_MOVING, bot_move_succeed,
 {
     if (move_data.final_move)
       {
-	fsm_queue_post_event (FSM_EVENT (AI, move_fsm_succeed));
-	return FSM_NEXT (MOVE_MOVING, bot_move_succeed, done);
+	fsm_queue_post_event (FSM_EVENT (move_fsm_succeed));
+	return FSM_BRANCH (done);
       }
     else
       {
 	uint8_t next = move_path_next ();
 	if (next == 2)
-	    return FSM_NEXT (MOVE_MOVING, bot_move_succeed, path_found_rotate);
+        return FSM_BRANCH (path_found_rotate);
 	else
-	    return FSM_NEXT (MOVE_MOVING, bot_move_succeed, path_found);
+        return FSM_BRANCH (path_found);
       }
-    //return FSM_NEXT (MOVE_MOVING, bot_move_succeed, no_path_found);
+    //return return FSM_BRANCH (no_path_found);
 }
 
 
@@ -414,7 +410,6 @@ FSM_TRANS (MOVE_MOVING,
 	   MOVE_MOVING_BACKWARD_TO_TURN_FREELY)
 {
     move_MOVE_MOVING_bot_move_failed_MOVE_MOVING_BACKWARD_TO_TURN_FREELY ();
-    return FSM_NEXT (MOVE_MOVING, bot_move_failed);
 }
 
 /*
@@ -425,7 +420,6 @@ FSM_TRANS_TIMEOUT (MOVE_MOVING, 2250,
 		   MOVE_MOVING_BACKWARD_TO_TURN_FREELY)
 {
     move_MOVE_MOVING_bot_move_failed_MOVE_MOVING_BACKWARD_TO_TURN_FREELY ();
-    return FSM_NEXT_TIMEOUT (MOVE_MOVING);
 }
 
 FSM_TRANS (MOVE_MOVING, obstacle_in_front,
@@ -440,11 +434,11 @@ FSM_TRANS (MOVE_MOVING, obstacle_in_front,
     asserv_stop_motor ();
     if (--move_data.try_again_counter == 0)
       {
-	fsm_queue_post_event (FSM_EVENT (AI, move_fsm_failed));
-	return FSM_NEXT (MOVE_MOVING, obstacle_in_front, tryout);
+	fsm_queue_post_event (FSM_EVENT (move_fsm_failed));
+	return FSM_BRANCH (tryout);
       }
     else
-	return FSM_NEXT (MOVE_MOVING, obstacle_in_front, tryagain);
+	return FSM_BRANCH (tryagain);
 }
 
 /*
@@ -457,7 +451,6 @@ FSM_TRANS (MOVE_MOVING,
 {
     asserv_move_linearly (-MOVE_LOADER_UNBLOCKING_DISTANCE);
     loader_up ();
-    return FSM_NEXT (MOVE_MOVING, loader_errored);
 }
 
 FSM_TRANS (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_succeed,
@@ -472,8 +465,8 @@ FSM_TRANS (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_succeed,
 {
     if (--move_data.try_again_counter == 0)
       {
-	fsm_queue_post_event (FSM_EVENT (AI, move_fsm_failed));
-	return FSM_NEXT (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_succeed, tryout);
+	fsm_queue_post_event (FSM_EVENT (move_fsm_failed));
+	return FSM_BRANCH (tryout);
       }
     else
       {
@@ -481,14 +474,14 @@ FSM_TRANS (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_succeed,
 	if (next)
 	  {
 	    if (next == 2)
-		return FSM_NEXT (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_succeed, path_found_rotate);
+		return FSM_BRANCH (path_found_rotate);
 	    else
-		return FSM_NEXT (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_succeed, path_found);
+		return FSM_BRANCH (path_found);
 	  }
 	else
 	  {
-	    fsm_queue_post_event (FSM_EVENT (AI, move_fsm_failed));
-	    return FSM_NEXT (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_succeed, no_path_found);
+	    fsm_queue_post_event (FSM_EVENT (move_fsm_failed));
+	    return FSM_BRANCH (no_path_found);
 	  }
       }
 }
@@ -507,8 +500,8 @@ FSM_TRANS (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed,
 {
     if (--move_data.try_again_counter == 0)
       {
-	fsm_queue_post_event (FSM_EVENT (AI, move_fsm_failed));
-	return FSM_NEXT (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed, tryout);
+	fsm_queue_post_event (FSM_EVENT (move_fsm_failed));
+	return FSM_BRANCH (tryout);
       }
     else
       {
@@ -516,19 +509,19 @@ FSM_TRANS (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed,
 	if (next)
 	  {
 	    if (next == 2)
-		return FSM_NEXT (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed, path_found_rotate);
+		return FSM_BRANCH (path_found_rotate);
 	    else
-		return FSM_NEXT (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed, path_found);
+		return FSM_BRANCH (path_found);
 	  }
 	else
 	  {
 	    if (--move_data.try_again_counter == 0)
 	      {
-		fsm_queue_post_event (FSM_EVENT (AI, move_fsm_failed));
-		return FSM_NEXT (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed, no_path_found_tryout);
+		fsm_queue_post_event (FSM_EVENT (move_fsm_failed));
+		return FSM_BRANCH (no_path_found_tryout);
 	      }
 	    else
-		return FSM_NEXT (MOVE_MOVING_BACKWARD_TO_TURN_FREELY, bot_move_failed, no_path_found_tryagain);
+		return FSM_BRANCH (no_path_found_tryagain);
 	  }
       }
 }
@@ -548,20 +541,20 @@ FSM_TRANS_TIMEOUT (MOVE_WAIT_FOR_CLEAR_PATH, 255,
     if (next)
       {
 	if (next == 2)
-	    return FSM_NEXT_TIMEOUT (MOVE_WAIT_FOR_CLEAR_PATH, path_found_rotate);
+	    return FSM_BRANCH (path_found_rotate);
 	else
-	    return FSM_NEXT_TIMEOUT (MOVE_WAIT_FOR_CLEAR_PATH, path_found);
+	    return FSM_BRANCH (path_found);
       }
     else
       {
 	/* Error, no new position, should we try again? */
 	if (--move_data.try_again_counter == 0)
 	  {
-	    fsm_queue_post_event (FSM_EVENT (AI, move_fsm_failed));
-	    return FSM_NEXT_TIMEOUT (MOVE_WAIT_FOR_CLEAR_PATH, no_path_found_tryout);
+	    fsm_queue_post_event (FSM_EVENT (move_fsm_failed));
+	    return FSM_BRANCH (no_path_found_tryout);
 	  }
 	else
-	    return FSM_NEXT_TIMEOUT (MOVE_WAIT_FOR_CLEAR_PATH, no_path_found_tryagain);
+	    return FSM_BRANCH (no_path_found_tryagain);
       }
 }
 
@@ -575,7 +568,6 @@ FSM_TRANS (MOVE_LOADER_UNBLOCKING_UPING,
 {
     loader_down ();
     move_data.loader_unblocking_retry = 2;
-    return FSM_NEXT (MOVE_LOADER_UNBLOCKING_UPING, bot_move_succeed);
 }
 
 /*
@@ -588,7 +580,6 @@ FSM_TRANS (MOVE_LOADER_UNBLOCKING_UPING,
 {
     loader_down ();
     move_data.loader_unblocking_retry = 2;
-    return FSM_NEXT (MOVE_LOADER_UNBLOCKING_UPING, bot_move_failed);
 }
 
 FSM_TRANS (MOVE_LOADER_UNBLOCKING_DOWNING, loader_downed,
@@ -604,14 +595,14 @@ FSM_TRANS (MOVE_LOADER_UNBLOCKING_DOWNING, loader_downed,
     if (next)
       {
 	if (next == 2)
-	    return FSM_NEXT (MOVE_LOADER_UNBLOCKING_DOWNING, loader_downed, path_found_rotate);
+	    return FSM_BRANCH (path_found_rotate);
 	else
-	    return FSM_NEXT (MOVE_LOADER_UNBLOCKING_DOWNING, loader_downed, path_found);
+	    return FSM_BRANCH (path_found);
       }
     else
       {
-	fsm_queue_post_event (FSM_EVENT (AI, move_fsm_failed));
-	return FSM_NEXT (MOVE_LOADER_UNBLOCKING_DOWNING, loader_downed, no_path_found);
+	fsm_queue_post_event (FSM_EVENT (move_fsm_failed));
+	return FSM_BRANCH (no_path_found);
       }
 }
 
@@ -630,7 +621,7 @@ FSM_TRANS (MOVE_LOADER_UNBLOCKING_DOWNING, loader_errored,
       {
 	asserv_move_linearly (-MOVE_LOADER_UNBLOCKING_DISTANCE);
 	loader_up ();
-	return FSM_NEXT (MOVE_LOADER_UNBLOCKING_DOWNING, loader_errored, tryagain);
+	return FSM_BRANCH (tryagain);
       }
     else
       {
@@ -639,14 +630,14 @@ FSM_TRANS (MOVE_LOADER_UNBLOCKING_DOWNING, loader_errored,
 	if (next)
 	  {
 	    if (next == 2)
-		return FSM_NEXT (MOVE_LOADER_UNBLOCKING_DOWNING, loader_errored, tryout_path_found_rotate);
+		return FSM_BRANCH (tryout_path_found_rotate);
 	    else
-		return FSM_NEXT (MOVE_LOADER_UNBLOCKING_DOWNING, loader_errored, tryout_path_found);
+		return FSM_BRANCH (tryout_path_found);
 	  }
 	else
 	  {
-	    fsm_queue_post_event (FSM_EVENT (AI, move_fsm_failed));
-	    return FSM_NEXT (MOVE_LOADER_UNBLOCKING_DOWNING, loader_errored, tryout_no_path_found);
+	    fsm_queue_post_event (FSM_EVENT (move_fsm_failed));
+	    return FSM_BRANCH (tryout_no_path_found);
 	  }
       }
 }
@@ -666,7 +657,7 @@ FSM_TRANS_TIMEOUT (MOVE_LOADER_UNBLOCKING_DOWNING, 450,
       {
 	asserv_move_linearly (-MOVE_LOADER_UNBLOCKING_DISTANCE);
 	loader_up ();
-	return FSM_NEXT_TIMEOUT (MOVE_LOADER_UNBLOCKING_DOWNING, tryagain);
+	return FSM_BRANCH (tryagain);
       }
     else
       {
@@ -675,14 +666,14 @@ FSM_TRANS_TIMEOUT (MOVE_LOADER_UNBLOCKING_DOWNING, 450,
 	if (next)
 	  {
 	    if (next == 2)
-		return FSM_NEXT_TIMEOUT (MOVE_LOADER_UNBLOCKING_DOWNING, tryout_path_found_rotate);
+		return FSM_BRANCH (tryout_path_found_rotate);
 	    else
-		return FSM_NEXT_TIMEOUT (MOVE_LOADER_UNBLOCKING_DOWNING, tryout_path_found);
+		return FSM_BRANCH (tryout_path_found);
 	  }
 	else
 	  {
-	    fsm_queue_post_event (FSM_EVENT (AI, move_fsm_failed));
-	    return FSM_NEXT_TIMEOUT (MOVE_LOADER_UNBLOCKING_DOWNING, tryout_no_path_found);
+	    fsm_queue_post_event (FSM_EVENT (move_fsm_failed));
+	    return FSM_BRANCH (tryout_no_path_found);
 	  }
       }
 }

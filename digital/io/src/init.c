@@ -82,7 +82,6 @@ FSM_START_WITH (INIT_IDLE)
  */
 FSM_TRANS (INIT_IDLE, start, INIT_WAIT_FIRST_JACK_IN)
 {
-    return FSM_NEXT (INIT_IDLE, start);
 }
 
 /*
@@ -92,7 +91,6 @@ FSM_TRANS (INIT_WAIT_FIRST_JACK_IN,
 	   jack_inserted_into_bot,
 	   INIT_WAIT_FIRST_JACK_OUT)
 {
-    return FSM_NEXT (INIT_WAIT_FIRST_JACK_IN, jack_inserted_into_bot);
 }
 
 /*
@@ -107,7 +105,6 @@ FSM_TRANS (INIT_WAIT_FIRST_JACK_OUT,
     trace_init ();
     /* Get the color. */
     team_color = switch_get_color ();
-    return FSM_NEXT (INIT_WAIT_FIRST_JACK_OUT, jack_removed_from_bot);
 }
 
 /*
@@ -117,7 +114,6 @@ FSM_TRANS (INIT_WAIT_SECOND_JACK_IN,
 	   jack_inserted_into_bot,
 	   INIT_WAIT_FOR_HANDS_OUT)
 {
-    return FSM_NEXT (INIT_WAIT_SECOND_JACK_IN, jack_inserted_into_bot);
 }
 
 /*
@@ -128,7 +124,6 @@ FSM_TRANS_TIMEOUT (INIT_WAIT_FOR_HANDS_OUT, 225,
 {
     /* Go to the wall, no backward. */
     asserv_go_to_the_wall (0);
-    return FSM_NEXT_TIMEOUT (INIT_WAIT_FOR_HANDS_OUT);
 }
 
 /*
@@ -144,7 +139,6 @@ FSM_TRANS (INIT_GO_TO_THE_WALL,
     asserv_set_angle_position (PG_A_DEG (90));
     /* Move away from the border. */
     asserv_move_linearly (- INIT_DIST);
-    return FSM_NEXT (INIT_GO_TO_THE_WALL, bot_move_succeed);
 }
 
 /*
@@ -156,7 +150,6 @@ FSM_TRANS (INIT_GO_AWAY_FROM_THE_WALL,
 {
     /* Face the other wall. */
     asserv_goto_angle (PG_A_DEG (180));
-    return FSM_NEXT (INIT_GO_AWAY_FROM_THE_WALL, bot_move_succeed);
 }
 
 /*
@@ -166,7 +159,6 @@ FSM_TRANS (INIT_FACE_OTHER_WALL,
 	   bot_move_succeed,
 	   INIT_WAIT_AFTER_ROTATION)
 {
-    return FSM_NEXT (INIT_FACE_OTHER_WALL, bot_move_succeed);
 }
 
 /*
@@ -177,7 +169,6 @@ FSM_TRANS_TIMEOUT (INIT_WAIT_AFTER_ROTATION, 100,
 {
     /* Go to the wall, no backward. */
     asserv_go_to_the_wall (0);
-    return FSM_NEXT_TIMEOUT (INIT_WAIT_AFTER_ROTATION);
 }
 
 /*
@@ -191,7 +182,6 @@ FSM_TRANS (INIT_GO_TO_THE_WALL_AGAIN,
     asserv_set_x_position (PG_X (BOT_SIZE_FRONT));
     /* Move away from the border. */
     asserv_move_linearly (- INIT_DIST);
-    return FSM_NEXT (INIT_GO_TO_THE_WALL_AGAIN, bot_move_succeed);
 }
 
 /*
@@ -203,7 +193,6 @@ FSM_TRANS (INIT_GO_AWAY_FROM_THE_WALL_AGAIN,
 {
     /* Move away from the border. */
     asserv_goto_xya (BOT_INIT_XYA, 0);
-    return FSM_NEXT (INIT_GO_AWAY_FROM_THE_WALL_AGAIN, bot_move_succeed);
 }
 
 /*
@@ -213,7 +202,6 @@ FSM_TRANS (INIT_GO_TO_START_POSITION,
 	   bot_move_succeed,
 	   INIT_WAIT_SECOND_JACK_OUT)
 {
-    return FSM_NEXT (INIT_GO_TO_START_POSITION, bot_move_succeed);
 }
 
 /*
@@ -228,5 +216,4 @@ FSM_TRANS (INIT_WAIT_SECOND_JACK_OUT,
     init_match_is_started = 1;
     /* Start the chrono. */
     chrono_start ();
-    return FSM_NEXT (INIT_WAIT_SECOND_JACK_OUT, jack_removed_from_bot);
 }
