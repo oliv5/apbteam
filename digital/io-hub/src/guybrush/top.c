@@ -270,7 +270,6 @@ FSM_TRANS (TOP_START, init_actuators, TOP_INIT_DOOR)
     main_demo = !IO_GET (CONTACT_STRAT);
     IO_SET (OUTPUT_DOOR_OPEN);
     IO_CLR (OUTPUT_DOOR_CLOSE);
-    return FSM_NEXT (TOP_START, init_actuators);
 }
 
 FSM_TRANS (TOP_INIT_DOOR, init_done, TOP_INIT)
@@ -279,7 +278,6 @@ FSM_TRANS (TOP_INIT_DOOR, init_done, TOP_INIT)
     IO_SET (OUTPUT_DOOR_CLOSE);
     strat_init ();
     strat_prepare ();
-    return FSM_NEXT (TOP_INIT_DOOR, init_done);
 }
 
 FSM_TRANS (TOP_INIT, init_start_round, TOP_DECISION)
@@ -287,7 +285,6 @@ FSM_TRANS (TOP_INIT, init_start_round, TOP_DECISION)
     main_usdist = 1;
     beacon_on (1);
     beacon_robot_nb (IO_GET (CONTACT_NB_ROBOTS) ? 1 : 2);
-    return FSM_NEXT (TOP_INIT, init_start_round);
 }
 
 FSM_TRANS_TIMEOUT (TOP_DECISION, 1,
@@ -300,18 +297,18 @@ FSM_TRANS_TIMEOUT (TOP_DECISION, 1,
     if (FSM_CAN_HANDLE (AI, clamp_unblock))
       {
 	top_chaos_move ();
-	return FSM_NEXT_TIMEOUT (TOP_DECISION, clamp_blocked);
+	return FSM_BRANCH (clamp_blocked);
       }
     switch (top_decision ())
       {
       default:
 	assert (0);
       case STRAT_DECISION_TOTEM:
-	return FSM_NEXT_TIMEOUT (TOP_DECISION, totem);
+	return FSM_BRANCH (totem);
       case STRAT_DECISION_BOTTLE:
-	return FSM_NEXT_TIMEOUT (TOP_DECISION, bottle);
+	return FSM_BRANCH (bottle);
       case STRAT_DECISION_UNLOAD:
-	return FSM_NEXT_TIMEOUT (TOP_DECISION, unload);
+	return FSM_BRANCH (unload);
       }
 }
 
@@ -320,19 +317,16 @@ FSM_TRANS (TOP_CLAMP_ERROR_MOVING_DECISION, robot_move_success,
 {
     radar_def_upper_clamp_moving (0);
     FSM_HANDLE (AI, clamp_unblock);
-    return FSM_NEXT (TOP_CLAMP_ERROR_MOVING_DECISION, robot_move_success);
 }
 
 FSM_TRANS (TOP_CLAMP_ERROR_MOVING_DECISION, robot_move_failure,
 	   TOP_CLAMP_ERROR_DECISION)
 {
     FSM_HANDLE (AI, clamp_unblock);
-    return FSM_NEXT (TOP_CLAMP_ERROR_MOVING_DECISION, robot_move_failure);
 }
 
 FSM_TRANS (TOP_CLAMP_ERROR_DECISION, clamps_ready, TOP_DECISION)
 {
-    return FSM_NEXT (TOP_CLAMP_ERROR_DECISION, clamps_ready);
 }
 
 FSM_TRANS (TOP_CLAMP_ERROR_DECISION, clamp_blocked,
@@ -342,21 +336,20 @@ FSM_TRANS (TOP_CLAMP_ERROR_DECISION, clamp_blocked,
     if (clamp_read_blocked_cpt () < TOP_CLAMP_BLOCKED_THRESHOLD)
       {
 	FSM_HANDLE (AI, clamp_unblock);
-	return FSM_NEXT (TOP_CLAMP_ERROR_DECISION, clamp_blocked, unblock);
+	return FSM_BRANCH (unblock);
       }
     else
       {
 	strat_clamp_dead ();
 	strat_bad_failure ();
 	FSM_HANDLE (AI, clamp_is_dead);
-	return FSM_NEXT (TOP_CLAMP_ERROR_DECISION, clamp_blocked, dead);
+	return FSM_BRANCH (dead);
       }
 }
 
 FSM_TRANS (TOP_CLAMP_ERROR_DECISION, upper_set_is_dead, TOP_DECISION)
 {
     strat_upper_clamp_dead ();
-    return FSM_NEXT (TOP_CLAMP_ERROR_DECISION, upper_set_is_dead);
 }
 
 /** TOTEM */
@@ -364,8 +357,7 @@ FSM_TRANS (TOP_CLAMP_ERROR_DECISION, upper_set_is_dead, TOP_DECISION)
 FSM_TRANS (TOP_TOTEM_GOING, move_success, TOP_TOTEM_CLEAN_STARTING)
 {
     radar_def_upper_clamp_moving (1);
-    clamp_request (FSM_EVENT (AI, clean_start));
-    return FSM_NEXT (TOP_TOTEM_GOING, move_success);
+    clamp_request (FSM_EVENT (clean_start));
 }
 
 FSM_TRANS (TOP_TOTEM_CLEAN_STARTING, clamps_ready, TOP_TOTEM_CLEAN_APPROACHING)
@@ -374,14 +366,12 @@ FSM_TRANS (TOP_TOTEM_CLEAN_STARTING, clamps_ready, TOP_TOTEM_CLEAN_APPROACHING)
     top.totem_distance -= move;
     asserv_set_speed (BOT_SPEED_APPROACH);
     asserv_move_linearly (move);
-    return FSM_NEXT (TOP_TOTEM_CLEAN_STARTING, clamps_ready);
 }
 
 FSM_TRANS (TOP_TOTEM_CLEAN_APPROACHING, robot_move_success,
 	   TOP_TOTEM_CLEAN_CATCH_WAITING)
 {
     FSM_HANDLE (AI, clean_catch);
-    return FSM_NEXT (TOP_TOTEM_CLEAN_APPROACHING, robot_move_success);
 }
 
 FSM_TRANS (TOP_TOTEM_CLEAN_APPROACHING, robot_move_failure,
@@ -389,7 +379,6 @@ FSM_TRANS (TOP_TOTEM_CLEAN_APPROACHING, robot_move_failure,
 {
     /* Must be blocked on a CD, catch and continue. */
     FSM_HANDLE (AI, clean_catch);
-    return FSM_NEXT (TOP_TOTEM_CLEAN_APPROACHING, robot_move_failure);
 }
 
 FSM_TRANS (TOP_TOTEM_CLEAN_CATCH_WAITING, clamps_ready,
@@ -398,27 +387,23 @@ FSM_TRANS (TOP_TOTEM_CLEAN_CATCH_WAITING, clamps_ready,
     int16_t move = top.totem_distance - BOT_SIZE_LOADING_FRONT - 30;
     top.totem_distance -= move;
     asserv_move_linearly (move);
-    return FSM_NEXT (TOP_TOTEM_CLEAN_CATCH_WAITING, clamps_ready);
 }
 
 FSM_TRANS (TOP_TOTEM_CLEAN_GOING_BACK, robot_move_success,
 	   TOP_TOTEM_CLEAN_LOADING)
 {
     FSM_HANDLE (AI, clean_load);
-    return FSM_NEXT (TOP_TOTEM_CLEAN_GOING_BACK, robot_move_success);
 }
 
 FSM_TRANS (TOP_TOTEM_CLEAN_GOING_BACK, robot_move_failure,
 	   TOP_TOTEM_CLEAN_LOADING)
 {
     FSM_HANDLE (AI, clean_load);
-    return FSM_NEXT (TOP_TOTEM_CLEAN_GOING_BACK, robot_move_failure);
 }
 
 FSM_TRANS (TOP_TOTEM_CLEAN_LOADING, clamps_ready, TOP_TOTEM_CLAMP_DOWNING)
 {
-    clamp_request (FSM_EVENT (AI, tree_detected));
-    return FSM_NEXT (TOP_TOTEM_CLEAN_LOADING, clamps_ready);
+    clamp_request (FSM_EVENT (tree_detected));
 }
 
 FSM_TRANS (TOP_TOTEM_CLAMP_DOWNING, clamps_ready, TOP_TOTEM_APPROACHING)
@@ -426,38 +411,32 @@ FSM_TRANS (TOP_TOTEM_CLAMP_DOWNING, clamps_ready, TOP_TOTEM_APPROACHING)
     int16_t move = top.totem_distance - BOT_SIZE_FRONT - 30;
     top.totem_distance -= move;
     asserv_move_linearly (move);
-    return FSM_NEXT (TOP_TOTEM_CLAMP_DOWNING, clamps_ready);
 }
 
 FSM_TRANS (TOP_TOTEM_APPROACHING, robot_move_success, TOP_TOTEM_PUSHING)
 {
     asserv_push_the_wall (0, -1, -1, -1);
-    return FSM_NEXT (TOP_TOTEM_APPROACHING, robot_move_success);
 }
 
 FSM_TRANS (TOP_TOTEM_PUSHING, robot_move_success, TOP_TOTEM_EMPTYING)
 {
     asserv_stop_motor ();
     FSM_HANDLE (AI, empty_tree);
-    return FSM_NEXT (TOP_TOTEM_PUSHING, robot_move_success);
 }
 
 FSM_TRANS (TOP_TOTEM_EMPTYING, clamps_ready, TOP_TOTEM_GOING_BACK)
 {
     move_start_noangle (top.decision_pos, ASSERV_BACKWARD, 0);
-    return FSM_NEXT (TOP_TOTEM_EMPTYING, clamps_ready);
 }
 
 FSM_TRANS (TOP_TOTEM_GOING_BACK, move_success, TOP_TOTEM_CLAMP_UPPING)
 {
     strat_success ();
     FSM_HANDLE (AI, robot_is_back);
-    return FSM_NEXT (TOP_TOTEM_GOING_BACK, move_success);
 }
 
 FSM_TRANS (TOP_TOTEM_CLAMP_UPPING, clamps_ready, TOP_DECISION)
 {
-    return FSM_NEXT (TOP_TOTEM_CLAMP_UPPING, clamps_ready);
 }
 
 /** TOTEM failures. */
@@ -465,7 +444,6 @@ FSM_TRANS (TOP_TOTEM_CLAMP_UPPING, clamps_ready, TOP_DECISION)
 FSM_TRANS (TOP_TOTEM_GOING, move_failure, TOP_DECISION)
 {
     strat_failure ();
-    return FSM_NEXT (TOP_TOTEM_GOING, move_failure);
 }
 
 FSM_TRANS (TOP_TOTEM_CLEAN_STARTING, clamp_blocked,
@@ -473,13 +451,11 @@ FSM_TRANS (TOP_TOTEM_CLEAN_STARTING, clamp_blocked,
 {
     strat_failure ();
     top_chaos_move ();
-    return FSM_NEXT (TOP_TOTEM_CLEAN_STARTING, clamp_blocked);
 }
 
 FSM_TRANS_TIMEOUT (TOP_TOTEM_CLEAN_STARTING, 5 * 250, TOP_DECISION)
 {
     strat_bad_failure ();
-    return FSM_NEXT_TIMEOUT (TOP_TOTEM_CLEAN_STARTING);
 }
 
 FSM_TRANS (TOP_TOTEM_CLEAN_CATCH_WAITING, clamp_blocked,
@@ -487,7 +463,6 @@ FSM_TRANS (TOP_TOTEM_CLEAN_CATCH_WAITING, clamp_blocked,
 {
     strat_failure ();
     move_start_noangle (top.decision_pos, ASSERV_BACKWARD, 0);
-    return FSM_NEXT (TOP_TOTEM_CLEAN_CATCH_WAITING, clamp_blocked);
 }
 
 FSM_TRANS (TOP_TOTEM_CLEAN_LOADING, clamp_blocked,
@@ -495,7 +470,6 @@ FSM_TRANS (TOP_TOTEM_CLEAN_LOADING, clamp_blocked,
 {
     strat_failure ();
     top_chaos_move ();
-    return FSM_NEXT (TOP_TOTEM_CLEAN_LOADING, clamp_blocked);
 }
 
 FSM_TRANS (TOP_TOTEM_CLAMP_DOWNING, clamp_blocked,
@@ -503,13 +477,11 @@ FSM_TRANS (TOP_TOTEM_CLAMP_DOWNING, clamp_blocked,
 {
     strat_failure ();
     top_chaos_move ();
-    return FSM_NEXT (TOP_TOTEM_CLAMP_DOWNING, clamp_blocked);
 }
 
 FSM_TRANS_TIMEOUT (TOP_TOTEM_CLAMP_DOWNING, 5 * 250, TOP_DECISION)
 {
     strat_bad_failure ();
-    return FSM_NEXT_TIMEOUT (TOP_TOTEM_CLAMP_DOWNING);
 }
 
 FSM_TRANS (TOP_TOTEM_APPROACHING, robot_move_failure,
@@ -517,7 +489,6 @@ FSM_TRANS (TOP_TOTEM_APPROACHING, robot_move_failure,
 {
     strat_giveup ();
     move_start_noangle (top.decision_pos, ASSERV_BACKWARD, 0);
-    return FSM_NEXT (TOP_TOTEM_APPROACHING, robot_move_failure);
 }
 
 FSM_TRANS (TOP_TOTEM_PUSHING, robot_move_failure,
@@ -525,7 +496,6 @@ FSM_TRANS (TOP_TOTEM_PUSHING, robot_move_failure,
 {
     strat_giveup ();
     move_start_noangle (top.decision_pos, ASSERV_BACKWARD, 0);
-    return FSM_NEXT (TOP_TOTEM_PUSHING, robot_move_failure);
 }
 
 FSM_TRANS (TOP_TOTEM_EMPTYING, clamp_blocked,
@@ -533,14 +503,12 @@ FSM_TRANS (TOP_TOTEM_EMPTYING, clamp_blocked,
 {
     strat_giveup ();
     move_start_noangle (top.decision_pos, ASSERV_BACKWARD, 0);
-    return FSM_NEXT (TOP_TOTEM_EMPTYING, clamp_blocked);
 }
 
 FSM_TRANS (TOP_TOTEM_GOING_BACK, move_failure, TOP_TOTEM_ERROR_RELEASE)
 {
     strat_giveup ();
     FSM_HANDLE (AI, stop_tree_approach);
-    return FSM_NEXT (TOP_TOTEM_GOING_BACK, move_failure);
 }
 
 FSM_TRANS (TOP_TOTEM_CLAMP_UPPING, clamp_blocked,
@@ -548,39 +516,33 @@ FSM_TRANS (TOP_TOTEM_CLAMP_UPPING, clamp_blocked,
 {
     strat_giveup ();
     top_chaos_move ();
-    return FSM_NEXT (TOP_TOTEM_CLAMP_UPPING, clamp_blocked);
 }
 
 FSM_TRANS (TOP_TOTEM_ERROR_RELEASE, clamps_ready, TOP_TOTEM_ERROR_GOING_BACK)
 {
     move_start_noangle (top.decision_pos, ASSERV_BACKWARD, 0);
-    return FSM_NEXT (TOP_TOTEM_ERROR_RELEASE, clamps_ready);
 }
 
 FSM_TRANS (TOP_TOTEM_ERROR_GOING_BACK, move_success, TOP_TOTEM_CLAMP_UPPING)
 {
     FSM_HANDLE (AI, stop_tree_approach);
-    return FSM_NEXT (TOP_TOTEM_ERROR_GOING_BACK, move_success);
 }
 
 FSM_TRANS (TOP_TOTEM_ERROR_GOING_BACK, move_failure, TOP_TOTEM_CLAMP_UPPING)
 {
     FSM_HANDLE (AI, stop_tree_approach);
-    return FSM_NEXT (TOP_TOTEM_ERROR_GOING_BACK, move_failure);
 }
 
 FSM_TRANS (TOP_TOTEM_CLAMP_ERROR_GOING_BACK, move_success,
 	   TOP_CLAMP_ERROR_MOVING_DECISION)
 {
     top_chaos_move ();
-    return FSM_NEXT (TOP_TOTEM_CLAMP_ERROR_GOING_BACK, move_success);
 }
 
 FSM_TRANS (TOP_TOTEM_CLAMP_ERROR_GOING_BACK, move_failure,
 	   TOP_CLAMP_ERROR_MOVING_DECISION)
 {
     top_chaos_move ();
-    return FSM_NEXT (TOP_TOTEM_CLAMP_ERROR_GOING_BACK, move_failure);
 }
 
 /** BOTTLE */
@@ -590,13 +552,11 @@ FSM_TRANS (TOP_BOTTLE_GOING, move_success, TOP_BOTTLE_APPROACHING)
     int16_t move = top.decision_pos.y - BOT_SIZE_BACK - 22 - 30;
     asserv_set_speed (BOT_SPEED_APPROACH);
     asserv_move_linearly (-move);
-    return FSM_NEXT (TOP_BOTTLE_GOING, move_success);
 }
 
 FSM_TRANS (TOP_BOTTLE_APPROACHING, robot_move_success, TOP_BOTTLE_PUSHING)
 {
     asserv_push_the_wall (ASSERV_BACKWARD, -1, -1, -1);
-    return FSM_NEXT (TOP_BOTTLE_APPROACHING, robot_move_success);
 }
 
 FSM_TRANS (TOP_BOTTLE_PUSHING, robot_move_success, TOP_BOTTLE_GOING_BACK)
@@ -604,7 +564,6 @@ FSM_TRANS (TOP_BOTTLE_PUSHING, robot_move_success, TOP_BOTTLE_GOING_BACK)
     asserv_stop_motor ();
     strat_success ();
     move_start_noangle (top.decision_pos, 0, 0);
-    return FSM_NEXT (TOP_BOTTLE_PUSHING, robot_move_success);
 }
 
 FSM_TRANS (TOP_BOTTLE_PUSHING, robot_move_failure, TOP_BOTTLE_GOING_BACK)
@@ -613,18 +572,15 @@ FSM_TRANS (TOP_BOTTLE_PUSHING, robot_move_failure, TOP_BOTTLE_GOING_BACK)
     asserv_stop_motor ();
     strat_success ();
     move_start_noangle (top.decision_pos, 0, 0);
-    return FSM_NEXT (TOP_BOTTLE_PUSHING, robot_move_failure);
 }
 
 FSM_TRANS (TOP_BOTTLE_GOING_BACK, move_success, TOP_DECISION)
 {
-    return FSM_NEXT (TOP_BOTTLE_GOING_BACK, move_success);
 }
 
 FSM_TRANS (TOP_BOTTLE_GOING_BACK, move_failure, TOP_DECISION)
 {
     /* Ignore and continue. */
-    return FSM_NEXT (TOP_BOTTLE_GOING_BACK, move_failure);
 }
 
 /** BOTTLE failures. */
@@ -632,7 +588,6 @@ FSM_TRANS (TOP_BOTTLE_GOING_BACK, move_failure, TOP_DECISION)
 FSM_TRANS (TOP_BOTTLE_GOING, move_failure, TOP_DECISION)
 {
     strat_failure ();
-    return FSM_NEXT (TOP_BOTTLE_GOING, move_failure);
 }
 
 FSM_TRANS (TOP_BOTTLE_APPROACHING, robot_move_failure,
@@ -645,14 +600,12 @@ FSM_TRANS (TOP_BOTTLE_APPROACHING, robot_move_failure,
     if (robot_pos.v.y < BOT_SIZE_BACK + 100)
       {
 	asserv_push_the_wall (ASSERV_BACKWARD, -1, -1, -1);
-	return FSM_NEXT (TOP_BOTTLE_APPROACHING, robot_move_failure,
-			 try_anyway);
+	return FSM_BRANCH (try_anyway);
       }
     else
       {
 	strat_failure ();
-	return FSM_NEXT (TOP_BOTTLE_APPROACHING, robot_move_failure,
-			 decision);
+	return FSM_BRANCH (decision);
       }
 }
 
@@ -674,30 +627,27 @@ FSM_TRANS (TOP_UNLOAD_GOING, move_success,
     if (top.decision_pos.y < PG_LENGTH - PG_CAPTAIN_ROOM_LENGTH_MM)
       {
 	asserv_move_linearly (-100);
-	return FSM_NEXT (TOP_UNLOAD_GOING, move_success, hold);
+	return FSM_BRANCH (hold);
       }
     else
       {
 	asserv_move_linearly (-50);
-	return FSM_NEXT (TOP_UNLOAD_GOING, move_success, captain);
+	return FSM_BRANCH (captain);
       }
 }
 
 FSM_TRANS (TOP_UNLOAD_GOING_BACK, robot_move_success, TOP_UNLOADING)
 {
     top_do_unload ();
-    return FSM_NEXT (TOP_UNLOAD_GOING_BACK, robot_move_success);
 }
 
 FSM_TRANS (TOP_UNLOAD_GOING_BACK, robot_move_failure, TOP_UNLOADING)
 {
     top_do_unload ();
-    return FSM_NEXT (TOP_UNLOAD_GOING_BACK, robot_move_failure);
 }
 
 FSM_TRANS_TIMEOUT (TOP_UNLOADING, 250, TOP_DECISION)
 {
-    return FSM_NEXT_TIMEOUT (TOP_UNLOADING);
 }
 
 /** UNLOAD failures. */
@@ -705,6 +655,5 @@ FSM_TRANS_TIMEOUT (TOP_UNLOADING, 250, TOP_DECISION)
 FSM_TRANS (TOP_UNLOAD_GOING, move_failure, TOP_DECISION)
 {
     strat_failure ();
-    return FSM_NEXT (TOP_UNLOAD_GOING, move_failure);
 }
 

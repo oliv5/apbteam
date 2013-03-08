@@ -333,9 +333,6 @@ FSM_TRANS (CLAMP_START, init_actuators, CLAMP_INIT_OPEN_ALL_CLAMPS)
     IO_CLR (OUTPUT_LOWER_CLAMP_1_CLOSE);
     /*Opening upper clamps*/
     IO_SET (OUTPUT_UPPER_CLAMP_OPEN);
-    
-    return FSM_NEXT (CLAMP_START,init_actuators);
-    
 }
 
 FSM_TRANS_TIMEOUT (CLAMP_INIT_OPEN_ALL_CLAMPS,TIMEOUT_OPEN_CLAMPS, 
@@ -348,12 +345,12 @@ FSM_TRANS_TIMEOUT (CLAMP_INIT_OPEN_ALL_CLAMPS,TIMEOUT_OPEN_CLAMPS,
         /* closing all the clamps except the clamp 1 to proceed the find_O function. */
         IO_SET (OUTPUT_LOWER_CLAMP_2_CLOSE);
         IO_CLR (OUTPUT_UPPER_CLAMP_OPEN);
-        return FSM_NEXT_TIMEOUT (CLAMP_INIT_OPEN_ALL_CLAMPS,upper_set_in);
+        return FSM_BRANCH (upper_set_in);
     }
     /*if it is outside, go to shitty state and stop everything*/
     else
     {
-        return FSM_NEXT_TIMEOUT (CLAMP_INIT_OPEN_ALL_CLAMPS,upper_set_out);
+        return FSM_BRANCH (upper_set_out);
     }
     
 
@@ -368,7 +365,6 @@ FSM_TRANS_TIMEOUT (CLAMP_INIT_CLOSE_ALL_CLAMPS, 5*TIMEOUT_OPEN_CLAMPS, CLAMP_INI
     ctx.unblocking_upper_set = 0;
     ctx.upper_set_is_dead = 0;
     move_needed2(8000,SLOW_ROTATION,1);
-    return FSM_NEXT_TIMEOUT (CLAMP_INIT_CLOSE_ALL_CLAMPS);
 }
 
 FSM_TRANS (CLAMP_INIT_FIND_0, 0_found, CLAMP_INIT_HIDE_CLAMP)
@@ -379,7 +375,6 @@ FSM_TRANS (CLAMP_INIT_FIND_0, 0_found, CLAMP_INIT_HIDE_CLAMP)
     /* Robot is ready with clamp 1 at the bottom. */
     move_needed2(CLAMP_1_DOWN,FAST_ROTATION,1);
     ctx.clamp_1_down = 1;
-    return FSM_NEXT (CLAMP_INIT_FIND_0, 0_found);
 }
 
 FSM_TRANS (CLAMP_INIT_HIDE_CLAMP, lower_clamp_rotation_success, 
@@ -390,14 +385,13 @@ FSM_TRANS (CLAMP_INIT_HIDE_CLAMP, lower_clamp_rotation_success,
     IO_CLR (OUTPUT_LOWER_CLAMP_2_CLOSE);
     /*Looking if we are in demo mode or normal mode*/
     if (!main_demo)
-        return FSM_NEXT (CLAMP_INIT_HIDE_CLAMP,lower_clamp_rotation_success,normal_start);
+        return FSM_BRANCH (normal_start);
     else
-        return FSM_NEXT (CLAMP_INIT_HIDE_CLAMP,lower_clamp_rotation_success,demo_start);
+        return FSM_BRANCH (demo_start);
 }
 
 FSM_TRANS (CLAMP_INIT_READY,init_start_round, CLAMP_GOING_IDLE)
 {
-    return FSM_NEXT (CLAMP_INIT_READY, init_start_round);
 }
 
 FSM_TRANS_TIMEOUT (CLAMP_GOING_IDLE, 3*TIMEOUT_OPEN_CLAMPS, CLAMP_WAIT_BEFORE_IDLE)
@@ -411,7 +405,6 @@ FSM_TRANS_TIMEOUT (CLAMP_GOING_IDLE, 3*TIMEOUT_OPEN_CLAMPS, CLAMP_WAIT_BEFORE_ID
     IO_CLR (OUTPUT_UPPER_CLAMP_IN);
     /*Contrepression*/
     IO_SET (OUTPUT_UPPER_CLAMP_UP);
-    return FSM_NEXT_TIMEOUT (CLAMP_GOING_IDLE);
 }
 
 /*---------------------------------------------------------*/
@@ -426,13 +419,12 @@ FSM_TRANS_TIMEOUT (CLAMP_WAIT_BEFORE_IDLE, TIMEOUT_IDLE,
     {
         uint16_t idle_request = ctx.idle_request;
         ctx.idle_request = 0;
-        if (idle_request == FSM_EVENT (AI, clean_start))
+        if (idle_request == FSM_EVENT (clean_start))
         {
-            fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
-            return FSM_NEXT_TIMEOUT (CLAMP_WAIT_BEFORE_IDLE,
-                                     request_clean_start);
+            fsm_queue_post_event (FSM_EVENT (clamps_ready));
+            return FSM_BRANCH (request_clean_start);
         }
-        else if (idle_request == FSM_EVENT (AI, tree_detected))
+        else if (idle_request == FSM_EVENT (tree_detected))
         {
             /* Hidding the clamp inside the robot. */
             if (is_clamp_1_down(ctx.current_pos))
@@ -444,20 +436,19 @@ FSM_TRANS_TIMEOUT (CLAMP_WAIT_BEFORE_IDLE, TIMEOUT_IDLE,
                 move_needed2 (HIDE_POS_TREE, FAST_ROTATION,1);
                 ctx.clamp_1_down = 1;
             }
-            return FSM_NEXT_TIMEOUT (CLAMP_WAIT_BEFORE_IDLE,
-                                     request_tree_detected);
+            return FSM_BRANCH (request_tree_detected);
         }
         else
         {
             assert (0);
-            return FSM_NEXT_TIMEOUT (CLAMP_WAIT_BEFORE_IDLE, idle);
+            return FSM_BRANCH (idle);
         }
     }
     else
     {
         /* Going back to the idle position, ready for showtime. */
-        fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
-        return FSM_NEXT_TIMEOUT (CLAMP_WAIT_BEFORE_IDLE, idle);
+        fsm_queue_post_event (FSM_EVENT (clamps_ready));
+        return FSM_BRANCH (idle);
     }
 }
 /*---------------------------------------------------------*/
@@ -465,8 +456,7 @@ FSM_TRANS_TIMEOUT (CLAMP_WAIT_BEFORE_IDLE, TIMEOUT_IDLE,
 /*---------------------------------------------------------*/
 FSM_TRANS (CLAMP_IDLE, clean_start,CLAMP_READY_TO_CLEAN) 
 {
-    fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
-    return FSM_NEXT(CLAMP_IDLE,clean_start);
+    fsm_queue_post_event (FSM_EVENT (clamps_ready));
 }
 
 FSM_TRANS (CLAMP_READY_TO_CLEAN, clean_catch,CLAMP_CATCH_COIN) 
@@ -482,17 +472,14 @@ FSM_TRANS (CLAMP_READY_TO_CLEAN, clean_catch,CLAMP_CATCH_COIN)
     {
         IO_SET (OUTPUT_LOWER_CLAMP_2_CLOSE);
     }
-    return FSM_NEXT(CLAMP_READY_TO_CLEAN,clean_catch);
 }
 FSM_TRANS_TIMEOUT (CLAMP_CATCH_COIN, TIMEOUT_CLOSE_CLAMPS*2,CLAMP_READY_TO_LOAD) 
 {
-    fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
-    return FSM_NEXT_TIMEOUT(CLAMP_CATCH_COIN);
+    fsm_queue_post_event (FSM_EVENT (clamps_ready));
 }
 
 FSM_TRANS (CLAMP_READY_TO_LOAD, clean_load,CLAMP_TAKE_COIN) 
 {
-    return FSM_NEXT(CLAMP_READY_TO_LOAD,clean_load);
 }
 
 /*---------------------------------------------------------*/
@@ -511,8 +498,7 @@ FSM_TRANS (CLAMP_IDLE, coin_detected,CLAMP_TAKE_COIN)
     {
         IO_SET(OUTPUT_LOWER_CLAMP_2_CLOSE);
     }
-    fsm_queue_post_event (FSM_EVENT (AI, taking_coin));
-    return FSM_NEXT (CLAMP_IDLE, coin_detected);
+    fsm_queue_post_event (FSM_EVENT (taking_coin));
 }
 
 FSM_TRANS_TIMEOUT (CLAMP_TAKE_COIN, TIMEOUT_CLOSE_CLAMPS, CLAMP_TURN_HALF_WAY)
@@ -527,7 +513,6 @@ FSM_TRANS_TIMEOUT (CLAMP_TAKE_COIN, TIMEOUT_CLOSE_CLAMPS, CLAMP_TURN_HALF_WAY)
         move_needed2(CLAMP_1_DOWN,FAST_ROTATION,1);
     }
 
-    return FSM_NEXT_TIMEOUT (CLAMP_TAKE_COIN);
 }
 
 FSM_TRANS (CLAMP_TURN_HALF_WAY, time_to_drop_coin, CLAMP_DROP_CD)
@@ -543,24 +528,20 @@ FSM_TRANS (CLAMP_TURN_HALF_WAY, time_to_drop_coin, CLAMP_DROP_CD)
     {
         IO_CLR (OUTPUT_LOWER_CLAMP_2_CLOSE);           
     }
-    return FSM_NEXT (CLAMP_TURN_HALF_WAY,time_to_drop_coin);
 }
 
 FSM_TRANS (CLAMP_TURN_HALF_WAY, lower_clamp_rotation_failure, CLAMP_BLOCKED)
 {
-    return FSM_NEXT (CLAMP_TURN_HALF_WAY,lower_clamp_rotation_failure);
 }
 
 FSM_TRANS (CLAMP_DROP_CD,lower_clamp_rotation_success,CLAMP_WAIT_BEFORE_IDLE)
 {
-    return FSM_NEXT (CLAMP_DROP_CD,lower_clamp_rotation_success);
 }
 
 FSM_TRANS (CLAMP_DROP_CD, lower_clamp_rotation_failure, CLAMP_BLOCKED)
 {
     /*The clamp is blocked somehow. */
     clamp_blocked();
-    return FSM_NEXT (CLAMP_DROP_CD, lower_clamp_rotation_failure);
 }
 /*---------------------------------------------------------*/
 /*  Parts of the FSM that is Approaching the tree (totem)  */
@@ -579,7 +560,6 @@ FSM_TRANS (CLAMP_IDLE, tree_detected,CLAMP_BOTTOM_CLAMP_HIDE_POS)
     }
     /*Hidding the clamp inside the robot*/
     move_needed2(rotation,FAST_ROTATION,1);
-    return FSM_NEXT (CLAMP_IDLE, tree_detected);
 }
 
 
@@ -587,14 +567,12 @@ FSM_TRANS (CLAMP_BOTTOM_CLAMP_HIDE_POS, lower_clamp_rotation_success, CLAMP_UNFO
 {
     IO_CLR (OUTPUT_UPPER_CLAMP_UP);
     IO_SET (OUTPUT_UPPER_CLAMP_DOWN);
-    return FSM_NEXT (CLAMP_BOTTOM_CLAMP_HIDE_POS, lower_clamp_rotation_success);
 }
 
 FSM_TRANS (CLAMP_BOTTOM_CLAMP_HIDE_POS, lower_clamp_rotation_failure, CLAMP_BLOCKED)
 {
     /*The clamp is blocked somehow.*/
     clamp_blocked();
-    return FSM_NEXT (CLAMP_BOTTOM_CLAMP_HIDE_POS, lower_clamp_rotation_failure);
 }
 
 
@@ -606,27 +584,23 @@ FSM_TRANS (CLAMP_UNFOLD_UPPER_SET, upper_set_down, CLAMP_BOTTOM_CLAMP_READY)
     /*Opening the top clamp.*/
     IO_SET (OUTPUT_UPPER_CLAMP_OPEN);
 
-    return FSM_NEXT (CLAMP_UNFOLD_UPPER_SET, upper_set_down);
 
 }
 
 /** If the upper set doesn't go down*/
 FSM_TRANS_TIMEOUT (CLAMP_UNFOLD_UPPER_SET, TIMEOUT_UPPER_SET_DOWN, CLAMP_UPPER_SET_BLOCKED_UP)
 {
-    return FSM_NEXT_TIMEOUT (CLAMP_UNFOLD_UPPER_SET);
 }
 
 FSM_TRANS (CLAMP_BOTTOM_CLAMP_READY, lower_clamp_rotation_success, CLAMP_READY_TO_EMPTY_TREE)
 {
 
-    fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
-    return FSM_NEXT (CLAMP_BOTTOM_CLAMP_READY, lower_clamp_rotation_success);
+    fsm_queue_post_event (FSM_EVENT (clamps_ready));
 
 }
 
 FSM_TRANS (CLAMP_BOTTOM_CLAMP_READY, lower_clamp_rotation_failure, CLAMP_BLOCKED_UPPER_SET_DOWN)
 {
-    return FSM_NEXT (CLAMP_BOTTOM_CLAMP_HIDE_POS, lower_clamp_rotation_failure);
 }
 
 FSM_TRANS (CLAMP_READY_TO_EMPTY_TREE, empty_tree, CLAMP_CLOSE_ALL_CLAMPS)
@@ -640,8 +614,7 @@ FSM_TRANS (CLAMP_READY_TO_EMPTY_TREE, empty_tree, CLAMP_CLOSE_ALL_CLAMPS)
     /*Closing upper & middle clamps.*/
     IO_CLR (OUTPUT_UPPER_CLAMP_OPEN);
 
-    fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
-    return FSM_NEXT (CLAMP_READY_TO_EMPTY_TREE, empty_tree);
+    fsm_queue_post_event (FSM_EVENT (clamps_ready));
 
 }
 
@@ -653,7 +626,6 @@ FSM_TRANS(CLAMP_CLOSE_ALL_CLAMPS, robot_is_back,CLAMP_REARRANGE_CD)
 {
     IO_CLR (OUTPUT_UPPER_CLAMP_OUT);
     IO_SET (OUTPUT_UPPER_CLAMP_IN);
-    return FSM_NEXT (CLAMP_CLOSE_ALL_CLAMPS, robot_is_back);
 
 }
 
@@ -662,27 +634,23 @@ FSM_TRANS (CLAMP_CLOSE_ALL_CLAMPS, stop_tree_approach, CLAMP_READY_TO_EMPTY_TREE
     IO_CLR (OUTPUT_LOWER_CLAMP_1_CLOSE);
     IO_CLR (OUTPUT_LOWER_CLAMP_2_CLOSE);
     IO_SET (OUTPUT_UPPER_CLAMP_OPEN);
-    fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
-    return FSM_NEXT (CLAMP_CLOSE_ALL_CLAMPS, stop_tree_approach);
+    fsm_queue_post_event (FSM_EVENT (clamps_ready));
 }
 
 FSM_TRANS_TIMEOUT (CLAMP_REARRANGE_CD, TIMEOUT_RECENTRAGE, CLAMP_BOTTOM_CLAMP_HIDE_POS2)
 {
     /*Hidding the clamp inside the robot.*/
     move_needed2(LET_UPPER_SET_UP,MEDIUM_ROTATION,1);
-    return FSM_NEXT_TIMEOUT (CLAMP_REARRANGE_CD);
 }
 FSM_TRANS (CLAMP_BOTTOM_CLAMP_HIDE_POS2, lower_clamp_rotation_success, CLAMP_RELEASE_ASSERV)
 {
     mimot_motor_free (0, 1);
-    return FSM_NEXT (CLAMP_BOTTOM_CLAMP_HIDE_POS2, lower_clamp_rotation_success);
 
 }
 
 FSM_TRANS (CLAMP_BOTTOM_CLAMP_HIDE_POS2, lower_clamp_rotation_failure, CLAMP_BLOCKED)
 {
     clamp_blocked();
-    return FSM_NEXT (CLAMP_BOTTOM_CLAMP_HIDE_POS2, lower_clamp_rotation_failure);
 
 }
 
@@ -690,7 +658,6 @@ FSM_TRANS_TIMEOUT (CLAMP_RELEASE_ASSERV, TIMEOUT_FREE_ASSERV, CLAMP_FOLD_UPPER_S
 {
     IO_CLR (OUTPUT_UPPER_CLAMP_DOWN);
     IO_SET (OUTPUT_UPPER_CLAMP_UP);
-    return FSM_NEXT_TIMEOUT (CLAMP_RELEASE_ASSERV);
 
 }
 FSM_TRANS (CLAMP_FOLD_UPPER_SET, upper_set_up, CLAMP_OPEN_UPPER_CLAMPS)
@@ -698,7 +665,6 @@ FSM_TRANS (CLAMP_FOLD_UPPER_SET, upper_set_up, CLAMP_OPEN_UPPER_CLAMPS)
     IO_SET (OUTPUT_UPPER_CLAMP_OPEN);
     IO_CLR (OUTPUT_UPPER_CLAMP_IN);
     IO_SET (OUTPUT_UPPER_CLAMP_OUT);
-    return FSM_NEXT (CLAMP_FOLD_UPPER_SET, upper_set_up);
 
 }
 
@@ -715,42 +681,37 @@ FSM_TRANS_TIMEOUT (CLAMP_OPEN_UPPER_CLAMPS, TIMEOUT_OPEN_CLAMPS,
         main_set_drop_coin_pos(ctx.current_pos + POS_TO_DROP + ctx.init_pos);
         move_needed2(CLAMP_1_UP,FAST_ROTATION,1);
         ctx.stop_tree_approach = 0;
-        fsm_queue_post_event (FSM_EVENT (AI, clamps_ready));
-        return FSM_NEXT_TIMEOUT (CLAMP_OPEN_UPPER_CLAMPS,stop_tree_branch);
+        fsm_queue_post_event (FSM_EVENT (clamps_ready));
+        return FSM_BRANCH (stop_tree_branch);
     }
     else
     {
         move_needed2(RECALE_COIN,MEDIUM_ROTATION,1);
-        return FSM_NEXT_TIMEOUT (CLAMP_OPEN_UPPER_CLAMPS,continue_empty_tree_branch);
+        return FSM_BRANCH (continue_empty_tree_branch);
     }
 }
 
 FSM_TRANS (CLAMP_READY_TO_RECALE, lower_clamp_rotation_success, CLAMP_READY_TO_RECALE_2)
 {
     IO_CLR (OUTPUT_LOWER_CLAMP_1_CLOSE);
-    return FSM_NEXT (CLAMP_READY_TO_RECALE,lower_clamp_rotation_success);
 }
 
 FSM_TRANS (CLAMP_READY_TO_RECALE, lower_clamp_rotation_failure, CLAMP_BLOCKED)
 {
-    return FSM_NEXT (CLAMP_READY_TO_RECALE,lower_clamp_rotation_failure);
 }
 
 FSM_TRANS_TIMEOUT (CLAMP_READY_TO_RECALE_2, TIMEOUT_OPEN_CLAMPS, CLAMP_TEMPO_RECALE)
 {
     IO_SET (OUTPUT_LOWER_CLAMP_1_CLOSE);
-    return FSM_NEXT_TIMEOUT (CLAMP_READY_TO_RECALE_2);
 }
 
 FSM_TRANS_TIMEOUT (CLAMP_TEMPO_RECALE, TIMEOUT_OPEN_CLAMPS,CLAMP_END_RECALE)
 {
     move_needed2(CLAMP_1_DOWN,FAST_ROTATION,-1);
-    return FSM_NEXT_TIMEOUT (CLAMP_TEMPO_RECALE);
 }
 
 FSM_TRANS (CLAMP_END_RECALE, lower_clamp_rotation_failure,CLAMP_BLOCKED)
 {
-    return FSM_NEXT (CLAMP_END_RECALE,lower_clamp_rotation_failure);
 }
 
 FSM_TRANS (CLAMP_END_RECALE, lower_clamp_rotation_success,CLAMP_TURN_HALF_WAY)
@@ -758,7 +719,6 @@ FSM_TRANS (CLAMP_END_RECALE, lower_clamp_rotation_success,CLAMP_TURN_HALF_WAY)
     
     main_set_drop_coin_pos(ctx.current_pos + POS_TO_DROP + ctx.init_pos);
     move_needed2(CLAMP_1_UP,FAST_ROTATION,1);
-    return FSM_NEXT (CLAMP_END_RECALE, lower_clamp_rotation_success);
 }
 /*---------------------------------------------------------------------------------*/
 /*Parts of the FSM that goes back to idle after receiving the stop approach signal */
@@ -774,44 +734,37 @@ FSM_TRANS (CLAMP_BOTTOM_CLAMP_HIDE_POS,stop_tree_approach,CLAMP_BOTTOM_CLAMP_BAC
     {
         move_needed2(CLAMP_1_DOWN,FAST_ROTATION,1);
     }
-    return FSM_NEXT(CLAMP_BOTTOM_CLAMP_HIDE_POS,stop_tree_approach);
   
 }
 
 FSM_TRANS (CLAMP_BOTTOM_CLAMP_BACK,lower_clamp_rotation_success,CLAMP_WAIT_BEFORE_IDLE)
 {
-    return FSM_NEXT(CLAMP_BOTTOM_CLAMP_BACK,lower_clamp_rotation_success);
     
 }
 
 FSM_TRANS (CLAMP_BOTTOM_CLAMP_BACK,lower_clamp_rotation_failure,CLAMP_BLOCKED)
 {
     clamp_blocked();
-    return FSM_NEXT(CLAMP_BOTTOM_CLAMP_BACK,lower_clamp_rotation_failure);
     
 }
 
 FSM_TRANS (CLAMP_UNFOLD_UPPER_SET, stop_tree_approach,CLAMP_RELEASE_ASSERV)
 {
     ctx.stop_tree_approach = 1;
-    return FSM_NEXT (CLAMP_UNFOLD_UPPER_SET, stop_tree_approach);
 
 }
 
 FSM_TRANS (CLAMP_BOTTOM_CLAMP_READY, stop_tree_approach,CLAMP_FINISH_BOTTOM_CLAMP_READY)
 {
-    return FSM_NEXT (CLAMP_BOTTOM_CLAMP_READY, stop_tree_approach);
 
 }
 FSM_TRANS (CLAMP_FINISH_BOTTOM_CLAMP_READY, lower_clamp_rotation_success,CLAMP_REARRANGE_CD)
 {
-    return FSM_NEXT (CLAMP_FINISH_BOTTOM_CLAMP_READY, lower_clamp_rotation_success);
 
 }
 FSM_TRANS (CLAMP_FINISH_BOTTOM_CLAMP_READY, lower_clamp_rotation_failure,CLAMP_BLOCKED)
 {
     clamp_blocked();
-    return FSM_NEXT (CLAMP_FINISH_BOTTOM_CLAMP_READY, lower_clamp_rotation_failure);
 
 }
 
@@ -824,7 +777,6 @@ FSM_TRANS (CLAMP_READY_TO_EMPTY_TREE, stop_tree_approach, CLAMP_REARRANGE_CD)
 
     /*Closing upper & middle clamps.*/
     IO_CLR (OUTPUT_UPPER_CLAMP_OPEN);
-    return FSM_NEXT (CLAMP_READY_TO_EMPTY_TREE, stop_tree_approach);
 }
 
 /*---------------------------------------------------------------------------------*/
@@ -833,7 +785,6 @@ FSM_TRANS (CLAMP_READY_TO_EMPTY_TREE, stop_tree_approach, CLAMP_REARRANGE_CD)
 /*---------------------------------------------------------------------------------*/
 FSM_TRANS (CLAMP_BLOCKED_UPPER_SET_DOWN, upper_set_up, CLAMP_BLOCKED)
 {
-    return FSM_NEXT (CLAMP_BLOCKED_UPPER_SET_DOWN, upper_set_up);
 }
 
 FSM_TRANS_TIMEOUT (CLAMP_BLOCKED_UPPER_SET_DOWN, TIMEOUT_UPPER_SET_DOWN, CLAMP_BLOCKED)
@@ -841,7 +792,6 @@ FSM_TRANS_TIMEOUT (CLAMP_BLOCKED_UPPER_SET_DOWN, TIMEOUT_UPPER_SET_DOWN, CLAMP_B
     /** folding upper set */
     IO_CLR (OUTPUT_UPPER_CLAMP_DOWN);
     IO_SET (OUTPUT_UPPER_CLAMP_UP);
-    return FSM_NEXT_TIMEOUT (CLAMP_BLOCKED_UPPER_SET_DOWN);
 }
 
 /*---------------------------------------------------------------------------------*/
@@ -852,7 +802,7 @@ FSM_TRANS_TIMEOUT (CLAMP_BLOCKED_UPPER_SET_DOWN, TIMEOUT_UPPER_SET_DOWN, CLAMP_B
 
 FSM_TRANS_TIMEOUT (CLAMP_BLOCKED,TIMEOUT_OPEN_CLAMPS,CLAMP_OPEN_BOTTOM_CLAMPS)
 {
-    fsm_queue_post_event (FSM_EVENT (AI, clamp_blocked));
+    fsm_queue_post_event (FSM_EVENT (clamp_blocked));
     /* Opening OR Closing the 2 clamps. */
     if (ctx.cpt_blocked%2==0)
     {
@@ -867,7 +817,6 @@ FSM_TRANS_TIMEOUT (CLAMP_BLOCKED,TIMEOUT_OPEN_CLAMPS,CLAMP_OPEN_BOTTOM_CLAMPS)
     /*Setting upper clamp up*/
     IO_CLR (OUTPUT_UPPER_CLAMP_DOWN);
     IO_SET (OUTPUT_UPPER_CLAMP_UP);
-    return FSM_NEXT_TIMEOUT (CLAMP_BLOCKED);
 }
 
 FSM_TRANS (CLAMP_OPEN_BOTTOM_CLAMPS, clamp_unblock, CLAMP_WAIT)
@@ -882,55 +831,41 @@ FSM_TRANS (CLAMP_OPEN_BOTTOM_CLAMPS, clamp_unblock, CLAMP_WAIT)
     {
         mimot_move_motor0_absolute (4000-pos, MEDIUM_ROTATION);
     }
-    return FSM_NEXT (CLAMP_OPEN_BOTTOM_CLAMPS, clamp_unblock);
 }
 
 FSM_TRANS (CLAMP_OPEN_BOTTOM_CLAMPS, tree_detected, CLAMP_OPEN_BOTTOM_CLAMPS)
 {
-    fsm_queue_post_event (FSM_EVENT (AI, clamp_blocked));
-    return FSM_NEXT (CLAMP_OPEN_BOTTOM_CLAMPS, tree_detected);
+    fsm_queue_post_event (FSM_EVENT (clamp_blocked));
 }
 
 FSM_TRANS (CLAMP_OPEN_BOTTOM_CLAMPS, robot_is_back, CLAMP_OPEN_BOTTOM_CLAMPS)
 {
-    fsm_queue_post_event (FSM_EVENT (AI, clamp_blocked));
-    return FSM_NEXT (CLAMP_OPEN_BOTTOM_CLAMPS, robot_is_back);
+    fsm_queue_post_event (FSM_EVENT (clamp_blocked));
 }
 
 FSM_TRANS (CLAMP_OPEN_BOTTOM_CLAMPS, clean_start, CLAMP_OPEN_BOTTOM_CLAMPS)
 {
-    fsm_queue_post_event (FSM_EVENT (AI,  clamp_blocked));
-    return FSM_NEXT (CLAMP_OPEN_BOTTOM_CLAMPS, clean_start);
+    fsm_queue_post_event (FSM_EVENT ( clamp_blocked));
 }
 
 FSM_TRANS (CLAMP_OPEN_BOTTOM_CLAMPS,clean_catch, CLAMP_OPEN_BOTTOM_CLAMPS)
 {
-    fsm_queue_post_event (FSM_EVENT (AI,  clamp_blocked));
-    return FSM_NEXT (CLAMP_OPEN_BOTTOM_CLAMPS, clean_catch);
+    fsm_queue_post_event (FSM_EVENT ( clamp_blocked));
 }
 
 FSM_TRANS (CLAMP_OPEN_BOTTOM_CLAMPS,clean_load, CLAMP_OPEN_BOTTOM_CLAMPS)
 {
-    fsm_queue_post_event (FSM_EVENT (AI,  clamp_blocked));
-    return FSM_NEXT (CLAMP_OPEN_BOTTOM_CLAMPS, clean_load);
-}
-
-FSM_TRANS (CLAMP_OPEN_BOTTOM_CLAMPS,empty_tree, CLAMP_OPEN_BOTTOM_CLAMPS)
-{
-    fsm_queue_post_event (FSM_EVENT (AI,  clamp_blocked));
-    return FSM_NEXT (CLAMP_OPEN_BOTTOM_CLAMPS, empty_tree);
+    fsm_queue_post_event (FSM_EVENT ( clamp_blocked));
 }
 
 FSM_TRANS (CLAMP_OPEN_BOTTOM_CLAMPS,stop_tree_approach, CLAMP_OPEN_BOTTOM_CLAMPS)
 {
-    fsm_queue_post_event (FSM_EVENT (AI,  clamp_blocked));
-    return FSM_NEXT (CLAMP_OPEN_BOTTOM_CLAMPS, stop_tree_approach);
+    fsm_queue_post_event (FSM_EVENT ( clamp_blocked));
 }
 
 
 FSM_TRANS (CLAMP_OPEN_BOTTOM_CLAMPS,clamp_is_dead, CLAMP_SHITTY_STATE)
 {
-    return FSM_NEXT (CLAMP_OPEN_BOTTOM_CLAMPS, clamp_is_dead);
 }
 
 FSM_TRANS (CLAMP_WAIT,lower_clamp_rotation_success, CLAMP_TURN_BACKWARD)
@@ -946,13 +881,11 @@ FSM_TRANS (CLAMP_WAIT,lower_clamp_rotation_success, CLAMP_TURN_BACKWARD)
         IO_SET (OUTPUT_LOWER_CLAMP_1_CLOSE);
         IO_SET (OUTPUT_LOWER_CLAMP_2_CLOSE);  
     }
-    return FSM_NEXT (CLAMP_WAIT, lower_clamp_rotation_success);
 }
 
 FSM_TRANS (CLAMP_WAIT,lower_clamp_rotation_failure, CLAMP_BLOCKED)
 {
     ctx.cpt_blocked += 1;
-    return FSM_NEXT (CLAMP_WAIT, lower_clamp_rotation_failure);
 }
 
 FSM_TRANS_TIMEOUT (CLAMP_TURN_BACKWARD,TIMEOUT_BLOCKED, CLAMP_TURN_FORWARD)
@@ -967,7 +900,6 @@ FSM_TRANS_TIMEOUT (CLAMP_TURN_BACKWARD,TIMEOUT_BLOCKED, CLAMP_TURN_FORWARD)
         sens=-1;
     }
     move_needed2(CLAMP_1_DOWN,MEDIUM_ROTATION,sens);
-    return FSM_NEXT_TIMEOUT (CLAMP_TURN_BACKWARD);
 }
 
 
@@ -989,16 +921,16 @@ FSM_TRANS (CLAMP_TURN_FORWARD,lower_clamp_rotation_success,
             move_needed2(HIDE_POS_TREE,FAST_ROTATION,1);
         }    
         ctx.unblocking_upper_set = 0;
-        return FSM_NEXT (CLAMP_TURN_FORWARD, lower_clamp_rotation_success, back_to_empty_tree);
+        return FSM_BRANCH (back_to_empty_tree);
     }
     else
     {
         ctx.cpt_blocked = 0;
         if (ctx.upper_set_is_dead)
         {
-            fsm_queue_post_event (FSM_EVENT (AI, upper_set_is_dead));
+            fsm_queue_post_event (FSM_EVENT (upper_set_is_dead));
         }
-        return FSM_NEXT (CLAMP_TURN_FORWARD, lower_clamp_rotation_success,back_to_idle);
+        return FSM_BRANCH (back_to_idle);
     }
 }
 
@@ -1006,14 +938,12 @@ FSM_TRANS (CLAMP_TURN_FORWARD,lower_clamp_rotation_success,
 FSM_TRANS (CLAMP_TURN_BACKWARD,lower_clamp_rotation_failure, CLAMP_BLOCKED)
 {
     ctx.cpt_blocked += 1;
-    return FSM_NEXT (CLAMP_TURN_BACKWARD, lower_clamp_rotation_failure);
 }
 
 
 FSM_TRANS (CLAMP_TURN_FORWARD,lower_clamp_rotation_failure, CLAMP_BLOCKED)
 {
     ctx.cpt_blocked += 1;
-    return FSM_NEXT (CLAMP_TURN_FORWARD, lower_clamp_rotation_failure);
 }
 /*---------------------------------------------------------------------------------*/
 /*     Parts of the FSM that takes care of the upper set when it's not going down  */
@@ -1027,25 +957,23 @@ FSM_TRANS_TIMEOUT (CLAMP_UPPER_SET_BLOCKED_UP, TIMEOUT_OPEN_CLAMPS,
     IO_SET (OUTPUT_UPPER_CLAMP_UP);
     if (ctx.upper_set_blocked_cpt>=2)
         {
-            return FSM_NEXT_TIMEOUT (CLAMP_UPPER_SET_BLOCKED_UP, branch_upper_set_is_dead);
+            return FSM_BRANCH (branch_upper_set_is_dead);
         }
     else
         {
-            return FSM_NEXT_TIMEOUT (CLAMP_UPPER_SET_BLOCKED_UP,branch_try_to_deblock);
+            return FSM_BRANCH (branch_try_to_deblock);
         }
 }
 
 FSM_TRANS_TIMEOUT (CLAMP_UPPER_SET_DEAD,TIMEOUT_OPEN_CLAMPS, CLAMP_BLOCKED)
 {
     ctx.upper_set_is_dead = 1;
-    return FSM_NEXT_TIMEOUT (CLAMP_UPPER_SET_DEAD);
 }
 
 FSM_TRANS (CLAMP_UPPER_SET_FOLD_BACK,upper_set_up, CLAMP_TRY_ROTATION)
 {
     ctx.upper_set_is_dead = 1;
     mimot_move_motor0_absolute (ctx.current_pos-4000, MEDIUM_ROTATION);
-    return FSM_NEXT (CLAMP_UPPER_SET_FOLD_BACK,upper_set_up);
 }
 
 FSM_TRANS (CLAMP_TRY_ROTATION,lower_clamp_rotation_success,CLAMP_BOTTOM_CLAMP_HIDE_POS)
@@ -1059,13 +987,11 @@ FSM_TRANS (CLAMP_TRY_ROTATION,lower_clamp_rotation_success,CLAMP_BOTTOM_CLAMP_HI
     {
         move_needed2(HIDE_POS_TREE,FAST_ROTATION,1);
     }
-    return FSM_NEXT (CLAMP_TRY_ROTATION,lower_clamp_rotation_success);
 }
 
 FSM_TRANS (CLAMP_TRY_ROTATION,lower_clamp_rotation_failure,CLAMP_BLOCKED)
 {
     ctx.unblocking_upper_set = 1;
-    return FSM_NEXT (CLAMP_TRY_ROTATION,lower_clamp_rotation_failure);
 }
 
 

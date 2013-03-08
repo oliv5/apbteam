@@ -32,7 +32,7 @@ vpath %.h $(AI_MODULES:%=../../../ai/src/%)
 INCLUDES += -I. -I../common $(AI_MODULES:%=-I../../../ai/src/%)
 
 EXTRA_CLEAN_FILES = angfsm_gen_avr_AI.h fsm_AI_gen.avr.c \
-		    dot_AI_1.dot dot_AI_1.png dot_AI_1.svg
+		    AI.dot AI.png AI.svg
 
 include $(BASE)/make/Makefile.gen
 

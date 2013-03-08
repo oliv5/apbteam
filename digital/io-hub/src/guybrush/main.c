@@ -194,13 +194,13 @@ main_demo_events (void)
 	switch (tree_step)
 	  {
 	  case 0:
-	    clamp_request (FSM_EVENT (AI, tree_detected));
+	    clamp_request (FSM_EVENT (tree_detected));
 	    break;
 	  case 1:
-	    clamp_request (FSM_EVENT (AI, empty_tree));
+	    clamp_request (FSM_EVENT (empty_tree));
 	    break;
 	  case 2:
-	    clamp_request (FSM_EVENT (AI, robot_is_back));
+	    clamp_request (FSM_EVENT (robot_is_back));
 	    break;
 	  }
 	tree_step = (tree_step + 1) % 3;
@@ -512,7 +512,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	break;
       case c ('j', 0):
 	/* Simulate jack insertion. */
-	fsm_queue_post_event (FSM_EVENT (AI, jack_inserted));
+	fsm_queue_post_event (FSM_EVENT (jack_inserted));
 	break;
       case c ('f', 0):
 	/* Enter FSM debug mode, then step once. */
@@ -520,36 +520,36 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	break;
       case c ('t',0):
 	/* Simulate tree detection. */
-	fsm_queue_post_event (FSM_EVENT (AI, tree_detected));
+	fsm_queue_post_event (FSM_EVENT (tree_detected));
 	break;
       case c ('s',0):
 	/* Simulate stop tree approach. */
-	fsm_queue_post_event (FSM_EVENT (AI, stop_tree_approach));
+	fsm_queue_post_event (FSM_EVENT (stop_tree_approach));
 	break;
       case c ('e',0):
 	/* Simulate the empty tree command. */
-	fsm_queue_post_event (FSM_EVENT (AI, empty_tree));
+	fsm_queue_post_event (FSM_EVENT (empty_tree));
 	break;
       case c ('r',0):
 	/* Simulate the robot_is_back command. */
-	fsm_queue_post_event (FSM_EVENT (AI, robot_is_back));
+	fsm_queue_post_event (FSM_EVENT (robot_is_back));
 	break;
       case c ('u',0):
 	/* Simulate the unblock command. */
-	fsm_queue_post_event (FSM_EVENT (AI, clamp_unblock));
+	fsm_queue_post_event (FSM_EVENT (clamp_unblock));
 	break;
       case c ('c', 1):
 	/* Simulate clean_start (00), clean_catch (01), clean_load (02). */
 	if (args[0] == 0)
-	    fsm_queue_post_event (FSM_EVENT (AI, clean_start));
+	    fsm_queue_post_event (FSM_EVENT (clean_start));
 	else if (args[0] == 1)
-	    fsm_queue_post_event (FSM_EVENT (AI, clean_catch));
+	    fsm_queue_post_event (FSM_EVENT (clean_catch));
 	else
-	    fsm_queue_post_event (FSM_EVENT (AI, clean_load));
+	    fsm_queue_post_event (FSM_EVENT (clean_load));
 	break;
       case c ('c',0):
 	/* Simulate the coin detected command. */
-	fsm_queue_post_event (FSM_EVENT (AI, coin_detected));
+	fsm_queue_post_event (FSM_EVENT (coin_detected));
 	break;
       case c ('m', 5):
 	/* Go to position.
