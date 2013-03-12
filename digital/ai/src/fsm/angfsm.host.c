@@ -1731,8 +1731,8 @@ angfsm_build_gen_no_opti_c (angfsm_build_t *fsm, angfsm_build_arch_t arch)
    fprintf (f, "\t\t\t\tfor (j = 0; j < angfsm_%s_max_branches_per_trans; j++)\n", fsm->name);
    fprintf (f, "\t\t\t\t\tif (trans->branches[j].branch == b)\n");
    fprintf (f, "\t\t\t\t\t\ts = trans->branches[j].state;\n");
-   fprintf (f, "\t\t\t\t\tif (angfsm_%s_trans_callback)\n", fsm->name);
-   fprintf (f, "\t\t\t\t\t\tangfsm_%s_trans_callback(angfsm_%s_active_states[i], e, s, b);\n", fsm->name, fsm->name);
+   fprintf (f, "\t\t\t\tif (angfsm_%s_trans_callback)\n", fsm->name);
+   fprintf (f, "\t\t\t\t\tangfsm_%s_trans_callback(angfsm_%s_active_states[i], e, s, b);\n", fsm->name, fsm->name);
    fprintf (f, "\t\t\t}\n");
    fprintf (f, "\t\t\tif (s != angfsm_STATE_%s_NB)\n", fsm->name);
    fprintf (f, "\t\t\t\tangfsm_%s_active_states[i] = s;\n", fsm->name);
@@ -2080,6 +2080,9 @@ angfsm_build_gen_opti_avr_h (angfsm_build_t *fsm, angfsm_build_arch_t arch)
             fsm->name,
             fsm->name);
 
+   /* Gen transition living in RAM. */
+   fprintf (f, "extern angfsm_%s_trans_t angfsm_%s_trans_tmp;\n\n", fsm->name, fsm->name);
+
    /* Gen read function for trans table. */
    fprintf (f, "inline angfsm_%s_trans_t* angfsm_%s_read_trans (angfsm_%s_event_t event, angfsm_%s_state_t state);\n\n",
             fsm->name,
@@ -2258,22 +2261,16 @@ angfsm_build_gen_opti_avr_c (angfsm_build_t *fsm, angfsm_build_arch_t arch)
 
       /* Generate string read functions. */
       /* Convert an event enum in string. */
-      fprintf (f, "char *\nangfsm_%s_get_event_str \
-        (angfsm_%s_event_t e)\n{\n", fsm->name, fsm->name);
-      fprintf (f, "\treturn strcpy_P (angfsm_%s_str_buff, \
-        (char *) pgm_read_word (&(angfsm_%s_event_str[e])));\n", fsm->name, fsm->name);
+      fprintf (f, "char *\nangfsm_%s_get_event_str (angfsm_%s_event_t e)\n{\n", fsm->name, fsm->name);
+      fprintf (f, "\treturn strcpy_P (angfsm_%s_str_buff, (PGM_P) pgm_read_word (&(angfsm_%s_event_str[e])));\n", fsm->name, fsm->name);
       fprintf (f, "}\n\n");
       /* Convert a state enum in string. */
-      fprintf (f, "char *\nangfsm_%s_get_state_str \
-        (angfsm_%s_state_t s)\n{\n", fsm->name, fsm->name);
-      fprintf (f, "\treturn strcpy_P (angfsm_%s_str_buff, \
-        (char *) pgm_read_word (&(angfsm_%s_state_str[s])));\n", fsm->name, fsm->name);
+      fprintf (f, "char *\nangfsm_%s_get_state_str (angfsm_%s_state_t s)\n{\n", fsm->name, fsm->name);
+      fprintf (f, "\treturn strcpy_P (angfsm_%s_str_buff, (PGM_P) pgm_read_word (&(angfsm_%s_state_str[s])));\n", fsm->name, fsm->name);
       fprintf (f, "}\n\n");
       /* Convert a branch enum in string. */
-      fprintf (f, "char *\nangfsm_%s_get_branch_str \
-        (angfsm_%s_branch_t b)\n{\n", fsm->name, fsm->name);
-      fprintf (f, "\treturn strcpy_P (angfsm_%s_str_buff, \
-        (char *) pgm_read_word (&(angfsm_%s_branch_str[b])));\n", fsm->name, fsm->name);
+      fprintf (f, "char *\nangfsm_%s_get_branch_str (angfsm_%s_branch_t b)\n{\n", fsm->name, fsm->name);
+      fprintf (f, "\treturn strcpy_P (angfsm_%s_str_buff, (PGM_P) pgm_read_word (&(angfsm_%s_branch_str[b])));\n", fsm->name, fsm->name);
       fprintf (f, "}\n\n");
    }
 
@@ -2377,6 +2374,9 @@ angfsm_build_gen_opti_avr_c (angfsm_build_t *fsm, angfsm_build_arch_t arch)
             fsm->name,
             fsm->name);
 
+   /* Gen transition living in RAM. */
+   fprintf (f, "angfsm_%s_trans_t angfsm_%s_trans_tmp;\n", fsm->name, fsm->name);
+
    /* Gen read transition from event and state. */
    fprintf (f, "inline angfsm_%s_trans_t* angfsm_%s_read_trans "
             "(angfsm_%s_event_t event, angfsm_%s_state_t state)\n{\n",
@@ -2388,7 +2388,9 @@ angfsm_build_gen_opti_avr_c (angfsm_build_t *fsm, angfsm_build_arch_t arch)
    fprintf (f, "\tangfsm_%s_trans_t* t;\n", fsm->name);
    fprintf (f, "\tfor (i = 0; i < angfsm_%s_max_events_per_states; i++)\n\t{\n",
             fsm->name);
-   fprintf (f, "\t\tt = (angfsm_%s_trans_t *) pgm_read_word (&angfsm_%s_trans_table[state][i]);\n",
+   fprintf (f, "\t\tt = (angfsm_%s_trans_t *) memcpy_P ((void *) (&angfsm_%s_trans_tmp), (PGM_VOID_P) &(angfsm_%s_trans_table[state][i]), sizeof (angfsm_%s_trans_t));\n",
+            fsm->name,
+            fsm->name,
             fsm->name,
             fsm->name);
    fprintf (f, "\t\tif (t->func == (angfsm_%s_func_t) 0)\n\t\t\tbreak;\n", fsm->name);
@@ -2455,8 +2457,8 @@ angfsm_build_gen_opti_avr_c (angfsm_build_t *fsm, angfsm_build_arch_t arch)
    fprintf (f, "\t\t\t\tfor (j = 0; j < angfsm_%s_max_branches_per_trans; j++)\n", fsm->name);
    fprintf (f, "\t\t\t\t\tif (trans->branches[j].branch == b)\n");
    fprintf (f, "\t\t\t\t\t\ts = trans->branches[j].state;\n");
-   fprintf (f, "\t\t\t\t\tif (angfsm_%s_trans_callback)\n", fsm->name);
-   fprintf (f, "\t\t\t\t\t\tangfsm_%s_trans_callback(angfsm_%s_active_states[i], e, s, b);\n", fsm->name, fsm->name);
+   fprintf (f, "\t\t\t\tif (angfsm_%s_trans_callback)\n", fsm->name);
+   fprintf (f, "\t\t\t\t\tangfsm_%s_trans_callback(angfsm_%s_active_states[i], e, s, b);\n", fsm->name, fsm->name);
    fprintf (f, "\t\t\t}\n");
    fprintf (f, "\t\t\tif (s != angfsm_STATE_%s_NB)\n", fsm->name);
    fprintf (f, "\t\t\t\tangfsm_%s_active_states[i] = s;\n", fsm->name);
