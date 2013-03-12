@@ -14,8 +14,8 @@ tags
 *.pro
 *.mpd
 fsm_AI_gen.avr.c
-fsm_AI_gen.h
-dot_AI_1.dot
-dot_AI_1.png
-dot_AI_1.svg
+angfsm_gen_avr_AI.h
+AI.dot
+AI.png
+AI.svg
 flash.apb
