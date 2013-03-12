@@ -31,8 +31,23 @@
 # include "ucoolib/arch/host/host_stream.hh"
 #endif
 
+#ifdef TARGET_host
+# include "ucoolib/arch/host/host.hh"
+
+/// Class to work around C++ initializer list syntax.
+class HardwareHost : public ucoo::Host
+{
+  public:
+    HardwareHost ();
+};
+
+#endif
+
 struct Hardware
 {
+#ifdef TARGET_host
+    HardwareHost host;
+#endif
     ucoo::Uart dev_uart, zb_uart;
 #ifdef TARGET_stm32
     ucoo::UsbStreamControl usb_control;

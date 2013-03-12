@@ -23,6 +23,12 @@
 // }}}
 #include "hardware.hh"
 
+HardwareHost::HardwareHost ()
+    : Host ("io-hub0")
+{
+    parse_options ();
+}
+
 Hardware::Hardware ()
     : dev_uart (), zb_uart ("zb_uart"), usb ("usb")
 {
