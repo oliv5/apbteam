@@ -21,15 +21,56 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 //
 // }}}
-#include "ucoolib/arch/arch.hh"
-#include "ucoolib/common.hh"
 #include "robot.hh"
 
-int
-main (int argc, const char **argv)
+#include "ucoolib/arch/arch.hh"
+
+Robot *robot;
+
+Robot::Robot ()
+    : dev_proto (*this, hardware.dev_uart),
+      zb_proto (*this, hardware.zb_uart),
+      usb_proto (*this, hardware.usb)
 {
-    ucoo::arch_init (argc, argv);
-    Robot robot;
-    robot.main_loop ();
+    robot = this;
+}
+
+void
+Robot::main_loop ()
+{
+    while (1)
+    {
+        // Wait until next cycle.
+        hardware.wait ();
+        // Handle commands.
+        dev_proto.accept ();
+        zb_proto.accept ();
+        usb_proto.accept ();
+        // Handle events.
+        fsm_gen_event ();
+    }
+}
+
+void
+Robot::fsm_gen_event ()
+{
+}
+
+void
+Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size)
+{
+#define c(cmd, size) ((cmd) << 8 | (size))
+    switch (c (cmd, size))
+    {
+    case c ('z', 0):
+        // Reset.
+        ucoo::arch_reset ();
+        break;
+    default:
+        proto.send ('?');
+        return;
+    }
+    // Acknowledge.
+    proto.send_buf (cmd, args, size);
 }
 

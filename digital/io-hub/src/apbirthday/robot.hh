@@ -1,3 +1,5 @@
+#ifndef robot_hh
+#define robot_hh
 // io-hub - Modular Input/Output. {{{
 //
 // Copyright (C) 2013 Nicolas Schodet
@@ -21,15 +23,31 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 //
 // }}}
-#include "ucoolib/arch/arch.hh"
-#include "ucoolib/common.hh"
-#include "robot.hh"
+#include "hardware.hh"
 
-int
-main (int argc, const char **argv)
+#include "ucoolib/base/proto/proto.hh"
+
+/// Main robot superclass.
+class Robot : public ucoo::Proto::Handler
 {
-    ucoo::arch_init (argc, argv);
-    Robot robot;
-    robot.main_loop ();
-}
+  public:
+    /// Initialise robot singleton.
+    Robot ();
+    /// Main program loop.
+    void main_loop ();
+    /// Generate events for the FSM.
+    void fsm_gen_event ();
+    /// Receive proto messages.
+    void proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size);
+  public:
+    /// Public access to hardware class.
+    Hardware hardware;
+  private:
+    /// Proto associated to each serial interface.
+    ucoo::Proto dev_proto, zb_proto, usb_proto;
+};
 
+/// Global instance pointer.
+extern Robot *robot;
+
+#endif // robot_hh
