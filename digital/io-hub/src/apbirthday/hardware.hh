@@ -56,6 +56,8 @@ struct Hardware
     ucoo::HostStream usb;
 #endif
     Hardware ();
+    // Wait until next cycle.
+    void wait ();
 };
 
 #endif // hardware_hh

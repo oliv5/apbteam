@@ -34,3 +34,10 @@ Hardware::Hardware ()
 {
 }
 
+void
+Hardware::wait ()
+{
+    ucoo::mex::Node &node = host.get_node ();
+    node.wait (node.date () + 4);
+}
+

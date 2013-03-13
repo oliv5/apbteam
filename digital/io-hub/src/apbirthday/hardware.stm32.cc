@@ -24,6 +24,7 @@
 #include "hardware.hh"
 
 #include <libopencm3/stm32/f4/rcc.h>
+#include <libopencm3/stm32/f4/timer.h>
 #include "ucoolib/hal/gpio/gpio.hh"
 
 Hardware::Hardware ()
@@ -42,5 +43,19 @@ Hardware::Hardware ()
     gpio_mode_setup (GPIOD, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO8 | GPIO9);
     gpio_set_af (GPIOD, GPIO_AF7, GPIO8 | GPIO9);
     zb_uart.enable (38400, ucoo::Uart::EVEN, 1);
+    // Cycle timer, 4 ms period.
+    rcc_peripheral_enable_clock (&RCC_APB1ENR, RCC_APB1ENR_TIM3EN);
+    TIM3_CR1 = TIM_CR1_CEN;
+    TIM3_PSC = 2 * rcc_ppre1_frequency / 1000000 - 1; // 1 µs prescaler
+    TIM3_ARR = 4000 - 1;
+    TIM3_EGR = TIM_EGR_UG;
+}
+
+void
+Hardware::wait ()
+{
+    while (!(TIM3_SR & TIM_SR_UIF))
+        ;
+    TIM3_SR = ~TIM_SR_UIF;
 }
 
