@@ -32,6 +32,9 @@ HardwareHost::HardwareHost ()
 Hardware::Hardware ()
     : dev_uart (), zb_uart ("zb_uart"), usb ("usb")
 {
+    dev_uart.block (false);
+    zb_uart.block (false);
+    usb.block (false);
 }
 
 void

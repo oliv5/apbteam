@@ -39,10 +39,14 @@ Hardware::Hardware ()
     gpio_set_af (GPIOC, GPIO_AF8, GPIO12);
     gpio_set_af (GPIOD, GPIO_AF8, GPIO2);
     dev_uart.enable (38400, ucoo::Uart::EVEN, 1);
+    dev_uart.block (false);
     // zb_uart
     gpio_mode_setup (GPIOD, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO8 | GPIO9);
     gpio_set_af (GPIOD, GPIO_AF7, GPIO8 | GPIO9);
     zb_uart.enable (38400, ucoo::Uart::EVEN, 1);
+    zb_uart.block (false);
+    // usb
+    usb.block (false);
     // Cycle timer, 4 ms period.
     rcc_peripheral_enable_clock (&RCC_APB1ENR, RCC_APB1ENR_TIM3EN);
     TIM3_CR1 = TIM_CR1_CEN;
