@@ -30,7 +30,35 @@ HardwareHost::HardwareHost ()
 }
 
 Hardware::Hardware ()
-    : dev_uart (), zb_uart ("zb_uart"), usb ("usb")
+    : dev_uart (), zb_uart ("zb_uart"), usb ("usb"),
+      raw_jack (host, "raw_jack"),
+      ihm_color (host, "ihm_color"),
+      ihm_strat (host, "ihm_strat"),
+      ihm_robot_nb (host, "ihm_robot_nb"),
+      ihm_lol (host, "ihm_lol"),
+      ihm_emerg_stop (host, "ihm_emerg_stop"),
+      glass_contact (host, "glass_contact"),
+      cherry_bad_out (host, "cherry_bad_out"),
+      cherry_bad_in (host, "cherry_bad_in"),
+      cherry_plate_up (host, "cherry_plate_up"),
+      cherry_plate_down (host, "cherry_plate_down"),
+      cherry_plate_clamp (host, "cherry_plate_clamp"),
+      cake_arm_out (host, "cake_arm_out"),
+      cake_arm_in (host, "cake_arm_in"),
+      cake_push_far_out (host, "cake_push_far_out"),
+      cake_push_far_in (host, "cake_push_far_in"),
+      cake_push_near_out (host, "cake_push_near_out"),
+      cake_push_near_in (host, "cake_push_near_in"),
+      glass_lower_clamp_close (host, "glass_lower_clamp_close"),
+      glass_lower_clamp_open (host, "glass_lower_clamp_open"),
+      glass_upper_clamp_close (host, "glass_upper_clamp_close"),
+      glass_upper_clamp_open (host, "glass_upper_clamp_open"),
+      glass_upper_clamp_up (host, "glass_upper_clamp_up"),
+      glass_upper_clamp_down (host, "glass_upper_clamp_down"),
+      gift_out (host, "gift_out"),
+      gift_in (host, "gift_in"),
+      ballon_funny_action (host, "ballon_funny_action"),
+      pneum_open (host, "pneum_open")
 {
     dev_uart.block (false);
     zb_uart.block (false);

@@ -25,6 +25,7 @@
 // }}}
 
 #include "ucoolib/hal/uart/uart.hh"
+#include "ucoolib/hal/gpio/gpio.hh"
 #ifdef TARGET_stm32
 # include "ucoolib/hal/usb/usb.hh"
 #else
@@ -55,6 +56,28 @@ struct Hardware
 #else
     ucoo::HostStream usb;
 #endif
+    ucoo::Gpio
+        raw_jack,
+        ihm_color,
+        ihm_strat,
+        ihm_robot_nb,
+        ihm_lol,
+        ihm_emerg_stop;
+    ucoo::Gpio
+        glass_contact;
+    ucoo::Gpio
+        cherry_bad_out, cherry_bad_in,
+        cherry_plate_up, cherry_plate_down,
+        cherry_plate_clamp,
+        cake_arm_out, cake_arm_in,
+        cake_push_far_out, cake_push_far_in,
+        cake_push_near_out, cake_push_near_in,
+        glass_lower_clamp_close, glass_lower_clamp_open,
+        glass_upper_clamp_close, glass_upper_clamp_open,
+        glass_upper_clamp_up, glass_upper_clamp_down,
+        gift_out, gift_in,
+        ballon_funny_action,
+        pneum_open;
     Hardware ();
     // Wait until next cycle.
     void wait ();

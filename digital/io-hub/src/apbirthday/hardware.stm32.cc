@@ -29,10 +29,32 @@
 
 Hardware::Hardware ()
     : dev_uart (4), zb_uart (2),
-      usb_control ("APBTeam", "APBirthday"), usb (usb_control, 0)
+      usb_control ("APBTeam", "APBirthday"), usb (usb_control, 0),
+      raw_jack (GPIOD, 12),
+      ihm_color (GPIOD, 14),
+      ihm_strat (GPIOD, 13),
+      ihm_robot_nb (GPIOD, 15),
+      ihm_lol (GPIOD, 11),
+      ihm_emerg_stop (GPIOC, 6),
+      glass_contact (GPIOC, 13),
+      cherry_bad_out (GPIOE, 0), cherry_bad_in (GPIOE, 1),
+      cherry_plate_up (GPIOE, 2), cherry_plate_down (GPIOE, 3),
+      cherry_plate_clamp (GPIOE, 4),
+      cake_arm_out (GPIOB, 3), cake_arm_in (GPIOB, 4),
+      cake_push_far_out (GPIOD, 7), cake_push_far_in (GPIOB, 5),
+      cake_push_near_out (GPIOD, 6), cake_push_near_in (GPIOB, 6),
+      glass_lower_clamp_close (GPIOA, 15), glass_lower_clamp_open (GPIOA, 10),
+      glass_upper_clamp_close (GPIOD, 0), glass_upper_clamp_open (GPIOD, 1),
+      glass_upper_clamp_up (GPIOD, 3), glass_upper_clamp_down (GPIOC, 10),
+      gift_out (GPIOD, 4), gift_in (GPIOC, 11),
+      ballon_funny_action (GPIOB, 7),
+      pneum_open (GPIOD, 5)
 {
+    rcc_peripheral_enable_clock (&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
+    rcc_peripheral_enable_clock (&RCC_AHB1ENR, RCC_AHB1ENR_IOPBEN);
     rcc_peripheral_enable_clock (&RCC_AHB1ENR, RCC_AHB1ENR_IOPCEN);
     rcc_peripheral_enable_clock (&RCC_AHB1ENR, RCC_AHB1ENR_IOPDEN);
+    rcc_peripheral_enable_clock (&RCC_AHB1ENR, RCC_AHB1ENR_IOPEEN);
     // dev_uart
     gpio_mode_setup (GPIOC, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO12);
     gpio_mode_setup (GPIOD, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO2);
