@@ -142,6 +142,9 @@ def run (default_robot, test_class = TestSimu):
     elif options.robot == 'guybrush':
         import guybrush
         robot = guybrush.Robot
+    elif options.robot == 'apbirthday':
+        import apbirthday
+        robot = apbirthday.Robot
     else:
         parser.error ("unknown robot")
     app = test_class (robot, options.robot_nb)
