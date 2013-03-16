@@ -78,8 +78,6 @@ simu_twi_proto_update (void)
     /* Update TWI slave buffer after each position update. */
     uint8_t status[4 + 5 * UTILS_COUNT (simu_positions)];
     uint8_t i, index = 1;
-    status[index++] = 0;
-    status[index++] = 0;
     status[index++] = simu_seq;
     for (i = 0; i < UTILS_COUNT (simu_positions); i++)
       {

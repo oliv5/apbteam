@@ -42,14 +42,11 @@
 /** Interval between retransmissions. */
 #define TWI_MASTER_RETRANSMIT_INTERVAL 10
 
-/** Index of the slave sequence number. */
-#define TWI_MASTER_STATUS_SEQ_INDEX 2
-
 /** Maximum command payload size. */
-#define TWI_MASTER_COMMAND_PAYLOAD_MAX 13
+#define TWI_MASTER_COMMAND_PAYLOAD_MAX 12
 
 /** Maximum status payload size. */
-#define TWI_MASTER_STATUS_PAYLOAD_MAX 15
+#define TWI_MASTER_STATUS_PAYLOAD_MAX 14
 
 /** Maximum number of pending commands. */
 #define TWI_MASTER_PENDING_MAX 16
@@ -64,9 +61,9 @@ struct twi_master_command_t
 {
     /** Addressed slave index. */
     uint8_t slave;
-    /** Command payload with space for CRC. */
-    uint8_t command[TWI_MASTER_COMMAND_PAYLOAD_MAX + 1];
-    /** Command length not including CRC. */
+    /** Command payload with space for CRC & seq. */
+    uint8_t command[TWI_MASTER_COMMAND_PAYLOAD_MAX + 2];
+    /** Command length including CRC & seq. */
     uint8_t length;
 };
 
@@ -87,7 +84,7 @@ struct twi_master_t
 } twi_master;
 
 /** Callback called when a slave status has been read.
- * - status: status buffer (without CRC). */
+ * - status: status payload (without CRC & seq). */
 typedef void (*twi_master_slave_status_cb) (uint8_t *status);
 
 /** Information on a slave. */
@@ -97,7 +94,7 @@ struct twi_master_slave_t
     uint8_t address;
     /** Last command sequence number. */
     uint8_t seq;
-    /** Size of the status buffer not including CRC. */
+    /** Size of the status payload not including CRC & seq. */
     uint8_t status_length;
     /** Status callback. */
     twi_master_slave_status_cb status_cb;
@@ -126,7 +123,7 @@ twi_master_send_head (void)
 	    &twi_master.pending[twi_master.pending_head];
 	/* Send command. */
 	twi_master_send (twi_master_slaves[c->slave].address, c->command,
-			 c->length + 1);
+			 c->length);
 	twi_master_wait ();
 	/* Reset retransmission counter. */
 	twi_master.retransmit_counter = TWI_MASTER_RETRANSMIT_INTERVAL;
@@ -137,29 +134,27 @@ twi_master_send_head (void)
 static uint8_t
 twi_master_update_status (uint8_t slave, uint8_t init)
 {
-    uint8_t buffer[TWI_MASTER_STATUS_PAYLOAD_MAX + 1];
+    uint8_t buffer[TWI_MASTER_STATUS_PAYLOAD_MAX + 2];
     /* Read status. */
     twi_master_recv (twi_master_slaves[slave].address, buffer,
-		     twi_master_slaves[slave].status_length + 1);
+		     twi_master_slaves[slave].status_length + 2);
     uint8_t ret = twi_master_wait ();
-    if (ret != twi_master_slaves[slave].status_length + 1)
+    if (ret != twi_master_slaves[slave].status_length + 2)
 	return 0;
     uint8_t crc = crc_compute (buffer + 1,
-			       twi_master_slaves[slave].status_length);
+			       twi_master_slaves[slave].status_length + 1);
     if (crc != buffer[0])
 	return 0;
     if (init)
-	twi_master_slaves[slave].seq =
-	    buffer[1 + TWI_MASTER_STATUS_SEQ_INDEX];
+	twi_master_slaves[slave].seq = buffer[1];
     /* Call user callback. */
-    twi_master_slaves[slave].status_cb (buffer + 1);
+    twi_master_slaves[slave].status_cb (buffer + 2);
     /* Update pending command list. */
     if (twi_master.pending_nb)
       {
 	struct twi_master_command_t *c =
 	    &twi_master.pending[twi_master.pending_head];
-	if (slave == c->slave
-	    && buffer[1 + TWI_MASTER_STATUS_SEQ_INDEX] == c->command[1])
+	if (slave == c->slave && buffer[1] == c->command[1])
 	  {
 	    /* Successfully acknowledged. */
 	    twi_master.pending_nb--;
@@ -224,7 +219,7 @@ twi_master_send_buffer (uint8_t length)
     /* Fill sequence number, compute CRC, store length. */
     c->command[1] = ++twi_master_slaves[c->slave].seq;
     c->command[0] = crc_compute (&c->command[1], length + 1);
-    c->length = length + 1;
+    c->length = length + 2;
     /* Add to the list of pending command. */
     twi_master.pending_nb++;
     /* Early transmission. */
@@ -241,10 +236,10 @@ twi_master_send_transient_buffer (uint8_t length)
     /* Fill sequence number, compute CRC, store length. */
     c->command[1] = ++twi_master_slaves[c->slave].seq;
     c->command[0] = crc_compute (&c->command[1], length + 1);
-    c->length = length + 1;
+    c->length = length + 2;
     /* Send right now without acknowledgement. */
     twi_master_send (twi_master_slaves[c->slave].address, c->command,
-		     c->length + 1);
+		     c->length);
     twi_master_wait ();
 }
 

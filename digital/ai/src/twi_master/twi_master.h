@@ -32,13 +32,13 @@
  *  - a message sent to the slave with a command to execute,
  *  - a status read from the slave containing the current slave state.
  *
- * The first byte of all messages is a CRC of the following bytes, called the
- * message payload.
+ * The first byte of all messages is a CRC of the following bytes.
  *
- * The first byte of payload sent to slave is the command sequence number.  It
- * is used by the master to know if its command has been handled.  The last
- * handled command sequence number is available in the slave status (third
- * byte).
+ * The next byte is the command sequence number.  It is used by the master to
+ * know if its command has been handled.  The last handled command sequence
+ * number is available in the slave status.
+ *
+ * All other bytes are the message payload.
  *
  * As long as the slave last command sequence number is not equal to the last
  * sent sequence number, the master can not send any other command.  If the

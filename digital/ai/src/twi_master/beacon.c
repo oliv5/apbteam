@@ -56,7 +56,7 @@ beacon_init (void)
 void
 beacon_status_cb (uint8_t *status)
 {
-    uint8_t i, index = 3;
+    uint8_t i, index = 0;
     for (i = 0; i < AC_BEACON_POSITION_NB; i++)
       {
 	beacon.position[i].x = v8_to_v16 (status[index], status[index + 1]);

@@ -33,8 +33,8 @@
 /** Mimot TWI address. */
 #define MIMOT_TWI_ADDRESS 6
 
-/** Length of status buffer (not including CRC). */
-#define MIMOT_STATUS_LENGTH 7
+/** Length of status payload (not including CRC & seq). */
+#define MIMOT_STATUS_LENGTH 6
 
 /** Initialise module. */
 void

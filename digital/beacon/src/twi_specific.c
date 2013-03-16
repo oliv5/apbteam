@@ -43,8 +43,6 @@ void twi_task(void)
 	uint8_t RXlen;
 	static uint8_t seq = 0;
 	
-	TXbuffer[TWI_TX_RFU1_FIELD] = 0;
-	TXbuffer[TWI_TX_RFU2_FIELD] = 0;
 	TXbuffer[TWI_TX_SEQ_FIELD] = seq;
 
 	/* Opponent 1 */

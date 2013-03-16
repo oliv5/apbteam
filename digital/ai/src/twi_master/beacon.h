@@ -31,8 +31,8 @@
 /** Beacon TWI address. */
 #define BEACON_TWI_ADDRESS 10
 
-/** Length of status buffer (not including CRC). */
-#define BEACON_STATUS_LENGTH (3 + 5 * AC_BEACON_POSITION_NB)
+/** Length of status payload (not including CRC & seq). */
+#define BEACON_STATUS_LENGTH (5 * AC_BEACON_POSITION_NB)
 
 /** Initialise module. */
 void

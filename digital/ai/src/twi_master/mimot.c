@@ -71,8 +71,8 @@ mimot_status_cb (uint8_t *status)
     /* Parse received data and store them. */
     mimot_status.status = status[0];
     mimot_status.input_port = status[1];
-    mimot_status.motor0_position = v8_to_v16 (status[3], status[4]);
-    mimot_status.motor1_position = v8_to_v16 (status[5], status[6]);
+    mimot_status.motor0_position = v8_to_v16 (status[2], status[3]);
+    mimot_status.motor1_position = v8_to_v16 (status[4], status[5]);
 }
 
 asserv_status_e

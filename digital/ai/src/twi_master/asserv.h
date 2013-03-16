@@ -35,8 +35,8 @@
 /** Asserv TWI address. */
 #define ASSERV_TWI_ADDRESS 4
 
-/** Length of the status buffer (not including CRC). */
-#define ASSERV_STATUS_LENGTH (11 + AC_ASSERV_AUX_NB * 2)
+/** Length of the status payload (not including CRC & seq). */
+#define ASSERV_STATUS_LENGTH (10 + AC_ASSERV_AUX_NB * 2)
 
 /** Use backward movements. */
 #define ASSERV_BACKWARD 1

@@ -126,12 +126,12 @@ asserv_status_cb (uint8_t *status)
     /* Parse received data and store them. */
     asserv_status.status = status[0];
     asserv_status.input_port = status[1];
-    asserv_status.position.x = v8_to_v32 (0, status[3], status[4], status[5]);
-    asserv_status.position.y = v8_to_v32 (0, status[6], status[7], status[8]);
-    asserv_status.position.a = v8_to_v16 (status[9], status[10]);
+    asserv_status.position.x = v8_to_v32 (0, status[2], status[3], status[4]);
+    asserv_status.position.y = v8_to_v32 (0, status[5], status[6], status[7]);
+    asserv_status.position.a = v8_to_v16 (status[8], status[9]);
 #if AC_ASSERV_AUX_NB
-    asserv_status.motor0_position = v8_to_v16 (status[11], status[12]);
-    asserv_status.motor1_position = v8_to_v16 (status[13], status[14]);
+    asserv_status.motor0_position = v8_to_v16 (status[10], status[11]);
+    asserv_status.motor1_position = v8_to_v16 (status[12], status[13]);
 #endif
     /* Update moving direction. */
     if (asserv_get_moving_direction () != 0)

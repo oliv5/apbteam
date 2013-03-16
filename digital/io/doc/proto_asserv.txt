@@ -150,10 +150,10 @@ the current position (X, Y, alpha) of the bot and its motors.
 
 The buffer is a static 12 bytes length one::
 
-      0       1      2   3 .. 5  6 .. 8   9  10   11  12     13  14 <-- byte position
-  +--------+------+-----+- - - -+- - - -+-------+----------+----------+
-  | status | PINC | seq | X pos | Y pos | angle | mot0 pos | mot1 pos |
-  +--------+------+-----+- - - -+- - - -+-------+----------+----------+
+     0       1       2   3 .. 5  6 .. 8   9  10   11  12     13  14 <-- byte position
+  +-----+--------+------+- - - -+- - - -+-------+----------+----------+
+  | seq | status | PINC | X pos | Y pos | angle | mot0 pos | mot1 pos |
+  +-----+--------+------+- - - -+- - - -+-------+----------+----------+
 
 
 Status value

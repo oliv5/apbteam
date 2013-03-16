@@ -72,7 +72,8 @@ twi_proto_update (void)
     /* Update status. */
     u8 status_with_crc[12 + AC_ASSERV_AUX_NB * 2];
     u8 *status = &status_with_crc[1];
-    status[0] = 0
+    status[0] = twi_proto.seq;
+    status[1] = 0
 #if AC_ASSERV_AUX_NB
 	| (control_state_is_blocked (&cs_aux[1].state) ? (1 << 7) : 0)
 	| (control_state_is_finished (&cs_aux[1].state) ? (1 << 6) : 0)
@@ -83,8 +84,7 @@ twi_proto_update (void)
 	| (cs_main.speed_theta.cur_f > 0 ? (1 << 2) : 0)
 	| (control_state_is_blocked (&cs_main.state) ? (1 << 1) : 0)
 	| (control_state_is_finished (&cs_main.state) ? (1 << 0) : 0);
-    status[1] = PINC;
-    status[2] = twi_proto.seq;
+    status[2] = PINC;
     status[3] = v32_to_v8 (postrack_x, 3);
     status[4] = v32_to_v8 (postrack_x, 2);
     status[5] = v32_to_v8 (postrack_x, 1);
