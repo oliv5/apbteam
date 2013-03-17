@@ -33,6 +33,10 @@ class Switch:
         self.button = Checkbutton (frame, variable = self.var,
                 command = self.__update, text = text, indicatoron = False)
         self.button.pack ()
+        if text == 'Jack':
+            self.button.configure (underline = 0)
+            frame.bind_all ('j', lambda event: self.button.invoke (),
+                    add = '+')
         self.model = model
         self.__update ()
 

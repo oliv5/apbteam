@@ -53,8 +53,10 @@ class InterNode (Inter):
         self.step_size_scale.pack ()
         self.play_var = IntVar ()
         self.play_button = Checkbutton (self.right_frame,
-                variable = self.play_var, text = 'Play', command = self.play)
+                variable = self.play_var, text = 'Play', command = self.play,
+                underline = 0)
         self.play_button.pack ()
+        self.bind_all ('p', lambda event: self.play_button.invoke ())
 
     def step (self):
         """Do a step.  Signal to the Hub we are ready to wait to the next step
