@@ -34,7 +34,8 @@ class Robot:
                 '-i{instance}:asserv0', '-m9', 'marcel')
         mimot_cmd = ('../../mimot/src/dirty/dirty.host',
                 '-i{instance}:mimot0', '-m9', 'marcel')
-        io_cmd = ('../../io/src/io.host', '-i{instance}:io0')
+        io_cmd = ('../../io/src/io.host', '-i{instance}:io0',
+                '--ang-print-transitions')
         self.asserv = proto (asserv.Proto, asserv_cmd,
                 asserv.init.host['marcel'])
         self.mimot = proto (mimot.Proto, mimot_cmd,
