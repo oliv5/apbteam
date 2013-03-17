@@ -50,7 +50,7 @@ typedef int32_t i32;
 
 /* Should use __assert instead of __assert_fail if not using GCC.  This is
  * left as an exercise to the reader :). */
-# if __GNUC_PREREQ (3, 0)
+# if __GNUC__ >= 3
 #  define assert_print(expr, msg) \
   (__ASSERT_VOID_CAST (__builtin_expect (!!(expr), 1) ? 0 : \
 		       (__assert_fail (msg, __FILE__, __LINE__, \
