@@ -21,22 +21,17 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 //
 // }}}
-#include "ucoolib/arch/arch.hh"
-#include "ucoolib/common.hh"
-#include "robot.hh"
+//#include "top.hh"
 
 extern "C" {
 #define ANGFSM_NAME AI
 #include "angfsm.h"
 }
 
-int
-main (int argc, const char **argv)
-{
-    if (ANGFSM_OPTIONS (argc, (char **) argv))
-        return 0;
-    ucoo::arch_init (argc, argv);
-    Robot robot;
-    robot.main_loop ();
-}
+ANGFSM_INIT
 
+ANGFSM_STATES (
+            // Initial state.
+            TOP_START)
+
+ANGFSM_START_WITH (TOP_START)
