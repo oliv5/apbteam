@@ -77,7 +77,7 @@ angfsm_build_print_help ()
 }
 
 void
-angfsm_build_arg_parse (char *string, char ***tab, int *nb)
+angfsm_build_arg_parse (const char *string, char ***tab, int *nb)
 {
    long i = 0;
    long buff_cnt = 0;
@@ -477,7 +477,7 @@ angfsm_build_init_all_fsm ()
 
 /* Just initialise structures. */
 void
-angfsm_build_init (angfsm_build_t *fsm, char *name)
+angfsm_build_init (angfsm_build_t *fsm, const char *name)
 {
    assert (fsm);
    fsm->events = NULL;
@@ -669,7 +669,7 @@ angfsm_build_run_init (angfsm_build_t *fsm)
 }
 
 void
-angfsm_build_states (angfsm_build_t *fsm, char *states)
+angfsm_build_states (angfsm_build_t *fsm, const char *states)
 {
    angfsm_build_state_chain_t *head = fsm->states;
    char **args;
@@ -690,7 +690,7 @@ angfsm_build_states (angfsm_build_t *fsm, char *states)
 }
 
 void
-angfsm_build_events (angfsm_build_t *fsm, char *events)
+angfsm_build_events (angfsm_build_t *fsm, const char *events)
 {
    angfsm_build_event_chain_t *head = fsm->events;
    char **args;
@@ -714,7 +714,7 @@ angfsm_build_events (angfsm_build_t *fsm, char *events)
 }
 
 angfsm_build_event_t *
-angfsm_build_get_event (angfsm_build_t *fsm, char *event)
+angfsm_build_get_event (angfsm_build_t *fsm, const char *event)
 {
    angfsm_build_event_chain_t *curs = fsm->events;
    while (curs != NULL)
@@ -727,7 +727,7 @@ angfsm_build_get_event (angfsm_build_t *fsm, char *event)
 }
 
 angfsm_build_state_t *
-angfsm_build_get_state (angfsm_build_t *fsm, char *state)
+angfsm_build_get_state (angfsm_build_t *fsm, const char *state)
 {
    angfsm_build_state_chain_t *curs = fsm->states;
    while (curs != NULL)
@@ -783,7 +783,7 @@ angfsm_build_get_trans (angfsm_build_t *fsm, uint state, uint event)
 }
 
 uint16_t
-angfsm_build_get_event_code (angfsm_build_t *fsm, char *event)
+angfsm_build_get_event_code (angfsm_build_t *fsm, const char *event)
 {
    assert (fsm);
    angfsm_build_event_t *e = angfsm_build_get_event (fsm, event);
@@ -809,7 +809,7 @@ angfsm_build_get_event_branch (angfsm_build_t *fsm,
 }
 
 uint
-angfsm_build_get_branch (angfsm_build_t *fsm, char *branch)
+angfsm_build_get_branch (angfsm_build_t *fsm, const char *branch)
 {
    assert (fsm);
    uint i;
@@ -822,9 +822,9 @@ angfsm_build_get_branch (angfsm_build_t *fsm, char *branch)
 
 void
 angfsm_build_trans (angfsm_build_t *fsm,
-                    char *state,
-                    char *event,
-                    char *output_branches,
+                    const char *state,
+                    const char *event,
+                    const char *output_branches,
                     angfsm_build_run_strans_func_t trans_func)
 {
    angfsm_build_trans_t t;
@@ -888,7 +888,7 @@ angfsm_build_trans (angfsm_build_t *fsm,
 }
 
 void
-angfsm_build_timeout (angfsm_build_t *fsm, char *state, char *event, uint timeout)
+angfsm_build_timeout (angfsm_build_t *fsm, const char *state, const char *event, uint timeout)
 {
    angfsm_build_trans_chain_t *tc = NULL;
    angfsm_build_trans_t *t = NULL;
@@ -930,7 +930,7 @@ angfsm_build_timeout (angfsm_build_t *fsm, char *state, char *event, uint timeou
 }
 
 void
-angfsm_build_start_with (angfsm_build_t *fsm, char *starters)
+angfsm_build_start_with (angfsm_build_t *fsm, const char *starters)
 {
    char **args;
    int nb, i;
@@ -1034,7 +1034,7 @@ angfsm_build_handle (angfsm_build_t *fsm, angfsm_build_event_t *e)
 }
 
 int
-angfsm_build_handle_string (angfsm_build_t *fsm, char *event)
+angfsm_build_handle_string (angfsm_build_t *fsm, const char *event)
 {
    angfsm_build_event_t *e = angfsm_build_get_event (fsm, event);
    return angfsm_build_handle (fsm, e);
@@ -1063,7 +1063,7 @@ angfsm_build_can_handle (angfsm_build_t *fsm, angfsm_build_event_t *e)
 }
 
 int
-angfsm_build_can_handle_string (angfsm_build_t *fsm, char *event)
+angfsm_build_can_handle_string (angfsm_build_t *fsm, const char *event)
 {
    angfsm_build_event_t *e = angfsm_build_get_event (fsm, event);
    return angfsm_build_can_handle (fsm, e);
@@ -2634,7 +2634,7 @@ angfsm_build_gen_h (angfsm_build_t *fsm,
 }
 
 void
-angfsm_build_gen (char *arch_string)
+angfsm_build_gen (const char *arch_string)
 {
    angfsm_build_chain_t *curs = angfsm_build_all_fsm;
    angfsm_build_arch_t arch = ANGFSM_BUILD_ARCH_NB;
