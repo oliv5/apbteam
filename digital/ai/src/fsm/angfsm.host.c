@@ -70,9 +70,9 @@ angfsm_build_print_help ()
            "--ang-no-sanity-check\n"
            "         Disable sanity check during execution on the selected fsm or on\n"
            "         all fsm. Sanity checks are not embedded in generated code.\n"
-           "--ang-print-transitions\n"
-           "         Print transition to stdout each time one occurs. Not available for\n"
-           "         generated code.\n"
+           "--ang-no-print-transitions\n"
+           "         Do not print transition to stdout each time one occurs.\n"
+           "         Not available for generated code.\n"
            );
 }
 
@@ -506,7 +506,7 @@ angfsm_build_init (angfsm_build_t *fsm, char *name)
    fsm->options.sanity_check = 1;
    fsm->options.gen_dot = NULL;
    fsm->options.gen_code = NULL;
-   fsm->options.print_trans = 0;
+   fsm->options.print_trans = 1;
 
    /* Store fsm. */
    angfsm_build_chain_t *niou = (angfsm_build_chain_t *)
@@ -1203,16 +1203,16 @@ angfsm_build_options (int argc, char **argv)
       }
 
       /* Print transitions each time one occurs. */
-      if (strcmp ("--ang-print-transitions", argv[i]) == 0)
+      if (strcmp ("--ang-no-print-transitions", argv[i]) == 0)
       {
          if (fsm)
-            fsm->options.print_trans = 1;
+            fsm->options.print_trans = 0;
          else
          {
             fc = angfsm_build_all_fsm;
             while (fc != NULL)
             {
-               fc->fsm->options.print_trans = 1;
+               fc->fsm->options.print_trans = 0;
                fc = fc->next;
             }
          }
