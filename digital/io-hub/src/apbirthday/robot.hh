@@ -28,6 +28,7 @@
 #include "fsm_queue.hh"
 #include "chrono.hh"
 #include "outputs.hh"
+#include "candles.hh"
 
 #include "ucoolib/base/proto/proto.hh"
 
@@ -45,6 +46,8 @@ class Robot : public ucoo::Proto::Handler
     void proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size);
     /// Send stats.
     void proto_stats ();
+    /// Candles.
+    Candles candles;
   public:
     /// Public access to hardware class.
     Hardware hardware;
