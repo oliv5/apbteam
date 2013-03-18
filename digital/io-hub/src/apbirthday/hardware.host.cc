@@ -38,6 +38,8 @@ Hardware::Hardware ()
       ihm_lol (host, "ihm_lol"),
       ihm_emerg_stop (host, "ihm_emerg_stop"),
       glass_contact (host, "glass_contact"),
+      cherry_plate_left_contact (host, "cherry_plate_left_contact"),
+      cherry_plate_right_contact (host, "cherry_plate_right_contact"),
       cherry_bad_out (host, "cherry_bad_out"),
       cherry_bad_in (host, "cherry_bad_in"),
       cherry_plate_up (host, "cherry_plate_up"),

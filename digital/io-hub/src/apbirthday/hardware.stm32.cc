@@ -37,6 +37,8 @@ Hardware::Hardware ()
       ihm_lol (GPIOD, 11),
       ihm_emerg_stop (GPIOC, 6),
       glass_contact (GPIOC, 13),
+      cherry_plate_left_contact (GPIOE, 5),
+      cherry_plate_right_contact (GPIOE, 6),
       cherry_bad_out (GPIOE, 0), cherry_bad_in (GPIOE, 1),
       cherry_plate_up (GPIOE, 2), cherry_plate_down (GPIOE, 3),
       cherry_plate_clamp (GPIOE, 4),

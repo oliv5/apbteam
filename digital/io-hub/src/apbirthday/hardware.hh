@@ -64,7 +64,8 @@ struct Hardware
         ihm_lol,
         ihm_emerg_stop;
     ucoo::Gpio
-        glass_contact;
+        glass_contact,
+        cherry_plate_left_contact, cherry_plate_right_contact;
     ucoo::Gpio
         cherry_bad_out, cherry_bad_in,
         cherry_plate_up, cherry_plate_down,
