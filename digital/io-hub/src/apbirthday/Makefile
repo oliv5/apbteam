@@ -4,9 +4,19 @@ TARGETS = host stm32f4
 PROGS = apbirthday
 apbirthday_SOURCES = main.cc robot.cc hardware.host.cc hardware.stm32.cc \
 		     top.cc \
-		     angfsm.host.c angfsm_gen_arm_AI.arm.c
+		     angfsm.host.c angfsm_gen_arm_AI.arm.c \
+		     $(AVR_SOURCES)
 
 MODULES = hal/gpio hal/uart hal/usb base/proto
+
+# Hack mode, include old code from AVR modules.
+AVR_MODULES = math/geometry math/fixed
+AVR_BASE = $(BASE)/../avr
+INCLUDES += -I$(AVR_BASE) -I$(AVR_BASE)/common
+host_DEFS += -DHOST
+include $(AVR_MODULES:%=$(AVR_BASE)/modules/%/Makefile.module)
+vpath %.c $(AVR_MODULES:%=$(AVR_BASE)/modules/%)
+AVR_SOURCES = $(foreach module,$(AVR_MODULES),$($(subst /,_,$(module))_SOURCES))
 
 # FSM.
 INCLUDES += -I$(BASE)/../ai/src/fsm -I.
