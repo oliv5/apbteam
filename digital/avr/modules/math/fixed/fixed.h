@@ -37,7 +37,7 @@
  *
  * Angles are mapped from [0, 2pi) to [0,1). */
 
-#ifndef HOST
+#ifdef TARGET_avr
 
 /* Multiply f8.24 by f8.24, return f8.24. */
 #define fixed_mul_f824(a, b) ({ \
@@ -51,7 +51,7 @@ fixed_mul_f824_asm (uint16_t dummy, int32_t a, int32_t b);
 int32_t
 fixed_div_f824 (int32_t a, int32_t b);
 
-#else /* HOST */
+#else /* !TARGET_avr */
 
 /** Multiply f8.24 by f8.24, return f8.24. */
 extern inline

@@ -25,7 +25,7 @@
  *
  * }}} */
 
-#ifndef HOST
+#if defined (TARGET_avr)
 # include "utils.avr.h"
 #else
 # include "utils.host.h"

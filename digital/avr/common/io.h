@@ -25,7 +25,7 @@
  *
  * }}} */
 
-#ifndef HOST
+#if defined (TARGET_avr)
 
 /* Avr part. */
 #include <avr/interrupt.h>
@@ -63,7 +63,7 @@ intr_restore (intr_flags_t flags)
     SREG = flags;
 }
 
-#else /* HOST */
+#elif defined (HOST)
 
 /* Same as on AVR. */
 #define _BV(x) (1<<(x))
