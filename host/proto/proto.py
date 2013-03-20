@@ -117,7 +117,7 @@ class Proto:
                     else:
                         self.recv_error ()
                 elif self.state == CMD:
-                    if c == '\r':
+                    if c == '\r' or c == '\n':
                         f = Frame (self.recv_command)
                         f.args = binascii.unhexlify (self.recv_args)
                         yield f
