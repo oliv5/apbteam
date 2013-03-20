@@ -3,11 +3,12 @@ BASE = ../../../ucoolib
 TARGETS = host stm32f4
 PROGS = apbirthday
 apbirthday_SOURCES = main.cc robot.cc hardware.host.cc hardware.stm32.cc \
+		     i2c_queue.cc asserv.cc \
 		     top.cc \
 		     angfsm.host.c angfsm_gen_arm_AI.arm.c \
 		     $(AVR_SOURCES)
 
-MODULES = hal/gpio hal/uart hal/usb base/proto
+MODULES = utils hal/gpio hal/uart hal/usb hal/i2c base/proto
 
 # Hack mode, include old code from AVR modules.
 AVR_MODULES = math/geometry math/fixed
@@ -21,6 +22,10 @@ AVR_SOURCES = $(foreach module,$(AVR_MODULES),$($(subst /,_,$(module))_SOURCES))
 # FSM.
 INCLUDES += -I$(BASE)/../ai/src/fsm -I.
 vpath %.c $(BASE)/../ai/src/fsm
+
+# Common files.
+INCLUDES += -I../common-cc
+vpath %.cc ../common-cc
 
 include $(BASE)/build/top.mk
 

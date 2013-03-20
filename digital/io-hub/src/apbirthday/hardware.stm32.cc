@@ -30,6 +30,7 @@
 Hardware::Hardware ()
     : dev_uart (4), zb_uart (2),
       usb_control ("APBTeam", "APBirthday"), usb (usb_control, 0),
+      main_i2c (2),
       raw_jack (GPIOD, 12),
       ihm_color (GPIOD, 14),
       ihm_strat (GPIOD, 13),
@@ -71,6 +72,14 @@ Hardware::Hardware ()
     zb_uart.block (false);
     // usb
     usb.block (false);
+    // main_i2c
+    gpio_mode_setup (GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO8);
+    gpio_mode_setup (GPIOC, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO9);
+    gpio_set_output_options (GPIOA, GPIO_OTYPE_OD, GPIO_OSPEED_2MHZ, GPIO8);
+    gpio_set_output_options (GPIOC, GPIO_OTYPE_OD, GPIO_OSPEED_2MHZ, GPIO9);
+    gpio_set_af (GPIOA, GPIO_AF4, GPIO8);
+    gpio_set_af (GPIOC, GPIO_AF4, GPIO9);
+    main_i2c.enable ();
     // Cycle timer, 4 ms period.
     rcc_peripheral_enable_clock (&RCC_APB1ENR, RCC_APB1ENR_TIM3EN);
     TIM3_CR1 = TIM_CR1_CEN;

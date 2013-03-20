@@ -24,11 +24,14 @@
 #include "robot.hh"
 
 #include "ucoolib/arch/arch.hh"
+#include "ucoolib/utils/bytes.hh"
 
 Robot *robot;
 
 Robot::Robot ()
-    : dev_proto (*this, hardware.dev_uart),
+    : main_i2c_queue_ (hardware.main_i2c),
+      asserv (main_i2c_queue_, scale),
+      dev_proto (*this, hardware.dev_uart),
       zb_proto (*this, hardware.zb_uart),
       usb_proto (*this, hardware.usb)
 {
@@ -42,6 +45,8 @@ Robot::main_loop ()
     {
         // Wait until next cycle.
         hardware.wait ();
+        // Handle communications.
+        main_i2c_queue_.sync ();
         // Handle commands.
         dev_proto.accept ();
         zb_proto.accept ();
@@ -65,6 +70,20 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
     case c ('z', 0):
         // Reset.
         ucoo::arch_reset ();
+        break;
+    case c ('m', 5):
+        // Go to position.
+        // 2H: x, y.
+        // 1B: direction_consign.
+        {
+            vect_t pos = {
+                (int16_t) ucoo::bytes_pack (args[0], args[1]),
+                (int16_t) ucoo::bytes_pack (args[2], args[3]),
+            };
+            asserv.stop ();
+            // TODO: use move FSM.
+            asserv.goto_xy (pos, Asserv::DirectionConsign (args[4]));
+        }
         break;
     default:
         proto.send ('?');

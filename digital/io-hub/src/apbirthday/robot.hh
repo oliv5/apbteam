@@ -24,12 +24,16 @@
 //
 // }}}
 #include "hardware.hh"
+#include "asserv.hh"
 
 #include "ucoolib/base/proto/proto.hh"
 
 /// Main robot superclass.
 class Robot : public ucoo::Proto::Handler
 {
+  public:
+    /// Scaling factor, millimeter per step.
+    static const float scale = 0.0395840674352314;
   public:
     /// Initialise robot singleton.
     Robot ();
@@ -42,6 +46,12 @@ class Robot : public ucoo::Proto::Handler
   public:
     /// Public access to hardware class.
     Hardware hardware;
+  private:
+    /// Main I2C queue.
+    I2cQueue main_i2c_queue_;
+  public:
+    /// Public access to asserv class.
+    Asserv asserv;
   private:
     /// Proto associated to each serial interface.
     ucoo::Proto dev_proto, zb_proto, usb_proto;

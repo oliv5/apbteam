@@ -31,6 +31,7 @@ HardwareHost::HardwareHost ()
 
 Hardware::Hardware ()
     : dev_uart (), zb_uart ("zb_uart"), usb ("usb"),
+      main_i2c (host, 0),
       raw_jack (host, "raw_jack"),
       ihm_color (host, "ihm_color"),
       ihm_strat (host, "ihm_strat"),

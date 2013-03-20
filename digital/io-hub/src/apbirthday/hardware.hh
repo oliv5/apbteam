@@ -26,6 +26,7 @@
 
 #include "ucoolib/hal/uart/uart.hh"
 #include "ucoolib/hal/gpio/gpio.hh"
+#include "ucoolib/hal/i2c/i2c.hh"
 #ifdef TARGET_stm32
 # include "ucoolib/hal/usb/usb.hh"
 #else
@@ -53,8 +54,10 @@ struct Hardware
 #ifdef TARGET_stm32
     ucoo::UsbStreamControl usb_control;
     ucoo::UsbStream usb;
+    ucoo::I2cHard main_i2c;
 #else
     ucoo::HostStream usb;
+    ucoo::I2cHost main_i2c;
 #endif
     ucoo::Gpio
         raw_jack,
