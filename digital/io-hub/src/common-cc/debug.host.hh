@@ -1,3 +1,5 @@
+#ifndef debug_host_hh
+#define debug_host_hh
 // io-hub - Modular Input/Output. {{{
 //
 // Copyright (C) 2013 Nicolas Schodet
@@ -21,26 +23,12 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 //
 // }}}
-#include "ucoolib/arch/arch.hh"
-#include "ucoolib/common.hh"
-#include "robot.hh"
-#include "defs.hh"
 
-extern "C" {
-#define ANGFSM_NAME AI
-#include "angfsm.h"
-}
+/// Assert only on host, for costly asserts.
+#ifdef TARGET_host
+# define host_assert ucoo::assert
+#else
+# define host_assert(x)
+#endif
 
-/// Global team color.
-TeamColor team_color = TEAM_COLOR_UNKNOWN;
-
-int
-main (int argc, const char **argv)
-{
-    if (ANGFSM_OPTIONS (argc, (char **) argv))
-        return 0;
-    ucoo::arch_init (argc, argv);
-    Robot robot;
-    robot.main_loop ();
-}
-
+#endif // debug_host_hh
