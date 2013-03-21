@@ -25,6 +25,7 @@
 // }}}
 #include "hardware.hh"
 #include "asserv.hh"
+#include "fsm_queue.hh"
 
 #include "ucoolib/base/proto/proto.hh"
 
@@ -40,7 +41,7 @@ class Robot : public ucoo::Proto::Handler
     /// Main program loop.
     void main_loop ();
     /// Generate events for the FSM.
-    void fsm_gen_event ();
+    bool fsm_gen_event ();
     /// Receive proto messages.
     void proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size);
   public:
@@ -55,6 +56,9 @@ class Robot : public ucoo::Proto::Handler
   private:
     /// Proto associated to each serial interface.
     ucoo::Proto dev_proto, zb_proto, usb_proto;
+  public:
+    /// Public access to deferred events FSM queue.
+    FsmQueue fsm_queue;
 };
 
 /// Global instance pointer.

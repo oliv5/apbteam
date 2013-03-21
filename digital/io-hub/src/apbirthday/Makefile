@@ -5,7 +5,7 @@ PROGS = apbirthday
 apbirthday_SOURCES = main.cc robot.cc hardware.host.cc hardware.stm32.cc \
 		     i2c_queue.cc asserv.cc \
 		     top.cc \
-		     angfsm.host.c angfsm_gen_arm_AI.arm.c \
+		     angfsm.host.c angfsm_gen_arm_AI.arm.c fsm_queue.cc \
 		     $(AVR_SOURCES)
 
 MODULES = utils hal/gpio hal/uart hal/usb hal/i2c base/proto
@@ -21,7 +21,7 @@ AVR_SOURCES = $(foreach module,$(AVR_MODULES),$($(subst /,_,$(module))_SOURCES))
 
 # FSM.
 INCLUDES += -I$(BASE)/../ai/src/fsm -I.
-vpath %.c $(BASE)/../ai/src/fsm
+vpath angfsm.host.c $(BASE)/../ai/src/fsm
 
 # Common files.
 INCLUDES += -I../common-cc

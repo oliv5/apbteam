@@ -46,19 +46,27 @@ Robot::main_loop ()
         // Wait until next cycle.
         hardware.wait ();
         // Handle communications.
-        main_i2c_queue_.sync ();
+        bool sync = main_i2c_queue_.sync ();
+        // Handle events if synchronised.
+        if (sync)
+            fsm_gen_event ();
         // Handle commands.
         dev_proto.accept ();
         zb_proto.accept ();
         usb_proto.accept ();
-        // Handle events.
-        fsm_gen_event ();
     }
 }
 
-void
+bool
 Robot::fsm_gen_event ()
 {
+    if (fsm_queue.poll ())
+    {
+        FsmQueue::Event event = fsm_queue.pop ();
+        if (ANGFSM_HANDLE_VAR (AI, event))
+            return true;
+    }
+    return false;
 }
 
 void
