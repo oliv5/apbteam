@@ -98,6 +98,8 @@ Robot::main_loop ()
         dev_proto.accept ();
         zb_proto.accept ();
         usb_proto.accept ();
+        // Handle zb programmation.
+        hardware.zb_handle ();
         // Send stats.
         proto_stats ();
     }

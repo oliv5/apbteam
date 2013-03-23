@@ -53,7 +53,7 @@ struct Hardware
     ucoo::Uart dev_uart, zb_uart;
 #ifdef TARGET_stm32
     ucoo::UsbStreamControl usb_control;
-    ucoo::UsbStream usb;
+    ucoo::UsbStream usb, zb_usb_avrisp;
     ucoo::I2cHard main_i2c;
 #else
     ucoo::HostStream usb;
@@ -87,6 +87,8 @@ struct Hardware
     Hardware ();
     // Wait until next cycle.
     void wait ();
+    // Handle zb programmation.
+    void zb_handle ();
 };
 
 #endif // hardware_hh

@@ -75,3 +75,9 @@ Hardware::wait ()
     node.wait (node.date () + 4);
 }
 
+void
+Hardware::zb_handle ()
+{
+    // No zb on host.
+}
+

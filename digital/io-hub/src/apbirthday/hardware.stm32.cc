@@ -27,9 +27,12 @@
 #include <libopencm3/stm32/f4/timer.h>
 #include "ucoolib/hal/gpio/gpio.hh"
 
+#include "zb_avrisp.stm32.hh"
+
 Hardware::Hardware ()
     : dev_uart (4), zb_uart (2),
       usb_control ("APBTeam", "APBirthday"), usb (usb_control, 0),
+      zb_usb_avrisp (usb_control, 1),
       main_i2c (2),
       raw_jack (GPIOD, 12),
       ihm_color (GPIOD, 14),
@@ -72,6 +75,7 @@ Hardware::Hardware ()
     zb_uart.block (false);
     // usb
     usb.block (false);
+    zb_usb_avrisp.block (false);
     // main_i2c
     gpio_mode_setup (GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO8);
     gpio_mode_setup (GPIOC, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO9);
@@ -94,5 +98,23 @@ Hardware::wait ()
     while (!(TIM3_SR & TIM_SR_UIF))
         ;
     TIM3_SR = ~TIM_SR_UIF;
+}
+
+void
+Hardware::zb_handle ()
+{
+    // Switch to AVRISP?
+    if (zb_usb_avrisp.poll ())
+    {
+        // Uart pins are reused.
+        zb_uart.disable ();
+        gpio_mode_setup (GPIOD, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO8 | GPIO9);
+        // Go to special AVRISP mode.
+        zb_avrisp (zb_usb_avrisp);
+        // Restore.
+        gpio_mode_setup (GPIOD, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO8 | GPIO9);
+        gpio_set_af (GPIOD, GPIO_AF7, GPIO8 | GPIO9);
+        zb_uart.enable (38400, ucoo::Uart::EVEN, 1);
+    }
 }
 
