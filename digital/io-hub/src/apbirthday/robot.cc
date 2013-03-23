@@ -35,7 +35,10 @@ Robot::Robot ()
       asserv (main_i2c_queue_, BOT_SCALE),
       dev_proto (*this, hardware.dev_uart),
       zb_proto (*this, hardware.zb_uart),
-      usb_proto (*this, hardware.usb)
+      usb_proto (*this, hardware.usb),
+      chrono (90000 - 1000),
+      stats_proto_ (0),
+      stats_chrono_ (false), stats_chrono_last_s_ (-1)
 {
     robot = this;
 }
@@ -56,6 +59,8 @@ Robot::main_loop ()
         dev_proto.accept ();
         zb_proto.accept ();
         usb_proto.accept ();
+        // Send stats.
+        proto_stats ();
     }
 }
 
@@ -115,11 +120,35 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
             asserv.goto_xy (pos, Asserv::DirectionConsign (args[4]));
         }
         break;
+    case c ('C', 1):
+        // Chrono stats.
+        // 1B: start chrono if non-zero.
+        stats_chrono_ = true;
+        if (args[0])
+            chrono.start ();
+        stats_proto_ = &proto;
+        break;
     default:
         proto.send ('?');
         return;
     }
     // Acknowledge.
     proto.send_buf (cmd, args, size);
+}
+
+void
+Robot::proto_stats ()
+{
+    if (!stats_proto_)
+        return;
+    if (stats_chrono_)
+    {
+        int s = chrono.remaining_time_ms () / 1000;
+        if (s != stats_chrono_last_s_)
+        {
+            stats_proto_->send ('C', "b", s);
+            stats_chrono_last_s_ = s;
+        }
+    }
 }
 

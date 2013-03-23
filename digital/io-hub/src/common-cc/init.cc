@@ -158,7 +158,7 @@ FSM_TRANS (INIT_GOING_TO_START_POSITION, robot_move_success,
 
 FSM_TRANS (INIT_WAITING_SECOND_JACK_OUT, jack_removed, INIT_FINISHED)
 {
-    // TODO: robot->chrono.start ();
+    robot->chrono.start ();
     robot->fsm_queue.post (FSM_EVENT (init_start_round));
 }
 

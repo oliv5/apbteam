@@ -26,6 +26,7 @@
 #include "hardware.hh"
 #include "asserv.hh"
 #include "fsm_queue.hh"
+#include "chrono.hh"
 
 #include "ucoolib/base/proto/proto.hh"
 
@@ -41,6 +42,8 @@ class Robot : public ucoo::Proto::Handler
     bool fsm_gen_event ();
     /// Receive proto messages.
     void proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size);
+    /// Send stats.
+    void proto_stats ();
   public:
     /// Public access to hardware class.
     Hardware hardware;
@@ -56,6 +59,15 @@ class Robot : public ucoo::Proto::Handler
   public:
     /// Public access to deferred events FSM queue.
     FsmQueue fsm_queue;
+    /// Public access to chrono.
+    Chrono chrono;
+  private:
+    /// Proto used for stats.
+    ucoo::Proto *stats_proto_;
+    /// Enable chrono stats.
+    bool stats_chrono_;
+    /// Last stated second.
+    int stats_chrono_last_s_;
 };
 
 /// Global instance pointer.
