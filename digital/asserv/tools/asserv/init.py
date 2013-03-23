@@ -36,6 +36,7 @@ host = {
         'marcel': host_marcel,
         'robospierre': host_robospierre,
         'guybrush': host_guybrush,
+        'apbirthday': host_guybrush,
         }
 target_marcel = dict (
         scale = 0.0415178942124, footing = 0xcef,

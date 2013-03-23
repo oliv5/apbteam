@@ -44,6 +44,9 @@
 static int
 simu_table_test_guybrush (double p_x, double p_y);
 
+static int
+simu_table_test_apbirthday (double p_x, double p_y);
+
 /* Guybrush, APBTeam 2012. */
 static const struct robot_t guybrush_robot =
 {
@@ -81,6 +84,43 @@ static const struct robot_t guybrush_robot =
     NULL,
 };
 
+/* APBirthday, APBTeam 2013. TODO: update base dimensions. */
+static const struct robot_t apbirthday_robot =
+{
+    /* Main motors. */
+    &motor_model_def_faulhaber_2657_x9_7,
+    /* Motors voltage (V). */
+    24.0,
+    /* Number of steps on the main motors encoders. */
+    2500,
+    /* Wheel radius (m). */
+    0.065 / 2,
+    /* Distance between the wheels (m). */
+    0.16,
+    /* Weight of the robot (kg). */
+    10.0,
+    /* Distance of the gravity center from the center of motors axis (m). */
+    0.0,
+    /* Whether the encoder is mounted on the main motor (false) or not (true). */
+    1,
+    /** Encoder wheel radius (m). */
+    0.063 / 2,
+    /** Distance between the encoders wheels (m). */
+    0.28,
+    /** No auxiliary motors. */
+    { }, { }, { },
+    /** Sensor update function. */
+    NULL,
+    /** Table test function, return false if given robot point is not in
+     * table. */
+    simu_table_test_apbirthday,
+    /** Robot corners, from front left, then clockwise. */
+    { { 102, 140 }, { 102, -140 }, { -108, -140 }, { -108, 70 },
+	{ -58, 140 } },
+    /** Initialisation function. */
+    NULL,
+};
+
 /* Table of models. */
 static const struct
 {
@@ -88,6 +128,7 @@ static const struct
     const struct robot_t *robot;
 } models[] = {
       { "guybrush", &guybrush_robot },
+      { "apbirthday", &apbirthday_robot },
       { 0, 0 }
 };
 
@@ -161,6 +202,27 @@ simu_table_test_guybrush (double p_x, double p_y)
     double bx = 325 + (400 - 325) * y / 1500. + 22;
     if (((x >= bx - 40 && x < bx) || (x >= 3000 - bx && x < 3000 - bx + 40))
 	&& y < 740)
+	return 0;
+    return 1;
+}
+
+/* Table test for APBirthday. */
+int
+simu_table_test_apbirthday (double p_x, double p_y)
+{
+    static const double table_width = 3000.0, table_height = 2000.0;
+    double x, y;
+    simu_compute_absolute_position (p_x, p_y, &x, &y);
+    if (x < 0 || y < 0 || x >= table_width || y >= table_height)
+	return 0;
+    /* Sideboards. */
+    if ((x < 400 || x >= table_width - 400)
+	&& (y < 100 || y >= table_height - 100))
+	return 0;
+    /* Cake. */
+    double cake_dx = table_width / 2 - x;
+    double cake_dy = table_height - y;
+    if (cake_dx * cake_dx + cake_dy * cake_dy < 500 * 500)
 	return 0;
     return 1;
 }

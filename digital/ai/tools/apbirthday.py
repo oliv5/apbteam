@@ -33,15 +33,14 @@ class Robot:
         def prog (cmd):
             cmd = [ s.format (instance = instance) for s in cmd ]
             subprocess.Popen (cmd)
-        # TODO: use apbirthday model for asserv.
         asserv_cmd = ('../../mimot/src/asserv/asserv.host',
-                '-i{instance}:asserv0', '-m9', 'guybrush')
+                '-i{instance}:asserv0', '-m9', 'apbirthday')
         io_hub_cmd = ('../../io-hub/src/apbirthday/apbirthday.host',
                 '-i{instance}:io0')
         beacon_stub_cmd = ('../../beacon/src/stub/simu_stub.host',
                 '-i{instance}:beacon0')
         self.asserv = proto (asserv.Proto, asserv_cmd,
-                asserv.init.host['guybrush'])
+                asserv.init.host['apbirthday'])
         self.io = proto (io_hub.ProtoGuybrush, io_hub_cmd,
                 io_hub.init.host['apbirthday'])
         self.beacon_stub = prog (beacon_stub_cmd)
