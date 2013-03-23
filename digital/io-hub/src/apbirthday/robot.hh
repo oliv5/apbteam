@@ -63,6 +63,17 @@ class Robot : public ucoo::Proto::Handler
     /// Public access to chrono.
     Chrono chrono;
   private:
+    /// FSM debug mode.
+    enum FsmDebugState
+    {
+        /// Not debugging, running.
+        FSM_DEBUG_RUN,
+        /// Will stop after next transition.
+        FSM_DEBUG_STEP,
+        /// Stopped, waiting for orders.
+        FSM_DEBUG_STOP,
+    };
+    FsmDebugState fsm_debug_state_;
     /// All inputs.
     ucoo::Io *inputs_[Hardware::inputs_nb];
     /// All outputs.

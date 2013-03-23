@@ -37,6 +37,7 @@ Robot::Robot ()
       zb_proto (*this, hardware.zb_uart),
       usb_proto (*this, hardware.usb),
       chrono (90000 - 1000),
+      fsm_debug_state_ (FSM_DEBUG_RUN),
       outputs_set_ (outputs_, lengthof (outputs_)),
       stats_proto_ (0),
       stats_chrono_ (false), stats_chrono_last_s_ (-1),
@@ -92,8 +93,12 @@ Robot::main_loop ()
         // Handle communications.
         bool sync = main_i2c_queue_.sync ();
         // Handle events if synchronised.
-        if (sync)
-            fsm_gen_event ();
+        if (sync && fsm_debug_state_ != FSM_DEBUG_STOP)
+        {
+            if (fsm_gen_event ()
+                && fsm_debug_state_ == FSM_DEBUG_STEP)
+                fsm_debug_state_ = FSM_DEBUG_STOP;
+        }
         // Handle commands.
         dev_proto.accept ();
         zb_proto.accept ();
@@ -146,6 +151,10 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
     case c ('z', 0):
         // Reset.
         ucoo::arch_reset ();
+        break;
+    case c ('f', 0):
+        // Enter FSM debug mode, then step once.
+        fsm_debug_state_ = FSM_DEBUG_STEP;
         break;
     case c ('m', 5):
         // Go to position.
