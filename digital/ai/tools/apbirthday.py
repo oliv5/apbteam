@@ -17,10 +17,9 @@ class Robot:
     import simu.robots.apbirthday.model.bag as robot_model
     import simu.robots.apbirthday.view.bag as robot_view
 
-    # TODO: use right position.
     robot_start_pos = {
-            False: (250, 2000 - 250, math.radians (0)),
-            True: (3000 - 250, 2000 - 250, math.radians (180))
+            False: (650, 2000 - 250, math.radians (90)),
+            True: (3000 - 650, 2000 - 250, math.radians (90))
             }
 
     client_nb = 3

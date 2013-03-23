@@ -33,9 +33,6 @@
 class Robot : public ucoo::Proto::Handler
 {
   public:
-    /// Scaling factor, millimeter per step.
-    static const float scale = 0.0395840674352314;
-  public:
     /// Initialise robot singleton.
     Robot ();
     /// Main program loop.
