@@ -82,10 +82,10 @@ Hardware::Hardware ()
     main_i2c.enable ();
     // Cycle timer, 4 ms period.
     rcc_peripheral_enable_clock (&RCC_APB1ENR, RCC_APB1ENR_TIM3EN);
-    TIM3_CR1 = TIM_CR1_CEN;
     TIM3_PSC = 2 * rcc_ppre1_frequency / 1000000 - 1; // 1 µs prescaler
     TIM3_ARR = 4000 - 1;
     TIM3_EGR = TIM_EGR_UG;
+    TIM3_CR1 = TIM_CR1_CEN;
 }
 
 void
