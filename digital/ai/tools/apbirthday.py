@@ -24,6 +24,8 @@ class Robot:
 
     client_nb = 3
 
+    tick = 1000
+
     def __init__ (self, proto_time, instance = 'robot0'):
         self.instance = instance
         def proto (proto_class, cmd, init):

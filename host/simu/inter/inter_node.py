@@ -29,11 +29,11 @@ import time
 
 class InterNode (Inter):
 
-    def __init__ (self):
+    def __init__ (self, tick):
         Inter.__init__ (self)
         # Create node and bind to Tk.
         self.node = Node ()
-        self.node.tick = 900 # tick/s
+        self.node.tick = tick # tick/s
         self.tk.createfilehandler (self.node, READABLE, self.read)
         # Animation attributes.
         self.date = 0

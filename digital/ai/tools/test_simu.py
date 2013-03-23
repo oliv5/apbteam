@@ -56,7 +56,7 @@ class TestSimu (InterNode):
                 * robot_nb)
         self.forked_hub = utils.forked.Forked (self.hub.wait)
         # InterNode.
-        InterNode.__init__ (self)
+        InterNode.__init__ (self, robot_class.tick)
         def proto_time ():
             return self.node.date / self.node.tick
         # Robot instances.
