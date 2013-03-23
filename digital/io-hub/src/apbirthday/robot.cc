@@ -90,6 +90,7 @@ Robot::main_loop ()
     {
         // Wait until next cycle.
         hardware.wait ();
+        // Update IO modules.
         outputs_set_.update ();
         // Handle communications.
         bool sync = main_i2c_queue_.sync ();
