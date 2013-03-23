@@ -82,6 +82,8 @@ struct Hardware
         gift_out, gift_in,
         ballon_funny_action,
         pneum_open;
+    static const int inputs_nb = 9;
+    static const int outputs_nb = 21;
     Hardware ();
     // Wait until next cycle.
     void wait ();

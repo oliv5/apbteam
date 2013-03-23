@@ -37,10 +37,48 @@ Robot::Robot ()
       zb_proto (*this, hardware.zb_uart),
       usb_proto (*this, hardware.usb),
       chrono (90000 - 1000),
+      outputs_set_ (outputs_, lengthof (outputs_)),
       stats_proto_ (0),
-      stats_chrono_ (false), stats_chrono_last_s_ (-1)
+      stats_chrono_ (false), stats_chrono_last_s_ (-1),
+      stats_inputs_ (0)
 {
     robot = this;
+    unsigned i = 0;
+    inputs_[i++] = &hardware.raw_jack;
+    inputs_[i++] = &hardware.ihm_color;
+    inputs_[i++] = &hardware.ihm_strat;
+    inputs_[i++] = &hardware.ihm_robot_nb;
+    inputs_[i++] = &hardware.ihm_lol;
+    inputs_[i++] = &hardware.ihm_emerg_stop;
+    inputs_[i++] = &hardware.glass_contact;
+    inputs_[i++] = &hardware.cherry_plate_left_contact;
+    inputs_[i++] = &hardware.cherry_plate_right_contact;
+    ucoo::assert (i == lengthof (inputs_));
+    i = 0;
+    outputs_[i++] = &hardware.cherry_bad_out;
+    outputs_[i++] = &hardware.cherry_bad_in;
+    outputs_[i++] = &hardware.cherry_plate_up;
+    outputs_[i++] = &hardware.cherry_plate_down;
+    outputs_[i++] = &hardware.cherry_plate_clamp;
+    outputs_[i++] = &hardware.cake_arm_out;
+    outputs_[i++] = &hardware.cake_arm_in;
+    outputs_[i++] = &hardware.cake_push_far_out;
+    outputs_[i++] = &hardware.cake_push_far_in;
+    outputs_[i++] = &hardware.cake_push_near_out;
+    outputs_[i++] = &hardware.cake_push_near_in;
+    outputs_[i++] = &hardware.glass_lower_clamp_close;
+    outputs_[i++] = &hardware.glass_lower_clamp_open;
+    outputs_[i++] = &hardware.glass_upper_clamp_close;
+    outputs_[i++] = &hardware.glass_upper_clamp_open;
+    outputs_[i++] = &hardware.glass_upper_clamp_up;
+    outputs_[i++] = &hardware.glass_upper_clamp_down;
+    outputs_[i++] = &hardware.gift_out;
+    outputs_[i++] = &hardware.gift_in;
+    outputs_[i++] = &hardware.ballon_funny_action;
+    outputs_[i++] = &hardware.pneum_open;
+    ucoo::assert (i == lengthof (outputs_));
+    for (i = 0; i < lengthof (outputs_); i++)
+        outputs_[i]->output ();
 }
 
 void
@@ -50,6 +88,7 @@ Robot::main_loop ()
     {
         // Wait until next cycle.
         hardware.wait ();
+        outputs_set_.update ();
         // Handle communications.
         bool sync = main_i2c_queue_.sync ();
         // Handle events if synchronised.
@@ -120,12 +159,46 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
             asserv.goto_xy (pos, Asserv::DirectionConsign (args[4]));
         }
         break;
+      case c ('o', 5):
+	// Set/clear/toggle outputs.
+	// - 1d: mask.
+	// - 1b: 00 to clear, 01 to set, 02 to toggle.
+        {
+            uint32_t mask =
+                ucoo::bytes_pack (args[0], args[1], args[2], args[3]);
+            if (args[4] < 3)
+                outputs_set_.command (Outputs::Command (args[4]), mask);
+            else
+            {
+                proto.send ('?');
+                return;
+            }
+        }
+	break;
+      case c ('o', 6):
+	// Toggle outputs for a short time.
+	// - 1d: mask.
+	// - 1w: duration.
+        {
+            uint32_t mask =
+                ucoo::bytes_pack (args[0], args[1], args[2], args[3]);
+            outputs_set_.command (Outputs::TOGGLE, mask);
+            outputs_set_.command_later (Outputs::TOGGLE, mask,
+                                        ucoo::bytes_pack (args[4], args[5]));
+        }
+	break;
     case c ('C', 1):
         // Chrono stats.
         // 1B: start chrono if non-zero.
         stats_chrono_ = true;
         if (args[0])
             chrono.start ();
+        stats_proto_ = &proto;
+        break;
+    case c ('I', 1):
+        // Input stats.
+        // 1B: stat interval.
+        stats_inputs_cpt_ = stats_inputs_ = args[0];
         stats_proto_ = &proto;
         break;
     default:
@@ -149,6 +222,17 @@ Robot::proto_stats ()
             stats_proto_->send ('C', "b", s);
             stats_chrono_last_s_ = s;
         }
+    }
+    if (stats_inputs_ && !--stats_inputs_cpt_)
+    {
+        uint32_t inputs = 0;
+        for (unsigned int i = 0; i < lengthof (inputs_); i++)
+        {
+            if (inputs_[i]->get ())
+                inputs |= 1 << i;
+        }
+        stats_proto_->send ('I', "L", inputs);
+        stats_inputs_cpt_ = stats_inputs_;
     }
 }
 

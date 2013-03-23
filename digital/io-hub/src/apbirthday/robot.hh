@@ -27,6 +27,7 @@
 #include "asserv.hh"
 #include "fsm_queue.hh"
 #include "chrono.hh"
+#include "outputs.hh"
 
 #include "ucoolib/base/proto/proto.hh"
 
@@ -62,12 +63,20 @@ class Robot : public ucoo::Proto::Handler
     /// Public access to chrono.
     Chrono chrono;
   private:
+    /// All inputs.
+    ucoo::Io *inputs_[Hardware::inputs_nb];
+    /// All outputs.
+    ucoo::Io *outputs_[Hardware::outputs_nb];
+    /// Handle set of outputs.
+    Outputs outputs_set_;
     /// Proto used for stats.
     ucoo::Proto *stats_proto_;
     /// Enable chrono stats.
     bool stats_chrono_;
     /// Last stated second.
     int stats_chrono_last_s_;
+    /// Input stats interval and counter.
+    int stats_inputs_, stats_inputs_cpt_;
 };
 
 /// Global instance pointer.
