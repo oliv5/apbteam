@@ -28,8 +28,7 @@ import mex.msg
 class MexGpio (Observable):
     """General purpose Input/Output.
 
-    - output_state: state received from simulated board.
-    - input_state: state to send to simulated board.
+    - state: input or output state, depending on direction.
     - direction: 'input' or 'output', from simulated board.
 
     """
@@ -40,9 +39,10 @@ class MexGpio (Observable):
         assert name not in self.pack.gpios
         self.pack.gpios[name] = self
         self.name = name
-        self.direction = None
+        self.direction = 'input'
         self.output_state = None
         self.input_state = None
+        self.state = self.input_state
         self.register (self.__notified)
 
     def __notified (self):
@@ -59,19 +59,23 @@ class MexGpio (Observable):
             self.gpios = { }
 
         def send_input (self, gpio):
+            if gpio.direction == 'input':
+                gpio.input_state = gpio.state
             state = gpio.input_state
-            if state is None:
-                state = 1
-            m = mex.msg.Msg (self.input_mtype)
-            namelen = len (gpio.name)
-            m.push ('B%ds' % namelen, state, gpio.name)
-            self.node.send (m)
+            if state is not None:
+                m = mex.msg.Msg (self.input_mtype)
+                namelen = len (gpio.name)
+                m.push ('B%ds' % namelen, state, gpio.name)
+                self.node.send (m)
 
         def __handle_output (self, msg):
             namelen = len (msg) - 2
             direction, output, name = msg.pop ('BB%ds' % namelen)
             gpio = self.gpios[name]
             gpio.direction = ('input', 'output')[direction]
-            gpio.output_state = output != 0
+            if direction:
+                gpio.output_state = output != 0
+                gpio.state = gpio.output_state
+                assert gpio.input_state is None
             gpio.notify ()
 
