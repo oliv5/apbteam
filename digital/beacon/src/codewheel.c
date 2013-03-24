@@ -41,6 +41,9 @@ void codewheel_init(void)
 	/* Set codewheel state*/
 	codewheel_set_state(CODEWHEEL_INIT);
 	
+	/* activated pull up on E6 */ 
+  	PORTE = 0x40;
+	
 	/* Select external clock on rising edge for timer 3 */
 	TCCR3B |= (1<<CS30)|(1<<CS31)|(1<<CS32);
 	
