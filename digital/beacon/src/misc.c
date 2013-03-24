@@ -24,7 +24,7 @@
  * }}} */
 
 #include "misc.h"
-#include "network.h"
+#include "network_specific.h"
 
 static int8_t color = -1;
 
