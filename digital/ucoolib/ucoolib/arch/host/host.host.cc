@@ -25,6 +25,7 @@
 
 #include "ucoolib/arch/arch.hh"
 
+#include <unistd.h>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -158,13 +159,13 @@ Host::usage (int ret)
 {
     FILE *out = ret == 0 ? stdout : stderr;
     fprintf (out, "Usage: %s [options...]\n\nOptions:\n", program_name_);
-    unsigned int max_meta = 0;
+    int max_meta = 0;
     for (Options::const_iterator i = options_.begin ();
          i != options_.end (); ++i)
     {
         if (i->second.metavar)
             max_meta = std::max (max_meta,
-                                 std::strlen (i->second.metavar) + 1);
+                                 (int)std::strlen (i->second.metavar) + 1);
     }
     for (Options::const_iterator i = options_.begin ();
          i != options_.end (); ++i)
