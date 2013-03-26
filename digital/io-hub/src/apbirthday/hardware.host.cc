@@ -66,6 +66,9 @@ Hardware::Hardware ()
     dev_uart.block (false);
     zb_uart.block (false);
     usb.block (false);
+    /// To avoid race condition between python and C, wait some cycle before
+    /// continuing.
+    wait ();
 }
 
 void
