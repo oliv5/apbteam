@@ -25,6 +25,8 @@
 from simu.model.switch import Switch
 from simu.model.position import Position
 from simu.model.round_obstacle import RoundObstacle
+from simu.model.distance_sensor_sensopart import DistanceSensorSensopart
+from math import pi
 import random
 
 class Bag:
@@ -37,4 +39,14 @@ class Bag:
         self.beacon = RoundObstacle (40, 5)
         table.obstacles.append (self.beacon)
         self.position = Position (link_bag.asserv.position, [ self.beacon ])
+        self.distance_sensor = [
+                DistanceSensorSensopart (link_bag.adc_dist[0], scheduler, table,
+                    (100, 120), 0, (self.position, ), 4),
+                DistanceSensorSensopart (link_bag.adc_dist[1], scheduler, table,
+                    (100, -120), 0, (self.position, ), 4),
+                DistanceSensorSensopart (link_bag.adc_dist[2], scheduler, table,
+                    (-50, 120), pi, (self.position, ), 4),
+                DistanceSensorSensopart (link_bag.adc_dist[3], scheduler, table,
+                    (-50, -120), pi, (self.position, ), 4),
+                ]
 

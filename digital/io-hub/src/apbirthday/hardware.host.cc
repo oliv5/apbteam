@@ -61,7 +61,11 @@ Hardware::Hardware ()
       gift_out (host, "gift_out"),
       gift_in (host, "gift_in"),
       ballon_funny_action (host, "ballon_funny_action"),
-      pneum_open (host, "pneum_open")
+      pneum_open (host, "pneum_open"),
+      adc_dist0 (host, "dist0", 1 << 12),
+      adc_dist1 (host, "dist1", 1 << 12),
+      adc_dist2 (host, "dist2", 1 << 12),
+      adc_dist3 (host, "dist3", 1 << 12)
 {
     dev_uart.block (false);
     zb_uart.block (false);

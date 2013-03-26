@@ -23,6 +23,7 @@
 # }}}
 """APBirthday bag of views."""
 from simu.view.switch import Switch
+from simu.view.distance_sensor_us import DistanceSensorUS
 from simu.robots.apbirthday.view.robot import Robot
 
 class Bag:
@@ -32,4 +33,6 @@ class Bag:
         self.color_switch = Switch (sensor_frame, model_bag.color_switch,
                 'Color')
         self.robot = Robot (table, model_bag.position)
+        self.distance_sensor = [DistanceSensorUS (self.robot, ds)
+                for ds in model_bag.distance_sensor]
 

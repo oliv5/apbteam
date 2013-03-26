@@ -26,6 +26,7 @@
 from utils.observable import Observable
 import simu.mex.msg
 import simu.link.mex_gpio
+import simu.link.mex_adc_channel
 
 ADC_NB = 8
 
@@ -254,7 +255,8 @@ class Mex:
             self.notify ()
 
     def __init__ (self, node, instance = 'io-hub0',
-            pwm_nb = 0, contact_nb = 0, output_nb = 0, gpios = False, codebar = False):
+            pwm_nb = 0, contact_nb = 0, output_nb = 0, gpios = False,
+            adc_channels = False, codebar = False):
         self.adc = tuple (self.ADC (node, instance, i) for i in range (0, ADC_NB))
         if pwm_nb:
             self.pwm = tuple (self.PWM () for i in range (0, pwm_nb))
@@ -269,6 +271,9 @@ class Mex:
                     self.output)
         if gpios:
             self.gpios = simu.link.mex_gpio.MexGpio.Pack (node, instance)
+        if adc_channels:
+            self.adc_channels = simu.link.mex_adc_channel.MexAdcChannel.Pack (
+                    node, instance)
         if codebar:
             self.__codebar_pack = self.Codebar.Pack (node, instance)
             self.codebar = tuple (self.Codebar (self.__codebar_pack, i)

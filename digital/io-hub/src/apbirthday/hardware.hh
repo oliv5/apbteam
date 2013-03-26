@@ -26,6 +26,7 @@
 
 #include "ucoolib/hal/uart/uart.hh"
 #include "ucoolib/hal/gpio/gpio.hh"
+#include "ucoolib/hal/adc/adc.hh"
 #include "ucoolib/hal/i2c/i2c.hh"
 #ifdef TARGET_stm32
 # include "ucoolib/hal/usb/usb.hh"
@@ -84,6 +85,12 @@ struct Hardware
         pneum_open;
     static const int inputs_nb = 9;
     static const int outputs_nb = 21;
+#ifdef TARGET_stm32
+    ucoo::AdcHard adc;
+    ucoo::AdcHardChannel adc_dist0, adc_dist1, adc_dist2, adc_dist3;
+#else
+    ucoo::AdcHost adc_dist0, adc_dist1, adc_dist2, adc_dist3;
+#endif
     Hardware ();
     // Wait until next cycle.
     void wait ();

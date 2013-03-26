@@ -25,13 +25,15 @@
 import io_hub.mex
 import asserv.mex
 from simu.link.mex_gpio import MexGpio
+from simu.link.mex_adc_channel import MexAdcChannel
 
 class Bag:
 
     def __init__ (self, node, instance = 'robot0'):
         self.asserv = asserv.mex.Mex (node, '%s:asserv0' % instance,
                 aux_nb = 0)
-        self.io_hub = io_hub.mex.Mex (node, '%s:io0' % instance, gpios = True)
+        self.io_hub = io_hub.mex.Mex (node, '%s:io0' % instance, gpios = True,
+                adc_channels = True)
         gpios = ('raw_jack', 'ihm_color', 'ihm_strat', 'ihm_robot_nb',
                 'ihm_lol', 'ihm_emerg_stop', 'glass_contact',
                 'cherry_plate_left_contact', 'cherry_plate_right_contact',
@@ -45,3 +47,9 @@ class Bag:
                 'gift_in', 'ballon_funny_action', 'pneum_open')
         for gpio in gpios:
             setattr (self, gpio, MexGpio (self.io_hub.gpios, gpio))
+        self.adc_dist = [
+                MexAdcChannel (self.io_hub.adc_channels, 'dist0'),
+                MexAdcChannel (self.io_hub.adc_channels, 'dist1'),
+                MexAdcChannel (self.io_hub.adc_channels, 'dist2'),
+                MexAdcChannel (self.io_hub.adc_channels, 'dist3'),
+                ]

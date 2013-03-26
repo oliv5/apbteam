@@ -88,6 +88,8 @@ class Robot : public ucoo::Proto::Handler
     int stats_chrono_last_s_;
     /// Input stats interval and counter.
     int stats_inputs_, stats_inputs_cpt_;
+    /// US distance sensors stats interval and counter.
+    int stats_usdist_, stats_usdist_cpt_;
 };
 
 /// Global instance pointer.

@@ -41,7 +41,7 @@ Robot::Robot ()
       outputs_set_ (outputs_, lengthof (outputs_)),
       stats_proto_ (0),
       stats_chrono_ (false), stats_chrono_last_s_ (-1),
-      stats_inputs_ (0)
+      stats_inputs_ (0), stats_usdist_ (0)
 {
     robot = this;
     unsigned i = 0;
@@ -212,6 +212,12 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
         stats_inputs_cpt_ = stats_inputs_ = args[0];
         stats_proto_ = &proto;
         break;
+    case c ('U', 1):
+        // US distance sensors stats.
+        // 1B: stat interval.
+        stats_usdist_cpt_ = stats_usdist_ = args[0];
+        stats_proto_ = &proto;
+        break;
     default:
         proto.send ('?');
         return;
@@ -244,6 +250,16 @@ Robot::proto_stats ()
         }
         stats_proto_->send ('I', "L", inputs);
         stats_inputs_cpt_ = stats_inputs_;
+    }
+    if (stats_usdist_ && !--stats_usdist_cpt_)
+    {
+        // TODO: this is a hack, only work in simulation.
+        stats_proto_->send ('U', "HHHH",
+                            hardware.adc_dist0.read (),
+                            hardware.adc_dist1.read (),
+                            hardware.adc_dist2.read (),
+                            hardware.adc_dist3.read ());
+        stats_usdist_cpt_ = stats_usdist_;
     }
 }
 

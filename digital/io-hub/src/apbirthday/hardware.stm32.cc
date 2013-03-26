@@ -54,7 +54,10 @@ Hardware::Hardware ()
       glass_upper_clamp_up (GPIOD, 3), glass_upper_clamp_down (GPIOC, 10),
       gift_out (GPIOD, 4), gift_in (GPIOC, 11),
       ballon_funny_action (GPIOB, 7),
-      pneum_open (GPIOD, 5)
+      pneum_open (GPIOD, 5),
+      adc (0),
+      adc_dist0 (adc, 0), adc_dist1 (adc, 1),
+      adc_dist2 (adc, 2), adc_dist3 (adc, 3)
 {
     rcc_peripheral_enable_clock (&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
     rcc_peripheral_enable_clock (&RCC_AHB1ENR, RCC_AHB1ENR_IOPBEN);
@@ -84,6 +87,9 @@ Hardware::Hardware ()
     gpio_set_af (GPIOA, GPIO_AF4, GPIO8);
     gpio_set_af (GPIOC, GPIO_AF4, GPIO9);
     main_i2c.enable ();
+    // ADC.
+    gpio_mode_setup (GPIOA, GPIO_MODE_ANALOG, GPIO_PUPD_NONE,
+                     GPIO0 | GPIO1 | GPIO2 | GPIO3);
     // Cycle timer, 4 ms period.
     rcc_peripheral_enable_clock (&RCC_APB1ENR, RCC_APB1ENR_TIM3EN);
     TIM3_PSC = 2 * rcc_ppre1_frequency / 1000000 - 1; // 1 µs prescaler
