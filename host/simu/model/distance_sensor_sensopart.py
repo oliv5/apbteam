@@ -41,12 +41,12 @@ class DistanceSensorSensopart (Observable):
     # Calibrated values.
     MIN = 100
     MAX = 700
-    # Output levels for MIN/MAX.
-    OMIN = 250 * 0.004
-    OMAX = 250 * 0.020
+    # Output levels for MIN/MAX calibrated for 1 V.
+    OMIN = 50 * 0.004
+    OMAX = 50 * 0.020
 
     def __init__ (self, link, scheduler, table, pos, angle, into = None,
-            level = 0, exclude = None):
+            level = 0, exclude = None, factor = 1):
         Observable.__init__ (self)
         self.rays = [ ]
         range = self.RANGE * self.QUALITY
@@ -56,6 +56,7 @@ class DistanceSensorSensopart (Observable):
             for i in (-1, 1):
                 self.rays.append (DistanceSensorSensopartRay (table, pos,
                     angle + s[0] * i, range * s[1], into, level, exclude))
+        self.factor = factor
         self.link = link
         self.scheduler = scheduler
         self.value = None
@@ -71,11 +72,11 @@ class DistanceSensorSensopart (Observable):
                 d = r.distance
         # Convert to voltage.
         if d is None or d > self.MAX:
-            self.value = self.OMAX
+            self.value = self.factor * self.OMAX
         elif d < self.MIN:
-            self.value = self.OMIN
+            self.value = self.factor * self.OMIN
         else:
-            self.value = (self.OMIN
+            self.value = self.factor * (self.OMIN
                     + (d - self.MIN) / (self.MAX - self.MIN)
                     * (self.OMAX - self.OMIN))
         # Update observers.
