@@ -30,6 +30,7 @@
 #include <avr/wdt.h>
 
 #include "descriptors.h"
+#include "common/gpio.h"
 #include "common/select.h"
 
 HANDLES_EVENT (USB_Connect);
@@ -38,35 +39,6 @@ HANDLES_EVENT (USB_ConfigurationChanged);
 HANDLES_EVENT (USB_UnhandledControlPacket);
 
 volatile uint8_t usb_connected, usb_configured;
-
-void
-gpio_task (void)
-{
-    Endpoint_SelectEndpoint (GPIO_RX_EPNUM);
-    /* If data is available from USB: */
-    if (Endpoint_ReadWriteAllowed ())
-      {
-	/* Read as much as possible, and clear endpoint. */
-	do {
-	    Endpoint_Discard_Byte ();
-	} while (Endpoint_ReadWriteAllowed ());
-	Endpoint_ClearCurrentBank ();
-	/* Now, print current GPIO state if possible. */
-	Endpoint_SelectEndpoint (GPIO_TX_EPNUM);
-	if (Endpoint_ReadWriteAllowed ())
-	  {
-	    uint8_t i, pin;
-	    pin = PIND;
-	    for (i = 0; i < 8; i++)
-	      {
-		Endpoint_Write_Byte (pin & 0x80 ? '1' : '0');
-		pin <<= 1;
-	      }
-	    Endpoint_Write_Byte ('\r');
-	    Endpoint_ClearCurrentBank ();
-	  }
-      }
-}
 
 int
 main (void)
@@ -145,7 +117,10 @@ EVENT_HANDLER (USB_UnhandledControlPacket)
 	    uint8_t output = Endpoint_Read_Byte ();
 	    Endpoint_ClearSetupReceived ();
 	    /* Select output. */
+	    gpio_uninit ();
 	    select_out (output);
+	    if (select_active (output))
+		gpio_init ();
             /* Send acknowledgement. */
 	    Endpoint_ClearSetupIN ();
 	  }

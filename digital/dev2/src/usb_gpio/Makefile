@@ -1,6 +1,6 @@
 BASE = ../../../avr
 AVR_PROGS = dev2_gpio
-dev2_gpio_SOURCES = main.c descriptors.c select.c
+dev2_gpio_SOURCES = main.c descriptors.c select.c gpio.c
 MODULES = usb
 CONFIGFILE = avrconfig.h
 AVR_MCU = at90usb162
