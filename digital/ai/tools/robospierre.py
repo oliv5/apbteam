@@ -38,7 +38,7 @@ class Robot:
         mimot_cmd = ('../../mimot/src/dirty/dirty.host',
                 '-i{instance}:mimot0', '-m9', 'robospierre')
         io_hub_cmd = ('../../io-hub/src/robospierre/io_hub.host',
-                '-i{instance}:io0', '--ang-print-transitions')
+                '-i{instance}:io0')
         self.asserv = proto (asserv.Proto, asserv_cmd,
                 asserv.init.host['robospierre'])
         self.mimot = proto (mimot.Proto, mimot_cmd,
