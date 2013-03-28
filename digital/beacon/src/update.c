@@ -30,7 +30,7 @@
 #include "print.h"
 
 /* Globals Declaration */
-extern opponent_s opponent[MAX_OBSTACLE];
+extern robot_s opponent[MAX_OBSTACLE];
 
 /* This function checks is the given coord is a potential obstacle and updates the structure in consequence */
 TUpdateStatus update(coord_s * point)

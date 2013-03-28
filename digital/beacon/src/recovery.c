@@ -30,7 +30,7 @@
 #include "debug_simu.h"
 
 /* This function is used to calculate all obstacle positions from sractch */
-TRecoveryStatus recovery(coord_s * new_point,opponent_s opp[MAX_OBSTACLE])
+TRecoveryStatus recovery(coord_s * new_point,robot_s opp[MAX_OBSTACLE])
 {
 	/* Declare variables */
 	int i = 0;

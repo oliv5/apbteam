@@ -28,7 +28,7 @@
 #include "debug_simu.h"
 #include "print.h"
 
-extern opponent_s opponent[MAX_OBSTACLE];
+extern robot_s opponent[MAX_OBSTACLE];
 static HAL_AppTimer_t trustTimer;
 
 

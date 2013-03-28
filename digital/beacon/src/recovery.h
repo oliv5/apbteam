@@ -40,6 +40,6 @@ typedef enum
 } TRecoveryStatus;
 
 /* This function is used to calculate all obstacle positions from sractch */
-TRecoveryStatus recovery(coord_s * new_point,opponent_s result[MAX_OBSTACLE]);
+TRecoveryStatus recovery(coord_s * new_point,robot_s result[MAX_OBSTACLE]);
 
 #endif

@@ -34,8 +34,8 @@
 #include "misc.h"
 
 beacon_s beacon[MAX_BEACON+1];
-opponent_s opponent[MAX_OBSTACLE+1];
-apb_s apb_pos;
+robot_s opponent[MAX_OBSTACLE+1];
+robot_s my_robot;
 
 /* This function is used to initialize all needed structures */
 void position_init_struct(void)
@@ -58,11 +58,11 @@ void position_init_struct(void)
 		opponent[i].trust = 100;
 	}
 	
-	apb_pos.x = 0;
-	apb_pos.y = 0;
-	apb_pos.angle[1] = 0;
-	apb_pos.angle[2] = 0;
-	apb_pos.angle[3] = 0;
+	my_robot.x = 0;
+	my_robot.y = 0;
+	my_robot.angle[POV_BEACON_1] = 0;
+	my_robot.angle[POV_BEACON_2] = 0;
+	my_robot.angle[POV_BEACON_3] = 0;
 }
 
 /* This function update the opponent position when a new angle is avalaible */
@@ -207,30 +207,4 @@ int16_t position_get_coord(TOpponent_ID id, TCoord_type type)
 int8_t position_get_trust(TOpponent_ID id)
 {
 	return opponent[id].trust;
-}
-
-void formula_update_apb_position(uint16_t x,uint16_t y)
-{
-	if(color_get_value() == COLOR_RIGHT)
-	{
-		apb_pos.x = LONGUEUR_TABLE - x;
-		apb_pos.y = LARGEUR_TABLE - y;
-	}
-	else
-	{
-		apb_pos.x = x;
-		apb_pos.y = y;
-	}
-	
-	apb_pos.angle[1] = atan(apb_pos.x / (LARGEUR_TABLE - apb_pos.y));
-	apb_pos.angle[2] = atan(apb_pos.x/apb_pos.y);
-	
-	if(y <= LARGEUR_DEMI_TABLE)
-	{
-		apb_pos.angle[3] = atan((LONGUEUR_TABLE - apb_pos.x) / (LARGEUR_DEMI_TABLE - apb_pos.y));
-	}
-	else
-	{
-		apb_pos.angle[3] = M_PI/2 + atan((apb_pos.y - LARGEUR_DEMI_TABLE) / (LONGUEUR_TABLE-apb_pos.x));
-	}
 }

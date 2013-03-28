@@ -46,6 +46,13 @@ typedef enum{
 } TOpponent_ID;
 
 typedef enum{
+	POV_BEACON_1 = 1,
+	POV_BEACON_2,
+	POV_BEACON_3
+} TBeacon_ID;
+
+
+typedef enum{
 	X,
 	Y
 } TCoord_type;
@@ -59,21 +66,14 @@ typedef struct
 	float angle[MAX_OBSTACLE+1];
 }beacon_s;
 
-/* Obstacle structure */
+/* Robot structure */
 typedef struct
 {
 	int16_t x;
 	int16_t y;
 	int8_t trust;
-}opponent_s;
-
-/* Obstacle structure */
-typedef struct
-{
-	int16_t x;
-	int16_t y;
 	float angle[MAX_BEACON+1];
-}apb_s;
+}robot_s;
 
 
 /* Coordinates structure */
