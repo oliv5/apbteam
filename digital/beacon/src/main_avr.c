@@ -61,17 +61,16 @@ void APL_TaskHandler(void)
 			{
 				position_init_struct();
 				twi_init_specific();
-				trust_decrease_task();
+// 				trust_decrease_task();
 				start_codewheel_timer_task();
-// 				debug_start_stop_task();
 			}
 			else
 			{
 				servo_init();
 				codewheel_init();
 				laser_init();
-// 				motor_init();
-// 				calibration_start_task();
+				motor_init();
+				calibration_start_task();
 				motor_stop();
 			}
  			network_set_state(APP_NETWORK_JOIN_REQUEST);
