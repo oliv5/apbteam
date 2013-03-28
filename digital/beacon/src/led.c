@@ -125,11 +125,11 @@ void led_start_blink(void)
 void led_stop_blink(void)
 {
 	HAL_StopAppTimer(&delayTimer);
-	led_on(1);
+	led_on(2);
 }
 
 /*  Led blink callback*/
 void led_network_status_blink_callback(void)
 {
-	led_inverse(1);
+	led_inverse(2);
 }
