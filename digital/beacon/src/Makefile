@@ -27,19 +27,23 @@ CONFIG_NAME = All_ZigBit_Atmega1281_Rf230_8Mhz_Gcc
 #CONFIG_NAME = Router_Sec_ZigBit_Atmega1281_Rf230_8Mhz_Gcc
 
 DEV2 := 	0
-
+PROGRAMMING_INTERFACE:=/dev/ttyUSB1
 simu:host
 	python simulator.py
-	
+
 avr:
 	$(MAKE) -C $(BITCLOUD_MAKEFILE) -f Makefile_$(CONFIG_NAME) clean BITCLOUD_PATH=$(BITCLOUD_STACK)
 	$(MAKE) -C $(BITCLOUD_MAKEFILE) -f Makefile_$(CONFIG_NAME) all APP_NAME=beacon BITCLOUD_PATH=$(BITCLOUD_STACK) APB_AVR_PATH=$(BASE) PROJECT_BASE=$(PROJECT_BASE) BITCLOUD_COMMON_SOURCES=$(BITCLOUD_COMMON_SOURCES)
 
+fuses:
+	$(APB_REPO_PATH)/digital/dev2/tools/dev2ctl.py -s 1
+	avrdude -c stk500v2 -P $(PROGRAMMING_INTERFACE) -p atmega1281 -B3 -U lfuse:w:0x62:m -U hfuse:w:0xDC:m
+
 flash:
 	make avr
 	$(APB_REPO_PATH)/digital/dev2/tools/dev2ctl.py -s 1
-	avrdude -c stk500v2 -P /dev/ttyUSB1 -p atmega1281 -B3 -U flash:w:obj/beacon.hex
+	avrdude -c stk500v2 -P $(PROGRAMMING_INTERFACE) -p atmega1281 -B3 -U flash:w:obj/beacon.hex
 	
 clean:
-	$(MAKE) -C $(BITCLOUD_MAKEFILE) -f Makefile_$(CONFIG_NAME) clean APP_NAME=beacon PROJECT_BASE=$(PROJECT_BASE) BITCLOUD_PATH=$(BITCLOUD_STACK);\
-
+	$(MAKE) -C $(BITCLOUD_MAKEFILE) -f Makefile_$(CONFIG_NAME) clean APP_NAME=beacon PROJECT_BASE=$(PROJECT_BASE) BITCLOUD_PATH=$(BITCLOUD_STACK);
+	\
