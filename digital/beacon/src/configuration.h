@@ -23,7 +23,7 @@
 #define APP_USART_RX_BUFFER_SIZE          100 		/* Receive buffer size for USART. */
 #define APP_USART_TX_BUFFER_SIZE          500		/* Transmit buffer size for USART */
 #define APP_INTERFACE APP_INTERFACE_USART	/* Defines primary serial interface type to be used by application */
-#define APP_USART_CHANNEL USART_CHANNEL_1	/* Defines USART interface name to be used by application.*/
+#define APP_USART_CHANNEL USART_CHANNEL_0	/* Defines USART interface name to be used by application.*/
 
 /* -----------------------------------------------------------  	*/
 /* 			TWI  CONFIGURATION 				*/
