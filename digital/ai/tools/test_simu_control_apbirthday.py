@@ -25,6 +25,8 @@ from test_simu import TestSimu, run
 from Tkinter import *
 import math
 
+import io_hub.apbirthday
+
 class TestSimuControl (TestSimu):
     """Interface with extra control."""
 
@@ -34,6 +36,9 @@ class TestSimuControl (TestSimu):
         self.io = self.robots[0].io
         self.asserv = self.robots[0].asserv
         self.robot_model = self.robots[0].model
+        self.io.output (io_hub.apbirthday.output_mask (
+            'cake_arm_in', 'cake_push_far_in', 'cake_push_near_in'),
+            'toggle')
 
     def create_widgets (self):
         TestSimu.create_widgets (self)
@@ -44,6 +49,16 @@ class TestSimuControl (TestSimu):
                 command = self.fsm_debug).pack ()
         Button (self.control_frame, text = 'Asserv block', padx = 0, pady = 0,
                 command = self.asserv_block).pack ()
+        def out_button (name, *toggle):
+            def command ():
+                self.io.output (io_hub.apbirthday.output_mask (*toggle),
+                        'toggle')
+            button = Button (self.control_frame, text = name,
+                    padx = 0, pady = 0, command = command)
+            button.pack ()
+        out_button ('Arm in/out', 'cake_arm_in', 'cake_arm_out')
+        out_button ('Push far in/out', 'cake_push_far_in', 'cake_push_far_out')
+        out_button ('Push near in/out', 'cake_push_near_in', 'cake_push_near_out')
         self.backward_var = IntVar ()
         self.backward_button = Checkbutton (self.control_frame,
                 text = 'Backward', variable = self.backward_var)

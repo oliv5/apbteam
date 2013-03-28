@@ -29,11 +29,13 @@ COLOR_AXES = '#202040'
 
 class Robot (simu.inter.drawable.Drawable):
 
-    def __init__ (self, onto, position_model):
+    def __init__ (self, onto, position_model, cake_arm_model):
         """Construct and make connections."""
         simu.inter.drawable.Drawable.__init__ (self, onto)
         self.position_model = position_model
         self.position_model.register (self.__position_notified)
+        self.cake_arm_model = cake_arm_model
+        self.cake_arm_model.register (self.update)
 
     def __position_notified (self):
         """Called on position modifications."""
@@ -59,6 +61,16 @@ class Robot (simu.inter.drawable.Drawable):
             self.draw_line ((0, +f / 2), (0, -f / 2), fill = COLOR_AXES)
             self.draw_line ((-wr, f / 2), (+wr, f / 2), fill = COLOR_AXES)
             self.draw_line ((-wr, -f / 2), (+wr, -f / 2), fill = COLOR_AXES)
+            # Draw arm.
+            m = self.cake_arm_model
+            f = m.arm_cyl.pos
+            for x, y, pos in ((m.far_x, m.far_y, m.far_cyl.pos),
+                    (m.near_x, m.near_y, m.near_cyl.pos)):
+                e = (y - 140) * f + 140
+                gray = pos * 0x40
+                fill = '#%02x%02x%02x' % (gray, gray, gray)
+                self.draw_polygon ((x - 20, 140), (x - 20, e), (x + 20, e),
+                        (x + 20, 140), fill = fill)
             # Extends.
             simu.inter.drawable.Drawable.draw (self)
 

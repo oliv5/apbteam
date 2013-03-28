@@ -32,7 +32,7 @@ class Bag:
         self.jack = Switch (sensor_frame, model_bag.jack, 'Jack')
         self.color_switch = Switch (sensor_frame, model_bag.color_switch,
                 'Color')
-        self.robot = Robot (table, model_bag.position)
+        self.robot = Robot (table, model_bag.position, model_bag.cake_arm)
         self.distance_sensor = [DistanceSensorUS (self.robot, ds)
                 for ds in model_bag.distance_sensor]
 
