@@ -46,8 +46,6 @@ class Robot : public ucoo::Proto::Handler
     void proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size);
     /// Send stats.
     void proto_stats ();
-    /// Candles.
-    Candles candles;
   public:
     /// Public access to hardware class.
     Hardware hardware;
@@ -65,6 +63,8 @@ class Robot : public ucoo::Proto::Handler
     FsmQueue fsm_queue;
     /// Public access to chrono.
     Chrono chrono;
+    /// Candles.
+    Candles candles;
   private:
     /// FSM debug mode.
     enum FsmDebugState

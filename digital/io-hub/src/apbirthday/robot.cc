@@ -31,13 +31,13 @@
 Robot *robot;
 
 Robot::Robot ()
-    : candles (1),
-      main_i2c_queue_ (hardware.main_i2c),
+    : main_i2c_queue_ (hardware.main_i2c),
       asserv (main_i2c_queue_, BOT_SCALE),
       dev_proto (*this, hardware.dev_uart),
       zb_proto (*this, hardware.zb_uart),
       usb_proto (*this, hardware.usb),
       chrono (90000 - 1000),
+      candles (1),
       fsm_debug_state_ (FSM_DEBUG_RUN),
       outputs_set_ (outputs_, lengthof (outputs_)),
       stats_proto_ (0),
