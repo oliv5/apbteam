@@ -27,6 +27,7 @@
 #include "debug_simu.h"
 #include "position.h"
 #include "formula.h"
+#include "misc.h"
 
 /* This function computes coords using formula 3 mode ie for beacon 1 + 2*/
 TFormulaStatus formula3_compute_coord(coord_s * position, float angle_beacon1, float angle_beacon2)
@@ -161,6 +162,36 @@ TFormulaStatus formula_compute_position(int formula, int current_beacon_ID, floa
 			error = FORMULA_UNKNOWN_FORMULA;
 	}
 	return error;
+}
+
+
+/* This function udpates robot position from given x y */
+TFormulaStatus formula_update_robot_from_xy(robot_s * robot, uint16_t x, uint16_t y)
+{
+	if(color_get_value() == COLOR_RIGHT)
+	{
+		robot->x = LONGUEUR_TABLE - x;
+		robot->y = LARGEUR_TABLE - y;
+	}
+	else
+	{
+		robot->x = x;
+		robot->y = y;
+	}
+	
+	robot->angle[POV_BEACON_1] = atan(robot->x / (LARGEUR_TABLE - robot->y));
+	robot->angle[POV_BEACON_2] = atan(robot->x/robot->y);
+	
+	if(y <= LARGEUR_DEMI_TABLE)
+	{
+		robot->angle[POV_BEACON_3] = atan((LONGUEUR_TABLE - robot->x) / (LARGEUR_DEMI_TABLE - robot->y));
+	}
+	else
+	{
+		robot->angle[POV_BEACON_3] = M_PI/2 + atan((robot->y - LARGEUR_DEMI_TABLE) / (LONGUEUR_TABLE-robot->x));
+	}
+	
+	return FORMULA_VALID_POSITION;
 }
 
 

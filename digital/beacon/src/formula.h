@@ -69,4 +69,7 @@ TFormulaStatus formula4_compute_coord(coord_s * position, float angle_beacon1, f
 /* This function computes coords using formula 5 mode ie for beacon 2 + 3*/
 TFormulaStatus formula5_compute_coord(coord_s * position, float angle_beacon2, float angle_beacon3);
 
+/* This function udpates robot position from given x y */
+TFormulaStatus formula_update_robot_from_xy(robot_s * robot, uint16_t x, uint16_t y);
+
 #endif

@@ -34,6 +34,7 @@
 
 
 static HAL_AppTimer_t twiTimer;
+extern robot_s my_robot;
 
 /* This function manages the TWI RX/RX transferts */
 void twi_task(void)
@@ -76,8 +77,11 @@ void twi_task(void)
 			jack_update_status(RXbuffer[TWI_RX_JACK_FIELD]);
 			if(RXbuffer[TWI_RX_JACK_FIELD] == 1)
 			{
+				/* Get color value from IA and save it*/
 				color_set_value(RXbuffer[TWI_RX_COLOR_FIELD]);
-				formula_update_apb_position((RXbuffer[TWI_RX_X_MSB_FIELD]<<8)+RXbuffer[TWI_RX_X_LSB_FIELD],(RXbuffer[TWI_RX_Y_MSB_FIELD]<<8)+RXbuffer[TWI_RX_Y_LSB_FIELD]);
+				
+				/* Update my robot structure with xy from IA */
+				formula_update_robot_from_xy(&my_robot,(RXbuffer[TWI_RX_X_MSB_FIELD]<<8)+RXbuffer[TWI_RX_X_LSB_FIELD],(RXbuffer[TWI_RX_Y_MSB_FIELD]<<8)+RXbuffer[TWI_RX_Y_LSB_FIELD]);
 			}
 		}
 		else
@@ -86,6 +90,7 @@ void twi_task(void)
 		}
 	}
 }
+
 
 /* Initialisze specific TWI */
 void twi_init_specific(void)
