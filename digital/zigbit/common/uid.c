@@ -58,6 +58,10 @@ uint16_t get_uid(void)
 	if(PINF&0x10) //PINF4
 		value &= 0xFE;
 	
+	/* Nothing connected */
+	if(PINF&0xFF)
+		value &=0xF0;
+	
 	return value;
 }
 
