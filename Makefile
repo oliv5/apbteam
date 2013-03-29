@@ -14,6 +14,12 @@
 #  eval $(make env)
 #
 
+DIRS_2013 = \
+	digital/mimot/src/asserv \
+	digital/mimot/src/dirty \
+	digital/beacon/src/stub \
+	digital/io-hub/src/apbirthday
+
 DIRS_2012 = \
 	digital/mimot/src/asserv \
 	digital/mimot/src/dirty \
@@ -25,6 +31,7 @@ DIRS = $(sort \
 	digital/io/src \
 	digital/io-hub/src/robospierre \
 	$(DIRS_2012) \
+	$(DIRS_2013) \
 	)
 
 PYTHON_DIRS = \
@@ -46,6 +53,17 @@ all host clean:
 
 all.% host.% clean.%:
 	$(foreach dir,$(DIRS_$*),$(MAKE) -C $(dir) $(@:.$*=) && ) true
+
+all: libopencm3
+libopencm3:
+	@if test \! -f digital/ucoolib/lib/libopencm3/Makefile; then \
+		echo "no libopencm3, this usually means that you should run" \
+		"git submodule init, then git submodule update" >&2; \
+		echo "another option is to run make host if you are only" \
+		"interrested by simulation"; \
+		exit 1; \
+	fi
+	$(MAKE) -C digital/ucoolib/lib/libopencm3
 
 space :=
 space +=

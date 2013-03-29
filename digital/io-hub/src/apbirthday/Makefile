@@ -41,3 +41,5 @@ obj/main.stm32f4.o: angfsm_gen_arm_AI.h
 angfsm_gen_arm_AI.arm.c: angfsm_gen_arm_AI.h
 angfsm_gen_arm_AI.h: apbirthday.host
 	./$< --ang-gen arm && mv angfsm_gen_arm_AI.c angfsm_gen_arm_AI.arm.c
+
+host: all.host
