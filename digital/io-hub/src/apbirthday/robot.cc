@@ -33,16 +33,18 @@ Robot *robot;
 Robot::Robot ()
     : main_i2c_queue_ (hardware.main_i2c),
       asserv (main_i2c_queue_, BOT_SCALE),
+      mimot (main_i2c_queue_),
       dev_proto (*this, hardware.dev_uart),
       zb_proto (*this, hardware.zb_uart),
       usb_proto (*this, hardware.usb),
       chrono (90000 - 1000),
+      pressure (hardware.adc_pressure, hardware.pneum_open, mimot.motor0),
       candles (1),
       fsm_debug_state_ (FSM_DEBUG_RUN),
       outputs_set_ (outputs_, lengthof (outputs_)),
       stats_proto_ (0),
       stats_chrono_ (false), stats_chrono_last_s_ (-1),
-      stats_inputs_ (0), stats_usdist_ (0)
+      stats_inputs_ (0), stats_usdist_ (0), stats_pressure_ (0)
 {
     robot = this;
     unsigned i = 0;
@@ -91,6 +93,7 @@ Robot::main_loop ()
         // Wait until next cycle.
         hardware.wait ();
         // Update IO modules.
+        pressure.update ();
         outputs_set_.update ();
         // Handle communications.
         bool sync = main_i2c_queue_.sync ();
@@ -172,6 +175,11 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
             asserv.goto_xy (pos, Asserv::DirectionConsign (args[4]));
         }
         break;
+      case c ('f', 2):
+	// Set low pressure threshold.
+	// 1w: sensor value, 4096 is full scale.
+	pressure.set (ucoo::bytes_pack (args[0], args[1]));
+	break;
       case c ('o', 5):
 	// Set/clear/toggle outputs.
 	// - 1d: mask.
@@ -220,6 +228,12 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
         stats_usdist_cpt_ = stats_usdist_ = args[0];
         stats_proto_ = &proto;
         break;
+    case c ('F', 1):
+        // Pressure stats.
+        // 1B: stat interval.
+        stats_pressure_cpt_ = stats_pressure_ = args[0];
+        stats_proto_ = &proto;
+        break;
     default:
         proto.send ('?');
         return;
@@ -262,6 +276,11 @@ Robot::proto_stats ()
                             hardware.adc_dist2.read (),
                             hardware.adc_dist3.read ());
         stats_usdist_cpt_ = stats_usdist_;
+    }
+    if (stats_pressure_ && !--stats_pressure_cpt_)
+    {
+        stats_proto_->send ('F', "H", pressure.get ());
+        stats_pressure_cpt_ = stats_pressure_;
     }
 }
 

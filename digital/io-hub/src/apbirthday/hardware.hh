@@ -88,8 +88,10 @@ struct Hardware
 #ifdef TARGET_stm32
     ucoo::AdcHard adc;
     ucoo::AdcHardChannel adc_dist0, adc_dist1, adc_dist2, adc_dist3;
+    ucoo::AdcHardChannel adc_pressure;
 #else
     ucoo::AdcHost adc_dist0, adc_dist1, adc_dist2, adc_dist3;
+    ucoo::AdcHost adc_pressure;
 #endif
     Hardware ();
     // Wait until next cycle.

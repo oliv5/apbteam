@@ -4,7 +4,8 @@ TARGETS = host stm32f4
 PROGS = apbirthday
 apbirthday_SOURCES = main.cc robot.cc hardware.host.cc hardware.stm32.cc \
 		     zb_avrisp.stm32.cc \
-		     i2c_queue.cc asserv.cc chrono.host.cc chrono.stm32.cc \
+		     i2c_queue.cc asserv.cc mimot.cc \
+		     pressure.cc chrono.host.cc chrono.stm32.cc \
 		     outputs.cc \
 		     top.cc init.cc move.cc candles.cc \
 		     angfsm.host.c angfsm_gen_arm_AI.arm.c fsm_queue.cc \

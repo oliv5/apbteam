@@ -57,7 +57,8 @@ Hardware::Hardware ()
       pneum_open (GPIOD, 5),
       adc (0),
       adc_dist0 (adc, 0), adc_dist1 (adc, 1),
-      adc_dist2 (adc, 2), adc_dist3 (adc, 3)
+      adc_dist2 (adc, 2), adc_dist3 (adc, 3),
+      adc_pressure (adc, 8)
 {
     rcc_peripheral_enable_clock (&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
     rcc_peripheral_enable_clock (&RCC_AHB1ENR, RCC_AHB1ENR_IOPBEN);
@@ -90,6 +91,7 @@ Hardware::Hardware ()
     // ADC.
     gpio_mode_setup (GPIOA, GPIO_MODE_ANALOG, GPIO_PUPD_NONE,
                      GPIO0 | GPIO1 | GPIO2 | GPIO3);
+    gpio_mode_setup (GPIOB, GPIO_MODE_ANALOG, GPIO_PUPD_NONE, GPIO5);
     // Cycle timer, 4 ms period.
     rcc_peripheral_enable_clock (&RCC_APB1ENR, RCC_APB1ENR_TIM3EN);
     TIM3_PSC = 2 * rcc_ppre1_frequency / 1000000 - 1; // 1 µs prescaler
