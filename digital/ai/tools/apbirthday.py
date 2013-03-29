@@ -1,5 +1,7 @@
 import asserv
 import asserv.init
+import mimot
+import mimot.init
 import io_hub
 import io_hub.init
 
@@ -22,7 +24,7 @@ class Robot:
             True: (3000 - 650, 2000 - 250, math.radians (90))
             }
 
-    client_nb = 3
+    client_nb = 4
 
     tick = 1000
 
@@ -36,14 +38,18 @@ class Robot:
             subprocess.Popen (cmd)
         asserv_cmd = ('../../mimot/src/asserv/asserv.host',
                 '-i{instance}:asserv0', '-m9', 'apbirthday')
+        mimot_cmd = ('../../mimot/src/dirty/dirty.host',
+                '-i{instance}:mimot0', '-m9', 'apbirthday')
         io_hub_cmd = ('../../io-hub/src/apbirthday/apbirthday.host',
                 '-i{instance}:io0')
         beacon_stub_cmd = ('../../beacon/src/stub/simu_stub.host',
                 '-i{instance}:beacon0')
         self.asserv = proto (asserv.Proto, asserv_cmd,
                 asserv.init.host['apbirthday'])
+        self.mimot = proto (mimot.Proto, mimot_cmd,
+                mimot.init.host['guybrush'])
         self.io = proto (io_hub.ProtoGuybrush, io_hub_cmd,
                 io_hub.init.host['apbirthday'])
         self.beacon_stub = prog (beacon_stub_cmd)
-        self.protos = (self.asserv, self.io)
+        self.protos = (self.asserv, self.mimot, self.io)
 

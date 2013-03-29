@@ -93,6 +93,23 @@ static const struct robot_t guybrush_robot =
     NULL,
 };
 
+/* APBirthday, APBTeam 2013. */
+static const struct robot_t apbirthday_robot =
+{
+    /** Auxiliary motors, NULL if not present. */
+    { &motor_model_def_amax32ghp_x16, NULL },
+    /** Motors voltage (V). */
+    24.0,
+    /** Number of steps for each auxiliary motor encoder. */
+    { 250, 0 },
+    /** Load for auxiliary motors (kg.m^2). */
+    { 1.000 * 0.05 * 0.05, 0 },
+    /** Sensor update function. */
+    NULL,
+    /** Initialisation function. */
+    NULL,
+};
+
 /* Table of models. */
 static const struct
 {
@@ -102,6 +119,7 @@ static const struct
       { "marcel", &marcel_robot },
       { "robospierre", &robospierre_robot },
       { "guybrush", &guybrush_robot },
+      { "apbirthday", &apbirthday_robot },
       { 0, 0 }
 };
 

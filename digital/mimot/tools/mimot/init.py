@@ -23,10 +23,13 @@ target_guybrush = dict (
         a0_bd_error_limit = 22, a0_bd_speed_limit = 0x08, a0_bd_counter_limit = 50,
         e_sat = 0x3ff, d_sat = 0x1ff,
         )
+target_apbirthday = dict (
+        )
 target = {
         'marcel': target_marcel,
         'robospierre': target_robospierre,
         'guybrush': target_guybrush,
+        'apbirthday': target_apbirthday,
         }
 
 host = target
