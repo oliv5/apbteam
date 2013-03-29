@@ -43,40 +43,40 @@
           -    11                        16      -
              -       12   13   14   15      -
                     -     ______    -
-*/
+ */
 
 typedef enum
 {
-  CANDLE_UNPUNCHED,
-  CANDLE_PUNCHED,
-  CANDLE_STATE_NB
+    CANDLE_UNPUNCHED,
+    CANDLE_PUNCHED,
+    CANDLE_STATE_NB
 } candle_state_t;
 
 typedef enum
 {
-   FLOOR_NEAR = 0,
-   FLOOR_FAR = 1,
-   CANDLE_FLOOR_NB
+    FLOOR_NEAR = 0,
+    FLOOR_FAR = 1,
+    CANDLE_FLOOR_NB
 } candle_floor_t;
 
 /* XXX use another common type for colors ? */
 typedef enum
 {
-  CANDLE_RED = TEAM_COLOR_RIGHT,
-  CANDLE_BLUE = TEAM_COLOR_LEFT,
-  CANDLE_WHITE,
-  CANDLE_UNKNOWN,
+    CANDLE_RED = TEAM_COLOR_RIGHT,
+    CANDLE_BLUE = TEAM_COLOR_LEFT,
+    CANDLE_WHITE,
+    CANDLE_UNKNOWN,
 } candle_color_t;
 
 class Candles
 {
-   public:
-      candle_state_t state[CANDLES_NB];
-      candle_color_t color[CANDLES_NB];
-      Candles (int calif_mode);
-      void blow (int candle);
-      void deduce ();
-      int actual_pos[CANDLE_FLOOR_NB];
+    public:
+        candle_state_t state[CANDLES_NB];
+        candle_color_t color[CANDLES_NB];
+        Candles (int calif_mode);
+        void blow (int candle);
+        void deduce ();
+        int actual_pos[CANDLE_FLOOR_NB];
 };
 
 #endif // candles_hh
