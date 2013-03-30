@@ -12,7 +12,7 @@ apbirthday_SOURCES = main.cc robot.cc hardware.host.cc hardware.stm32.cc \
 		     $(AVR_SOURCES)
 
 MODULES = utils hal/gpio hal/adc hal/uart hal/usb hal/i2c hal/spi \
-	  base/proto dev/avrisp
+	  base/proto dev/avrisp dev/usdist
 
 # Hack mode, include old code from AVR modules.
 AVR_MODULES = math/geometry math/fixed

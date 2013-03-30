@@ -83,6 +83,8 @@ struct Hardware
         gift_out, gift_in,
         ballon_funny_action,
         pneum_open;
+    ucoo::Gpio
+        dist0_sync, dist1_sync, dist2_sync, dist3_sync;
     static const int inputs_nb = 9;
     static const int outputs_nb = 21;
 #ifdef TARGET_stm32

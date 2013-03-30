@@ -39,6 +39,11 @@ Robot::Robot ()
       usb_proto (*this, hardware.usb),
       chrono (90000 - 1000),
       pressure (hardware.adc_pressure, hardware.pneum_open, mimot.motor0),
+      usdist_control_ (2),
+      usdist0_ (usdist_control_, hardware.adc_dist0, hardware.dist0_sync, 100, 700, 650),
+      usdist1_ (usdist_control_, hardware.adc_dist1, hardware.dist1_sync, 100, 700, 650),
+      usdist2_ (usdist_control_, hardware.adc_dist2, hardware.dist2_sync, 100, 700, 650),
+      usdist3_ (usdist_control_, hardware.adc_dist3, hardware.dist3_sync, 100, 700, 650),
       candles (1),
       fsm_debug_state_ (FSM_DEBUG_RUN),
       outputs_set_ (outputs_, lengthof (outputs_)),
@@ -47,6 +52,7 @@ Robot::Robot ()
       stats_inputs_ (0), stats_usdist_ (0), stats_pressure_ (0)
 {
     robot = this;
+    // Fill I/O arrays.
     unsigned i = 0;
     inputs_[i++] = &hardware.raw_jack;
     inputs_[i++] = &hardware.ihm_color;
@@ -83,6 +89,15 @@ Robot::Robot ()
     ucoo::assert (i == lengthof (outputs_));
     for (i = 0; i < lengthof (outputs_); i++)
         outputs_[i]->output ();
+    // Set US dist sensors start state.
+    hardware.dist0_sync.output ();
+    hardware.dist1_sync.output ();
+    hardware.dist2_sync.output ();
+    hardware.dist3_sync.output ();
+    usdist0_.disable ();
+    usdist1_.disable ();
+    usdist2_.disable ();
+    usdist3_.disable ();
 }
 
 void
@@ -93,6 +108,7 @@ Robot::main_loop ()
         // Wait until next cycle.
         hardware.wait ();
         // Update IO modules.
+        usdist_control_.update ();
         pressure.update ();
         outputs_set_.update ();
         // Handle communications.
@@ -269,12 +285,8 @@ Robot::proto_stats ()
     }
     if (stats_usdist_ && !--stats_usdist_cpt_)
     {
-        // TODO: this is a hack, only work in simulation.
-        stats_proto_->send ('U', "HHHH",
-                            hardware.adc_dist0.read (),
-                            hardware.adc_dist1.read (),
-                            hardware.adc_dist2.read (),
-                            hardware.adc_dist3.read ());
+        stats_proto_->send ('U', "HHHH", usdist0_.get (), usdist1_.get (),
+                            usdist2_.get (), usdist3_.get ());
         stats_usdist_cpt_ = stats_usdist_;
     }
     if (stats_pressure_ && !--stats_pressure_cpt_)

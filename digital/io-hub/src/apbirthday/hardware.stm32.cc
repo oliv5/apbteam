@@ -55,6 +55,8 @@ Hardware::Hardware ()
       gift_out (GPIOD, 4), gift_in (GPIOC, 11),
       ballon_funny_action (GPIOB, 7),
       pneum_open (GPIOD, 5),
+      dist0_sync (GPIOC, 0), dist1_sync (GPIOC, 1),
+      dist2_sync (GPIOC, 2), dist3_sync (GPIOC, 3),
       adc (0),
       adc_dist0 (adc, 0), adc_dist1 (adc, 1),
       adc_dist2 (adc, 2), adc_dist3 (adc, 3),

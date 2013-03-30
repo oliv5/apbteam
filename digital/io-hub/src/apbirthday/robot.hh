@@ -32,6 +32,7 @@
 #include "candles.hh"
 
 #include "ucoolib/base/proto/proto.hh"
+#include "ucoolib/dev/usdist/usdist.hh"
 
 /// Main robot superclass.
 class Robot : public ucoo::Proto::Handler
@@ -68,6 +69,12 @@ class Robot : public ucoo::Proto::Handler
     Chrono chrono;
     /// Public access to pressure handling.
     Pressure pressure;
+  private:
+    /// US distance sensors controller.
+    ucoo::UsDistControl usdist_control_;
+    /// US distance sensors.
+    ucoo::UsDist usdist0_, usdist1_, usdist2_, usdist3_;
+  public:
     /// Candles.
     Candles candles;
   private:
