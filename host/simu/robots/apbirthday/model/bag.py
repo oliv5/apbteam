@@ -43,13 +43,13 @@ class Bag:
         self.position = Position (link_bag.asserv.position, [ self.beacon ])
         self.distance_sensor = [
                 DistanceSensorSensopart (link_bag.adc_dist[0], scheduler, table,
-                    (100, 120), 0, (self.position, ), 4),
+                    (102, 84), 0, (self.position, ), 4),
                 DistanceSensorSensopart (link_bag.adc_dist[1], scheduler, table,
-                    (100, -120), 0, (self.position, ), 4),
+                    (102, -84), 0, (self.position, ), 4),
                 DistanceSensorSensopart (link_bag.adc_dist[2], scheduler, table,
-                    (-50, 120), pi, (self.position, ), 4),
+                    (-78, 104), pi, (self.position, ), 4),
                 DistanceSensorSensopart (link_bag.adc_dist[3], scheduler, table,
-                    (-50, -120), pi, (self.position, ), 4),
+                    (-83, -120), pi, (self.position, ), 4),
                 ]
         self.cake_arm = CakeArm (table, self.position,
                 PneumaticCylinder (
