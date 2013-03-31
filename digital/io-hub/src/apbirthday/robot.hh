@@ -29,6 +29,8 @@
 #include "chrono.hh"
 #include "pressure.hh"
 #include "outputs.hh"
+#include "radar_2013.hh"
+#include "obstacles.hh"
 #include "candles.hh"
 
 #include "ucoolib/base/proto/proto.hh"
@@ -74,7 +76,11 @@ class Robot : public ucoo::Proto::Handler
     ucoo::UsDistControl usdist_control_;
     /// US distance sensors.
     ucoo::UsDist usdist0_, usdist1_, usdist2_, usdist3_;
+    /// Radar.
+    Radar2013 radar_;
   public:
+    /// Obstacle database.
+    Obstacles obstacles;
     /// Candles.
     Candles candles;
   private:

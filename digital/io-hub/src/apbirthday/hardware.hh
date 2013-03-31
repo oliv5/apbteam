@@ -33,6 +33,9 @@
 #else
 # include "ucoolib/arch/host/host_stream.hh"
 #endif
+#ifdef TARGET_host
+# include "simu_report.host.hh"
+#endif
 
 #ifdef TARGET_host
 # include "ucoolib/arch/host/host.hh"
@@ -94,6 +97,9 @@ struct Hardware
 #else
     ucoo::AdcHost adc_dist0, adc_dist1, adc_dist2, adc_dist3;
     ucoo::AdcHost adc_pressure;
+#endif
+#ifdef TARGET_host
+    SimuReport simu_report;
 #endif
     Hardware ();
     // Wait until next cycle.

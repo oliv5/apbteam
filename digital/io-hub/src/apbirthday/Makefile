@@ -3,9 +3,10 @@ BASE = ../../../ucoolib
 TARGETS = host stm32f4
 PROGS = apbirthday
 apbirthday_SOURCES = main.cc robot.cc hardware.host.cc hardware.stm32.cc \
-		     zb_avrisp.stm32.cc \
+		     simu_report.host.cc zb_avrisp.stm32.cc \
 		     i2c_queue.cc asserv.cc mimot.cc \
 		     pressure.cc chrono.host.cc chrono.stm32.cc \
+		     radar.cc radar_2013.cc obstacles.cc \
 		     outputs.cc \
 		     top.cc init.cc move.cc candles.cc \
 		     angfsm.host.c angfsm_gen_arm_AI.arm.c fsm_queue.cc \

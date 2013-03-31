@@ -66,7 +66,8 @@ Hardware::Hardware ()
       adc_dist1 (host, "dist1", 1 << 12),
       adc_dist2 (host, "dist2", 1 << 12),
       adc_dist3 (host, "dist3", 1 << 12),
-      adc_pressure (host, "pressure", 1 << 12)
+      adc_pressure (host, "pressure", 1 << 12),
+      simu_report (host)
 {
     dev_uart.block (false);
     zb_uart.block (false);

@@ -44,6 +44,7 @@ Robot::Robot ()
       usdist1_ (usdist_control_, hardware.adc_dist1, hardware.dist1_sync, 100, 700, 650),
       usdist2_ (usdist_control_, hardware.adc_dist2, hardware.dist2_sync, 100, 700, 650),
       usdist3_ (usdist_control_, hardware.adc_dist3, hardware.dist3_sync, 100, 700, 650),
+      radar_ (usdist0_, usdist1_, usdist2_, usdist3_),
       candles (1),
       fsm_debug_state_ (FSM_DEBUG_RUN),
       outputs_set_ (outputs_, lengthof (outputs_)),
@@ -108,7 +109,13 @@ Robot::main_loop ()
         // Wait until next cycle.
         hardware.wait ();
         // Update IO modules.
-        usdist_control_.update ();
+        if (usdist_control_.update ())
+        {
+            Position robot_pos;
+            asserv.get_position (robot_pos);
+            radar_.update (robot_pos, obstacles);
+        }
+        obstacles.update ();
         pressure.update ();
         outputs_set_.update ();
         // Handle communications.
