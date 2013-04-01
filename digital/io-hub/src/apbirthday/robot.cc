@@ -269,6 +269,20 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
         stats_pressure_cpt_ = stats_pressure_ = args[0];
         stats_proto_ = &proto;
         break;
+    case c ('b', 2):
+        // Candles arm manipulation.
+        // - 1B: manipulate arm (0) or punchers (1)
+        // - 1B: action:
+        //       * deploy arm (0)
+        //       * undeploy arm (1)
+        //       * candle value
+        if (args[0] == 0 && args[1] == 0)
+            FSM_HANDLE (AI, ai_candle_deploy);
+        else if (args[0] == 0 && args[1] == 1)
+            FSM_HANDLE (AI, ai_candle_deploy);
+        else
+            candles.blow (args[1]);
+        break;
     default:
         proto.send ('?');
         return;
