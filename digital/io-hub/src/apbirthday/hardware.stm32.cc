@@ -60,6 +60,7 @@ Hardware::Hardware ()
       adc (0),
       adc_dist0 (adc, 0), adc_dist1 (adc, 1),
       adc_dist2 (adc, 2), adc_dist3 (adc, 3),
+      adc_cake_front (adc, 6), adc_cake_back (adc, 7),
       adc_pressure (adc, 8)
 {
     rcc_peripheral_enable_clock (&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
@@ -92,7 +93,7 @@ Hardware::Hardware ()
     main_i2c.enable ();
     // ADC.
     gpio_mode_setup (GPIOA, GPIO_MODE_ANALOG, GPIO_PUPD_NONE,
-                     GPIO0 | GPIO1 | GPIO2 | GPIO3);
+                     GPIO0 | GPIO1 | GPIO2 | GPIO3 | GPIO6 | GPIO7);
     gpio_mode_setup (GPIOB, GPIO_MODE_ANALOG, GPIO_PUPD_NONE, GPIO0);
     adc.enable ();
     // Cycle timer, 4 ms period.

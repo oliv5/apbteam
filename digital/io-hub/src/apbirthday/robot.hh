@@ -113,6 +113,8 @@ class Robot : public ucoo::Proto::Handler
     int stats_inputs_, stats_inputs_cpt_;
     /// US distance sensors stats interval and counter.
     int stats_usdist_, stats_usdist_cpt_;
+    /// Cake distance sensors stats interval and counter.
+    int stats_cake_, stats_cake_cpt_;
     /// Pressure stats interval and counter.
     int stats_pressure_, stats_pressure_cpt_;
 };

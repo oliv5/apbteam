@@ -50,7 +50,7 @@ Robot::Robot ()
       outputs_set_ (outputs_, lengthof (outputs_)),
       stats_proto_ (0),
       stats_asserv_ (0), stats_chrono_ (false), stats_chrono_last_s_ (-1),
-      stats_inputs_ (0), stats_usdist_ (0), stats_pressure_ (0)
+      stats_inputs_ (0), stats_usdist_ (0), stats_cake_ (0), stats_pressure_ (0)
 {
     robot = this;
     // Fill I/O arrays.
@@ -257,6 +257,12 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
         stats_usdist_cpt_ = stats_usdist_ = args[0];
         stats_proto_ = &proto;
         break;
+    case c ('G', 1):
+        // Cake distance sensors stats.
+        // 1B: stat interval.
+        stats_cake_cpt_ = stats_cake_ = args[0];
+        stats_proto_ = &proto;
+        break;
     case c ('F', 1):
         // Pressure stats.
         // 1B: stat interval.
@@ -308,6 +314,12 @@ Robot::proto_stats ()
         stats_proto_->send ('U', "HHHH", usdist0_.get (), usdist1_.get (),
                             usdist2_.get (), usdist3_.get ());
         stats_usdist_cpt_ = stats_usdist_;
+    }
+    if (stats_cake_ && !--stats_cake_cpt_)
+    {
+        stats_proto_->send ('G', "HH", hardware.adc_cake_front.read (),
+                            hardware.adc_cake_back.read ());
+        stats_cake_cpt_ = stats_cake_;
     }
     if (stats_pressure_ && !--stats_pressure_cpt_)
     {

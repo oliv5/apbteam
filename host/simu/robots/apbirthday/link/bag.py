@@ -37,9 +37,12 @@ class Bag:
                 adc_channels = True)
         for gpio in io_hub.apbirthday.gpios:
             setattr (self, gpio, MexGpio (self.io_hub.gpios, gpio))
+        adc_channels = self.io_hub.adc_channels
         self.adc_dist = [
-                MexAdcChannel (self.io_hub.adc_channels, 'dist0'),
-                MexAdcChannel (self.io_hub.adc_channels, 'dist1'),
-                MexAdcChannel (self.io_hub.adc_channels, 'dist2'),
-                MexAdcChannel (self.io_hub.adc_channels, 'dist3'),
+                MexAdcChannel (adc_channels, 'dist0'),
+                MexAdcChannel (adc_channels, 'dist1'),
+                MexAdcChannel (adc_channels, 'dist2'),
+                MexAdcChannel (adc_channels, 'dist3'),
                 ]
+        self.adc_cake_front = MexAdcChannel (adc_channels, 'cake_front')
+        self.adc_cake_back = MexAdcChannel (adc_channels, 'cake_back')
