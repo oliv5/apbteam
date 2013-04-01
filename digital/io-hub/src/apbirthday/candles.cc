@@ -98,19 +98,26 @@ void Candles::deduce ()
 
 /* Global candle FSM */
 FSM_STATES (AI_CANDLE_SLEEPING,
-        AI_CANDLE_READY,
-        AI_CANDLE_UNDEPLOYING)
+            AI_CANDLE_READY,
+            AI_CANDLE_UNDEPLOYING)
 
 FSM_EVENTS (ai_candle_deploy,
-        ai_candle_undeploy,
-        ai_candle_blow)
+            ai_candle_undeploy,
+            ai_candle_blow)
 
 FSM_START_WITH (AI_CANDLE_SLEEPING)
 
 FSM_TRANS (AI_CANDLE_SLEEPING, ai_candle_deploy, AI_CANDLE_READY)
 {
-    /* TODO: piston arm IN */
-    /* TODO: piston far OUT */
+    /* Deploy arm. */
+    robot->hardware.cake_arm_out.set (true);
+    robot->hardware.cake_arm_in.set (false);
+    /* Prepare far pusher. */
+    robot->hardware.cake_push_far_out.set (false);
+    robot->hardware.cake_push_far_in.set (true);
+    /* Prepare near pusher. */
+    robot->hardware.cake_push_near_out.set (false);
+    robot->hardware.cake_push_near_in.set (true);
 }
 
 FSM_TRANS (AI_CANDLE_READY, ai_candle_blow, AI_CANDLE_READY)
@@ -146,18 +153,27 @@ FSM_TRANS (AI_CANDLE_READY, ai_candle_blow, AI_CANDLE_READY)
 
 FSM_TRANS (AI_CANDLE_READY, ai_candle_undeploy, AI_CANDLE_UNDEPLOYING)
 {
-    /* TODO: piston far OUT */
+    /* Prepare far puncher to undeploy. */
+    robot->hardware.cake_push_far_out.set (true);
+    robot->hardware.cake_push_far_in.set (false);
+    /* Be sure the near punched in not punching. */
+    robot->hardware.cake_push_near_out.set (false);
+    robot->hardware.cake_push_near_in.set (true);
 }
 
 FSM_TRANS_TIMEOUT (AI_CANDLE_UNDEPLOYING, 10, AI_CANDLE_SLEEPING) //TODO timeout value
 {
-    /* TODO: piston far unleach */
-    /* TODO: piston arm IN */
+    /* Unleach far punched. */
+    robot->hardware.cake_push_far_out.set (false);
+    robot->hardware.cake_push_far_in.set (false);
+    /* Put arm back. */
+    robot->hardware.cake_arm_out.set (false);
+    robot->hardware.cake_arm_in.set (true);
 }
 
 /* Far puncher FSM */
 FSM_STATES (AI_CANDLE_FAR_SLEEPING,
-        AI_CANDLE_FAR_PUNCHING)
+            AI_CANDLE_FAR_PUNCHING)
 
 FSM_EVENTS (ai_candle_far_punch)
 
@@ -165,17 +181,19 @@ FSM_START_WITH (AI_CANDLE_FAR_SLEEPING)
 
 FSM_TRANS (AI_CANDLE_FAR_SLEEPING, ai_candle_far_punch, AI_CANDLE_FAR_PUNCHING)
 {
-    /* TODO: piston far OUT */
+    robot->hardware.cake_push_far_out.set (true);
+    robot->hardware.cake_push_far_in.set (false);
 }
 
 FSM_TRANS_TIMEOUT (AI_CANDLE_FAR_PUNCHING, 12, AI_CANDLE_FAR_SLEEPING) //TODO timeout value
 {
-    /* TODO: piston far OUT */
+    robot->hardware.cake_push_far_out.set (false);
+    robot->hardware.cake_push_far_in.set (true);
 }
 
 /* Near puncher FSM */
 FSM_STATES (AI_CANDLE_NEAR_SLEEPING,
-        AI_CANDLE_NEAR_PUNCHING)
+            AI_CANDLE_NEAR_PUNCHING)
 
 FSM_EVENTS (ai_candle_near_punch)
 
@@ -183,25 +201,27 @@ FSM_START_WITH (AI_CANDLE_NEAR_SLEEPING)
 
 FSM_TRANS (AI_CANDLE_NEAR_SLEEPING, ai_candle_near_punch, AI_CANDLE_NEAR_PUNCHING)
 {
-    /* TODO: piston near OUT */
+    robot->hardware.cake_push_near_out.set (true);
+    robot->hardware.cake_push_near_in.set (false);
 }
 
 FSM_TRANS_TIMEOUT (AI_CANDLE_NEAR_PUNCHING, 12, AI_CANDLE_NEAR_SLEEPING) //TODO timeout value
 {
-    /* TODO: piston near OUT */
+    robot->hardware.cake_push_near_out.set (false);
+    robot->hardware.cake_push_near_in.set (true);
 }
 
 /* Far analyse FSM */
 FSM_STATES (AI_CANDLE_FAR_ANALYSE_SLEEP,
-        AI_CANDLE_FAR_ANALYSING)
+            AI_CANDLE_FAR_ANALYSING)
 
 FSM_EVENTS (ai_candle_far_analyse)
 
 FSM_START_WITH (AI_CANDLE_FAR_ANALYSE_SLEEP)
 
 FSM_TRANS (AI_CANDLE_FAR_ANALYSE_SLEEP,
-        ai_candle_far_analyse,
-        AI_CANDLE_FAR_ANALYSING)
+           ai_candle_far_analyse,
+           AI_CANDLE_FAR_ANALYSING)
 {
     /* TODO: launch color analyse */
 }
@@ -211,24 +231,27 @@ FSM_TRANS_TIMEOUT (AI_CANDLE_FAR_ANALYSING, 10, AI_CANDLE_FAR_ANALYSE_SLEEP) //T
     /* TODO Get color results and update table. */
     /* ... */
     /* Update color. */
-    robot->candles.color[robot->candles.actual_pos[FLOOR_FAR]] = CANDLE_RED; // TODO = color_result
-    /* Update whole colors. */
-    robot->candles.deduce ();
-    /* Send blow event. */
-    FSM_HANDLE (AI, ai_candle_blow);
+    if (true) // TODO color analysise is ok
+    {
+        robot->candles.color[robot->candles.actual_pos[FLOOR_FAR]] = CANDLE_RED; // TODO = color_result
+        /* Update whole colors. */
+        robot->candles.deduce ();
+        /* Send blow event. */
+        FSM_HANDLE (AI, ai_candle_blow);
+    }
 }
 
 /* Near analyse FSM */
 FSM_STATES (AI_CANDLE_NEAR_ANALYSE_SLEEP,
-        AI_CANDLE_NEAR_ANALYSING)
+            AI_CANDLE_NEAR_ANALYSING)
 
 FSM_EVENTS (ai_candle_near_analyse)
 
 FSM_START_WITH (AI_CANDLE_NEAR_ANALYSE_SLEEP)
 
 FSM_TRANS (AI_CANDLE_NEAR_ANALYSE_SLEEP,
-        ai_candle_near_analyse,
-        AI_CANDLE_NEAR_ANALYSING)
+           ai_candle_near_analyse,
+           AI_CANDLE_NEAR_ANALYSING)
 {
     /* TODO: Launch color analyse. */
 }
@@ -238,9 +261,12 @@ FSM_TRANS_TIMEOUT (AI_CANDLE_NEAR_ANALYSING, 10, AI_CANDLE_NEAR_ANALYSE_SLEEP) /
     /* TODO Get color results and update table. */
     /* ... */
     /* Update color. */
-    robot->candles.color[robot->candles.actual_pos[FLOOR_NEAR]] = CANDLE_RED; // TODO
-    /* Update whole colors. */
-    robot->candles.deduce ();
-    /* Send blow event. */
-    FSM_HANDLE (AI, ai_candle_blow);
+    if (true) // TODO color analysise is ok
+    {
+        robot->candles.color[robot->candles.actual_pos[FLOOR_NEAR]] = CANDLE_RED; // TODO
+        /* Update whole colors. */
+        robot->candles.deduce ();
+        /* Send blow event. */
+        FSM_HANDLE (AI, ai_candle_blow);
+    }
 }
