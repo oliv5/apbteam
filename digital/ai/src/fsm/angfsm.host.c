@@ -941,6 +941,9 @@ angfsm_build_start_with (angfsm_build_t *fsm, const char *starters)
       angfsm_build_state_chain_t *sc = (angfsm_build_state_chain_t *)
          malloc (sizeof (angfsm_build_state_chain_t));
       angfsm_build_state_t *s = angfsm_build_get_state (fsm, args[i]);
+      if (!s)
+          fprintf (stderr, "Error: starting state \"%s\" in fsm \"%s\" has "
+                           "not been declared.\n", args[i], fsm->name);
       assert (s);
       sc->state = *s;
       sc->next = fsm->starters;
