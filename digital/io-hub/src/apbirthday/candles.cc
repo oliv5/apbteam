@@ -35,32 +35,32 @@ Candles::Candles (int calif_mode)
 {
     int i;
     /* Init candles color. */
-    for (i = 0; i < CANDLES_NB; i++)
+    for (i = 0; i < total_count; i++)
     {
-        color[i] = CANDLE_UNKNOWN;
-        state[i] = CANDLE_UNPUNCHED;
+        color[i] = UNKNOWN;
+        state[i] = UNPUNCHED;
     }
-    color[0] = CANDLE_BLUE;
-    color[8] = CANDLE_BLUE;
-    color[7] = CANDLE_RED;
-    color[19] = CANDLE_RED;
+    color[0] = BLUE;
+    color[8] = BLUE;
+    color[7] = RED;
+    color[19] = RED;
     if (calif_mode)
     {
-        color[12] = CANDLE_WHITE;
-        color[13] = CANDLE_WHITE;
-        color[14] = CANDLE_WHITE;
-        color[15] = CANDLE_WHITE;
+        color[12] = WHITE;
+        color[13] = WHITE;
+        color[14] = WHITE;
+        color[15] = WHITE;
     }
-    actual_pos[FLOOR_NEAR] = CANDLES_NB;
-    actual_pos[FLOOR_FAR] = CANDLES_NB;
+    actual_pos[NEAR] = -1;
+    actual_pos[FAR] = -1;
 }
 
 void Candles::blow (int candle)
 {
-    if (CANDLE_IS_FAR(candle))
-        actual_pos[FLOOR_FAR] = candle;
+    if (is_far (candle))
+        actual_pos[FAR] = candle;
     else
-        actual_pos[FLOOR_NEAR] = candle;
+        actual_pos[NEAR] = candle;
     deduce ();
     robot->fsm_queue.post (FSM_EVENT (ai_candle_blow));
 }
@@ -72,28 +72,39 @@ void Candles::deduce ()
     for (i = 1; i < 4; i++)
         if (color[i] != color[i + 3])
         {
-            if (color[i] == CANDLE_RED)
-                color[i + 3] = CANDLE_BLUE;
-            else if (color[i] == CANDLE_BLUE)
-                color[i + 3] = CANDLE_RED;
-            else if (color[i + 3] == CANDLE_RED)
-                color[i] = CANDLE_BLUE;
-            else if (color[i + 3] == CANDLE_BLUE)
-                color[i] = CANDLE_RED;
+            if (color[i] == RED)
+                color[i + 3] = BLUE;
+            else if (color[i] == BLUE)
+                color[i + 3] = RED;
+            else if (color[i + 3] == RED)
+                color[i] = BLUE;
+            else if (color[i + 3] == BLUE)
+                color[i] = RED;
         }
     /* Near. */
     for (i = 9; i < 14; i++)
         if (color[i] != color[i + 5])
         {
-            if (color[i] == CANDLE_RED)
-                color[i + 5] = CANDLE_BLUE;
-            else if (color[i] == CANDLE_BLUE)
-                color[i + 5] = CANDLE_RED;
-            else if (color[i + 5] == CANDLE_RED)
-                color[i] = CANDLE_BLUE;
-            else if (color[i + 5] == CANDLE_BLUE)
-                color[i] = CANDLE_RED;
+            if (color[i] == RED)
+                color[i + 5] = BLUE;
+            else if (color[i] == BLUE)
+                color[i + 5] = RED;
+            else if (color[i + 5] == RED)
+                color[i] = BLUE;
+            else if (color[i + 5] == BLUE)
+                color[i] = RED;
         }
+}
+
+inline bool Candles::is_near (int pos)
+{
+    return pos >= far_count;
+}
+
+
+inline bool Candles::is_far (int pos)
+{
+    return pos < far_count;
 }
 
 /* Global candle FSM */
@@ -123,26 +134,26 @@ FSM_TRANS (AI_CANDLE_SLEEPING, ai_candle_deploy, AI_CANDLE_READY)
 FSM_TRANS (AI_CANDLE_READY, ai_candle_blow, AI_CANDLE_READY)
 {
     int i;
-    for (i = 0; i < CANDLE_FLOOR_NB; i++)
+    for (i = 0; i < Candles::FLOOR_NB; i++)
     {
-        if (robot->candles.actual_pos[i] != CANDLE_FLOOR_NB)
+        if (robot->candles.actual_pos[i] != -1)
         {
             /* We can already punch if we know the color. */
-            if (robot->candles.state[robot->candles.actual_pos[i]] == CANDLE_UNPUNCHED
-                    && (robot->candles.color[robot->candles.actual_pos[i]] == (candle_color_t) team_color
-                        || robot->candles.color[robot->candles.actual_pos[i]] == CANDLE_WHITE))
+            if (robot->candles.state[robot->candles.actual_pos[i]] == Candles::UNPUNCHED
+                    && (robot->candles.color[robot->candles.actual_pos[i]] == (Candles::Color) team_color
+                        || robot->candles.color[robot->candles.actual_pos[i]] == Candles::WHITE))
             {
-                if (CANDLE_IS_FAR (robot->candles.actual_pos[i]))
+                if (Candles::is_far (robot->candles.actual_pos[i]))
                     FSM_HANDLE (AI, ai_candle_far_punch);
                 else
                     FSM_HANDLE (AI, ai_candle_near_punch);
-                robot->candles.state[robot->candles.actual_pos[i]] = CANDLE_PUNCHED;
-                robot->candles.actual_pos[i] = CANDLE_FLOOR_NB;
+                robot->candles.state[robot->candles.actual_pos[i]] = Candles::PUNCHED;
+                robot->candles.actual_pos[i] = -1;
             }
             /* We need to analyse color. */
-            else if (robot->candles.color[robot->candles.actual_pos[i]] == CANDLE_UNKNOWN)
+            else if (robot->candles.color[robot->candles.actual_pos[i]] == Candles::UNKNOWN)
             {
-                if (CANDLE_IS_FAR (robot->candles.actual_pos[i]))
+                if (Candles::is_far (robot->candles.actual_pos[i]))
                     FSM_HANDLE (AI, ai_candle_far_analyse);
                 else
                     FSM_HANDLE (AI, ai_candle_near_analyse);
@@ -233,7 +244,8 @@ FSM_TRANS_TIMEOUT (AI_CANDLE_FAR_ANALYSING, 10, AI_CANDLE_FAR_ANALYSE_SLEEP) //T
     /* Update color. */
     if (true) // TODO color analysise is ok
     {
-        robot->candles.color[robot->candles.actual_pos[FLOOR_FAR]] = CANDLE_RED; // TODO = color_result
+        robot->candles.color[robot->candles.actual_pos[Candles::FAR]] =
+            Candles::RED; // TODO = color_result
         /* Update whole colors. */
         robot->candles.deduce ();
         /* Send blow event. */
@@ -263,7 +275,8 @@ FSM_TRANS_TIMEOUT (AI_CANDLE_NEAR_ANALYSING, 10, AI_CANDLE_NEAR_ANALYSE_SLEEP) /
     /* Update color. */
     if (true) // TODO color analysise is ok
     {
-        robot->candles.color[robot->candles.actual_pos[FLOOR_NEAR]] = CANDLE_RED; // TODO
+        robot->candles.color[robot->candles.actual_pos[Candles::NEAR]] =
+            Candles::RED; // TODO = color_result
         /* Update whole colors. */
         robot->candles.deduce ();
         /* Send blow event. */

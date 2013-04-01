@@ -25,12 +25,6 @@
 //
 // }}}
 
-#define CANDLE_FAR 8
-#define CANDLE_NEAR 12
-#define CANDLES_NB (CANDLE_NEAR + CANDLE_FAR)
-#define CANDLE_IS_FAR(c) ((c) < CANDLE_FAR)
-#define CANDLE_IS_NEAR(c) ((c) >= CANDLE_FAR)
-
 /* The cake is a lie !
 
 -----------------------------------------------------------
@@ -45,38 +39,40 @@
                     -     ______    -
  */
 
-typedef enum
-{
-    CANDLE_UNPUNCHED,
-    CANDLE_PUNCHED,
-    CANDLE_STATE_NB
-} candle_state_t;
-
-typedef enum
-{
-    FLOOR_NEAR = 0,
-    FLOOR_FAR = 1,
-    CANDLE_FLOOR_NB
-} candle_floor_t;
-
-/* XXX use another common type for colors ? */
-typedef enum
-{
-    CANDLE_RED = TEAM_COLOR_RIGHT,
-    CANDLE_BLUE = TEAM_COLOR_LEFT,
-    CANDLE_WHITE,
-    CANDLE_UNKNOWN,
-} candle_color_t;
-
 class Candles
 {
     public:
-        candle_state_t state[CANDLES_NB];
-        candle_color_t color[CANDLES_NB];
         Candles (int calif_mode);
         void blow (int candle);
         void deduce ();
-        int actual_pos[CANDLE_FLOOR_NB];
+        enum State
+        {
+            UNPUNCHED,
+            PUNCHED,
+        };
+        enum Floor
+        {
+            NEAR = 0,
+            FAR = 1,
+            FLOOR_NB
+        };
+        enum Color
+        {
+            RED = TEAM_COLOR_RIGHT,
+            BLUE = TEAM_COLOR_LEFT,
+            WHITE,
+            UNKNOWN,
+        };
+        static bool is_near (int pos);
+        static bool is_far (int pos);
+    private:
+        static const int total_count = 20;
+        static const int near_count = 12;
+        static const int far_count = 8;
+    public:
+        State state[total_count];
+        Color color[total_count];
+        int actual_pos[FLOOR_NB];
 };
 
 #endif // candles_hh
