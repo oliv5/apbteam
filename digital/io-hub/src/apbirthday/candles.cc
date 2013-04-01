@@ -108,7 +108,9 @@ inline bool Candles::is_far (int pos)
 }
 
 /* Global candle FSM */
-FSM_STATES (AI_CANDLE_SLEEPING,
+FSM_STATES (AI_CANDLE_OFF,
+            AI_CANDLE_INIT,
+            AI_CANDLE_SLEEPING,
             AI_CANDLE_READY,
             AI_CANDLE_UNDEPLOYING)
 
@@ -116,7 +118,31 @@ FSM_EVENTS (ai_candle_deploy,
             ai_candle_undeploy,
             ai_candle_blow)
 
-FSM_START_WITH (AI_CANDLE_SLEEPING)
+FSM_START_WITH (AI_CANDLE_OFF)
+
+FSM_TRANS (AI_CANDLE_OFF, init_actuators, AI_CANDLE_INIT)
+{
+    /* Deploy for initializing. */
+    /* Deploy arm. */
+    robot->hardware.cake_arm_out.set (true);
+    robot->hardware.cake_arm_in.set (false);
+    /* Prepare far pusher. */
+    robot->hardware.cake_push_far_out.set (false);
+    robot->hardware.cake_push_far_in.set (true);
+    /* Prepare near pusher. */
+    robot->hardware.cake_push_near_out.set (false);
+    robot->hardware.cake_push_near_in.set (true);
+}
+
+FSM_TRANS_TIMEOUT (AI_CANDLE_INIT, 12, AI_CANDLE_UNDEPLOYING)
+{
+    /* Prepare far puncher to undeploy. */
+    robot->hardware.cake_push_far_out.set (true);
+    robot->hardware.cake_push_far_in.set (false);
+    /* Be sure the near punched in not punching. */
+    robot->hardware.cake_push_near_out.set (false);
+    robot->hardware.cake_push_near_in.set (true);
+}
 
 FSM_TRANS (AI_CANDLE_SLEEPING, ai_candle_deploy, AI_CANDLE_READY)
 {
