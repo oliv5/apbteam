@@ -103,6 +103,8 @@ class Robot : public ucoo::Proto::Handler
     Outputs outputs_set_;
     /// Proto used for stats.
     ucoo::Proto *stats_proto_;
+    /// Asserv stats interval and counter.
+    int stats_asserv_, stats_asserv_cpt_;
     /// Enable chrono stats.
     bool stats_chrono_;
     /// Last stated second.

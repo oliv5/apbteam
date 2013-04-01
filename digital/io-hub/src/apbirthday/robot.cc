@@ -49,7 +49,7 @@ Robot::Robot ()
       fsm_debug_state_ (FSM_DEBUG_RUN),
       outputs_set_ (outputs_, lengthof (outputs_)),
       stats_proto_ (0),
-      stats_chrono_ (false), stats_chrono_last_s_ (-1),
+      stats_asserv_ (0), stats_chrono_ (false), stats_chrono_last_s_ (-1),
       stats_inputs_ (0), stats_usdist_ (0), stats_pressure_ (0)
 {
     robot = this;
@@ -231,6 +231,12 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
                                         ucoo::bytes_pack (args[4], args[5]));
         }
 	break;
+    case c ('A', 1):
+        // Asserv position stats.
+        // 1B: stat interval.
+        stats_asserv_cpt_ = stats_asserv_ = args[0];
+        stats_proto_ = &proto;
+        break;
     case c ('C', 1):
         // Chrono stats.
         // 1B: start chrono if non-zero.
@@ -270,6 +276,13 @@ Robot::proto_stats ()
 {
     if (!stats_proto_)
         return;
+    if (stats_asserv_ && !--stats_asserv_cpt_)
+    {
+        Position pos;
+        asserv.get_position (pos);
+        stats_proto_->send ('A', "hhH", pos.v.x, pos.v.y, pos.a);
+        stats_asserv_cpt_ = stats_asserv_;
+    }
     if (stats_chrono_)
     {
         int s = chrono.remaining_time_ms () / 1000;
