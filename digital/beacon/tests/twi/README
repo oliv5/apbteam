@@ -1,0 +1,25 @@
+******************************************
+Lol-v2 TWI Test Tool
+******************************************
+
+! This test tool must be used with beacon/pcb/lol-v2 hardware only !
+
+1/ Purpose of the twi test tool
+Validate the hardware compliancy of the TWI bus using lol-v2 as a slave
+
+2/ How to check lol-v2 -> Master communication
+Using the APB TWI protocol, the twi test tool will always returns following fields: 
+Opponent1_X = 13
+Opponent1_Y = 37
+Opponent1_trust = 42
+Opponent2_X = 1500
+Opponent2_Y = 1671
+Opponent2_trust = 99
+
+If you get theses values, TWI is unitary functional. Don't forget to check stress and robustness.
+
+3/ How to check Master -> lol-v2 communication
+Using the APB TWI protocol, the twi test tool will light on all the leds when the jack field is set to 1 by the master. Inversely, leds will be shutted down when jack field is set to 0.
+
+
+
