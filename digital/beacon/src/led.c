@@ -52,7 +52,7 @@ void led_display_state(int state)
 void init_led(void)
 {
 	/*D5/D6/D7 are configured in output */
-	DDRD = 0xE0;
+	DDRD = 0xF0;
 }
 
 /* This function activates a specific led */
