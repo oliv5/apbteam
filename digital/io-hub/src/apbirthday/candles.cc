@@ -277,6 +277,11 @@ FSM_TRANS_TIMEOUT (AI_CANDLE_FAR_ANALYSING, 10, AI_CANDLE_FAR_ANALYSE_SLEEP) //T
         /* Send blow event. */
         FSM_HANDLE (AI, ai_candle_blow);
     }
+    else
+    {
+        // Too bad, we do not have a valid color analysis.
+        robot->candles.actual_pos[Candles::FAR] = -1;
+    }
 }
 
 /* Near analyse FSM */
@@ -307,5 +312,10 @@ FSM_TRANS_TIMEOUT (AI_CANDLE_NEAR_ANALYSING, 10, AI_CANDLE_NEAR_ANALYSE_SLEEP) /
         robot->candles.deduce ();
         /* Send blow event. */
         FSM_HANDLE (AI, ai_candle_blow);
+    }
+    else
+    {
+        // Too bad, we do not have a valid color analysis.
+        robot->candles.actual_pos[Candles::NEAR] = -1;
     }
 }
