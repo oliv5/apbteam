@@ -29,7 +29,7 @@
 #include <stdio.h>
 #include "configuration.h"
 
-#define DEBUG_TASK_PERIOD 	100L
+#define DEBUG_TASK_PERIOD 	500L
 
 /* This function initializes the USART interface for debugging on avr */
 void initSerialInterface(void);
