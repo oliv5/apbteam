@@ -279,7 +279,7 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
         if (args[0] == 0 && args[1] == 0)
             FSM_HANDLE (AI, ai_candle_deploy);
         else if (args[0] == 0 && args[1] == 1)
-            FSM_HANDLE (AI, ai_candle_deploy);
+            FSM_HANDLE (AI, ai_candle_undeploy);
         else
             candles.blow (args[1]);
         break;
