@@ -73,6 +73,7 @@ void APL_TaskHandler(void)
 				laser_init();
 				motor_init();
 				calibration_start_task();
+				calibration_start_manual_task();
 				motor_stop();
 			}
  			network_set_state(APP_NETWORK_JOIN_REQUEST);

@@ -30,6 +30,7 @@
 
 #define CALIBRATION_FAST_TASK_PERIOD 		22L
 #define CALIBRATION_SLOW_TASK_PERIOD 	22L
+#define CALIBRATION_MANUAL_PERIOD	 	30L
 
 #define FAST_SCANNING_OFFSET 		20
 #define SCANNING_STEP 			1
@@ -65,6 +66,9 @@ typedef struct
 void calibration_init_structure(void);
 
 /* This function starts the calibration task */
+void calibration_start_manual_task(void);
+
+/* This function starts the calibration task */
 void calibration_start_task(void);
 
 /* This function stops the calibration task */
@@ -90,5 +94,8 @@ TLaser_flag_type calibration_get_laser_flag(void);
 
 /* This function returns the calibration state */
 TCalibration_state calibration_get_state(void);
+
+/* Manual calibration task */
+void calibration_manual_task(void);
 
 #endif

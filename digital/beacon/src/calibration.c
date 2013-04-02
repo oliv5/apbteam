@@ -29,8 +29,10 @@
 #include "servo.h"
 #include "motor.h"
 #include "codewheel.h"
+#include "buttons.h"
 
-HAL_AppTimer_t calibrationTimer;		// TIMER descripor used by the DEBUG task
+HAL_AppTimer_t calibrationTimer;		// TIMER descripor used by the calibration task
+HAL_AppTimer_t ManualcalibrationTimer;		// TIMER descripor used by the manual calibration task
 calibration_s calibration;
 
 
@@ -40,6 +42,15 @@ void calibration_init_structure(void)
 	/* Calibration initial values */
 	calibration.state = CALIBRATION_INIT;
 	calibration.laser_flag = CLEAR;
+}
+
+/* This function starts the calibration task */
+void calibration_start_manual_task(void)
+{
+	calibrationTimer.interval = CALIBRATION_MANUAL_PERIOD;
+	calibrationTimer.mode     = TIMER_REPEAT_MODE;
+	calibrationTimer.callback = calibration_manual_task;
+	HAL_StartAppTimer(&calibrationTimer);
 }
 
 /* This function starts the calibration task */
@@ -218,4 +229,17 @@ TLaser_flag_type calibration_get_laser_flag(void)
 TCalibration_state calibration_get_state(void)
 {
 	return calibration.state;
+}
+
+/* Manual calibration task */
+void calibration_manual_task(void)
+{
+	if(button_get_state(1) == BUTTON_PRESSED)
+		servo_angle_increase(SERVO_1);
+	if(button_get_state(2) == BUTTON_PRESSED)
+		servo_angle_decrease(SERVO_1);
+	if(button_get_state(3) == BUTTON_PRESSED)
+		servo_angle_increase(SERVO_2);
+	if(button_get_state(4) == BUTTON_PRESSED)
+		servo_angle_decrease(SERVO_2);
 }
