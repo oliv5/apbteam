@@ -32,6 +32,7 @@
 #include "print.h"
 #include "network.h"
 #include "position.h"
+#include "buttons.h"
 #include "motor.h"
 #include "laser.h"
 #include "servo.h"
@@ -66,6 +67,7 @@ void APL_TaskHandler(void)
 			}
 			else
 			{
+				buttons_init();
 				servo_init();
 				codewheel_init();
 				laser_init();
