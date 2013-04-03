@@ -22,6 +22,7 @@
 //
 // }}}
 #include "obstacles.hh"
+#include "bot.hh"
 
 extern "C" {
 #include "modules/math/geometry/distance.h"
@@ -99,7 +100,46 @@ Obstacles::add (const vect_t &pos)
 bool
 Obstacles::blocking (const vect_t &robot, const vect_t &dest) const
 {
-    // TODO
+    // Stop here if no obstacle.
+    bool obs_valid = false;
+    for (int i = 0; !obs_valid && i < obstacles_nb_; i++)
+        obs_valid = obstacles_[i].valid != 0;
+    if (!obs_valid)
+        return false;
+    // If destination is realy near, stop here.
+    vect_t vd = dest; vect_sub (&vd, &robot);
+    int d = vect_norm (&vd);
+    if (d < epsilon_mm)
+        return false;
+    // If destination is near, use clearance to destination point instead of
+    // stop length.
+    vect_t t;
+    if (d < stop_mm)
+        t = dest;
+    else
+    {
+        vect_scale_f824 (&vd, (1ll << 24) / d * stop_mm);
+        t = robot;
+        vect_translate (&t, &vd);
+    }
+    // Now, look at obstacles.
+    for (int i = 0; i < obstacles_nb_; i++)
+    {
+        if (!obstacles_[i].valid)
+            continue;
+        // Vector from robot to obstacle.
+        vect_t vo = obstacles_[i].pos; vect_sub (&vo, &robot);
+        // Ignore if in our back.
+        int dp = vect_dot_product (&vd, &vo);
+        if (dp < 0)
+            continue;
+        // Check distance.
+        int od = distance_segment_point (&robot, &t, &obstacles_[i].pos);
+        if (od > BOT_SIZE_SIDE + clearance_mm / 2 + obstacle_radius_mm)
+            continue;
+        // Else, obstacle is blocking.
+        return true;
+    }
     return false;
 }
 

@@ -44,6 +44,28 @@ class Obstacles
     /// Return true if there is an obstacle near the robot while going to a
     /// destination point.
     bool blocking (const vect_t &robot, const vect_t &dest) const;
+  public:
+    /// Estimated obstacle radius.  The obstacle may be larger than at the
+    /// detected edge.
+    static const int obstacle_radius_mm = 150;
+    /// Stop distance. Distance under which an obstacle is considered harmful
+    /// when moving.
+    static const int stop_mm = 350;
+    /// Clearance distance.  Distance over which an obstacle should be to the
+    /// side when moving.
+    ///
+    /// OK, more explanations: when moving, a rectangle is placed in front of
+    /// the robot, of length STOP_MM and width 2 * (CLEARANCE_MM +
+    /// BOT_SIZE_SIDE).  If an obstacle is inside this rectangle, it is
+    /// considered in the way.
+    ///
+    /// If the destination point is near (< STOP_MM), this reduce the
+    /// rectangle length.
+    ///
+    /// If the destination is really near (< EPSILON_MM), ignore all this.
+    static const int clearance_mm = 100;
+    /// Destination distance near enough so that obstacles could be ignored.
+    static const int epsilon_mm = 70;
   private:
     /// Validity period of a new obstacle.
     static const int valid_new_ = 125;

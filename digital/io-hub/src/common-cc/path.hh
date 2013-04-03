@@ -1,3 +1,5 @@
+#ifndef path_hh
+#define path_hh
 // io-hub - Modular Input/Output. {{{
 //
 // Copyright (C) 2013 Nicolas Schodet
@@ -21,12 +23,20 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 //
 // }}}
-//#include "move.hh"
+#include "defs.hh"
 
-#include "robot.hh"
+/// Path finding class.
+/// TODO: dummy implementation.
+class Path
+{
+  public:
+    void reset () { }
+    void obstacle (int index, vect_t c, int r, int factor = 0) { }
+    void endpoints (const vect_t &src, const vect_t &dst) { dst_ = dst; }
+    void compute (int factor = 0) { }
+    bool get_next (vect_t &p) { p = dst_; return true; }
+  private:
+    vect_t dst_;
+};
 
-FSM_EVENTS (
-	    // Report from asserv after a successful move command.
-	    robot_move_success,
-	    // Report from asserv after a failed move command.
-	    robot_move_failure)
+#endif // path_hh

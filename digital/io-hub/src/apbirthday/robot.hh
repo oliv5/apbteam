@@ -31,6 +31,8 @@
 #include "outputs.hh"
 #include "radar_2013.hh"
 #include "obstacles.hh"
+#include "move.hh"
+#include "path.hh"
 #include "candles.hh"
 
 #include "ucoolib/base/proto/proto.hh"
@@ -81,6 +83,10 @@ class Robot : public ucoo::Proto::Handler
   public:
     /// Obstacle database.
     Obstacles obstacles;
+    /// Path finding.
+    Path path;
+    /// Move FSM.
+    Move move;
     /// Candles.
     Candles candles;
   private:

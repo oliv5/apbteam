@@ -167,6 +167,9 @@ Robot::fsm_gen_event ()
         if (ANGFSM_HANDLE_VAR (AI, event))
             return true;
     }
+    // Check obstacles.
+    if (move.check_obstacles ())
+        return true;
     return false;
 }
 
@@ -193,9 +196,8 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
                 (int16_t) ucoo::bytes_pack (args[0], args[1]),
                 (int16_t) ucoo::bytes_pack (args[2], args[3]),
             };
-            asserv.stop ();
-            // TODO: use move FSM.
-            asserv.goto_xy (pos, Asserv::DirectionConsign (args[4]));
+            move.stop ();
+            move.start (pos, Asserv::DirectionConsign (args[4]));
         }
         break;
       case c ('f', 2):
