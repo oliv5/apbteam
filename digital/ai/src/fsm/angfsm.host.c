@@ -404,6 +404,7 @@ angfsm_build_gen_dot (angfsm_build_t *fsm, char* output)
    angfsm_build_trans_chain_t *tc;
    angfsm_build_branch_chain_t *bc;
    char *fn = NULL;
+   uint dummy_node_cnt = 0;
    if (!output || strlen (output) == 0)
    {
       uint fns = strlen (fsm->name) + strlen ("angfsm_.dot") + 1;
@@ -426,15 +427,43 @@ angfsm_build_gen_dot (angfsm_build_t *fsm, char* output)
    while (tc != NULL)
    {
       bc = tc->trans.output_branches;
+      /* This transition has several branches. */
+      if (bc != NULL && bc->next != NULL)
+      {
+         /* Create a dummy node. */
+         dummy_node_cnt++;
+         fprintf (f, "\tdummy_node_%u [shape=\"point\", width=0, height=0]\n",
+                  dummy_node_cnt);
+         /* Connect dummy node to state. */
+         fprintf (f, "\t%s -> dummy_node_%u [label=\"%s\", arrowhead=\"none\""
+                     ", arrowtail=\"none\", penwidth=2",
+                  tc->trans.state->var_name,
+                  dummy_node_cnt,
+                  tc->trans.event->var_name);
+         /* Colorise if previous state. */
+         for (j = 0; j < fsm->max_active_states; j++)
+            if (fsm->run.events_before_active_state[j]
+                && fsm->run.events_before_active_state[j]->code
+                   == tc->trans.event->code)
+               fprintf (f, ", color=\"red\"");
+         fprintf (f, "];\n");
+      }
       while (bc != NULL)
       {
-         fprintf (f, "\t%s -> %s [label=\"%s",
-                  tc->trans.state->var_name,
-                  bc->state->var_name,
-                  tc->trans.event->var_name);
-         if (bc->name != NULL)
-            fprintf (f, " (%s)", bc->name);
-         fprintf (f, "\"");
+         if (bc->name == NULL)
+         {
+            fprintf (f, "\t%s -> %s [label=\"%s\"",
+                     tc->trans.state->var_name,
+                     bc->state->var_name,
+                     tc->trans.event->var_name);
+         }
+         else
+         {
+            fprintf (f, "\tdummy_node_%u -> %s [label=\"(%s)\"",
+                     dummy_node_cnt,
+                     bc->state->var_name,
+                     bc->name);
+         }
          /* If the next state is an active state we look if this this event
           * was handled before. */
          for (j = 0; j < fsm->max_active_states; j++)
@@ -443,7 +472,7 @@ angfsm_build_gen_dot (angfsm_build_t *fsm, char* output)
                if (fsm->run.events_before_active_state[j]
                    && fsm->run.events_before_active_state[j]->code
                    == tc->trans.event->code)
-                  fprintf (f, ", color=red");
+                  fprintf (f, ", color=\"red\"");
 
          fprintf (f, "];\n");
          bc = bc->next;
@@ -453,7 +482,7 @@ angfsm_build_gen_dot (angfsm_build_t *fsm, char* output)
    /* Colorise active states. */
    for (j = 0; j < fsm->max_active_states; j++)
       if (fsm->run.active_states[j])
-         fprintf (f, "\t%s [color=blue, fontcolor=white, style=filled];\n",
+         fprintf (f, "\t%s [color=\"blue\", fontcolor=\"white\", style=\"filled\"];\n",
                   fsm->run.active_states[j]->var_name);
 
    fprintf (f, "}\n\n");
@@ -942,8 +971,8 @@ angfsm_build_start_with (angfsm_build_t *fsm, const char *starters)
          malloc (sizeof (angfsm_build_state_chain_t));
       angfsm_build_state_t *s = angfsm_build_get_state (fsm, args[i]);
       if (!s)
-          fprintf (stderr, "Error: starting state \"%s\" in fsm \"%s\" has "
-                           "not been declared.\n", args[i], fsm->name);
+         fprintf (stderr, "Error: starting state \"%s\" in fsm \"%s\" has "
+                          "not been declared.\n", args[i], fsm->name);
       assert (s);
       sc->state = *s;
       sc->next = fsm->starters;
