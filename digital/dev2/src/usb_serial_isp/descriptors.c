@@ -156,8 +156,8 @@ USB_Descriptor_String_t PROGMEM ManufacturerString =
 
 USB_Descriptor_String_t PROGMEM ProductString =
 {
-	Header: { Size: USB_STRING_LEN (15), Type: DTYPE_String },
-	UnicodeString: L"dev2 serial isp"
+	Header: { Size: USB_STRING_LEN (20), Type: DTYPE_String },
+	UnicodeString: L"dev2 serial isp gpio"
 };
 
 uint16_t

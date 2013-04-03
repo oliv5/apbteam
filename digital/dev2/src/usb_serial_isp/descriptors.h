@@ -34,5 +34,9 @@
 #define ISP_TX_EPSIZE 16
 #define ISP_RX_EPNUM 4
 #define ISP_RX_EPSIZE 16
+#define GPIO_TX_EPNUM 3
+#define GPIO_TX_EPSIZE 16
+#define GPIO_RX_EPNUM 4
+#define GPIO_RX_EPSIZE 16
 
 #endif /* descriptors_h */

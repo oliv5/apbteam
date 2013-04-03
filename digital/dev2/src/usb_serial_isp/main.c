@@ -33,6 +33,7 @@
 #include "descriptors.h"
 #include "common/serial.h"
 #include "common/usb_isp.h"
+#include "common/gpio.h"
 #include "common/select.h"
 
 HANDLES_EVENT (USB_Connect);
@@ -40,7 +41,7 @@ HANDLES_EVENT (USB_Disconnect);
 HANDLES_EVENT (USB_ConfigurationChanged);
 HANDLES_EVENT (USB_UnhandledControlPacket);
 
-volatile uint8_t usb_connected, usb_configured;
+volatile uint8_t usb_connected, usb_configured, gpio_mode;
 
 int
 main (void)
@@ -62,7 +63,10 @@ main (void)
 	if (usb_configured)
 	  {
 	    serial_task ();
-	    usb_isp_task ();
+	    if (!gpio_mode)
+		usb_isp_task ();
+	    else
+		gpio_task ();
 	  }
       }
 }
@@ -87,7 +91,8 @@ EVENT_HANDLER (USB_ConfigurationChanged)
     Endpoint_ConfigureEndpoint (SERIAL_RX_EPNUM, EP_TYPE_BULK,
 				ENDPOINT_DIR_OUT, SERIAL_RX_EPSIZE,
 				ENDPOINT_BANK_SINGLE);
-    /* Setup Rx and Tx Endpoints for the second port. */
+    /* Setup Rx and Tx Endpoints for the second port.
+     * Port shared between ISP and GPIO, use control packet to switch. */
     Endpoint_ConfigureEndpoint (ISP_TX_EPNUM, EP_TYPE_BULK,
 				ENDPOINT_DIR_IN, ISP_TX_EPSIZE,
 				ENDPOINT_BANK_SINGLE);
@@ -96,6 +101,7 @@ EVENT_HANDLER (USB_ConfigurationChanged)
 				ENDPOINT_BANK_SINGLE);
     /* Start tasks. */
     usb_configured = 1;
+    gpio_mode = 0;
 }
 
 EVENT_HANDLER (USB_UnhandledControlPacket)
@@ -128,9 +134,13 @@ EVENT_HANDLER (USB_UnhandledControlPacket)
 	    Endpoint_ClearSetupReceived ();
 	    /* Select output. */
 	    serial_uninit ();
+	    if (gpio_mode)
+		gpio_uninit ();
 	    select_out (output);
 	    if (select_active (output))
 		serial_init ();
+	    /* Disable GPIO mode. */
+	    gpio_mode = 0;
             /* Send acknowledgement. */
 	    Endpoint_ClearSetupIN ();
 	  }
@@ -146,6 +156,24 @@ EVENT_HANDLER (USB_UnhandledControlPacket)
 	    Endpoint_Read_Control_Stream_LE (&params, sizeof (params));
 	    serial_set_params (&params);
 	    /* Send acknowledgement. */
+	    Endpoint_ClearSetupIN ();
+	  }
+	break;
+	/* Set GPIO. */
+      case 0x80:
+	if (bmRequestType == (REQDIR_HOSTTODEVICE | REQTYPE_VENDOR |
+			      REQREC_DEVICE))
+	  {
+	    /* GPIO parameter. */
+	    uint8_t ddr = Endpoint_Read_Byte ();
+	    uint8_t port = Endpoint_Read_Byte ();
+	    Endpoint_ClearSetupReceived ();
+	    /* Set GPIO. */
+	    DDRD = ddr;
+	    PORTD = port;
+	    /* Also switch to GPIO mode. */
+	    gpio_mode = 1;
+            /* Send acknowledgement. */
 	    Endpoint_ClearSetupIN ();
 	  }
 	break;
