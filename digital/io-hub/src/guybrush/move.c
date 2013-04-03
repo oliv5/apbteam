@@ -406,7 +406,7 @@ move_moving_backward_to_turn_freely (void)
       }
     else
       {
-	dist = -(BOT_SIZE_FRONT + MOVE_REAL_OBSTACLE_RADIUS);
+	dist = -(BOT_SIZE_BACK + MOVE_REAL_OBSTACLE_RADIUS);
 	back_dist = 300;
 	margin = BOT_SIZE_RADIUS;
       }
