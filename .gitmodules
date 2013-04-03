@@ -1,3 +1,6 @@
 [submodule "digital/ucoolib/lib/libopencm3"]
 	path = digital/ucoolib/lib/libopencm3
 	url = ./libopencm3
+[submodule "digital/dev2/tools/blackmagic"]
+	path = digital/dev2/tools/blackmagic
+	url = ./blackmagic
