@@ -25,6 +25,7 @@
 // }}}
 #include "hardware.hh"
 #include "asserv.hh"
+#include "beacon.hh"
 #include "fsm_queue.hh"
 #include "chrono.hh"
 #include "pressure.hh"
@@ -56,13 +57,15 @@ class Robot : public ucoo::Proto::Handler
     /// Public access to hardware class.
     Hardware hardware;
   private:
-    /// Main I2C queue.
-    I2cQueue main_i2c_queue_;
+    /// I2C queues.
+    I2cQueue main_i2c_queue_, zb_i2c_queue_;
   public:
     /// Public access to asserv class.
     Asserv asserv;
     /// Public access to mimot class.
     Mimot mimot;
+    /// Public access to beacon class.
+    Beacon beacon;
   private:
     /// Proto associated to each serial interface.
     ucoo::Proto dev_proto, zb_proto, usb_proto;
@@ -111,6 +114,8 @@ class Robot : public ucoo::Proto::Handler
     ucoo::Proto *stats_proto_;
     /// Asserv stats interval and counter.
     int stats_asserv_, stats_asserv_cpt_;
+    /// Beacon stats interval and counter.
+    int stats_beacon_, stats_beacon_cpt_;
     /// Enable chrono stats.
     bool stats_chrono_;
     /// Last stated second.

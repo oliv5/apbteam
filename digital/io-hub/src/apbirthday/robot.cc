@@ -31,9 +31,10 @@
 Robot *robot;
 
 Robot::Robot ()
-    : main_i2c_queue_ (hardware.main_i2c),
+    : main_i2c_queue_ (hardware.main_i2c), zb_i2c_queue_ (hardware.zb_i2c),
       asserv (main_i2c_queue_, BOT_SCALE),
       mimot (main_i2c_queue_),
+      beacon (zb_i2c_queue_),
       dev_proto (*this, hardware.dev_uart),
       zb_proto (*this, hardware.zb_uart),
       usb_proto (*this, hardware.usb),
@@ -49,7 +50,8 @@ Robot::Robot ()
       fsm_debug_state_ (FSM_DEBUG_RUN),
       outputs_set_ (outputs_, lengthof (outputs_)),
       stats_proto_ (0),
-      stats_asserv_ (0), stats_chrono_ (false), stats_chrono_last_s_ (-1),
+      stats_asserv_ (0), stats_beacon_ (0),
+      stats_chrono_ (false), stats_chrono_last_s_ (-1),
       stats_inputs_ (0), stats_usdist_ (0), stats_cake_ (0), stats_pressure_ (0)
 {
     robot = this;
@@ -109,6 +111,12 @@ Robot::main_loop ()
         // Wait until next cycle.
         hardware.wait ();
         // Update IO modules.
+        if (zb_i2c_queue_.sync ())
+        {
+            Position robot_pos;
+            asserv.get_position (robot_pos);
+            beacon.send_position (robot_pos.v);
+        }
         if (usdist_control_.update ())
         {
             Position robot_pos;
@@ -239,6 +247,14 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
         stats_asserv_cpt_ = stats_asserv_ = args[0];
         stats_proto_ = &proto;
         break;
+    case c ('B', 1):
+        // Beacon stats.
+        // 1B: stat interval.
+        stats_beacon_cpt_ = stats_beacon_ = args[0];
+        // TODO: remove this test hack:
+        beacon.on (args[0] & 1);
+        stats_proto_ = &proto;
+        break;
     case c ('C', 1):
         // Chrono stats.
         // 1B: start chrono if non-zero.
@@ -304,6 +320,17 @@ Robot::proto_stats ()
         asserv.get_position (pos);
         stats_proto_->send ('A', "hhH", pos.v.x, pos.v.y, pos.a);
         stats_asserv_cpt_ = stats_asserv_;
+    }
+    if (stats_beacon_ && !--stats_beacon_cpt_)
+    {
+        for (int i = 0; i < beacon.pos_nb; i++)
+        {
+            vect_t pos;
+            int trust;
+            trust = beacon.get_position (i, pos);
+            stats_proto_->send ('B', "BhhB", i, pos.x, pos.y, trust);
+        }
+        stats_beacon_cpt_ = stats_beacon_;
     }
     if (stats_chrono_)
     {

@@ -58,10 +58,10 @@ struct Hardware
 #ifdef TARGET_stm32
     ucoo::UsbStreamControl usb_control;
     ucoo::UsbStream usb, zb_usb_avrisp;
-    ucoo::I2cHard main_i2c;
+    ucoo::I2cHard main_i2c, zb_i2c;
 #else
     ucoo::HostStream usb;
-    ucoo::I2cHost main_i2c;
+    ucoo::I2cHost main_i2c, zb_i2c;
 #endif
     ucoo::Gpio
         raw_jack,
