@@ -143,3 +143,17 @@ Obstacles::blocking (const vect_t &robot, const vect_t &dest) const
     return false;
 }
 
+void
+Obstacles::add_obstacles (Path &path) const
+{
+    int index = 0;
+    for (int i = 0; i < obstacles_nb_; i++)
+    {
+        if (obstacles_[i].valid)
+        {
+            path.obstacle (index++, obstacles_[i].pos,
+                           obstacle_radius_mm + clearance_mm + BOT_SIZE_SIDE);
+        }
+    }
+}
+

@@ -209,7 +209,7 @@ Move::path_init ()
     robot->asserv.get_position (current_pos);
     // Give the current position of the bot to the path module
     robot->path.reset ();
-    //TODO add obstacles.
+    robot->obstacles.add_obstacles (robot->path);
     robot->path.endpoints (current_pos.v, final_.v);
     // Update the path module
     slow_ = 0;

@@ -24,6 +24,7 @@
 //
 // }}}
 #include "defs.hh"
+#include "path.hh"
 
 /// Handle obstacles "database".
 ///
@@ -44,6 +45,8 @@ class Obstacles
     /// Return true if there is an obstacle near the robot while going to a
     /// destination point.
     bool blocking (const vect_t &robot, const vect_t &dest) const;
+    /// Setup obstacles in path finding object.
+    void add_obstacles (Path &path) const;
   public:
     /// Estimated obstacle radius.  The obstacle may be larger than at the
     /// detected edge.
