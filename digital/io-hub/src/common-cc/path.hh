@@ -30,11 +30,23 @@
 class Path
 {
   public:
+    /// Reset path computation, remove every obstacles.
     void reset () { }
-    void obstacle (int index, vect_t c, int r, int factor = 0) { }
+    /// Set an obstacle position, radius and factor.
+    void obstacle (int index, const vect_t &c, int r, int factor = 0) { }
+    /// Set path source and destination.
     void endpoints (const vect_t &src, const vect_t &dst) { dst_ = dst; }
+    /// Compute path with the given escape factor.
     void compute (int factor = 0) { }
+    /// Get next point in computed path, return false if none (no path found
+    /// or last point given yet).
     bool get_next (vect_t &p) { p = dst_; return true; }
+    /// Prepare score compuration for the given source, with given escape
+    /// factor.
+    void prepare_score (const vect_t &src, int factor = 0);
+    /// Return score for a given destination, using a previous preparation
+    /// (also reuse previously given escape factor).
+    int get_score (const vect_t &dst);
   private:
     vect_t dst_;
 };
