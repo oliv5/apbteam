@@ -6,7 +6,7 @@ apbirthday_SOURCES = main.cc robot.cc hardware.host.cc hardware.stm32.cc \
 		     simu_report.host.cc zb_avrisp.stm32.cc \
 		     i2c_queue.cc asserv.cc mimot.cc beacon.cc \
 		     pressure.cc chrono.host.cc chrono.stm32.cc \
-		     radar.cc radar_2013.cc obstacles.cc \
+		     radar.cc radar_2013.cc obstacles.cc path.cc \
 		     outputs.cc \
 		     top.cc init.cc move.cc candles.cc \
 		     angfsm.host.c angfsm_gen_arm_AI.arm.c fsm_queue.cc \
@@ -16,7 +16,7 @@ MODULES = utils hal/gpio hal/adc hal/uart hal/usb hal/i2c hal/spi \
 	  base/proto dev/avrisp dev/usdist
 
 # Hack mode, include old code from AVR modules.
-AVR_MODULES = math/geometry math/fixed
+AVR_MODULES = math/geometry math/fixed path/astar
 AVR_BASE = $(BASE)/../avr
 INCLUDES += -I$(AVR_BASE) -I$(AVR_BASE)/common
 host_DEFS += -DHOST
