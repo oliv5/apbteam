@@ -29,6 +29,7 @@
 #include "fsm_queue.hh"
 #include "chrono.hh"
 #include "pressure.hh"
+#include "debounce.hh"
 #include "outputs.hh"
 #include "radar_2013.hh"
 #include "obstacles.hh"
@@ -76,6 +77,8 @@ class Robot : public ucoo::Proto::Handler
     Chrono chrono;
     /// Public access to pressure handling.
     Pressure pressure;
+    /// Jack debouncing.
+    Debounce jack;
   private:
     /// US distance sensors controller.
     ucoo::UsDistControl usdist_control_;

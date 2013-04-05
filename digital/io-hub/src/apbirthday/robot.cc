@@ -40,6 +40,7 @@ Robot::Robot ()
       usb_proto (*this, hardware.usb),
       chrono (90000 - 1000),
       pressure (hardware.adc_pressure, hardware.pneum_open, mimot.motor0),
+      jack (hardware.raw_jack, 50),
       usdist_control_ (2),
       usdist0_ (usdist_control_, hardware.adc_dist0, hardware.dist0_sync, 100, 700, 650),
       usdist1_ (usdist_control_, hardware.adc_dist1, hardware.dist1_sync, 100, 700, 650),
@@ -125,6 +126,7 @@ Robot::main_loop ()
         }
         obstacles.update ();
         pressure.update ();
+        jack.update ();
         outputs_set_.update ();
         // Handle communications.
         bool sync = main_i2c_queue_.sync ();
@@ -163,8 +165,8 @@ Robot::fsm_gen_event ()
         fsm_handle_and_return (robot_move_success);
     else if (robot_move_status == Motor::FAILURE)
         fsm_handle_and_return (robot_move_failure);
-    // Jack. TODO: bounce filter.
-    if (!hardware.raw_jack.get ())
+    // Jack.
+    if (!jack.get ())
         fsm_handle_and_return (jack_inserted);
     else
         fsm_handle_and_return (jack_removed);
