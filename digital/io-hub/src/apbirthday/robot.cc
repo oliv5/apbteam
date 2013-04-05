@@ -112,24 +112,21 @@ Robot::main_loop ()
         // Wait until next cycle.
         hardware.wait ();
         // Update IO modules.
-        if (zb_i2c_queue_.sync ())
-        {
-            Position robot_pos;
-            asserv.get_position (robot_pos);
-            beacon.send_position (robot_pos.v);
-        }
-        if (usdist_control_.update ())
-        {
-            Position robot_pos;
-            asserv.get_position (robot_pos);
-            radar_.update (robot_pos, obstacles);
-        }
         obstacles.update ();
         pressure.update ();
         jack.update ();
         outputs_set_.update ();
         // Handle communications.
         bool sync = main_i2c_queue_.sync ();
+        zb_i2c_queue_.sync ();
+        Position robot_pos;
+        asserv.get_position (robot_pos);
+        beacon.send_position (robot_pos.v);
+        // Look for obstacles.
+        if (usdist_control_.update ())
+        {
+            radar_.update (robot_pos, obstacles);
+        }
         // Handle events if synchronised.
         if (sync && fsm_debug_state_ != FSM_DEBUG_STOP)
         {

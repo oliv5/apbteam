@@ -59,6 +59,6 @@ Beacon::send_position (const vect_t &pos)
         ucoo::bytes_unpack (pos.y, 1),
         ucoo::bytes_unpack (pos.y, 0),
     };
-    send (buf, sizeof (buf));
+    send (buf, sizeof (buf), I2cQueue::TRANSIENT);
 }
 
