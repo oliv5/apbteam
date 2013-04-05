@@ -193,6 +193,11 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
         // Reset.
         ucoo::arch_reset ();
         break;
+    case c ('Z', 0):
+        // Enter zigbit update from uart.
+        proto.send ('Z');
+        hardware.zb_handle (hardware.dev_uart);
+        return;
     case c ('f', 0):
         // Enter FSM debug mode, then step once.
         fsm_debug_state_ = FSM_DEBUG_STEP;

@@ -108,6 +108,8 @@ struct Hardware
     void wait ();
     // Handle zb programmation.
     void zb_handle ();
+    // Handle zb programmation from specific stream.
+    void zb_handle (ucoo::Stream &s);
 };
 
 #endif // hardware_hh

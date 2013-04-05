@@ -123,16 +123,20 @@ Hardware::zb_handle ()
 {
     // Switch to AVRISP?
     if (zb_usb_avrisp.poll ())
-    {
-        // Uart pins are reused.
-        zb_uart.disable ();
-        gpio_mode_setup (GPIOD, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO8 | GPIO9);
-        // Go to special AVRISP mode.
-        zb_avrisp (zb_usb_avrisp);
-        // Restore.
-        gpio_mode_setup (GPIOD, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO8 | GPIO9);
-        gpio_set_af (GPIOD, GPIO_AF7, GPIO8 | GPIO9);
-        zb_uart.enable (38400, ucoo::Uart::EVEN, 1);
-    }
+        zb_handle (zb_usb_avrisp);
+}
+
+void
+Hardware::zb_handle (ucoo::Stream &s)
+{
+    // Uart pins are reused.
+    zb_uart.disable ();
+    gpio_mode_setup (GPIOD, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO8 | GPIO9);
+    // Go to special AVRISP mode.
+    zb_avrisp (s);
+    // Restore.
+    gpio_mode_setup (GPIOD, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO8 | GPIO9);
+    gpio_set_af (GPIOD, GPIO_AF7, GPIO8 | GPIO9);
+    zb_uart.enable (38400, ucoo::Uart::EVEN, 1);
 }
 

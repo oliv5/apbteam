@@ -92,3 +92,9 @@ Hardware::zb_handle ()
     // No zb on host.
 }
 
+void
+Hardware::zb_handle (ucoo::Stream &s)
+{
+    // No zb on host.
+}
+
