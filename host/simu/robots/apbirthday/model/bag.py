@@ -25,6 +25,7 @@
 from simu.model.switch import Switch
 from simu.model.position import Position
 from simu.model.round_obstacle import RoundObstacle
+from simu.model.distance_sensor_trig import DistanceSensorTrig
 from simu.model.distance_sensor_sensopart import DistanceSensorSensopart
 from simu.model.pneumatic_cylinder import PneumaticCylinder
 from simu.robots.apbirthday.model.cake_arm import CakeArm
@@ -51,6 +52,10 @@ class Bag:
                 DistanceSensorSensopart (link_bag.adc_dist[3], scheduler, table,
                     (-83, -120), pi, (self.position, ), 4),
                 ]
+        self.cake_front = DistanceSensorTrig (link_bag.adc_cake_front,
+                scheduler, table, (80, 136), pi / 2, (self.position, ), 0)
+        self.cake_back = DistanceSensorTrig (link_bag.adc_cake_back,
+                scheduler, table, (-66, 139), pi / 2, (self.position, ), 0)
         self.cake_arm = CakeArm (table, self.position,
                 PneumaticCylinder (
                     link_bag.cake_arm_in,

@@ -23,6 +23,7 @@
 # }}}
 """APBirthday bag of views."""
 from simu.view.switch import Switch
+from simu.view.distance_sensor import DistanceSensor
 from simu.view.distance_sensor_us import DistanceSensorUS
 from simu.view.pos_report import PosReport
 from simu.robots.apbirthday.view.robot import Robot
@@ -36,5 +37,7 @@ class Bag:
         self.robot = Robot (table, model_bag.position, model_bag.cake_arm)
         self.distance_sensor = [DistanceSensorUS (self.robot, ds)
                 for ds in model_bag.distance_sensor]
+        self.cake_front = DistanceSensor (self.robot, model_bag.cake_front)
+        self.cake_back = DistanceSensor (self.robot, model_bag.cake_back)
         self.pos_report = PosReport (table, model_bag.pos_report)
 
