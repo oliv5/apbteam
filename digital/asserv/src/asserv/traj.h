@@ -62,6 +62,12 @@ void
 traj_gtd_start (void);
 
 void
+traj_follow_start (uint8_t backward);
+
+void
+traj_follow_update (int16_t consign);
+
+void
 traj_goto_start (uint32_t x, uint32_t y, uint8_t backward);
 
 void

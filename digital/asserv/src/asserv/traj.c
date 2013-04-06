@@ -62,6 +62,8 @@ enum
     TRAJ_GTD,
     /* Push the wall. */
     TRAJ_PTW,
+    /* Follow external consign. */
+    TRAJ_FOLLOW,
     /* Go to position. */
     TRAJ_GOTO,
     /* Go to angle. */
@@ -104,6 +106,12 @@ static uint8_t traj_center_delay;
 
 /** Initial values for x, y and angle, or -1. */
 static int32_t traj_init_x, traj_init_y, traj_init_a;
+
+/** External consign for follow mode. */
+static int16_t traj_follow_consign;
+
+/** Number of update since the last external consign update. */
+static uint8_t traj_follow_consign_age;
 
 /** Initialise computed factors. */
 void
@@ -333,6 +341,48 @@ traj_gtd_start (void)
 #endif /* CONTACT_CENTER_IO */
 }
 
+/** Follow externanl consign mode. */
+static void
+traj_follow (void)
+{
+    /* Check real time condition. */
+    traj_follow_consign_age++;
+    if (traj_follow_consign_age > 10)
+      {
+	control_state_blocked (&cs_main.state);
+	traj_mode = TRAJ_DONE;
+      }
+    else
+      {
+	/* Compute new consign. */
+	speed_control_pos_offset_from_here (&cs_main.speed_alpha,
+					    traj_follow_consign);
+      }
+}
+
+/** Start follow external consign mode. */
+void
+traj_follow_start (uint8_t backward)
+{
+    traj_mode = TRAJ_FOLLOW;
+    int16_t speed = cs_main.speed_theta.slow;
+    if (backward)
+	speed = -speed;
+    speed_control_set_speed (&cs_main.speed_theta, speed);
+    speed_control_pos_offset (&cs_main.speed_alpha, 0);
+    control_state_set_mode (&cs_main.state, CS_MODE_TRAJ_CONTROL, 0);
+    traj_follow_consign = 0;
+    traj_follow_consign_age = 0;
+}
+
+/** Update external consign. */
+void
+traj_follow_update (int16_t consign)
+{
+    traj_follow_consign = consign;
+    traj_follow_consign_age = 0;
+}
+
 /** Go to position mode. */
 static void
 traj_goto (void)
@@ -484,6 +534,9 @@ traj_update (void)
 	    break;
 	  case TRAJ_GTD:
 	    traj_gtd ();
+	    break;
+	  case TRAJ_FOLLOW:
+	    traj_follow ();
 	    break;
 	  case TRAJ_GOTO:
 	    traj_goto ();

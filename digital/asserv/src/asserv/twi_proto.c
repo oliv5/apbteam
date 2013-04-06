@@ -120,7 +120,13 @@ twi_proto_callback (u8 *buf, u8 size)
 	size -= 1;
       }
     /* Handle sequence number. */
-    if (buf[0] == 0 || buf[0] == twi_proto.seq)
+    if (buf[0] == 0)
+      {
+	/* Transient command. */
+	traj_follow_update (v8_to_v16 (buf[1], buf[2]));
+	return;
+      }
+    if (buf[0] == twi_proto.seq)
 	return;
 #define c(cmd, size) (cmd)
     switch (c (buf[1], 0))
@@ -188,6 +194,11 @@ twi_proto_callback (u8 *buf, u8 size)
       case c ('F', 0):
 	/* Go to the dispenser. */
 	traj_gtd_start ();
+	break;
+      case c ('o', 1):
+	/* Follow external consign.
+	 * - b: 0: forward, 1: backward. */
+	traj_follow_start (buf[2]);
 	break;
       case c ('x', 7):
 	/* Go to position.
