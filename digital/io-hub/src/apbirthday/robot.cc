@@ -67,6 +67,8 @@ Robot::Robot ()
     inputs_[i++] = &hardware.glass_contact;
     inputs_[i++] = &hardware.cherry_plate_left_contact;
     inputs_[i++] = &hardware.cherry_plate_right_contact;
+    inputs_[i++] = &hardware.cake_arm_out_contact;
+    inputs_[i++] = &hardware.cake_arm_in_contact;
     ucoo::assert (i == lengthof (inputs_));
     i = 0;
     outputs_[i++] = &hardware.cherry_bad_out;

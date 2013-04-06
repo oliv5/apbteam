@@ -47,6 +47,7 @@ Hardware::Hardware ()
       cherry_plate_up (GPIOE, 2), cherry_plate_down (GPIOE, 3),
       cherry_plate_clamp (GPIOE, 4),
       cake_arm_out (GPIOB, 3), cake_arm_in (GPIOB, 4),
+      cake_arm_out_contact (GPIOB, 7), cake_arm_in_contact (GPIOB, 6),
       cake_push_far_out (GPIOD, 7), cake_push_far_in (GPIOB, 5),
       cake_push_near_out (GPIOD, 6), cake_push_near_in (GPIOB, 6),
       glass_lower_clamp_close (GPIOA, 15), glass_lower_clamp_open (GPIOA, 10),

@@ -48,6 +48,8 @@ Hardware::Hardware ()
       cherry_plate_clamp (host, "cherry_plate_clamp"),
       cake_arm_out (host, "cake_arm_out"),
       cake_arm_in (host, "cake_arm_in"),
+      cake_arm_out_contact (host, "cake_arm_out_contact"),
+      cake_arm_in_contact (host, "cake_arm_in_contact"),
       cake_push_far_out (host, "cake_push_far_out"),
       cake_push_far_in (host, "cake_push_far_in"),
       cake_push_near_out (host, "cake_push_near_out"),

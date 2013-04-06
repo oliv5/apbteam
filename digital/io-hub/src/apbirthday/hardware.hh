@@ -78,6 +78,7 @@ struct Hardware
         cherry_plate_up, cherry_plate_down,
         cherry_plate_clamp,
         cake_arm_out, cake_arm_in,
+        cake_arm_out_contact, cake_arm_in_contact,
         cake_push_far_out, cake_push_far_in,
         cake_push_near_out, cake_push_near_in,
         glass_lower_clamp_close, glass_lower_clamp_open,
@@ -88,7 +89,7 @@ struct Hardware
         pneum_open;
     ucoo::Gpio
         dist0_sync, dist1_sync, dist2_sync, dist3_sync;
-    static const int inputs_nb = 9;
+    static const int inputs_nb = 11;
     static const int outputs_nb = 21;
 #ifdef TARGET_stm32
     ucoo::AdcHard adc;
