@@ -113,6 +113,7 @@ class Table (simu.model.table.Table):
         self.obstacles.append (cake)
         self.obstacles += self.candles
         self.obstacles += self.glasses
+        self.obstacles += self.plates
         self.obstacles += self.cherries
         self.obstacles += self.gifts
 
