@@ -1,0 +1,50 @@
+===========================================
+ dev2 blackmagic - Black Magic Probe Debug
+===========================================
+
+The gpio mode can be used as a cheap and slow JTAG or SWD interface.
+
+Switching to GPIO mode
+======================
+
+If you use a combined firmware, you have to switch to GPIO mode once each time
+dev2 is plugged or an output is selected.
+
+ dev2ctl.py --gpio 0 0
+
+Building Black Magic Probe with dev2 support
+============================================
+
+This must be done once in the tools/blackmagic/src directory:
+
+ make PROBE_HOST=dev2
+
+How to debug an STM32
+=====================
+
+First run blackmagic with the right device:
+
+ cd tools/blackmagic/src
+ ./blackmagic -s /dev/ttyUSB1
+
+Then in another terminal start GDB with the elf file:
+
+ arm-none-eabi-gdb my_project.stm32f4.elf
+ ...
+ (gdb) target ext :2000
+ Remote debugging using :2000
+ (gdb) monitor swdp_scan
+ Target voltage: not supported
+ Available Targets:
+ No. Att Driver
+  1      STM32F4xx
+ (gdb) attach 1
+ Attached to Remote target
+ 0x08000710 in Hardware::wait (this=0x2001f3fc) at hardware.stm32.cc:116
+ 116         while (!(TIM3_SR & TIM_SR_UIF))
+ (gdb)
+
+You can then use GDB as usual:
+
+ (gdb) load
+ (gdb) run
