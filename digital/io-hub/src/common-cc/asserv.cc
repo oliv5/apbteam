@@ -163,6 +163,25 @@ Asserv::push_wall (DirectionConsign direction_consign, int init_x, int init_y,
 }
 
 void
+Asserv::follow (DirectionConsign direction_consign)
+{
+    uint8_t buf[] = { 'o',
+        direction_consign,
+    };
+    send (buf, sizeof (buf));
+}
+
+void
+Asserv::follow_update (int16_t consign)
+{
+    uint8_t buf[] = {
+        ucoo::bytes_unpack (consign, 1),
+        ucoo::bytes_unpack (consign, 0),
+    };
+    send (buf, sizeof (buf), I2cQueue::TRANSIENT);
+}
+
+void
 Asserv::set_speed (uint16_t linear_hi, uint16_t angular_hi, uint16_t
                    linear_lo, uint16_t angular_lo)
 {

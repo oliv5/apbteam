@@ -79,6 +79,10 @@ class Asserv : public I2cQueue::Slave
     /// unchanged.
     void push_wall (DirectionConsign direction_consign,
                     int init_x, int init_y, int16_t init_a);
+    /// Follow external consign.
+    void follow (DirectionConsign direction_consign);
+    /// Update external consign.
+    void follow_update (int16_t consign);
     /// Set movement speeds.
     void set_speed (uint16_t linear_hi, uint16_t angular_hi,
                     uint16_t linear_lo, uint16_t angular_lo);
