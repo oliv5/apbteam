@@ -100,8 +100,8 @@ twi_proto_callback (u8 *buf, u8 size)
 	buf += 1;
 	size -= 1;
       }
-
-    if (buf[0] == twi_proto.seq)
+    /* Handle sequence number. */
+    if (buf[0] == 0 || buf[0] == twi_proto.seq)
 	return;
 #define c(cmd, size) (cmd)
     switch (c (buf[1], 0))

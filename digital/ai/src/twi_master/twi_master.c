@@ -217,7 +217,10 @@ twi_master_send_buffer (uint8_t length)
     struct twi_master_command_t *c =
 	&twi_master.pending[TWI_MASTER_PENDING_TAIL];
     /* Fill sequence number, compute CRC, store length. */
-    c->command[1] = ++twi_master_slaves[c->slave].seq;
+    twi_master_slaves[c->slave].seq++;
+    if (twi_master_slaves[c->slave].seq == 0)
+	twi_master_slaves[c->slave].seq = 1;
+    c->command[1] = twi_master_slaves[c->slave].seq;
     c->command[0] = crc_compute (&c->command[1], length + 1);
     c->length = length + 2;
     /* Add to the list of pending command. */
@@ -234,7 +237,7 @@ twi_master_send_transient_buffer (uint8_t length)
     struct twi_master_command_t *c =
 	&twi_master.pending[TWI_MASTER_PENDING_TAIL];
     /* Fill sequence number, compute CRC, store length. */
-    c->command[1] = ++twi_master_slaves[c->slave].seq;
+    c->command[1] = 0;
     c->command[0] = crc_compute (&c->command[1], length + 1);
     c->length = length + 2;
     /* Send right now without acknowledgement. */
