@@ -5,6 +5,7 @@ PROGS = apbirthday
 apbirthday_SOURCES = main.cc robot.cc hardware.host.cc hardware.stm32.cc \
 		     simu_report.host.cc zb_avrisp.stm32.cc \
 		     i2c_queue.cc asserv.cc mimot.cc beacon.cc \
+		     potentiometer.cc \
 		     pressure.cc chrono.host.cc chrono.stm32.cc debounce.cc \
 		     radar.cc radar_2013.cc obstacles.cc path.cc \
 		     outputs.cc \

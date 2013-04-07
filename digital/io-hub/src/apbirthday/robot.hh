@@ -26,6 +26,7 @@
 #include "hardware.hh"
 #include "asserv.hh"
 #include "beacon.hh"
+#include "potentiometer.hh"
 #include "fsm_queue.hh"
 #include "chrono.hh"
 #include "pressure.hh"
@@ -65,6 +66,8 @@ class Robot : public ucoo::Proto::Handler
     Asserv asserv;
     /// Public access to mimot class.
     Mimot mimot;
+    /// Public access to potentiometer class.
+    Potentiometer pot_regul;
     /// Public access to beacon class.
     Beacon beacon;
   private:

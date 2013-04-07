@@ -34,6 +34,7 @@ Robot::Robot ()
     : main_i2c_queue_ (hardware.main_i2c), zb_i2c_queue_ (hardware.zb_i2c),
       asserv (main_i2c_queue_, BOT_SCALE),
       mimot (main_i2c_queue_),
+      pot_regul (main_i2c_queue_, 0),
       beacon (zb_i2c_queue_),
       dev_proto (*this, hardware.dev_uart),
       zb_proto (*this, hardware.zb_uart),
@@ -247,6 +248,14 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
                                         ucoo::bytes_pack (args[4], args[5]));
         }
 	break;
+    case c ('p', 2):
+        // Set potentiometer wiper.
+        // - 1b: wiper index.
+        // - 1h: wiper value.
+        // - 1b: 01 for eeprom, 00 for volatile.
+        pot_regul.set_wiper (args[0], ucoo::bytes_pack (args[1], args[2]),
+                             args[3] ? true : false);
+        break;
     case c ('A', 1):
         // Asserv position stats.
         // 1B: stat interval.
