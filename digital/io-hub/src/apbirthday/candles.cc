@@ -78,7 +78,7 @@ void Candles::deduce ()
                 color[7 - i] = RED;
             else if (color[7 - i] == RED)
                 color[i] = BLUE;
-            else if (color[7 + i] == BLUE)
+            else if (color[7 - i] == BLUE)
                 color[i] = RED;
         }
     // Near.
