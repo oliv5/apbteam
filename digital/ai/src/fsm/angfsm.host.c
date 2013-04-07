@@ -881,6 +881,9 @@ angfsm_build_trans (angfsm_build_t *fsm,
          malloc (sizeof (angfsm_build_branch_chain_t));
       t.output_branches->name = NULL;
       t.output_branches->state = angfsm_build_get_state (fsm, args[0]);
+      if (!t.output_branches->state)
+          fprintf (stderr, "Error: state \"%s\" in FSM \"%s\" is not "
+                           "declared.\n", args[0], fsm->name);
       assert (t.output_branches->state);
       t.output_branches->next = NULL;
    }
