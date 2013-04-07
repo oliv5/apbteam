@@ -32,19 +32,35 @@ class CakeArm (Observable):
     near_x = 2
     near_y = 247
 
-    def __init__ (self, table, robot_position, arm_cyl, far_cyl, near_cyl):
+    def __init__ (self, table, robot_position, arm_cyl, far_cyl, near_cyl,
+            arm_out_contact, arm_in_contact):
         Observable.__init__ (self)
         self.table = table
         self.robot_position = robot_position
         self.arm_cyl = arm_cyl
         self.far_cyl = far_cyl
         self.near_cyl = near_cyl
+        self.arm_out_contact = arm_out_contact
+        self.arm_in_contact = arm_in_contact
         self.far_pushed = False
         self.near_pushed = False
-        self.arm_cyl.register (self.notify)
+        self.arm_cyl.register (self.__arm_notified)
         self.far_cyl.register (self.__push_notified)
         self.near_cyl.register (self.__push_notified)
         self.robot_position.register (self.__robot_position_notified)
+
+    def __arm_notified (self):
+        if self.arm_cyl.pos > .9:
+            contacts = (False, True)
+        elif self.arm_cyl.pos < .1:
+            contacts = (True, False)
+        else:
+            contacts = (True, True)
+        for contact, state in ((self.arm_out_contact, contacts[0]),
+                (self.arm_in_contact, contacts[1])):
+            if contact.state != state:
+                contact.state = state
+                contact.notify ()
 
     def __push_notified (self):
         if self.arm_cyl.pos > .9:

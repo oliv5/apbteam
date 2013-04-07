@@ -63,6 +63,7 @@ class Bag:
                 PneumaticCylinder (
                     link_bag.cake_push_near_in,
                     link_bag.cake_push_near_out,
-                    scheduler, 0., 1., 10., 10., 0.))
+                    scheduler, 0., 1., 10., 10., 0.),
+                link_bag.cake_arm_out_contact, link_bag.cake_arm_in_contact)
         self.pos_report = link_bag.io_hub.pos_report
 
