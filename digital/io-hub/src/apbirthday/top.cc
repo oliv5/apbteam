@@ -31,6 +31,12 @@ extern "C" {
 #include "angfsm.h"
 }
 
+#ifdef TARGET_host
+typedef unsigned Branch;
+#else
+typedef angfsm_AI_branch_t Branch;
+#endif
+
 #include <cmath>
 
 /// Top context.
@@ -99,16 +105,37 @@ top_candle_for_angle (uint16_t a, Candles::Floor floor,
 }
 
 /// Start follow mode, ask Strat for what to do.
-static void
+static bool
 top_follow_start ()
 {
     uint16_t robot_angle = top_cake_angle_robot ();
-    robot->strat.decision_candles (top.candles, robot_angle);
-    for (int floor = Candles::NEAR; floor < Candles::FLOOR_NB; floor++)
+    bool go_candle = robot->strat.decision_candles (top.candles, robot_angle);
+    if (go_candle)
     {
-        top.candles_last_blown[floor] =
-            top_candle_for_angle (robot_angle, Candles::Floor (floor),
-                                  top.candles.direction);
+        for (int floor = Candles::NEAR; floor < Candles::FLOOR_NB; floor++)
+        {
+            top.candles_last_blown[floor] =
+                top_candle_for_angle (robot_angle, Candles::Floor (floor),
+                                      top.candles.direction);
+        }
+    }
+    return go_candle;
+}
+
+/// Can follow cake, decide if this is a good thing, or leave.
+static Branch
+top_follow_or_leave ()
+{
+    if (top_follow_start ())
+    {
+        robot->asserv.follow (top.candles.direction);
+        return FSM_BRANCH (candles);
+    }
+    else
+    {
+        // TODO: take a smart decision to avoid collision.
+        robot->asserv.stop ();
+        return FSM_BRANCH (tangent);
     }
 }
 
@@ -236,10 +263,12 @@ FSM_TRANS (TOP_CANDLES_ENTER_DEPLOY, ai_candle_failure,
     robot->asserv.move_distance (BOT_SIZE_RADIUS - BOT_SIZE_SIDE);
 }
 
-FSM_TRANS (TOP_CANDLES_ENTER_TURN, robot_move_success, TOP_CANDLES_FOLLOW)
+FSM_TRANS (TOP_CANDLES_ENTER_TURN, robot_move_success,
+           tangent, TOP_CANDLES_LEAVE_TANGENT_MOVE,
+           turn, TOP_CANDLES_LEAVE_TURN,
+           candles, TOP_CANDLES_FOLLOW)
 {
-    top_follow_start ();
-    robot->asserv.follow (top.candles.direction);
+    return top_follow_or_leave ();
 }
 
 FSM_TRANS (TOP_CANDLES_ENTER_TURN, robot_move_failure, TOP_CANDLES_LEAVE_TURN)
@@ -250,29 +279,25 @@ FSM_TRANS (TOP_CANDLES_ENTER_TURN, robot_move_failure, TOP_CANDLES_LEAVE_TURN)
 FSM_TRANS (TOP_CANDLES_FOLLOW, top_follow_finished,
            tangent, TOP_CANDLES_LEAVE_TANGENT_MOVE,
            turn, TOP_CANDLES_LEAVE_TURN,
-           reverse, TOP_CANDLES_FOLLOW)
+           candles, TOP_CANDLES_FOLLOW)
 {
-    // TODO: take a smart decision to avoid collision.
-    robot->asserv.stop ();
-    return FSM_BRANCH (tangent);
+    return top_follow_or_leave ();
 }
 
 FSM_TRANS (TOP_CANDLES_FOLLOW, top_follow_blocked,
            tangent, TOP_CANDLES_LEAVE_TANGENT_MOVE,
-           turn, TOP_CANDLES_LEAVE_TURN)
+           turn, TOP_CANDLES_LEAVE_TURN,
+           candles, TOP_CANDLES_FOLLOW)
 {
-    // TODO: take a smart decision to avoid collision.
-    robot->asserv.stop ();
-    return FSM_BRANCH (tangent);
+    return top_follow_or_leave ();
 }
 
 FSM_TRANS (TOP_CANDLES_FOLLOW, robot_move_failure,
            tangent, TOP_CANDLES_LEAVE_TANGENT_MOVE,
-           turn, TOP_CANDLES_LEAVE_TURN)
+           turn, TOP_CANDLES_LEAVE_TURN,
+           candles, TOP_CANDLES_FOLLOW)
 {
-    // TODO: take a smart decision to avoid collision.
-    robot->asserv.stop ();
-    return FSM_BRANCH (tangent);
+    return top_follow_or_leave ();
 }
 
 FSM_TRANS (TOP_CANDLES_LEAVE_TANGENT_MOVE, robot_move_success,

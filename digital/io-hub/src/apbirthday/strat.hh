@@ -46,8 +46,8 @@ class Strat
   public:
     /// Return new decision and associated position.
     Decision decision (vect_t &pos);
-    /// Take a decision related to candles.
-    void decision_candles (CandlesDecision &decision,
+    /// Take a decision related to candles, return false to give up candles.
+    bool decision_candles (CandlesDecision &decision,
                            uint16_t robot_angle);
     /// Report a failure to apply the previous decision.
     void failure ();

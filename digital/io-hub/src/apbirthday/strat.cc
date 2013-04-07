@@ -31,7 +31,7 @@ Strat::decision (vect_t &pos)
     return CANDLES;
 }
 
-void
+bool
 Strat::decision_candles (CandlesDecision &decision, uint16_t robot_angle)
 {
     // TODO: this is a stub.
@@ -45,6 +45,7 @@ Strat::decision_candles (CandlesDecision &decision, uint16_t robot_angle)
         decision.direction = Asserv::FORWARD;
         decision.end_angle = G_ANGLE_UF016_DEG (-180. / 6);
     }
+    return true;
 }
 
 void
