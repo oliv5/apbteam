@@ -199,7 +199,7 @@ FSM_TRANS_TIMEOUT (AI_CANDLE_DEPLOYING, 12,
                    success, AI_CANDLE_READY,
                    failure, AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED)
 {
-    if (robot->hardware.cake_arm_out_contact.get ())
+    if (!robot->hardware.cake_arm_out_contact.get ())
     {
         robot->fsm_queue.post (FSM_EVENT (ai_candle_success));
         return FSM_BRANCH (success);
@@ -263,7 +263,7 @@ FSM_TRANS_TIMEOUT (AI_CANDLE_UNDEPLOYING_2, 10,
                    success, AI_CANDLE_SLEEPING,
                    failure, AI_CANDLE_READY)
 {
-    if (robot->hardware.cake_arm_in_contact.get ())
+    if (!robot->hardware.cake_arm_in_contact.get ())
     {
         robot->fsm_queue.post (FSM_EVENT (ai_candle_success));
         return FSM_BRANCH (success);
