@@ -36,6 +36,7 @@
 #include "obstacles.hh"
 #include "move.hh"
 #include "path.hh"
+#include "strat.hh"
 #include "candles.hh"
 
 #include "ucoolib/base/proto/proto.hh"
@@ -96,6 +97,8 @@ class Robot : public ucoo::Proto::Handler
     Path path;
     /// Move FSM.
     Move move;
+    /// Strategy.
+    Strat strat;
     /// Candles.
     Candles candles;
   private:

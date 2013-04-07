@@ -24,6 +24,7 @@
 #include "robot.hh"
 
 #include "bot.hh"
+#include "top.hh"
 
 #include "ucoolib/arch/arch.hh"
 #include "ucoolib/utils/bytes.hh"
@@ -119,6 +120,7 @@ Robot::main_loop ()
         pressure.update ();
         jack.update ();
         outputs_set_.update ();
+        top_update ();
         // Handle communications.
         bool sync = main_i2c_queue_.sync ();
         zb_i2c_queue_.sync ();
