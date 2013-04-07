@@ -70,29 +70,29 @@ void Candles::deduce ()
     int i;
     // Far.
     for (i = 1; i < 4; i++)
-        if (color[i] != color[i + 3])
+        if ((color[i] == UNKNOWN) ^ (color[7 - i] == UNKNOWN))
         {
             if (color[i] == RED)
-                color[i + 3] = BLUE;
+                color[7 - i] = BLUE;
             else if (color[i] == BLUE)
-                color[i + 3] = RED;
-            else if (color[i + 3] == RED)
+                color[7 - i] = RED;
+            else if (color[7 - i] == RED)
                 color[i] = BLUE;
-            else if (color[i + 3] == BLUE)
+            else if (color[7 + i] == BLUE)
                 color[i] = RED;
         }
     // Near.
-    for (i = 9; i < 14; i++)
-        if (color[i] != color[i + 5])
+    for (i = 1; i < 6; i++)
+        if ((color[8 + i] == UNKNOWN) ^ (color[19 - i] == UNKNOWN))
         {
-            if (color[i] == RED)
-                color[i + 5] = BLUE;
-            else if (color[i] == BLUE)
-                color[i + 5] = RED;
-            else if (color[i + 5] == RED)
-                color[i] = BLUE;
-            else if (color[i + 5] == BLUE)
-                color[i] = RED;
+            if (color[8 + i] == RED)
+                color[19 - i] = BLUE;
+            else if (color[8 + i] == BLUE)
+                color[19 - i] = RED;
+            else if (color[19 - i] == RED)
+                color[8 + i] = BLUE;
+            else if (color[19 - i] == BLUE)
+                color[8 + i] = RED;
         }
 }
 
