@@ -60,7 +60,7 @@ class Bag:
                 PneumaticCylinder (
                     link_bag.cake_arm_in,
                     link_bag.cake_arm_out,
-                    scheduler, 0., 1., 1., 1., 1.),
+                    scheduler, 0., 1., 2.5, 2.5, 1.),
                 PneumaticCylinder (
                     link_bag.cake_push_far_in,
                     link_bag.cake_push_far_out,
