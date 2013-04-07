@@ -72,13 +72,13 @@ struct Hardware
         ihm_emerg_stop;
     ucoo::Gpio
         glass_contact,
-        cherry_plate_left_contact, cherry_plate_right_contact;
+        cherry_plate_left_contact, cherry_plate_right_contact,
+        cake_arm_out_contact, cake_arm_in_contact;
     ucoo::Gpio
         cherry_bad_out, cherry_bad_in,
         cherry_plate_up, cherry_plate_down,
         cherry_plate_clamp,
         cake_arm_out, cake_arm_in,
-        cake_arm_out_contact, cake_arm_in_contact,
         cake_push_far_out, cake_push_far_in,
         cake_push_near_out, cake_push_near_in,
         glass_lower_clamp_close, glass_lower_clamp_open,

@@ -27,6 +27,7 @@ inputs = [
         'raw_jack', 'ihm_color', 'ihm_strat', 'ihm_robot_nb',
         'ihm_lol', 'ihm_emerg_stop', 'glass_contact',
         'cherry_plate_left_contact', 'cherry_plate_right_contact',
+        'cake_arm_out_contact', 'cake_arm_in_contact',
         ]
 outputs = [
         'cherry_bad_out', 'cherry_bad_in', 'cherry_plate_up',
