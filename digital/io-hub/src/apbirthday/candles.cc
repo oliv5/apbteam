@@ -195,7 +195,7 @@ FSM_TRANS (AI_CANDLE_SLEEPING, ai_candle_deploy, AI_CANDLE_DEPLOYING)
     Candles::deploy_arm ();
 }
 
-FSM_TRANS_TIMEOUT (AI_CANDLE_DEPLOYING, 12,
+FSM_TRANS_TIMEOUT (AI_CANDLE_DEPLOYING, 125,
                    success, AI_CANDLE_READY,
                    failure, AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED)
 {
@@ -259,7 +259,7 @@ FSM_TRANS_TIMEOUT (AI_CANDLE_UNDEPLOYING, 10, AI_CANDLE_UNDEPLOYING_2) //TODO ti
     Candles::undeploy_arm_2 ();
 }
 
-FSM_TRANS_TIMEOUT (AI_CANDLE_UNDEPLOYING_2, 10,
+FSM_TRANS_TIMEOUT (AI_CANDLE_UNDEPLOYING_2, 125,
                    success, AI_CANDLE_SLEEPING,
                    failure, AI_CANDLE_READY)
 {
@@ -289,7 +289,7 @@ FSM_TRANS (AI_CANDLE_FAR_SLEEPING, ai_candle_far_punch, AI_CANDLE_FAR_PUNCHING)
     Candles::push_far ();
 }
 
-FSM_TRANS_TIMEOUT (AI_CANDLE_FAR_PUNCHING, 12, AI_CANDLE_FAR_SLEEPING) //TODO timeout value
+FSM_TRANS_TIMEOUT (AI_CANDLE_FAR_PUNCHING, 25, AI_CANDLE_FAR_SLEEPING) //TODO timeout value
 {
     Candles::unpush_far ();
 }
@@ -307,7 +307,7 @@ FSM_TRANS (AI_CANDLE_NEAR_SLEEPING, ai_candle_near_punch, AI_CANDLE_NEAR_PUNCHIN
     Candles::push_near ();
 }
 
-FSM_TRANS_TIMEOUT (AI_CANDLE_NEAR_PUNCHING, 12, AI_CANDLE_NEAR_SLEEPING) //TODO timeout value
+FSM_TRANS_TIMEOUT (AI_CANDLE_NEAR_PUNCHING, 25, AI_CANDLE_NEAR_SLEEPING) //TODO timeout value
 {
     Candles::unpush_near ();
 }
