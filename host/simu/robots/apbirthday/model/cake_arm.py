@@ -61,6 +61,7 @@ class CakeArm (Observable):
             if contact.state != state:
                 contact.state = state
                 contact.notify ()
+        self.notify ();
 
     def __push_notified (self):
         if self.arm_cyl.pos > .9:
