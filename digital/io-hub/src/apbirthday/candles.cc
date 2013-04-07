@@ -195,6 +195,11 @@ FSM_TRANS (AI_CANDLE_SLEEPING, ai_candle_deploy, AI_CANDLE_DEPLOYING)
     Candles::deploy_arm ();
 }
 
+FSM_TRANS (AI_CANDLE_SLEEPING, ai_candle_undeploy, AI_CANDLE_SLEEPING)
+{
+    robot->fsm_queue.post (FSM_EVENT (ai_candle_success));
+}
+
 FSM_TRANS_TIMEOUT (AI_CANDLE_DEPLOYING, 125,
                    success, AI_CANDLE_READY,
                    failure, AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED)
@@ -247,6 +252,11 @@ FSM_TRANS (AI_CANDLE_READY, ai_candle_blow, AI_CANDLE_READY)
             }
         }
     }
+}
+
+FSM_TRANS (AI_CANDLE_READY, ai_candle_deploy, AI_CANDLE_READY)
+{
+    robot->fsm_queue.post (FSM_EVENT (ai_candle_success));
 }
 
 FSM_TRANS (AI_CANDLE_READY, ai_candle_undeploy, AI_CANDLE_UNDEPLOYING)
