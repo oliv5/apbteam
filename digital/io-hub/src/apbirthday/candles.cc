@@ -107,54 +107,115 @@ inline bool Candles::is_far (int pos)
     return pos < far_count;
 }
 
+void Candles::deploy_arm ()
+{
+    // Deploy arm.
+    robot->hardware.cake_arm_out.set (true);
+    robot->hardware.cake_arm_in.set (false);
+    // Prepare punhers.
+    unpush_far ();
+    unpush_near ();
+}
+
+void Candles::undeploy_arm_1 ()
+{
+    // Get a flabby arm (usefull in case of failure).
+     robot->hardware.cake_arm_out.set (false);
+     robot->hardware.cake_arm_in.set (false);
+    // Prepare far puncher to undeploy.
+    Candles::push_far ();
+    // Be sure the near punched in not punching.
+    Candles::unpush_near ();
+}
+
+void Candles::undeploy_arm_2 ()
+{
+    // Unleach far puncher.
+    robot->hardware.cake_push_far_out.set (false);
+    robot->hardware.cake_push_far_in.set (false);
+    // Put arm back.
+    robot->hardware.cake_arm_out.set (false);
+    robot->hardware.cake_arm_in.set (true);
+}
+
+void Candles::push_near ()
+{
+    robot->hardware.cake_push_near_out.set (true);
+    robot->hardware.cake_push_near_in.set (false);
+}
+
+void Candles::unpush_near ()
+{
+    robot->hardware.cake_push_near_out.set (false);
+    robot->hardware.cake_push_near_in.set (true);
+}
+
+void Candles::push_far ()
+{
+    robot->hardware.cake_push_far_out.set (true);
+    robot->hardware.cake_push_far_in.set (false);
+}
+
+void Candles::unpush_far ()
+{
+    robot->hardware.cake_push_far_out.set (false);
+    robot->hardware.cake_push_far_in.set (true);
+}
+
 // Global candle FSM.
 FSM_STATES (AI_CANDLE_OFF,
             AI_CANDLE_INIT,
             AI_CANDLE_SLEEPING,
+            AI_CANDLE_DEPLOYING,
+            AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED,
             AI_CANDLE_READY,
-            AI_CANDLE_UNDEPLOYING)
+            AI_CANDLE_UNDEPLOYING,
+            AI_CANDLE_UNDEPLOYING_2)
 
 FSM_EVENTS (ai_candle_deploy,
             ai_candle_undeploy,
+            ai_candle_success,
+            ai_candle_failure,
             ai_candle_blow)
 
 FSM_START_WITH (AI_CANDLE_OFF)
 
 FSM_TRANS (AI_CANDLE_OFF, init_actuators, AI_CANDLE_INIT)
 {
-    // Deploy for initializing.
-    // Deploy arm.
-    robot->hardware.cake_arm_out.set (true);
-    robot->hardware.cake_arm_in.set (false);
-    // Prepare far pusher.
-    robot->hardware.cake_push_far_out.set (false);
-    robot->hardware.cake_push_far_in.set (true);
-    // Prepare near pusher.
-    robot->hardware.cake_push_near_out.set (false);
-    robot->hardware.cake_push_near_in.set (true);
+    Candles::deploy_arm ();
 }
 
 FSM_TRANS_TIMEOUT (AI_CANDLE_INIT, 12, AI_CANDLE_UNDEPLOYING)
 {
-    // Prepare far puncher to undeploy.
-    robot->hardware.cake_push_far_out.set (true);
-    robot->hardware.cake_push_far_in.set (false);
-    // Be sure the near punched in not punching.
-    robot->hardware.cake_push_near_out.set (false);
-    robot->hardware.cake_push_near_in.set (true);
+    Candles::undeploy_arm_1 ();
 }
 
-FSM_TRANS (AI_CANDLE_SLEEPING, ai_candle_deploy, AI_CANDLE_READY)
+FSM_TRANS (AI_CANDLE_SLEEPING, ai_candle_deploy, AI_CANDLE_DEPLOYING)
 {
-    // Deploy arm.
-    robot->hardware.cake_arm_out.set (true);
-    robot->hardware.cake_arm_in.set (false);
-    // Prepare far pusher.
-    robot->hardware.cake_push_far_out.set (false);
-    robot->hardware.cake_push_far_in.set (true);
-    // Prepare near pusher.
-    robot->hardware.cake_push_near_out.set (false);
-    robot->hardware.cake_push_near_in.set (true);
+    Candles::deploy_arm ();
+}
+
+FSM_TRANS_TIMEOUT (AI_CANDLE_DEPLOYING, 12,
+                   success, AI_CANDLE_READY,
+                   failure, AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED)
+{
+    if (robot->hardware.cake_arm_out_contact.get ())
+    {
+        robot->fsm_queue.post (FSM_EVENT (ai_candle_success));
+        return FSM_BRANCH (success);
+    }
+    else
+    {
+        // Get back to Sleep.
+        Candles::undeploy_arm_1 ();
+        robot->fsm_queue.post (FSM_EVENT (ai_candle_failure));
+        return FSM_BRANCH (failure);
+    }
+}
+
+FSM_TRANS_TIMEOUT (AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED, 12, AI_CANDLE_SLEEPING)
+{
+    Candles::undeploy_arm_2 ();
 }
 
 FSM_TRANS (AI_CANDLE_READY, ai_candle_blow, AI_CANDLE_READY)
@@ -190,22 +251,29 @@ FSM_TRANS (AI_CANDLE_READY, ai_candle_blow, AI_CANDLE_READY)
 
 FSM_TRANS (AI_CANDLE_READY, ai_candle_undeploy, AI_CANDLE_UNDEPLOYING)
 {
-    // Prepare far puncher to undeploy.
-    robot->hardware.cake_push_far_out.set (true);
-    robot->hardware.cake_push_far_in.set (false);
-    // Be sure the near punched in not punching.
-    robot->hardware.cake_push_near_out.set (false);
-    robot->hardware.cake_push_near_in.set (true);
+    Candles::undeploy_arm_1 ();
 }
 
-FSM_TRANS_TIMEOUT (AI_CANDLE_UNDEPLOYING, 10, AI_CANDLE_SLEEPING) //TODO timeout value
+FSM_TRANS_TIMEOUT (AI_CANDLE_UNDEPLOYING, 10, AI_CANDLE_UNDEPLOYING_2) //TODO timeout value
 {
-    // Unleach far punched.
-    robot->hardware.cake_push_far_out.set (false);
-    robot->hardware.cake_push_far_in.set (false);
-    // Put arm back.
-    robot->hardware.cake_arm_out.set (false);
-    robot->hardware.cake_arm_in.set (true);
+    Candles::undeploy_arm_2 ();
+}
+
+FSM_TRANS_TIMEOUT (AI_CANDLE_UNDEPLOYING_2, 10,
+                   success, AI_CANDLE_SLEEPING,
+                   failure, AI_CANDLE_READY)
+{
+    if (robot->hardware.cake_arm_in_contact.get ())
+    {
+        robot->fsm_queue.post (FSM_EVENT (ai_candle_success));
+        return FSM_BRANCH (success);
+    }
+    else
+    {
+        Candles::deploy_arm ();
+        robot->fsm_queue.post (FSM_EVENT (ai_candle_failure));
+        return FSM_BRANCH (failure);
+    }
 }
 
 // Far puncher FSM.
@@ -218,14 +286,12 @@ FSM_START_WITH (AI_CANDLE_FAR_SLEEPING)
 
 FSM_TRANS (AI_CANDLE_FAR_SLEEPING, ai_candle_far_punch, AI_CANDLE_FAR_PUNCHING)
 {
-    robot->hardware.cake_push_far_out.set (true);
-    robot->hardware.cake_push_far_in.set (false);
+    Candles::push_far ();
 }
 
 FSM_TRANS_TIMEOUT (AI_CANDLE_FAR_PUNCHING, 12, AI_CANDLE_FAR_SLEEPING) //TODO timeout value
 {
-    robot->hardware.cake_push_far_out.set (false);
-    robot->hardware.cake_push_far_in.set (true);
+    Candles::unpush_far ();
 }
 
 // Near puncher FSM.
@@ -238,14 +304,12 @@ FSM_START_WITH (AI_CANDLE_NEAR_SLEEPING)
 
 FSM_TRANS (AI_CANDLE_NEAR_SLEEPING, ai_candle_near_punch, AI_CANDLE_NEAR_PUNCHING)
 {
-    robot->hardware.cake_push_near_out.set (true);
-    robot->hardware.cake_push_near_in.set (false);
+    Candles::push_near ();
 }
 
 FSM_TRANS_TIMEOUT (AI_CANDLE_NEAR_PUNCHING, 12, AI_CANDLE_NEAR_SLEEPING) //TODO timeout value
 {
-    robot->hardware.cake_push_near_out.set (false);
-    robot->hardware.cake_push_near_in.set (true);
+    Candles::unpush_near ();
 }
 
 // Far analyse FSM.

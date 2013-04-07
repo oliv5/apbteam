@@ -65,6 +65,14 @@ class Candles
         };
         static bool is_near (int pos);
         static bool is_far (int pos);
+        // GPIO manipulation.
+        static void deploy_arm ();
+        static void undeploy_arm_1 ();
+        static void undeploy_arm_2 ();
+        static void push_near ();
+        static void unpush_near ();
+        static void push_far ();
+        static void unpush_far ();
     private:
         static const int total_count = 20;
         static const int near_count = 12;
