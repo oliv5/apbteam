@@ -44,7 +44,8 @@ class Obstacles
     void add (const vect_t &pos);
     /// Return true if there is an obstacle near the robot while going to a
     /// destination point.
-    bool blocking (const vect_t &robot, const vect_t &dest) const;
+    bool blocking (const vect_t &robot, const vect_t &dest, int stop_mm_ = -1)
+        const;
     /// Setup obstacles in path finding object.
     void add_obstacles (Path &path) const;
   public:
@@ -81,7 +82,7 @@ class Obstacles
     {
         /// Position.
         vect_t pos;
-        /// Validity period as a number of cycles, or 0 if unvalid.
+        /// Validity period as a number of cycles, or 0 if invalid.
         int valid;
     };
     /// Number of obstacles.

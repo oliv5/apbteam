@@ -98,8 +98,10 @@ Obstacles::add (const vect_t &pos)
 }
 
 bool
-Obstacles::blocking (const vect_t &robot, const vect_t &dest) const
+Obstacles::blocking (const vect_t &robot, const vect_t &dest, int stop_mm_) const
 {
+    if (stop_mm_ == -1)
+        stop_mm_ = stop_mm;
     // Stop here if no obstacle.
     bool obs_valid = false;
     for (int i = 0; !obs_valid && i < obstacles_nb_; i++)
@@ -114,11 +116,11 @@ Obstacles::blocking (const vect_t &robot, const vect_t &dest) const
     // If destination is near, use clearance to destination point instead of
     // stop length.
     vect_t t;
-    if (d < stop_mm)
+    if (d < stop_mm_)
         t = dest;
     else
     {
-        vect_scale_f824 (&vd, (1ll << 24) / d * stop_mm);
+        vect_scale_f824 (&vd, (1ll << 24) / d * stop_mm_);
         t = robot;
         vect_translate (&t, &vd);
     }
