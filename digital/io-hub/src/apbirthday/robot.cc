@@ -179,6 +179,9 @@ Robot::fsm_gen_event ()
         if (ANGFSM_HANDLE_VAR (AI, event))
             return true;
     }
+    // Top FSM events.
+    if (top_fsm_gen_event ())
+        return true;
     // Check obstacles.
     if (move.check_obstacles ())
         return true;

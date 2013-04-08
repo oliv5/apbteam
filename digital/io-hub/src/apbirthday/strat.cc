@@ -37,12 +37,12 @@ Strat::decision_candles (CandlesDecision &decision, uint16_t robot_angle)
     // TODO: this is a stub.
     if (robot_angle > G_ANGLE_UF016_DEG (-90))
     {
-        decision.direction = Asserv::BACKWARD;
+        decision.dir_sign = -1;
         decision.end_angle = G_ANGLE_UF016_DEG (180 + 180. / 6);
     }
     else
     {
-        decision.direction = Asserv::FORWARD;
+        decision.dir_sign = 1;
         decision.end_angle = G_ANGLE_UF016_DEG (-180. / 6);
     }
     return true;

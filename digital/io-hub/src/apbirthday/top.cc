@@ -72,8 +72,7 @@ top_cake_angle_robot ()
 /// Compute the candle to blow for a given angle, when going in the given
 /// direction.
 static int
-top_candle_for_angle (uint16_t a, Candles::Floor floor,
-                      Asserv::DirectionConsign direction)
+top_candle_for_angle (uint16_t a, Candles::Floor floor, int dir_sign)
 {
     /// Information for each floor.
     struct FloorInfo
@@ -99,7 +98,7 @@ top_candle_for_angle (uint16_t a, Candles::Floor floor,
     const FloorInfo &i = floor_info[floor];
     int index = i.first_index + (a - i.first_angle) / i.inter_angle;
     // For backward, add 1.
-    if (direction == Asserv::BACKWARD)
+    if (dir_sign == -1)
         index++;
     return index;
 }
@@ -116,7 +115,7 @@ top_follow_start ()
         {
             top.candles_last_blown[floor] =
                 top_candle_for_angle (robot_angle, Candles::Floor (floor),
-                                      top.candles.direction);
+                                      top.candles.dir_sign);
         }
     }
     return go_candle;
@@ -128,7 +127,8 @@ top_follow_or_leave ()
 {
     if (top_follow_start ())
     {
-        robot->asserv.follow (top.candles.direction);
+        robot->asserv.follow (top.candles.dir_sign == 1
+                              ? Asserv::FORWARD : Asserv::BACKWARD);
         return FSM_BRANCH (candles);
     }
     else
@@ -139,47 +139,70 @@ top_follow_or_leave ()
     }
 }
 
+bool
+top_follow_blocking (int dir_sign)
+{
+    Position robot_pos;
+    robot->asserv.get_position (robot_pos);
+    uint16_t robot_angle = top_cake_angle (robot_pos.v);
+    // Check for an obstacle on a small segment.
+    vect_t dst;
+    uint16_t dst_angle = robot_angle + dir_sign * G_ANGLE_UF016_DEG (30);
+    vect_from_polar_uf016 (&dst, pg_cake_radius + pg_cake_distance
+                           + BOT_SIZE_SIDE, dst_angle);
+    vect_translate (&dst, &pg_cake_pos);
+    return robot->obstacles.blocking (robot_pos.v, dst, 200);
+}
+
 void
 top_update ()
 {
     if (FSM_CAN_HANDLE (AI, top_follow_finished))
     {
-        uint16_t robot_angle = top_cake_angle_robot ();
         // Update consign.
         int cons;
         const int k = 200;
         const int front_offset = 0x07fb;
         const int back_offset = 0x09af;
-        if (top.candles.direction == Asserv::FORWARD)
+        if (top.candles.dir_sign == 1)
             cons = - robot->hardware.adc_cake_front.read () + front_offset;
         else
             cons = robot->hardware.adc_cake_back.read () - back_offset;
         robot->asserv.follow_update (cons * k / 1000);
+    }
+}
+
+bool
+top_fsm_gen_event ()
+{
+    if (ANGFSM_CAN_HANDLE (AI, top_follow_finished))
+    {
+        uint16_t robot_angle = top_cake_angle_robot ();
+        int dir_sign = top.candles.dir_sign;
         // Check for movement end.
-        if ((top.candles.direction == Asserv::FORWARD
-             && robot_angle > top.candles.end_angle)
-            || (top.candles.direction == Asserv::BACKWARD
-                && robot_angle < top.candles.end_angle))
+        if ((robot_angle - top.candles.end_angle) * dir_sign > 0)
         {
-            robot->fsm_queue.post (FSM_EVENT (top_follow_finished));
-            return;
+            if (ANGFSM_HANDLE (AI, top_follow_finished))
+                return true;
         }
+        // Check for obstacle.
+        if (top_follow_blocking (dir_sign))
+            if (ANGFSM_HANDLE (AI, top_follow_blocked))
+                return true;
         // Check for a candle to blow.
-        else
+        for (int floor = Candles::NEAR; floor < Candles::FLOOR_NB; floor++)
         {
-            for (int floor = Candles::NEAR; floor < Candles::FLOOR_NB; floor++)
+            int candle = top_candle_for_angle (robot_angle,
+                                               Candles::Floor (floor),
+                                               top.candles.dir_sign);
+            if (candle != top.candles_last_blown[floor])
             {
-                int candle = top_candle_for_angle (robot_angle,
-                                                   Candles::Floor (floor),
-                                                   top.candles.direction);
-                if (candle != top.candles_last_blown[floor])
-                {
-                    robot->candles.blow (candle);
-                    top.candles_last_blown[floor] = candle;
-                }
+                robot->candles.blow (candle);
+                top.candles_last_blown[floor] = candle;
             }
         }
     }
+    return false;
 }
 
 ANGFSM_INIT

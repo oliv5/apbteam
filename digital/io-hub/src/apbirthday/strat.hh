@@ -25,7 +25,6 @@
 // }}}
 #include "defs.hh"
 #include "playground_2013.hh"
-#include "asserv.hh"
 
 /// High level strategy decision making.
 class Strat
@@ -38,8 +37,8 @@ class Strat
     /// Information on a candle decision.
     struct CandlesDecision
     {
-        /// Movement direction.
-        Asserv::DirectionConsign direction;
+        /// Movement direction, 1 (trigo) or -1 (antitrigo).
+        int dir_sign;
         /// Angle relative to cake to end the movement.
         uint16_t end_angle;
     };

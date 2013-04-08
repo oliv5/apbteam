@@ -24,8 +24,16 @@
 //
 // }}}
 
+/// Test whether there is an obstacle blocking in the given direction.
+bool
+top_follow_blocking (int dir_sign);
+
 /// Update external consign when following cake.
 void
 top_update ();
+
+/// Generate TOP FSM events, return true if one event handled.
+bool
+top_fsm_gen_event ();
 
 #endif // top_hh
