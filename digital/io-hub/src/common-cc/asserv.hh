@@ -58,7 +58,7 @@ class Asserv : public I2cQueue::Slave
     /// Get last moving direction.
     Direction get_last_moving_direction () const;
     /// Get current position.
-    void get_position (Position &position) const;
+    const Position &get_position () const;
     /// Release motors (zero torque).
     void free ();
     /// Stop moving, applying acceleration constraints.
@@ -91,8 +91,7 @@ class Asserv : public I2cQueue::Slave
   private:
     uint8_t status_flag_;
     uint8_t input_port_;
-    int position_x_, position_y_;
-    uint16_t position_a_;
+    Position position_;
     Direction last_moving_direction_;
     float scale_, scale_inv_;
 };
@@ -123,6 +122,12 @@ inline Direction
 Asserv::get_last_moving_direction () const
 {
     return last_moving_direction_;
+}
+
+inline const Position &
+Asserv::get_position () const
+{
+    return position_;
 }
 
 #endif // asserv_hh

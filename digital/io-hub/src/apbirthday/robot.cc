@@ -124,8 +124,7 @@ Robot::main_loop ()
         // Handle communications.
         bool sync = main_i2c_queue_.sync ();
         zb_i2c_queue_.sync ();
-        Position robot_pos;
-        asserv.get_position (robot_pos);
+        Position robot_pos = asserv.get_position ();
         beacon.send_position (robot_pos.v);
         // Look for obstacles.
         if (usdist_control_.update ())
@@ -336,8 +335,7 @@ Robot::proto_stats ()
         return;
     if (stats_asserv_ && !--stats_asserv_cpt_)
     {
-        Position pos;
-        asserv.get_position (pos);
+        Position pos = asserv.get_position ();
         stats_proto_->send ('A', "hhH", pos.v.x, pos.v.y, pos.a);
         stats_asserv_cpt_ = stats_asserv_;
     }

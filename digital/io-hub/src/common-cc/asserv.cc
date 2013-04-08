@@ -29,10 +29,12 @@ Asserv::Asserv (I2cQueue &queue, float scale)
     : I2cQueue::Slave (queue, 0x04, 10 + aux_nb * 2),
       status_flag_ (0),
       input_port_ (0),
-      position_x_ (0), position_y_ (0), position_a_ (0),
       last_moving_direction_ (DIRECTION_NONE),
       scale_ (scale), scale_inv_ (1 / scale)
 {
+    position_.v.x = 0;
+    position_.v.y = 0;
+    position_.a = 0;
 }
 
 void
@@ -40,20 +42,14 @@ Asserv::recv_status (const uint8_t *status)
 {
     status_flag_ = status[0];
     input_port_ = status[1];
-    position_x_ = ucoo::bytes_pack (0, status[2], status[3], status[4]);
-    position_y_ = ucoo::bytes_pack (0, status[5], status[6], status[7]);
-    position_a_ = ucoo::bytes_pack (status[8], status[9]);
+    position_.v.x = ucoo::bytes_pack (0, status[2], status[3], status[4])
+        * scale_;
+    position_.v.y = ucoo::bytes_pack (0, status[5], status[6], status[7])
+        * scale_;
+    position_.a = ucoo::bytes_pack (status[8], status[9]);
     Direction d = get_moving_direction ();
     if (d != DIRECTION_NONE)
         last_moving_direction_ = d;
-}
-
-void
-Asserv::get_position (Position &position) const
-{
-    position.v.x = position_x_ * scale_;
-    position.v.y = position_y_ * scale_;
-    position.a = position_a_;
 }
 
 void

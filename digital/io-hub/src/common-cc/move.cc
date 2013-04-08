@@ -69,8 +69,7 @@ Move::check_obstacles ()
 {
     if (FSM_CAN_HANDLE (AI, obstacle_blocking))
     {
-        Position robot_pos;
-        robot->asserv.get_position (robot_pos);
+        Position robot_pos = robot->asserv.get_position ();
         if (robot->obstacles.blocking (robot_pos.v, step_))
             if (FSM_HANDLE (AI, obstacle_blocking))
                 return true;
@@ -116,8 +115,7 @@ Move::go ()
     if (step_final_move_ && shorten_)
     {
         // Compute a vector from destination to robot with lenght 'shorten'.
-        Position robot_position;
-        robot->asserv.get_position (robot_position);
+        Position robot_position = robot->asserv.get_position ();
         vect_t v = robot_position.v;
         vect_sub (&v, &step_);
         int d = vect_norm (&v);
@@ -140,8 +138,7 @@ Move::NextMove
 Move::go_or_rotate (const vect_t &dst, uint16_t angle, bool with_angle,
                     Asserv::DirectionConsign direction_consign)
 {
-    Position robot_position;
-    robot->asserv.get_position (robot_position);
+    Position robot_position = robot->asserv.get_position ();
     uint16_t robot_angle = robot_position.a;
     if (direction_consign & Asserv::BACKWARD)
         robot_angle += 0x8000;
@@ -205,8 +202,7 @@ Move::path_init ()
     bool found;
     vect_t dst;
     // Get the current position
-    Position current_pos;
-    robot->asserv.get_position (current_pos);
+    Position current_pos = robot->asserv.get_position ();
     // Give the current position of the bot to the path module
     robot->path.reset ();
     robot->obstacles.add_obstacles (robot->path);
@@ -320,8 +316,7 @@ move_back_up (void)
         back_dist = 300;
     }
     // Assume there is an obstacle in front of the robot.
-    Position robot_pos;
-    robot->asserv.get_position (robot_pos);
+    Position robot_pos = robot->asserv.get_position ();
     vect_t obstacle_pos;
     vect_from_polar_uf016 (&obstacle_pos, dist, robot_pos.a);
     vect_translate (&obstacle_pos, &robot_pos.v);

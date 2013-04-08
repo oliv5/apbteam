@@ -64,8 +64,7 @@ top_cake_angle (const vect_t &pos)
 static uint16_t
 top_cake_angle_robot ()
 {
-    Position pos;
-    robot->asserv.get_position (pos);
+    Position pos = robot->asserv.get_position ();
     return top_cake_angle (pos.v);
 }
 
@@ -142,8 +141,7 @@ top_follow_or_leave ()
 bool
 top_follow_blocking (int dir_sign)
 {
-    Position robot_pos;
-    robot->asserv.get_position (robot_pos);
+    Position robot_pos = robot->asserv.get_position ();
     uint16_t robot_angle = top_cake_angle (robot_pos.v);
     // Check for an obstacle on a small segment.
     vect_t dst;
