@@ -40,7 +40,7 @@ strat_candles_score (int first, int last)
     int score = 0;
     Candles::Color other_color = team_color == TEAM_COLOR_RIGHT
         ? Candles::BLUE : Candles::RED;
-    for (int i = first; i != last + 1; i++)
+    for (int i = first; i < last + 1; i++)
     {
         if (robot->candles.state[i] != Candles::PUNCHED
             && robot->candles.color[i] != other_color)
