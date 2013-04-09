@@ -23,6 +23,13 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 //
 // }}}
+#include "defs.hh"
+#include "candles.hh"
+
+/// Compute the candle to blow for a given angle, when going in the given
+/// direction.
+int
+top_candle_for_angle (uint16_t a, Candles::Floor floor, int dir_sign);
 
 /// Test whether there is an obstacle blocking in the given direction.
 bool

@@ -68,9 +68,7 @@ top_cake_angle_robot ()
     return top_cake_angle (pos.v);
 }
 
-/// Compute the candle to blow for a given angle, when going in the given
-/// direction.
-static int
+int
 top_candle_for_angle (uint16_t a, Candles::Floor floor, int dir_sign)
 {
     /// Information for each floor.

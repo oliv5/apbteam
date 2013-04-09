@@ -22,6 +22,8 @@
 //
 // }}}
 #include "strat.hh"
+#include "robot.hh"
+#include "top.hh"
 
 Strat::Decision
 Strat::decision (vect_t &pos)
@@ -31,21 +33,58 @@ Strat::decision (vect_t &pos)
     return CANDLES;
 }
 
+/// Compute score for candles between first and last.
+static int
+strat_candles_score (int first, int last)
+{
+    int score = 0;
+    Candles::Color other_color = team_color == TEAM_COLOR_RIGHT
+        ? Candles::BLUE : Candles::RED;
+    for (int i = first; i != last + 1; i++)
+    {
+        if (robot->candles.state[i] != Candles::PUNCHED
+            && robot->candles.color[i] != other_color)
+            score++;
+    }
+    return score;
+}
+
 bool
 Strat::decision_candles (CandlesDecision &decision, uint16_t robot_angle)
 {
-    // TODO: this is a stub.
-    if (robot_angle > G_ANGLE_UF016_DEG (-90))
+    // Make an evaluation of the best direction to follow.
+    // TODO: +1/-1 until candles at ends can be reached.
+    int limit, score_forward, score_backward;
+    limit = top_candle_for_angle (robot_angle, Candles::FAR, 1);
+    score_backward = strat_candles_score (0 + 1, limit);
+    score_forward = strat_candles_score (limit + 1, 7 - 1);
+    limit = top_candle_for_angle (robot_angle, Candles::NEAR, 1);
+    score_backward += strat_candles_score (8 + 1, limit);
+    score_forward += strat_candles_score (limit + 1, 19 - 1);
+    // Can not choose a direction with an obstacle.
+    if (score_backward && top_follow_blocking (-1))
+        score_backward = 0;
+    if (score_forward && top_follow_blocking (1))
+        score_forward = 0;
+    // Now choose.
+    if (score_forward == 0 && score_backward == 0)
     {
-        decision.dir_sign = -1;
-        decision.end_angle = G_ANGLE_UF016_DEG (180 + 180. / 6);
+        return false;
     }
     else
     {
-        decision.dir_sign = 1;
-        decision.end_angle = G_ANGLE_UF016_DEG (-180. / 6);
+        if (score_forward > score_backward)
+        {
+            decision.dir_sign = 1;
+            decision.end_angle = G_ANGLE_UF016_DEG (-180. / 6);
+        }
+        else
+        {
+            decision.dir_sign = -1;
+            decision.end_angle = G_ANGLE_UF016_DEG (180 + 180. / 6);
+        }
+        return true;
     }
-    return true;
 }
 
 void
