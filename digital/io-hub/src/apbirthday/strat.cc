@@ -24,6 +24,7 @@
 #include "strat.hh"
 #include "robot.hh"
 #include "top.hh"
+#include "debug.host.hh"
 
 Strat::Decision
 Strat::decision (vect_t &pos)
@@ -67,6 +68,8 @@ Strat::decision_candles (CandlesDecision &decision, uint16_t robot_angle)
     if (score_forward && top_follow_blocking (1))
         score_forward = 0;
     // Now choose.
+    host_debug ("score: forward = %d, backward = %d\n",
+                score_forward, score_backward);
     if (score_forward == 0 && score_backward == 0)
     {
         return false;

@@ -26,9 +26,12 @@
 
 /// Assert only on host, for costly asserts.
 #ifdef TARGET_host
+# include <cstdio>
 # define host_assert ucoo::assert
+# define host_debug(args...) fprintf (stderr, args)
 #else
 # define host_assert(x)
+# define host_debug(args...)
 #endif
 
 #endif // debug_host_hh
