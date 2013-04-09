@@ -76,6 +76,12 @@ Strat::decision_candles (CandlesDecision &decision, uint16_t robot_angle)
     }
     else
     {
+        // So near... let blow them...
+        if (score_forward && robot_angle > G_ANGLE_UF016_DEG (-45))
+            score_forward += 100;
+        if (score_backward && robot_angle < G_ANGLE_UF016_DEG (180 + 45))
+            score_backward += 100;
+        // Compare.
         if (score_forward > score_backward)
         {
             decision.dir_sign = 1;
