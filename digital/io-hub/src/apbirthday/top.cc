@@ -130,9 +130,38 @@ top_follow_or_leave ()
     }
     else
     {
-        // TODO: take a smart decision to avoid collision.
-        robot->asserv.stop ();
-        return FSM_BRANCH (tangent);
+        Position robot_pos = robot->asserv.get_position ();
+        int dist = 0;
+        // If near a border, need to move before turning.
+        if (robot_pos.v.y > pg_length - BOT_SIZE_RADIUS - 30)
+        {
+            if (robot_pos.a < G_ANGLE_UF016_DEG (180))
+                dist = - (BOT_SIZE_RADIUS + 30 - BOT_SIZE_FRONT);
+            else
+                dist = BOT_SIZE_RADIUS + 30 - BOT_SIZE_BACK;
+        }
+        // If near an obstacle, also need to move to undeploy arm.
+        else if (top_follow_blocking (1))
+        {
+            dist = -100;
+        }
+        // Do not use move_distance, it depends too much on current robot
+        // orientation which is not stable.
+        uint16_t robot_angle = top_cake_angle (robot_pos.v);
+        if (dist)
+        {
+            vect_t dst;
+            vect_from_polar_uf016 (&dst, dist,
+                                   robot_angle + G_ANGLE_UF016_DEG (90));
+            vect_translate (&dst, &robot_pos.v);
+            robot->asserv.goto_xy (dst, Asserv::REVERT_OK);
+            return FSM_BRANCH (tangent);
+        }
+        else
+        {
+            robot->asserv.goto_angle (robot_angle);
+            return FSM_BRANCH (turn);
+        }
     }
 }
 
