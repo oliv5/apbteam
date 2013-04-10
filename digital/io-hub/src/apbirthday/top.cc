@@ -26,17 +26,6 @@
 #include "playground_2013.hh"
 #include "bot.hh"
 
-extern "C" {
-#define ANGFSM_NAME AI
-#include "angfsm.h"
-}
-
-#ifdef TARGET_host
-typedef unsigned Branch;
-#else
-typedef angfsm_AI_branch_t Branch;
-#endif
-
 #include <cmath>
 
 /// Top context.

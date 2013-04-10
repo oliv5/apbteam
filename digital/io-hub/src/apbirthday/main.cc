@@ -26,11 +26,6 @@
 #include "robot.hh"
 #include "defs.hh"
 
-extern "C" {
-#define ANGFSM_NAME AI
-#include "angfsm.h"
-}
-
 /// Global team color.
 TeamColor team_color = TEAM_COLOR_UNKNOWN;
 

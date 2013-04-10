@@ -1,3 +1,5 @@
+#ifndef fsm_hh
+#define fsm_hh
 // io-hub - Modular Input/Output. {{{
 //
 // Copyright (C) 2013 Nicolas Schodet
@@ -21,30 +23,22 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 //
 // }}}
-#include "fsm_queue.hh"
 
-FsmQueue::FsmQueue ()
-    : head_ (0), nb_ (0)
-{
+extern "C" {
+#define ANGFSM_NAME AI
+#include "angfsm.h"
 }
 
-void
-FsmQueue::post (Event e)
-{
-    ucoo::assert (nb_ < queue_size_);
-    int tail = (head_ + nb_) % queue_size_;
-    events_[tail] = e;
-    nb_++;
-}
+#ifdef TARGET_host
+typedef unsigned Branch;
+#else
+typedef angfsm_AI_branch_t Branch;
+#endif
 
-Event
-FsmQueue::pop ()
-{
-    Event e;
-    ucoo::assert (nb_ > 0);
-    e = events_[head_];
-    nb_--;
-    head_ = (head_ + 1) % queue_size_;
-    return e;
-}
+#ifdef TARGET_host
+typedef uint16_t Event;
+#else
+typedef angfsm_AI_event_t Event;
+#endif
 
+#endif // fsm_hh

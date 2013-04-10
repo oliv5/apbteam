@@ -26,11 +26,6 @@
 #include "defs.hh"
 #include "candles.hh"
 
-extern "C" {
-#define ANGFSM_NAME AI
-#include "angfsm.h"
-}
-
 Candles::Candles (int calif_mode)
 {
     int i;

@@ -174,7 +174,7 @@ Robot::fsm_gen_event ()
     // FSM queue.
     if (fsm_queue.poll ())
     {
-        FsmQueue::Event event = fsm_queue.pop ();
+        Event event = fsm_queue.pop ();
         if (ANGFSM_HANDLE_VAR (AI, event))
             return true;
     }
