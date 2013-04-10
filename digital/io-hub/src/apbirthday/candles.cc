@@ -180,7 +180,7 @@ FSM_TRANS (AI_CANDLE_OFF, init_actuators, AI_CANDLE_INIT)
     Candles::deploy_arm ();
 }
 
-FSM_TRANS_TIMEOUT (AI_CANDLE_INIT, 12, AI_CANDLE_UNDEPLOYING)
+FSM_TRANS_TIMEOUT (AI_CANDLE_INIT, 125, AI_CANDLE_UNDEPLOYING)
 {
     Candles::undeploy_arm_1 ();
 }
