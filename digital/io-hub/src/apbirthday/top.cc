@@ -224,6 +224,8 @@ ANGFSM_INIT
 ANGFSM_STATES (
             // Initial state.
             TOP_START,
+            // Initialising actuators.
+            TOP_INIT_ACTUATORS,
             // Init done, waiting for rount start.
             TOP_INIT,
             // Decision state, one stop, one cycle.
@@ -242,17 +244,29 @@ ANGFSM_STATES (
             // Candles: turn to leave, undeploy arm as soon as possible.
             TOP_CANDLES_LEAVE_TURN,
             // Candles: go away so that the robot is free to turn.
-            TOP_CANDLES_LEAVE_GO_AWAY)
+            TOP_CANDLES_LEAVE_GO_AWAY,
+            // Demo mode: push the wall near the cake.
+            TOP_DEMO_CANDLES_PUSH_WALL,
+            // Demo mode: move away from the wall.
+            TOP_DEMO_CANDLES_MOVE_AWAY)
 
 ANGFSM_EVENTS (
             // Cake following finished (end point reached).
             top_follow_finished,
             // Problem with cake following.
-            top_follow_blocked)
+            top_follow_blocked,
+            // Start candle demo.
+            top_demo_candles)
 
 ANGFSM_START_WITH (TOP_START)
 
-FSM_TRANS (TOP_START, init_done, TOP_INIT)
+FSM_TRANS (TOP_START, init_actuators, TOP_INIT_ACTUATORS)
+{
+    // TODO: make sure the operator do not forget this is demo mode!
+    robot->demo = !robot->hardware.ihm_strat.get ();
+}
+
+FSM_TRANS (TOP_INIT_ACTUATORS, init_done, TOP_INIT)
 {
     // Color dependent init can go here.
 }
@@ -263,8 +277,10 @@ FSM_TRANS (TOP_INIT, init_start_round, TOP_DECISION)
 
 FSM_TRANS_TIMEOUT (TOP_DECISION, 1,
                    candles, TOP_CANDLES_GOTO_NORMAL,
-                   none, TOP_INIT)
+                   none, TOP_START)
 {
+    if (robot->demo)
+        return FSM_BRANCH (none);
     vect_t d_pos;
     Strat::Decision d = robot->strat.decision (d_pos);
     switch (d)
@@ -277,6 +293,10 @@ FSM_TRANS_TIMEOUT (TOP_DECISION, 1,
         ucoo::assert_unreachable ();
     }
 }
+
+///
+/// Candles.
+///
 
 FSM_TRANS (TOP_CANDLES_GOTO_NORMAL, move_success, TOP_CANDLES_ENTER_DEPLOY)
 {
@@ -370,5 +390,36 @@ FSM_TRANS (TOP_CANDLES_LEAVE_GO_AWAY, robot_move_success, TOP_DECISION)
 
 FSM_TRANS (TOP_CANDLES_LEAVE_GO_AWAY, robot_move_failure, TOP_DECISION)
 {
+}
+
+///
+/// Demo mode.
+///
+
+FSM_TRANS (TOP_INIT_ACTUATORS, top_demo_candles, TOP_DEMO_CANDLES_PUSH_WALL)
+{
+    team_color = TEAM_COLOR_LEFT;
+    robot->asserv.push_wall (Asserv::FORWARD, pg_cake_pos.x - pg_cake_radius
+                             - 20 - BOT_SIZE_SIDE,
+                             pg_length - BOT_FRONT_CONTACT_DIST,
+                             G_ANGLE_UF016_DEG (90));
+}
+
+FSM_TRANS (TOP_DEMO_CANDLES_PUSH_WALL, robot_move_success,
+           TOP_DEMO_CANDLES_MOVE_AWAY)
+{
+    robot->asserv.move_distance (-200);
+}
+
+FSM_TRANS (TOP_DEMO_CANDLES_MOVE_AWAY, robot_move_success, TOP_CANDLES_GOTO_NORMAL)
+{
+    robot->move.start (pg_cake_pos, Asserv::BACKWARD, pg_cake_radius
+                       + pg_cake_distance + BOT_SIZE_SIDE);
+}
+
+FSM_TRANS (TOP_INIT, top_demo_candles, TOP_CANDLES_GOTO_NORMAL)
+{
+    robot->move.start (pg_cake_pos, Asserv::BACKWARD, pg_cake_radius
+                       + pg_cake_distance + BOT_SIZE_SIDE);
 }
 
