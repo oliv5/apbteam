@@ -171,10 +171,21 @@ FSM_TRANS_TIMEOUT (DRINKS_TAKE_FIXING_UP, 100, DRINKS_READY)
     robot->fsm_queue.post (FSM_EVENT (drinks_taken));
 }
 
-FSM_TRANS (DRINKS_READY, drinks_serve, DRINKS_SERVE_SERVING)
+FSM_TRANS (DRINKS_READY, drinks_serve,
+           has_drinks, DRINKS_SERVE_SERVING,
+           no_drinks, DRINKS_READY)
 {
-    Drinks::upper_down ();
-    Drinks::lower_close ();
+    if (robot->drinks.nb () > 0)
+    {
+        Drinks::upper_down ();
+        Drinks::lower_close ();
+        return FSM_BRANCH (has_drinks);
+    }
+    else
+    {
+        robot->fsm_queue.post (FSM_EVENT (drinks_served));
+        return FSM_BRANCH (no_drinks);
+    }
 }
 
 FSM_TRANS_TIMEOUT (DRINKS_SERVE_SERVING, 100, DRINKS_SERVE_LIBERATING)
