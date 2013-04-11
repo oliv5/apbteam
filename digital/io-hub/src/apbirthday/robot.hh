@@ -39,6 +39,7 @@
 #include "strat.hh"
 #include "candles.hh"
 #include "drinks.hh"
+#include "plate.hh"
 
 #include "ucoolib/base/proto/proto.hh"
 #include "ucoolib/dev/usdist/usdist.hh"
@@ -104,6 +105,8 @@ class Robot : public ucoo::Proto::Handler
     Candles candles;
     /// Drinks.
     Drinks drinks;
+    /// Plate.
+    Plate plate;
   private:
     /// FSM debug mode.
     enum FsmDebugState
