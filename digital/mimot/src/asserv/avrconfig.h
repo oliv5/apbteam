@@ -28,7 +28,7 @@
 /* global */
 /** AVR Frequency : 1000000, 1843200, 2000000, 3686400, 4000000, 7372800,
  * 8000000, 11059200, 14745600, 16000000, 18432000, 20000000. */
-#define AC_FREQ 14745600
+#define AC_FREQ 16000000
 
 /* uart - UART module. */
 /** Select hardware uart for primary uart: 0, 1 or -1 to disable. */
