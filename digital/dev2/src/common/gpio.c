@@ -40,7 +40,7 @@ struct gpio_t
     /* Currently handled operation, or 0 if none. */
     uint8_t op;
     /* Arguments being received. */
-    uint8_t args[5];
+    uint8_t args[11];
     /* Number of arguments to receive. */
     uint8_t args_nb;
     /* Number of received arguments. */
@@ -66,16 +66,74 @@ gpio_uninit (void)
 }
 
 static void
-gpio_bin_send (uint8_t c)
+gpio_bin_send (uint8_t *c, uint8_t n)
 {
     Endpoint_SelectEndpoint (GPIO_TX_EPNUM);
     while (!Endpoint_ReadWriteAllowed ())
 	;
-    Endpoint_Write_Byte (c);
+    while (n--)
+	Endpoint_Write_Byte (*c++);
     if (!Endpoint_ReadWriteAllowed ())
 	Endpoint_ClearCurrentBank ();
     Endpoint_SelectEndpoint (GPIO_RX_EPNUM);
     ctx.data_sent = 1;
+}
+
+static void
+gpio_bin_serial_out (void)
+{
+    uint8_t bits = ctx.args[2];
+    uint8_t *p = &ctx.args[3];
+    uint8_t b;
+    uint8_t i;
+    for (i = 0; i < bits; i++)
+      {
+	/* Read more data. */
+	if (i % 8 == 0)
+	    b = *p++;
+	/* Set data. */
+	if (b & 1)
+	    PORTD |= ctx.args[0];
+	else
+	    PORTD &= ~ctx.args[0];
+	/* Clock cycle. */
+	PORTD ^= ctx.args[1];
+	PORTD ^= ctx.args[1];
+	/* Next. */
+	b >>= 1;
+      }
+}
+
+static void
+gpio_bin_serial_in (void)
+{
+    uint8_t bits = ctx.args[2];
+    uint8_t *p = &ctx.args[3];
+    uint8_t b = 0;
+    uint8_t bp = 1;
+    uint8_t i;
+    for (i = 0; i < bits; i++)
+      {
+	/* Read data. */
+	if (PIND & ctx.args[0])
+	    b |= bp;
+	/* Clock cycle. */
+	PORTD ^= ctx.args[1];
+	PORTD ^= ctx.args[1];
+	/* Next. */
+	bp <<= 1;
+	/* Store data. */
+	if (bp == 0)
+	  {
+	    *p++ = b;
+	    b = 0;
+	    bp = 1;
+	  }
+      }
+    /* Store last data. */
+    if (bp != 1)
+	*p++ = b;
+    gpio_bin_send (&ctx.args[3], (bits + 7) / 8);
 }
 
 static void
@@ -95,6 +153,8 @@ gpio_bin_accept (uint8_t c)
 	      { GPIO_OP_OUT_TOGGLE, 1 },
 	      { GPIO_OP_OUT_CHANGE, 2 },
 	      { GPIO_OP_IN, 0 },
+	      { GPIO_OP_SERIAL_OUT, 3 },
+	      { GPIO_OP_SERIAL_IN, 3 },
 	};
 	uint8_t i;
 	ctx.op = 0;
@@ -116,6 +176,7 @@ gpio_bin_accept (uint8_t c)
       }
     if (ctx.op && ctx.args_index == ctx.args_nb)
       {
+	uint8_t done = 1;
 	switch (ctx.op)
 	  {
 	  case GPIO_OP_RESET_SYNC:
@@ -154,10 +215,29 @@ gpio_bin_accept (uint8_t c)
 	    PORTD = (PORTD & ~ctx.args[0]) | ctx.args[1];
 	    break;
 	  case GPIO_OP_IN:
-	    gpio_bin_send (PIND);
+	      {
+		uint8_t in = PIND;
+		gpio_bin_send (&in, 1);
+	      }
+	    break;
+	  case GPIO_OP_SERIAL_OUT:
+	    if (ctx.args_nb == 3)
+	      {
+		if (ctx.args[2] <= 64)
+		  {
+		    ctx.args_nb += (ctx.args[2] + 7) / 8;
+		    done = 0;
+		  }
+	      }
+	    else
+		gpio_bin_serial_out ();
+	    break;
+	  case GPIO_OP_SERIAL_IN:
+	    gpio_bin_serial_in ();
 	    break;
 	  }
-	ctx.op = 0;
+	if (done)
+	    ctx.op = 0;
       }
 }
 
