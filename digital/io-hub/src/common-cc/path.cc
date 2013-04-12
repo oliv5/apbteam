@@ -279,12 +279,12 @@ void Path::prepare_score(const vect_t &src, int factor)
 {
     DPRINTF("Path prepare score from src=(%u;%u) factor=%u\n", src.x, src.y, factor);
     escape_factor = factor;
-    astar_dijkstra_prepare(astar_nodes, PATH_POINTS_NB, /*PATH_POINT_SRC_IDX*/get_point_index(src), PATH_POINT_DST_IDX);
+    astar_dijkstra_prepare(astar_nodes, PATH_POINTS_NB, get_point_index(src), PATH_POINT_DST_IDX);
 }
 
 uint16_t Path::get_score(const vect_t &dst)
 {
-    uint16_t score = astar_dijkstra_finish(astar_nodes, PATH_POINTS_NB, /*PATH_POINT_DST_IDX*/get_point_index(dst));
+    uint16_t score = astar_dijkstra_finish(astar_nodes, PATH_POINTS_NB, get_point_index(dst));
     DPRINTF("Path get score=%u for dst=(%u;%u)\n", score, dst.x, dst.y);
     return score;
 }

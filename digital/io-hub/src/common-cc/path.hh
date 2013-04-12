@@ -94,10 +94,10 @@ class Path
   private:
     /** Number of possible obstacles. */
     static const uint8_t PATH_OBSTACLES_NB = (4+1/*cake*/);
-    /** Number of points for the cake */
-    static const uint8_t PATH_CAKE_POINTS_NB = 10;
     /** Number of points per standard obstacle. */
-    static const uint8_t PATH_OBSTACLES_POINTS_NB = 6;
+    static const uint8_t PATH_OBSTACLES_POINTS_NB = 8;
+    /** Number of points for the cake */
+    static const uint8_t PATH_CAKE_POINTS_NB = 12;
     /** Number of reserved points for the 2 endpoints  */
     static const uint8_t PATH_RESERVED_POINTS_NB = 2;
     /** Number of points. */
