@@ -27,6 +27,7 @@
 #include "bot.hh"
 #include "robot.hh"
 #include "playground.hh"
+#include "playground_2013.hh"
 
 extern "C" {
 #include "modules/math/fixed/fixed.h"
@@ -34,7 +35,7 @@ extern "C" {
 #include "modules/utils/utils.h"
 }
 
-#define PATH_DEBUG 1
+#define PATH_DEBUG      1
 
 #ifdef HOST
 #include "../../digital/ai/src/common/debug.host.h"
@@ -63,19 +64,18 @@ Path::Path() :
 void Path::reset()
 {
     vect_t nul = {0,0};
-    vect_t cake = {pg_width>>1, pg_length};
 
     /* Reset everything */
     DPRINTF( "Path reset\n");
     obstacles_nb = 0;
-    points_nb = PATH_FIXED_POINTS_NB;
+    points_nb = PATH_RESERVED_POINTS_NB;
     points[PATH_POINT_SRC_IDX] = nul;
     points[PATH_POINT_DST_IDX] = nul;
     next_node = 0;
     escape_factor = 0;
 
     /* Declare the cake as an obstacle */
-    add_obstacle(cake, 500 + BOT_SIZE_SIDE, 0, PATH_CAKE_POINTS_NB);
+    add_obstacle(pg_cake_pos, pg_cake_radius + BOT_SIZE_SIDE * 4 / 3, 0, PATH_CAKE_POINTS_NB);
 }
 
 void Path::add_obstacle(const vect_t &c, const int r, const int factor, const int num)
@@ -105,7 +105,7 @@ void Path::add_obstacle(const vect_t &c, const int r, const int factor, const in
                 (fixed_mul_f824(rot_b,rot_b) >> 16) +
                 (1L<<8) );
     fact_r += 1;  /* To counter rounding operations */
-    fact_r += 13; /* Add 10% margin */
+    //fact_r += 13; /* Add 10% margin */
 
     /* First point is at the relative position (r;0) */
     x = ((r * fact_r) >> 8);
@@ -137,11 +137,11 @@ void Path::add_obstacle(const vect_t &c, const int r, const int factor, const in
 
 #ifdef HOST
     // Plot obstacle points
-    robot->hardware.simu_report.pos( &points[PATH_FIXED_POINTS_NB], points_nb-PATH_FIXED_POINTS_NB, PATH_PLOT_ID);
+    robot->hardware.simu_report.pos( &points[PATH_RESERVED_POINTS_NB], points_nb-PATH_RESERVED_POINTS_NB, PATH_PLOT_ID);
 #if 0
     // Draw the last obstacle
     points[points_nb] = points[points_nb - num];
-    robot->hardware.simu_report.path( &points[points_nb - num], points_nb + 1);
+    robot->hardware.simu_report.path( &points[points_nb - num], num + 1);
 #endif
 #endif
 }
@@ -205,28 +205,38 @@ bool Path::get_next(vect_t &p)
     return path_found;
 }
 
-vect_t& Path::get_point(uint8_t index)
+vect_t& Path::get_point_vect(const uint8_t index)
 {
+    //assert(index<points_nb);
     return points[index];
+}
+
+int Path::get_point_index(const vect_t& point)
+{
+    for(int i=0; i<points_nb; i++)
+    {
+        if (points[i].x==point.x && points[i].y==point.y)
+            return i;
+    }
+    return -1;
 }
 
 uint8_t Path::find_neighbors(uint8_t cur_point, struct astar_neighbor_t *neighbors)
 {
-    uint8_t i, j;
     uint8_t neighbors_nb = 0;
 
     /* Parse all nodes */
-    for(i=0; i<points_nb; i++)
+    for(int i=0; i<points_nb; i++)
     {
         /* Except the current one */
         if (i!=cur_point)
         {
             /* Get segment length */
-            uint32_t weight = distance_point_point(&points[cur_point], &points[i]);
+            uint16_t weight = distance_point_point(&points[cur_point], &points[i]);
             DPRINTF("- Node %u (%u;%u) w=%u ", i, points[i].x, points[i].y, weight);
 
             /* Check every obstacle */
-            for(j=0; j<obstacles_nb; j++)
+            for(int j=0; j<obstacles_nb; j++)
             {
                 // Check for intersection with obstacle
               uint16_t d = distance_segment_point(&points[cur_point], &points[i], &obstacles[j].c);
@@ -236,7 +246,8 @@ uint8_t Path::find_neighbors(uint8_t cur_point, struct astar_neighbor_t *neighbo
                   weight *= (i==PATH_POINT_SRC_IDX || cur_point==PATH_POINT_DST_IDX ? escape_factor : 0);
                   DPRINTF("in collision with c=(%u;%u) r=%u w=%u ",
                       obstacles[j].c.x, obstacles[j].c.y, obstacles[j].r, weight);
-                }
+                  break; /* Stop checking obstacle for this node */
+              }
             }
 
             // Add neighbor if valid
@@ -244,7 +255,7 @@ uint8_t Path::find_neighbors(uint8_t cur_point, struct astar_neighbor_t *neighbo
             {
                 DPRINTF("=> validated w=%u\n", weight);
                 neighbors[neighbors_nb].node = i;
-                neighbors[neighbors_nb].weight = (uint16_t)UTILS_MIN(weight,0xFFFF);
+                neighbors[neighbors_nb].weight = weight;
                 neighbors_nb++;
             }
             else
@@ -256,7 +267,7 @@ uint8_t Path::find_neighbors(uint8_t cur_point, struct astar_neighbor_t *neighbo
 
 #if PATH_DEBUG
     DPRINTF("\tFound %u neighbors: ", neighbors_nb);
-    for(i=0;i<neighbors_nb;i++)
+    for(int i=0;i<neighbors_nb;i++)
         DPRINTF("%u (%u)  ", neighbors[i].node, neighbors[i].weight);
     DPRINTF("\n");
 #endif
@@ -264,12 +275,26 @@ uint8_t Path::find_neighbors(uint8_t cur_point, struct astar_neighbor_t *neighbo
     return neighbors_nb;
 }
 
+void Path::prepare_score(const vect_t &src, int factor)
+{
+    DPRINTF("Path prepare score from src=(%u;%u) factor=%u\n", src.x, src.y, factor);
+    escape_factor = factor;
+    astar_dijkstra_prepare(astar_nodes, PATH_POINTS_NB, /*PATH_POINT_SRC_IDX*/get_point_index(src), PATH_POINT_DST_IDX);
+}
+
+uint16_t Path::get_score(const vect_t &dst)
+{
+    uint16_t score = astar_dijkstra_finish(astar_nodes, PATH_POINTS_NB, /*PATH_POINT_DST_IDX*/get_point_index(dst));
+    DPRINTF("Path get score=%u for dst=(%u;%u)\n", score, dst.x, dst.y);
+    return score;
+}
+
 extern "C" uint8_t
 AC_ASTAR_NEIGHBOR_CALLBACK (uint8_t node, struct astar_neighbor_t *neighbors)
 {
 #if PATH_DEBUG
-    vect_t node_v = robot->path.get_point(node);
-    DPRINTF("AC_ASTAR_NEIGHBOR_CALLBACK node=%u (%u;%u)\n", node, node_v.x, node_v.y);
+    vect_t point_v = robot->path.get_point_vect(node);
+    DPRINTF("AC_ASTAR_NEIGHBOR_CALLBACK node=%u (%u;%u)\n", node, point_v.x, point_v.y);
 #endif
     return robot->path.find_neighbors(node, neighbors);
 }
@@ -277,9 +302,9 @@ AC_ASTAR_NEIGHBOR_CALLBACK (uint8_t node, struct astar_neighbor_t *neighbors)
 extern "C" uint16_t
 AC_ASTAR_HEURISTIC_CALLBACK (uint8_t node)
 {
-    vect_t node_a = robot->path.get_point(node);
-    vect_t node_b = robot->path.get_point(PATH_POINT_SRC_IDX);
-    int16_t dist = distance_point_point(&node_a, &node_b);
+    vect_t point_a = robot->path.get_point_vect(node);
+    vect_t point_b = robot->path.get_point_vect(PATH_POINT_SRC_IDX);
+    int16_t dist = distance_point_point(&point_a, &point_b);
     DPRINTF("Heuristic node=%u dist=%u\n", node, dist);
     return dist;
 }
