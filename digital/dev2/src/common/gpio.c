@@ -127,12 +127,16 @@ gpio_bin_accept (uint8_t c)
 	    break;
 	  case GPIO_OP_DIR:
 	    DDRD = ctx.args[0];
+	    /* Also disable pull up. */
+	    PORTD &= ctx.args[0];
 	    break;
 	  case GPIO_OP_DIR_OUT:
 	    DDRD |= ctx.args[0];
 	    break;
 	  case GPIO_OP_DIR_IN:
 	    DDRD &= ~ctx.args[0];
+	    /* Also disable pull up. */
+	    PORTD &= ~ctx.args[0];
 	    break;
 	  case GPIO_OP_OUT:
 	    PORTD = ctx.args[0];
