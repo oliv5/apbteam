@@ -25,6 +25,7 @@
 from simu.view.switch import Switch
 from simu.view.distance_sensor import DistanceSensor
 from simu.view.distance_sensor_us import DistanceSensorUS
+from simu.view.path import Path
 from simu.view.pos_report import PosReport
 from simu.robots.apbirthday.view.robot import Robot
 
@@ -39,5 +40,6 @@ class Bag:
                 for ds in model_bag.distance_sensor]
         self.cake_front = DistanceSensor (self.robot, model_bag.cake_front)
         self.cake_back = DistanceSensor (self.robot, model_bag.cake_back)
+        self.path = Path (table, model_bag.path)
         self.pos_report = PosReport (table, model_bag.pos_report)
 
