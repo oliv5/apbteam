@@ -35,7 +35,7 @@ Robot::Robot ()
     : main_i2c_queue_ (hardware.main_i2c), zb_i2c_queue_ (hardware.zb_i2c),
       asserv (main_i2c_queue_, BOT_SCALE),
       mimot (main_i2c_queue_),
-      pot_regul (main_i2c_queue_, 0),
+      pot_regul (main_i2c_queue_, 0x7),
       beacon (zb_i2c_queue_),
       dev_proto (*this, hardware.dev_uart),
       zb_proto (*this, hardware.zb_uart),
