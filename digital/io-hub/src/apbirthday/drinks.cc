@@ -93,7 +93,6 @@ inline void Drinks::lower_close ()
     robot->hardware.glass_lower_clamp_open.set (false);
 }
 
-// Near analyse FSM.
 FSM_STATES (DRINKS_OFF,
             DRINKS_INIT_PREPARING,
             DRINKS_INIT_UPING,

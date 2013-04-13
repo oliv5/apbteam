@@ -1,6 +1,9 @@
+#ifndef plate_hh
+#define plate_hh
+
 // io-hub - Modular Input/Output. {{{
 //
-// Copyright (C) 2013 Nicolas Schodet
+// Copyright (C) 2013 Jerome Jutteau
 //
 // APBTeam:
 //        Web: http://apbteam.org/
@@ -21,30 +24,15 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 //
 // }}}
-#include "fsm_queue.hh"
 
-FsmQueue::FsmQueue ()
-    : head_ (0), nb_ (0)
+class Plate
 {
-}
+    public:
+        // GPIO manipulation.
+        static void arm_down ();
+        static void arm_up ();
+        static void clamp_open ();
+        static void clamp_close ();
+};
 
-void
-FsmQueue::post (Event e)
-{
-    ucoo::assert (nb_ < queue_size_);
-    int tail = (head_ + nb_) % queue_size_;
-    events_[tail] = e;
-    nb_++;
-}
-
-Event
-FsmQueue::pop ()
-{
-    Event e;
-    ucoo::assert (nb_ > 0);
-    e = events_[head_];
-    nb_--;
-    head_ = (head_ + 1) % queue_size_;
-    return e;
-}
-
+#endif // plate_hh

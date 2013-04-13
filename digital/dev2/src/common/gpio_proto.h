@@ -25,7 +25,7 @@
  *
  * }}} */
 
-/* All communications are big endian. */
+/* All communications are little endian. */
 
 /* Reset communication and set all pins as input. */
 #define GPIO_OP_RESET_SYNC 0xa5
@@ -53,5 +53,15 @@
 #define GPIO_OP_OUT_CHANGE 0xb8
 /* Request port input. */
 #define GPIO_OP_IN 0xb9
+
+/* Send serial data (data mask as first argument, clock mask as second
+ * argument, data length as third argument, then a number of data lsb first).
+ * This will: set data, toggle clock twice, start again. */
+#define GPIO_OP_SERIAL_OUT 0xc0
+/* Receive serial data (data mask as first argument, clock mask as second
+ * argument, data length as third argument, will response with received data).
+ * This will: read data, toggle clock twice, start again. */
+#define GPIO_OP_SERIAL_IN 0xc1
+
 
 #endif /* gpio_proto_h */

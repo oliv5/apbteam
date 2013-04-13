@@ -39,6 +39,7 @@
 #include "strat.hh"
 #include "candles.hh"
 #include "drinks.hh"
+#include "plate.hh"
 
 #include "ucoolib/base/proto/proto.hh"
 #include "ucoolib/dev/usdist/usdist.hh"
@@ -53,6 +54,8 @@ class Robot : public ucoo::Proto::Handler
     void main_loop ();
     /// Generate events for the FSM.
     bool fsm_gen_event ();
+    /// Generate events for the FSM for demo mode.
+    bool demo_fsm_gen_event ();
     /// Receive proto messages.
     void proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size);
     /// Send stats.
@@ -84,6 +87,8 @@ class Robot : public ucoo::Proto::Handler
     Pressure pressure;
     /// Jack debouncing.
     Debounce jack;
+    /// Demo mode flag.
+    bool demo;
   private:
     /// US distance sensors controller.
     ucoo::UsDistControl usdist_control_;
@@ -104,6 +109,8 @@ class Robot : public ucoo::Proto::Handler
     Candles candles;
     /// Drinks.
     Drinks drinks;
+    /// Plate.
+    Plate plate;
   private:
     /// FSM debug mode.
     enum FsmDebugState

@@ -39,6 +39,8 @@ class Bag:
         self.color_switch.state = random.choice ((False, True))
         self.color_switch.notify ()
         self.jack = Switch (link_bag.raw_jack, invert = True)
+        self.strat_switch = Switch (link_bag.ihm_strat, invert = True)
+        self.robot_nb_switch = Switch (link_bag.ihm_robot_nb, invert = True)
         self.beacon = RoundObstacle (40, 5)
         table.obstacles.append (self.beacon)
         self.position = Position (link_bag.asserv.position, [ self.beacon ])

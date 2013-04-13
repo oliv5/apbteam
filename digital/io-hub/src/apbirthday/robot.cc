@@ -43,6 +43,7 @@ Robot::Robot ()
       chrono (90000 - 1000),
       pressure (hardware.adc_pressure, hardware.pneum_open, mimot.motor0),
       jack (hardware.raw_jack, 50),
+      demo (false),
       usdist_control_ (2),
       usdist0_ (usdist_control_, hardware.adc_dist0, hardware.dist0_sync, 100, 700, 650),
       usdist1_ (usdist_control_, hardware.adc_dist1, hardware.dist1_sync, 100, 700, 650),
@@ -171,10 +172,13 @@ Robot::fsm_gen_event ()
         fsm_handle_and_return (jack_inserted);
     else
         fsm_handle_and_return (jack_removed);
+    // Demo mode.
+    if (demo && demo_fsm_gen_event ())
+        return true;
     // FSM queue.
     if (fsm_queue.poll ())
     {
-        FsmQueue::Event event = fsm_queue.pop ();
+        Event event = fsm_queue.pop ();
         if (ANGFSM_HANDLE_VAR (AI, event))
             return true;
     }
@@ -184,6 +188,14 @@ Robot::fsm_gen_event ()
     // Check obstacles.
     if (move.check_obstacles ())
         return true;
+    return false;
+}
+
+bool
+Robot::demo_fsm_gen_event ()
+{
+    if (robot->hardware.ihm_strat.get ())
+        fsm_handle_and_return (top_demo_candles);
     return false;
 }
 

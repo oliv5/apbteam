@@ -24,21 +24,11 @@
 //
 // }}}
 #include "ucoolib/common.hh"
-
-extern "C" {
-#define ANGFSM_NAME AI
-#include "angfsm.h"
-}
+#include "fsm.hh"
 
 /// Handle asynchronous FSM event queue.
 class FsmQueue
 {
-  public:
-#ifdef TARGET_host
-    typedef uint16_t Event;
-#else
-    typedef angfsm_AI_event_t Event;
-#endif
   public:
     /// Constructor.
     FsmQueue ();
