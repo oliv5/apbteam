@@ -264,7 +264,7 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
                                         ucoo::bytes_pack (args[4], args[5]));
         }
 	break;
-    case c ('p', 2):
+    case c ('p', 4):
         // Set potentiometer wiper.
         // - 1b: wiper index.
         // - 1h: wiper value.
