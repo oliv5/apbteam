@@ -49,39 +49,60 @@ class InterAPBirthday (Frame):
         io_timeout ()
 
     def create_widgets (self):
-        def out_button (name, *toggle):
-            def command ():
-                self.toggle (io_hub.apbirthday.output_mask (*toggle))
-            Button (self, text = name, command = command).pack ()
         Button (self, text = 'Reset', command = self.reset).pack ()
-        for i, n in enumerate (io_hub.apbirthday.outputs):
-            out_button ('Toggle %d: %s' % (i, n), n)
-        out_button ('Init', 'cake_arm_out', 'cake_push_far_out',
-                'cake_push_near_out')
-        out_button ('Arm in/out', 'cake_arm_in', 'cake_arm_out')
-        out_button ('Push far in/out', 'cake_push_far_in', 'cake_push_far_out')
-        out_button ('Push near in/out', 'cake_push_near_in', 'cake_push_near_out')
-        out_button ('Plate clamp', 'cherry_plate_clamp')
-        out_button ('Plate up/down', 'cherry_plate_up', 'cherry_plate_down')
-        out_button ('Cherry bad in/out', 'cherry_bad_in', 'cherry_bad_out')
-        self.current_label = Label (self, text = '')
-        self.current_label.pack ()
-
-    def toggle (self, mask):
-        self.current_value = self.current_value ^ mask
-        self.io.output (mask, 'toggle')
-        self.update ()
-
-    def update (self):
-        text = [ ]
-        for i in xrange (len (io_hub.apbirthday.outputs)):
-            text.insert (0, str ((self.current_value >> i) & 1))
-        self.current_label.configure (text = ''.join (text))
+        # Outputs.
+        output_frame = Frame (self)
+        output_frame.pack ()
+        def make_setreset (index):
+            def setreset ():
+                val = self.output_var[index].get ()
+                self.io.output (1 << index, val)
+            return setreset
+        def make_toggle (*index):
+            def toggle ():
+                mask = 0
+                for i in index:
+                    var = self.output_var[i]
+                    val = 1 - var.get ()
+                    var.set (val)
+                    mask |= 1 << i
+                self.io.output (mask, 'toggle')
+            return toggle
+        def common (a, b):
+            if a is None or b is None: return None
+            a1, a2 = a.rsplit ('_', 1)
+            b1, b2 = b.rsplit ('_', 1)
+            if a1 != b1: return None
+            def cmp (a, b):
+                return (a == 'up' and b == 'down'
+                        or a == 'in' and b == 'out'
+                        or a == 'open' and b == 'close')
+            if cmp (a2, b2) or cmp (b2, a2):
+                return a1
+            return None
+        previous = None
+        self.output_var = [ ]
+        for i, name in enumerate (io_hub.apbirthday.outputs):
+            var = IntVar ()
+            self.output_var.append (var)
+            button = Checkbutton (output_frame, indicatoron = 0,
+                    text = '%d: %s' % (i, name), command = make_setreset (i),
+                    variable = var)
+            button.grid (column = 0, row = i, sticky = 'nsew')
+            c = common (name, previous)
+            if c:
+                button = Button (output_frame, text = c, command =
+                        make_toggle (i - 1, i))
+                button.grid (column = 1, row = i - 1, rowspan = 2,
+                        sticky = 'nsew')
+            previous = name
 
     def reset (self):
-        self.io.reset ()
-        self.current_value = 0
-        self.update ()
+        mask = 0
+        for i in xrange (len (io_hub.apbirthday.outputs)):
+            self.output_var[i].set (0)
+            mask |= 1 << i
+        self.io.output (mask, 'clear')
 
 if __name__ == '__main__':
     app = InterAPBirthday ()
