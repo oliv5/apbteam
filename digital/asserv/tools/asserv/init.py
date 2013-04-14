@@ -80,9 +80,24 @@ target_guybrush = dict (
         r_reverse = True,
         angle_limit = 0x1000,
         )
+target_apbirthday = dict (
+        aux_nb = 0,
+        scale = 0.0317975134344, footing = 0x134e,
+        encoder_right_correction = 1,
+        t_kp = 1, t_kd = 16,
+        t_acc = 0.75, t_speed_max = 0x60, t_speed_slow = 0x10,
+        t_bd_error_limit = 256, t_bd_speed_limit = 0x08, t_bd_counter_limit = 40,
+        a_kp = 2, a_kd = 16,
+        a_acc = 0.5, a_speed_max = 0x60, a_speed_slow = 0x10,
+        a_bd_error_limit = 128, a_bd_speed_limit = 0x08, a_bd_counter_limit = 40,
+        e_sat = 0x3ff, d_sat = 0x1ff,
+        l_reverse = True,
+        angle_limit = 0x1000,
+        )
 target = {
         'giboulee': target_marcel,
         'marcel': target_marcel,
         'robospierre': target_robospierre,
         'guybrush': target_guybrush,
+        'apbirthday':target_apbirthday
         }
