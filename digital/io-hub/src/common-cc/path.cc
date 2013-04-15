@@ -81,7 +81,7 @@ void Path::reset()
     add_obstacle(pg_cake_pos, pg_cake_radius, PATH_CAKE_POINTS_NB);
 }
 
-void Path::add_obstacle(const vect_t &c, int r, int num)
+void Path::add_obstacle(const vect_t &c, uint16_t r, int num)
 {
     uint32_t rot_a, rot_b, nr;
     uint32_t x, y, nx;
@@ -144,7 +144,7 @@ void Path::add_obstacle(const vect_t &c, int r, int num)
 #endif
 }
 
-void Path::obstacle(int index, const vect_t &c, int r, int f)
+void Path::obstacle(int index, const vect_t &c, uint16_t r, int f)
 {
     add_obstacle(c, r, PATH_OBSTACLES_POINTS_NB);
 }
@@ -165,7 +165,7 @@ void Path::compute(int escape)
     escape_factor = escape;
 
     /* Call the A* algorithm */
-    path_found = (bool)astar(astar_nodes, PATH_NODES_NB, PATH_POINT_DST_IDX, PATH_POINT_SRC_IDX);
+    path_found = (bool)astar(astar_nodes, PATH_POINTS_NB, PATH_POINT_DST_IDX, PATH_POINT_SRC_IDX);
     if (path_found)
     {
         /* Store next node to go to */
@@ -174,8 +174,8 @@ void Path::compute(int escape)
 #if PATH_DEBUG
         /* Log and display the path found */
         vect_t path[PATH_POINTS_NB];
-        uint8_t node = PATH_POINT_SRC_IDX;
-        uint8_t path_nb = 0;
+        int node = PATH_POINT_SRC_IDX;
+        int path_nb = 0;
 
         DPRINTF(">> Path found: ");
         while(node!=PATH_POINT_DST_IDX)
@@ -203,7 +203,7 @@ bool Path::get_next(vect_t &p)
     return path_found;
 }
 
-vect_t& Path::get_point_vect(const uint8_t index)
+vect_t& Path::get_point_vect(const int index)
 {
     //assert(index<points_nb);
     return points[index];
@@ -219,9 +219,9 @@ int Path::get_point_index(const vect_t& point)
     return -1;
 }
 
-uint8_t Path::find_neighbors(uint8_t cur_point, struct astar_neighbor_t *neighbors)
+int Path::find_neighbors(int cur_point, struct astar_neighbor_t *neighbors)
 {
-    uint8_t neighbors_nb = 0;
+    int neighbors_nb = 0;
 
     /* Parse all nodes */
     for(int i=0; i<points_nb; i++)
