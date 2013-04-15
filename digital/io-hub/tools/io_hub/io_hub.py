@@ -64,6 +64,9 @@ class Proto:
     def pressure (self, val):
         self.proto.send ('f', 'H', val)
 
+    def potentiometer (self, index, val, eeprom = False):
+        self.proto.send ('p', 'BHB', index, val, eeprom)
+
     def close (self):
         self.reset ()
         self.proto.wait (lambda: True)

@@ -113,8 +113,28 @@ class InterAPBirthday (Frame):
         def pressure_set ():
             val = pressure_scale.get ()
             self.io.pressure (val)
-        button = Button (frame, text = 'Set', command = pressure_set)
+        button = Button (frame, text = 'Set', command = pressure_set,
+                padx = 0, pady = 0)
         button.pack ()
+        #  Cannon.
+        frame = LabelFrame (misc_frame, text = 'Cannon')
+        frame.pack ()
+        cannon_speed_scale = Scale (frame, from_ = 256, to = 0,
+                orient = HORIZONTAL)
+        cannon_speed_scale.pack ()
+        frame = Frame (frame)
+        frame.pack ()
+        def cannon_speed_set ():
+            self.io.potentiometer (1, cannon_speed_scale.get ())
+        button = Button (frame, text = 'Set', command = cannon_speed_set,
+                padx = 0, pady = 0)
+        button.pack (side = LEFT)
+        def cannon_fire ():
+            self.io.potentiometer (0, (0, 256)[self.cannon_fire_var.get ()])
+        self.cannon_fire_var = IntVar ()
+        button = Checkbutton (frame, indicatoron = 0, text = 'Fire!',
+                command = cannon_fire, variable = self.cannon_fire_var)
+        button.pack (side = LEFT)
 
     def reset (self):
         mask = 0
@@ -123,6 +143,8 @@ class InterAPBirthday (Frame):
             mask |= 1 << i
         self.io.output (mask, 'clear')
         self.io.pressure (0)
+        self.cannon_fire_var.set (0)
+        self.io.potentiometer (0, 0)
 
 if __name__ == '__main__':
     app = InterAPBirthday ()
