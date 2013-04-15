@@ -1,7 +1,7 @@
 BASE = ../../../avr
 PROGS = dirty
 dirty_SOURCES = main.c timer.avr.c \
-		aux.c cs.c \
+		aux_traj.c cs.c \
 		twi_proto.c eeprom.avr.c seq.c \
 		simu.host.c models.host.c
 MODULES = proto uart utils math/fixed twi \

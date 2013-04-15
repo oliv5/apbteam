@@ -1,6 +1,6 @@
-#ifndef aux_h
-#define aux_h
-/* aux.h */
+#ifndef aux_traj_h
+#define aux_traj_h
+/* aux_traj.h */
 /* asserv - Position & speed motor control on AVR. {{{
  *
  * Copyright (C) 2008 Nicolas Schodet
@@ -78,4 +78,4 @@ aux_traj_find_limit_start (struct aux_t *aux, int16_t speed,
 void
 aux_traj_update (void);
 
-#endif /* aux_h */
+#endif /* aux_traj_h */

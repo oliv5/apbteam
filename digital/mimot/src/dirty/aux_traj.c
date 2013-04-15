@@ -1,4 +1,4 @@
-/* aux.c - Auxiliary motors commands. */
+/* aux_traj.c - Auxiliary motors commands. */
 /* asserv - Position & speed motor control on AVR. {{{
  *
  * Copyright (C) 2008 Nicolas Schodet
@@ -23,7 +23,7 @@
  *
  * }}} */
 #include "common.h"
-#include "aux.h"
+#include "aux_traj.h"
 
 #include "modules/utils/utils.h"
 #include "io.h"

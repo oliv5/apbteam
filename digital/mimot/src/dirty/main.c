@@ -32,7 +32,7 @@
 #include "io.h"
 
 #include "cs.h"
-#include "aux.h"
+#include "aux_traj.h"
 
 #include "seq.h"
 
