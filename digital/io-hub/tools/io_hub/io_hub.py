@@ -61,6 +61,9 @@ class Proto:
     def output_transient (self, mask, duration):
         self.proto.send ('o', 'LH', mask, duration)
 
+    def pressure (self, val):
+        self.proto.send ('f', 'H', val)
+
     def close (self):
         self.reset ()
         self.proto.wait (lambda: True)

@@ -52,7 +52,7 @@ class InterAPBirthday (Frame):
         Button (self, text = 'Reset', command = self.reset).pack ()
         # Outputs.
         output_frame = Frame (self)
-        output_frame.pack ()
+        output_frame.pack (side = LEFT, fill = Y)
         def make_setreset (index):
             def setreset ():
                 val = self.output_var[index].get ()
@@ -96,6 +96,25 @@ class InterAPBirthday (Frame):
                 button.grid (column = 1, row = i - 1, rowspan = 2,
                         sticky = 'nsew')
             previous = name
+        # Misc.
+        misc_frame = Frame (self)
+        misc_frame.pack (side = LEFT, fill = Y)
+        #  Pressure.
+        frame = LabelFrame (misc_frame, text = 'Pressure')
+        frame.pack ()
+        def pressure_update (val):
+            pressure_scale.configure (label = hex (int (val)))
+        pressure_max = 4096
+        pressure_scale = Scale (frame, from_ = 0, to = pressure_max -
+                pressure_max / 16, resolution = pressure_max / 32,
+                orient = HORIZONTAL, showvalue = 0, command = pressure_update)
+        pressure_scale.pack ()
+        pressure_scale.set (0x0c00)
+        def pressure_set ():
+            val = pressure_scale.get ()
+            self.io.pressure (val)
+        button = Button (frame, text = 'Set', command = pressure_set)
+        button.pack ()
 
     def reset (self):
         mask = 0
@@ -103,6 +122,7 @@ class InterAPBirthday (Frame):
             self.output_var[i].set (0)
             mask |= 1 << i
         self.io.output (mask, 'clear')
+        self.io.pressure (0)
 
 if __name__ == '__main__':
     app = InterAPBirthday ()
