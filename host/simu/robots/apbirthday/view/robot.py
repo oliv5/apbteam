@@ -23,19 +23,22 @@
 # }}}
 """APBirthday robot view."""
 import simu.inter.drawable
+from simu.view.table_eurobot2013 import PINK, colors
 
 COLOR_ROBOT = '#000000'
 COLOR_AXES = '#202040'
 
 class Robot (simu.inter.drawable.Drawable):
 
-    def __init__ (self, onto, position_model, cake_arm_model):
+    def __init__ (self, onto, position_model, cake_arm_model, cannon_model):
         """Construct and make connections."""
         simu.inter.drawable.Drawable.__init__ (self, onto)
         self.position_model = position_model
         self.position_model.register (self.__position_notified)
         self.cake_arm_model = cake_arm_model
         self.cake_arm_model.register (self.update)
+        self.cannon_model = cannon_model
+        self.cannon_model.register (self.update)
 
     def __position_notified (self):
         """Called on position modifications."""
@@ -49,6 +52,20 @@ class Robot (simu.inter.drawable.Drawable):
         if self.pos is not None:
             self.trans_translate (self.pos)
             self.trans_rotate (self.angle)
+            # Draw plate.
+            plate = self.cannon_model.plate
+            f = self.cannon_model.arm_cyl.pos
+            if plate is not None:
+                self.draw_rectangle ((-108 - f * 170, 85), (-108, -85),
+                        fill = PINK)
+                self.draw_rectangle ((-108 - f * 148, 85 - 22),
+                        (-108 - f * 22, -85 + 22), fill = PINK)
+                for c in plate.cherries:
+                    if c.pos:
+                        self.draw_circle ((-108 - f * (c.pos[0] + 85),
+                            c.pos[1]), c.radius, fill = colors[c.color])
+                self.draw_rectangle ((-108 - f * 170, 85),
+                        (-108 - f * 170 - (1 - f) * 22, -85), fill = PINK)
             # Draw robot body.
             self.draw_polygon ((102, 140), (102, -140), (-108, -140),
                     (-108, 70), (-58, 140), fill = COLOR_ROBOT)
