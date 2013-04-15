@@ -197,3 +197,20 @@ class Hub:
             """Return socket filedescriptor."""
             return self.socket.fileno ()
 
+if __name__ == '__main__':
+    import optparse
+    p = optparse.OptionParser ()
+    p.add_option ('-c', '--min-clients', type = 'int', metavar = "NB",
+            default = 1, help = "Minimal number of clients before start")
+    p.add_option ('-l', '--log', action = 'store_true',
+            help = "Log to standard output")
+    options, args = p.parse_args ()
+    if args:
+        p.error ("too many arguments")
+    if options.log:
+        def log (x):
+            print x
+    else:
+        log = None
+    h = Hub (min_clients = options.min_clients, log = log)
+    h.wait ()
