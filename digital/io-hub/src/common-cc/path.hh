@@ -47,20 +47,20 @@ class Path
     /** Reset path computation, remove every obstacles */
     void reset(void);
     /** Set a moving obstacle position, radius and factor*/
-    void obstacle(int index, const vect_t &c, int r, int f = 0);
+    void obstacle(int index, const vect_t &c, uint16_t r, int f = 0);
     /** Set path source and destination */
     void endpoints(const vect_t &src, const vect_t &dst);
     /** Compute path with the given escape factor */
     void compute(int escape = 0);
     /** Return a point vector by index */
-    vect_t& get_point_vect(const uint8_t index);
+    vect_t& get_point_vect(const int index);
     /** Return a point index */
     int get_point_index(const vect_t& point);
     /** Get next point in computed path, return false if none
        (no path found or last point given yet) */
     bool get_next(vect_t &p);
     /** Find all neighbors of a given node, fill the astar_neighbor structure */
-    uint8_t find_neighbors(uint8_t node, struct astar_neighbor_t *neighbors);
+    int find_neighbors(int node, struct astar_neighbor_t *neighbors);
     /** Prepare score computation for the given source, with given escape factor */
     void prepare_score(const vect_t &src, int escape = 0);
     /** Return score for a given destination, using a previous preparation
@@ -69,39 +69,37 @@ class Path
 
   private:
     /** Add an obstacle on the field */
-    void add_obstacle(const vect_t &c, int r, int num);
+    void add_obstacle(const vect_t &c, uint16_t r, int nodes);
 
     /** Number of possible obstacles. */
-    static const uint8_t PATH_OBSTACLES_NB = (4+1/*cake*/);
+    static const int PATH_OBSTACLES_NB = (4+1/*cake*/);
     /** Number of points per standard obstacle. */
-    static const uint8_t PATH_OBSTACLES_POINTS_NB = 8;
+    static const int PATH_OBSTACLES_POINTS_NB = 8;
     /** Number of points for the cake */
-    static const uint8_t PATH_CAKE_POINTS_NB = 14;
+    static const int PATH_CAKE_POINTS_NB = 14;
     /** Number of reserved points for the 2 endpoints  */
-    static const uint8_t PATH_RESERVED_POINTS_NB = 2;
+    static const int PATH_RESERVED_POINTS_NB = 2;
     /** Number of points. */
-    static const uint8_t PATH_POINTS_NB = (PATH_RESERVED_POINTS_NB +
-                                        (PATH_OBSTACLES_NB * PATH_OBSTACLES_POINTS_NB) +
-                                        (PATH_CAKE_POINTS_NB - PATH_OBSTACLES_POINTS_NB));
-    /** Number of nodes. */
-    static const uint8_t PATH_NODES_NB = PATH_POINTS_NB;
+    static const int PATH_POINTS_NB = (PATH_RESERVED_POINTS_NB +
+                                       (PATH_OBSTACLES_NB * PATH_OBSTACLES_POINTS_NB) +
+                                       (PATH_CAKE_POINTS_NB - PATH_OBSTACLES_POINTS_NB));
 
     /** Borders, any point outside borders is eliminated. */
-    const int16_t border_xmin, border_ymin, border_xmax, border_ymax;
+    const uint16_t border_xmin, border_ymin, border_xmax, border_ymax;
     /** Escape factor, 0 if none. */
     int escape_factor;
     /** List of obstacles. */
     path_obstacle_t obstacles[PATH_OBSTACLES_NB];
     /** Number of obstacles */
-    uint8_t obstacles_nb;
+    int obstacles_nb;
     /** List of navigation points coordonates */
     vect_t points[PATH_POINTS_NB];
     /** Number of navigation points */
-    uint8_t points_nb;
+    int points_nb;
     /** List of nodes used for A*. */
-    struct astar_node_t astar_nodes[PATH_NODES_NB];
+    struct astar_node_t astar_nodes[PATH_POINTS_NB];
     /** Which node to look at for next step. */
-    uint8_t next_node;
+    int next_node;
     /** TRUE when a path has been found */
     bool path_found;
 };
