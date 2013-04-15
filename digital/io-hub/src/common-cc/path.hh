@@ -29,26 +29,6 @@ extern "C" {
 #include "modules/path/astar/astar.h"
 }
 
-#if 0
-    /** Number of possible obstacles. */
-    static const uint8_t PATH_OBSTACLES_NB = (4+1/*cake*/);
-/** Number of points for the cake */
-#define PATH_CAKE_POINTS_NB 10
-/** Number of points per standard obstacle. */
-#define PATH_OBSTACLES_POINTS_NB 6
-#define PATH_RESERVED_POINTS_NB    2
-/** Number of points. */
-#define PATH_POINTS_NB  (PATH_RESERVED_POINTS_NB + \
-                         (PATH_OBSTACLES_NB * PATH_OBSTACLES_POINTS_NB) + \
-                         (PATH_CAKE_POINTS_NB - PATH_OBSTACLES_POINTS_NB) + \
-                         1 /*debug*/)
-/** Number of nodes. */
-#define PATH_NODES_NB   PATH_POINTS_NB
-#endif
-
-/** Angle between obstacles points. */
-#define PATH_OBSTACLES_POINTS_ANGLE(pOINTS_NB)  ((1L << 24) / (pOINTS_NB))
-
 /** Obstacle */
 typedef struct path_obstacle_t
 {
@@ -56,8 +36,6 @@ typedef struct path_obstacle_t
     vect_t c;
     /** Radius. */
     uint16_t r;
-    /** factor */
-    int factor;
 } path_obstacle_t;
 
 /** Path finding class */
@@ -68,14 +46,12 @@ class Path
     Path();
     /** Reset path computation, remove every obstacles */
     void reset(void);
-    /** Add an obstacle on the field */
-    void add_obstacle(const vect_t &c, const int r, const int factor, const int points_nb);
     /** Set a moving obstacle position, radius and factor*/
-    void obstacle(int index, const vect_t &c, int r, int factor = 0);
+    void obstacle(int index, const vect_t &c, int r, int f = 0);
     /** Set path source and destination */
     void endpoints(const vect_t &src, const vect_t &dst);
     /** Compute path with the given escape factor */
-    void compute(int factor = 0);
+    void compute(int escape = 0);
     /** Return a point vector by index */
     vect_t& get_point_vect(const uint8_t index);
     /** Return a point index */
@@ -86,36 +62,39 @@ class Path
     /** Find all neighbors of a given node, fill the astar_neighbor structure */
     uint8_t find_neighbors(uint8_t node, struct astar_neighbor_t *neighbors);
     /** Prepare score computation for the given source, with given escape factor */
-    void prepare_score(const vect_t &src, int factor = 0);
+    void prepare_score(const vect_t &src, int escape = 0);
     /** Return score for a given destination, using a previous preparation
        (also reuse previously given escape factor) */
     uint16_t get_score(const vect_t &dst);
 
   private:
+    /** Add an obstacle on the field */
+    void add_obstacle(const vect_t &c, int r, int num);
+
     /** Number of possible obstacles. */
     static const uint8_t PATH_OBSTACLES_NB = (4+1/*cake*/);
     /** Number of points per standard obstacle. */
     static const uint8_t PATH_OBSTACLES_POINTS_NB = 8;
     /** Number of points for the cake */
-    static const uint8_t PATH_CAKE_POINTS_NB = 12;
+    static const uint8_t PATH_CAKE_POINTS_NB = 14;
     /** Number of reserved points for the 2 endpoints  */
     static const uint8_t PATH_RESERVED_POINTS_NB = 2;
     /** Number of points. */
     static const uint8_t PATH_POINTS_NB = (PATH_RESERVED_POINTS_NB +
                                         (PATH_OBSTACLES_NB * PATH_OBSTACLES_POINTS_NB) +
-                                        (PATH_CAKE_POINTS_NB - PATH_OBSTACLES_POINTS_NB) +
-                                        1 /*debug*/);
+                                        (PATH_CAKE_POINTS_NB - PATH_OBSTACLES_POINTS_NB));
     /** Number of nodes. */
     static const uint8_t PATH_NODES_NB = PATH_POINTS_NB;
+
     /** Borders, any point outside borders is eliminated. */
     const int16_t border_xmin, border_ymin, border_xmax, border_ymax;
     /** Escape factor, 0 if none. */
-    uint8_t escape_factor;
+    int escape_factor;
     /** List of obstacles. */
     path_obstacle_t obstacles[PATH_OBSTACLES_NB];
     /** Number of obstacles */
     uint8_t obstacles_nb;
-    /** List of navigation points */
+    /** List of navigation points coordonates */
     vect_t points[PATH_POINTS_NB];
     /** Number of navigation points */
     uint8_t points_nb;

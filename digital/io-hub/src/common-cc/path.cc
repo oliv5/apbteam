@@ -43,6 +43,9 @@ extern "C" {
 
 #define PATH_PLOT_ID    2
 
+/** Angle between obstacles points. */
+#define PATH_ANGLE_824(pOINTS_NB)  ((1L << 24) / (pOINTS_NB))
+
 enum {
     PATH_POINT_SRC_IDX = 0,
     PATH_POINT_DST_IDX
@@ -75,44 +78,39 @@ void Path::reset()
     escape_factor = 0;
 
     /* Declare the cake as an obstacle */
-    add_obstacle(pg_cake_pos, pg_cake_radius + BOT_SIZE_SIDE * 4 / 3, 0, PATH_CAKE_POINTS_NB);
+    add_obstacle(pg_cake_pos, pg_cake_radius, PATH_CAKE_POINTS_NB);
 }
 
-void Path::add_obstacle(const vect_t &c, const int r, const int factor, const int num)
+void Path::add_obstacle(const vect_t &c, int r, int num)
 {
-    uint32_t rot_a, rot_b, fact_r;
+    uint32_t rot_a, rot_b, nr;
     uint32_t x, y, nx;
-    int j;
 
-    DPRINTF("Add obstacle c=(%u;%u) r=%u factor=%u points_nb=%u\n",c.x,c.y,r,factor,num);
+    DPRINTF("Add obstacle c=(%u;%u) r=%u num=%u\n",c.x, c.y, r, num);
+
+    /* Enlarge the exclusion radius */
+    r += BOT_SIZE_RADIUS * 4 / 3;
 
     /* Store obstacle */
     //assert(obstacles_nb < PATH_OBSTACLES_NB);
     obstacles[obstacles_nb].c = c;
     obstacles[obstacles_nb].r = r;
-    obstacles[obstacles_nb].factor = factor;
     obstacles_nb++;
 
     /* Complex number of modulus 1 and rotation angle */
-    rot_a = fixed_cos_f824(PATH_OBSTACLES_POINTS_ANGLE(num));
-    rot_b = fixed_sin_f824(PATH_OBSTACLES_POINTS_ANGLE(num));
+    nr = PATH_ANGLE_824(num);
+    rot_a = fixed_cos_f824(nr);
+    rot_b = fixed_sin_f824(nr);
 
-    /* Additional radius factor to allow the robot to go */
-    /* from one obstacle point to its neighbor point */
-    /* without collision with the obstacle avoidance circle */
-    /* Radius factor is sqrt( sin(angle)^2 + 1^2 ) */
-    fact_r = fixed_sqrt_uf248(
-                (fixed_mul_f824(rot_b,rot_b) >> 16) +
-                (1L<<8) );
-    fact_r += 1;  /* To counter rounding operations */
-    //fact_r += 13; /* Add 10% margin */
-
-    /* First point is at the relative position (r;0) */
-    x = ((r * fact_r) >> 8);
+    /* Extend the points radius to allow the robot to go */
+    /* from one to another without collision with the */
+    /* obstacle avoidance circle. New radius is r / cos(angle/2) */
+    nr = PATH_ANGLE_824(2*num);
+    x = fixed_div_f824(r, fixed_cos_f824(nr)) + 1 /* margin */;
     y = 0;
 
     /* Compute obstacle points positions around a circle */
-    for (j = 0; j<num; j++)
+    for (; num>0; num--)
     {
         /* Compute the point absolute position */
         points[points_nb].x = c.x + (vect_value_t)x;
@@ -130,8 +128,8 @@ void Path::add_obstacle(const vect_t &c, const int r, const int factor, const in
         }
 
         /* Complex multiply with A = cos(angle) + i sin(angle) */
-        nx = fixed_mul_f824(x, rot_a) - fixed_mul_f824 (y, rot_b);
-        y = fixed_mul_f824 (y, rot_a) + fixed_mul_f824 (x, rot_b);
+        nx = fixed_mul_f824(x, rot_a) - fixed_mul_f824(y, rot_b);
+        y =  fixed_mul_f824(y, rot_a) + fixed_mul_f824(x, rot_b);
         x = nx;
     }
 
@@ -146,9 +144,9 @@ void Path::add_obstacle(const vect_t &c, const int r, const int factor, const in
 #endif
 }
 
-void Path::obstacle(int index, const vect_t &c, int r, int factor)
+void Path::obstacle(int index, const vect_t &c, int r, int f)
 {
-    add_obstacle(c, r, factor, PATH_OBSTACLES_POINTS_NB);
+    add_obstacle(c, r, PATH_OBSTACLES_POINTS_NB);
 }
 
 void Path::endpoints(const vect_t &src, const vect_t &dst)
@@ -159,12 +157,12 @@ void Path::endpoints(const vect_t &src, const vect_t &dst)
     points[PATH_POINT_DST_IDX] = dst;
 }
 
-void Path::compute(int factor)
+void Path::compute(int escape)
 {
-    DPRINTF("** Path compute(start) factor=%u\n", factor);
+    DPRINTF("** Path compute(start) escape=%u\n", escape);
 
     /* Store the escape factor */
-    escape_factor = factor;
+    escape_factor = escape;
 
     /* Call the A* algorithm */
     path_found = (bool)astar(astar_nodes, PATH_NODES_NB, PATH_POINT_DST_IDX, PATH_POINT_SRC_IDX);
@@ -192,7 +190,7 @@ void Path::compute(int factor)
     }
 #endif
 
-    DPRINTF("** Path compute(end) found=%u\n", path_found);
+    DPRINTF("** Path compute(end) found=%u escape=%u\n", path_found, escape);
 }
 
 bool Path::get_next(vect_t &p)
@@ -275,10 +273,10 @@ uint8_t Path::find_neighbors(uint8_t cur_point, struct astar_neighbor_t *neighbo
     return neighbors_nb;
 }
 
-void Path::prepare_score(const vect_t &src, int factor)
+void Path::prepare_score(const vect_t &src, int escape)
 {
-    DPRINTF("Path prepare score from src=(%u;%u) factor=%u\n", src.x, src.y, factor);
-    escape_factor = factor;
+    DPRINTF("Path prepare score from src=(%u;%u) escape=%u\n", src.x, src.y, escape);
+    escape_factor = escape;
     astar_dijkstra_prepare(astar_nodes, PATH_POINTS_NB, get_point_index(src), PATH_POINT_DST_IDX);
 }
 
