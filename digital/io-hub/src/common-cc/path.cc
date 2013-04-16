@@ -2,6 +2,7 @@
 // io-hub - Modular Input/Output. {{{
 //
 // Copyright (C) 2013 Nicolas Schodet
+// Copyright (C) 2013 Olivier Lanneluc
 //
 // APBTeam:
 //        Web: http://apbteam.org/
@@ -88,8 +89,8 @@ void Path::add_obstacle(const vect_t &c, uint16_t r, int num)
 
     DPRINTF("Add obstacle c=(%u;%u) r=%u num=%u\n",c.x, c.y, r, num);
 
-    /* Enlarge the obstacle radius by at least the robot size */
-    r += BOT_SIZE_RADIUS * 4 / 3;
+    /* Enlarge the obstacle radius by the robot size and clearance area width */
+    r += BOT_SIZE_SIDE + Obstacles::clearance_mm;
 
     /* Store obstacle */
     //assert(obstacles_nb < PATH_OBSTACLES_NB);
@@ -134,10 +135,10 @@ void Path::add_obstacle(const vect_t &c, uint16_t r, int num)
     }
 
 #ifdef HOST
-    // Plot obstacle points
+    /* Plot obstacle points */
     robot->hardware.simu_report.pos( &navpoints[PATH_RESERVED_NAVPOINTS_NB], navpoints_nb-PATH_RESERVED_NAVPOINTS_NB, PATH_PLOT_ID);
 #if 0
-    // Draw the last obstacle
+    /* Draw the last obstacle */
     navpoints[navpoints_nb] = navpoints[navpoints_nb - num];
     robot->hardware.simu_report.path( &navpoints[navpoints_nb - num], num + 1);
 #endif
@@ -236,19 +237,28 @@ int Path::find_neighbors(int cur_point, struct astar_neighbor_t *neighbors)
             /* Check every obstacle */
             for(int j=0; j<obstacles_nb; j++)
             {
-                // Check for intersection with obstacle
+                /* Check for intersection with obstacle */
               uint16_t d = distance_segment_point(&navpoints[cur_point], &navpoints[i], &obstacles[j].c);
               if (d < obstacles[j].r)
               {
-                  /* Collision: apply the escape factor if node is the source point, invalidate node otherwise */
-                  weight *= (i==PATH_NAVPOINT_SRC_IDX || cur_point==PATH_NAVPOINT_DST_IDX ? escape_factor : 0);
+                  /* Collision: try to escape when node is the source point */
+                  if (i==PATH_NAVPOINT_SRC_IDX &&
+                        (cur_point!=PATH_NAVPOINT_DST_IDX ||
+                        (navpoints[cur_point].x==pg_cake_pos.x && navpoints[cur_point].y==pg_cake_pos.y)))
+                  {
+                      weight *= escape_factor; /* allow this navigation point, but it costs */
+                  }
+                  else
+                  {
+                      weight = 0; /* disable this navigation point */
+                  }
                   DPRINTF("in collision with c=(%u;%u) r=%u w=%u ",
                       obstacles[j].c.x, obstacles[j].c.y, obstacles[j].r, weight);
                   break; /* Stop checking obstacle for this node */
               }
             }
 
-            // Add neighbor if valid
+            /* Add neighbor if valid */
             if (weight)
             {
                 DPRINTF("=> validated w=%u\n", weight);

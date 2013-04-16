@@ -158,7 +158,7 @@ Obstacles::add_obstacles (Path &path) const
         if (obstacles_[i].valid)
         {
             path.obstacle (index++, obstacles_[i].pos,
-                           obstacle_radius_mm + clearance_mm /*+ BOT_SIZE_SIDE*/);
+                           obstacle_radius_mm /*+ clearance_mm + BOT_SIZE_SIDE*/);
         }
     }
 }

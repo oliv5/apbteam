@@ -3,6 +3,7 @@
 // io-hub - Modular Input/Output. {{{
 //
 // Copyright (C) 2013 Nicolas Schodet
+// Copyright (C) 2013 Olivier Lanneluc
 //
 // APBTeam:
 //        Web: http://apbteam.org/
