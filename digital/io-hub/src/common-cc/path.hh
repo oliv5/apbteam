@@ -82,10 +82,14 @@ class Path
     static const int PATH_RESERVED_NAVPOINTS_NB = 2;
     /** Number of navigation points layers for each obstacle. */
     static const int PATH_NAVPOINTS_LAYERS = 2;
-    /** Number of points. */
+    /** Number of navigation points. */
     static const int PATH_NAVPOINTS_NB = (PATH_RESERVED_NAVPOINTS_NB +
                                            PATH_NAVPOINTS_LAYERS * (PATH_OBSTACLES_NB * PATH_OBSTACLES_NAVPOINTS_NB) +
                                            PATH_NAVPOINTS_LAYERS * (PATH_CAKE_NAVPOINTS_NB - PATH_OBSTACLES_NAVPOINTS_NB));
+    /** Navigation points weight precision (2^-n). */
+    static const int PATH_WEIGHT_PRECISION = 4;
+    /** Navigation points weight step (2^-n). */
+    static const int PATH_WEIGHT_STEP = 5;
 
     /** Borders, any point outside borders is eliminated. */
     const uint16_t border_xmin, border_ymin, border_xmax, border_ymax;
@@ -98,7 +102,7 @@ class Path
     /** List of navigation points coordonates */
     vect_t navpoints[PATH_NAVPOINTS_NB];
     /** List of navigation points weights */
-    uint16_t navweights[PATH_NAVPOINTS_NB];
+    uint32_t navweights[PATH_NAVPOINTS_NB];
     /** Number of navigation points */
     int navpoints_nb;
     /** List of nodes used for A*. */
