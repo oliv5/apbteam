@@ -129,7 +129,7 @@ void Path::add_obstacle(const vect_t &c, uint16_t r, const int nodes)
              && navpoints[navpoints_nb].y <= border_ymax)
             {
                 /* Accept point */
-                navweights[navpoints_nb] = (1<<PATH_WEIGHT_PRECISION) + layer * PATH_WEIGHT_STEP;
+                navweights[navpoints_nb] = (1 << PATH_WEIGHT_PRECISION) + (layer * PATH_WEIGHT_STEP);
                 DPRINTF("Add point %u (%u;%u) w=%u\n",
                         navpoints_nb, navpoints[navpoints_nb].x, navpoints[navpoints_nb].y, navweights[navpoints_nb]);
                 navpoints_nb++;
@@ -167,7 +167,7 @@ int Path::find_neighbors(int cur_point, struct astar_neighbor_t *neighbors)
         if (i!=cur_point)
         {
             /* Get segment length */
-            uint32_t weight = navweights[i] * (uint32_t)distance_point_point(&navpoints[cur_point], &navpoints[i]);
+            weight_t weight = navweights[i] * (weight_t)distance_point_point(&navpoints[cur_point], &navpoints[i]);
             weight >>= PATH_WEIGHT_PRECISION;
             DPRINTF("- Node %u (%u;%u) w=%u (%u) ", i, navpoints[i].x, navpoints[i].y, weight, navweights[i]);
 
@@ -220,7 +220,7 @@ int Path::find_neighbors(int cur_point, struct astar_neighbor_t *neighbors)
     return neighbors_nb;
 }
 
-void Path::compute(uint16_t escape)
+void Path::compute(weight_t escape)
 {
     DPRINTF("** Path compute(start) escape=%u\n", escape);
 
@@ -266,8 +266,8 @@ void Path::endpoints(const vect_t &src, const vect_t &dst)
     DPRINTF("Set path endpoints src=(%u;%u) dst=(%u;%u)\n",
             src.x, src.y, dst.x, dst.y);
     navpoints[PATH_NAVPOINT_SRC_IDX] = src;
-    navweights[PATH_NAVPOINT_SRC_IDX] = (1<<PATH_WEIGHT_PRECISION);
     navpoints[PATH_NAVPOINT_DST_IDX] = dst;
+    navweights[PATH_NAVPOINT_SRC_IDX] = (1<<PATH_WEIGHT_PRECISION);
     navweights[PATH_NAVPOINT_DST_IDX] = (1<<PATH_WEIGHT_PRECISION);
 }
 
@@ -297,14 +297,14 @@ int Path::get_point_index(const vect_t& point)
     return -1;
 }
 
-void Path::prepare_score(const vect_t &src, uint16_t escape)
+void Path::prepare_score(const vect_t &src, weight_t escape)
 {
     DPRINTF("Path prepare score from src=(%u;%u) escape=%u\n", src.x, src.y, escape);
     escape_factor = escape;
     astar_dijkstra_prepare(astar_nodes, PATH_NAVPOINTS_NB, get_point_index(src), PATH_NAVPOINT_DST_IDX);
 }
 
-uint16_t Path::get_score(const vect_t &dst)
+weight_t Path::get_score(const vect_t &dst)
 {
     uint16_t score = astar_dijkstra_finish(astar_nodes, PATH_NAVPOINTS_NB, get_point_index(dst));
     DPRINTF("Path get score=%u for dst=(%u;%u)\n", score, dst.x, dst.y);
