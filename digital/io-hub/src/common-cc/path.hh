@@ -39,6 +39,8 @@ typedef struct path_obstacle_t
     uint16_t r;
 } path_obstacle_t;
 
+typedef uint16_t weight_t;
+
 /** Path finding class */
 class Path
 {
@@ -52,7 +54,7 @@ class Path
     /** Set path source and destination */
     void endpoints(const vect_t &src, const vect_t &dst);
     /** Compute path with the given escape factor */
-    void compute(uint16_t escape = 0);
+    void compute(weight_t escape = 0);
     /** Return a point vector by index */
     vect_t& get_point_vect(const int index);
     /** Return a point index */
@@ -63,10 +65,10 @@ class Path
     /** Find all neighbors of a given node, fill the astar_neighbor structure */
     int find_neighbors(int node, struct astar_neighbor_t *neighbors);
     /** Prepare score computation for the given source, with given escape factor */
-    void prepare_score(const vect_t &src, uint16_t escape = 0);
+    void prepare_score(const vect_t &src, weight_t escape = 0);
     /** Return score for a given destination, using a previous preparation
        (also reuse previously given escape factor) */
-    uint16_t get_score(const vect_t &dst);
+    weight_t get_score(const vect_t &dst);
 
   private:
     /** Add an obstacle on the field */
@@ -94,7 +96,7 @@ class Path
     /** Borders, any point outside borders is eliminated. */
     const uint16_t border_xmin, border_ymin, border_xmax, border_ymax;
     /** Escape factor, 0 if none. */
-    uint16_t escape_factor;
+    weight_t escape_factor;
     /** List of obstacles. */
     path_obstacle_t obstacles[PATH_OBSTACLES_NB];
     /** Number of obstacles */
@@ -102,7 +104,7 @@ class Path
     /** List of navigation points coordonates */
     vect_t navpoints[PATH_NAVPOINTS_NB];
     /** List of navigation points weights */
-    uint32_t navweights[PATH_NAVPOINTS_NB];
+    weight_t navweights[PATH_NAVPOINTS_NB];
     /** Number of navigation points */
     int navpoints_nb;
     /** List of nodes used for A*. */
