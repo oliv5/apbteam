@@ -86,12 +86,12 @@ void Path::add_obstacle(const vect_t &c, uint16_t r, const int nodes)
 {
     uint32_t rot_a, rot_b, nr;
     uint32_t x, y, nx;
-    int npt, weight;
+    int npt, layer;
 
     DPRINTF("Add obstacle c=(%u;%u) r=%u num=%u\n",c.x, c.y, r, nodes);
 
     /* Enlarge the obstacle radius by the robot size and clearance area width */
-    r += BOT_SIZE_SIDE + Obstacles::clearance_mm;
+    r += BOT_SIZE_RADIUS/*BOT_SIZE_SIDE*/ + Obstacles::clearance_mm;
 
     /* Store obstacle */
     //assert(obstacles_nb < PATH_OBSTACLES_NB);
@@ -111,8 +111,9 @@ void Path::add_obstacle(const vect_t &c, uint16_t r, const int nodes)
     x = fixed_div_f824(r, fixed_cos_f824(nr)) + 1 /* margin */;
     y = 0;
 
-    /* Add 2 sets of navigation points with different weights */
-    for(weight=PATH_NAVPOINTS_LAYERS; weight>0; weight--)
+    /* Add a number of sets of navigation points with different weights */
+    //for(weight=PATH_NAVPOINTS_LAYERS; weight>0; weight--)
+    for(layer=PATH_NAVPOINTS_LAYERS-1; layer>=0; layer--)
     {
         /* Compute obstacle points positions around a circle */
         for (npt=0; npt<nodes; npt++)
@@ -123,14 +124,14 @@ void Path::add_obstacle(const vect_t &c, uint16_t r, const int nodes)
 
             /* Check it is in playground */
             if (navpoints[navpoints_nb].x >= border_xmin
-            && navpoints[navpoints_nb].y >= border_ymin
-            && navpoints[navpoints_nb].x <= border_xmax
-            && navpoints[navpoints_nb].y <= border_ymax)
+             && navpoints[navpoints_nb].y >= border_ymin
+             && navpoints[navpoints_nb].x <= border_xmax
+             && navpoints[navpoints_nb].y <= border_ymax)
             {
                 /* Accept point */
+                navweights[navpoints_nb] = (1<<PATH_WEIGHT_PRECISION) + layer * PATH_WEIGHT_STEP;
                 DPRINTF("Add point %u (%u;%u) w=%u\n",
-                        navpoints_nb, navpoints[navpoints_nb].x, navpoints[navpoints_nb].y, weight);
-                navweights[navpoints_nb] = weight;
+                        navpoints_nb, navpoints[navpoints_nb].x, navpoints[navpoints_nb].y, navweights[navpoints_nb]);
                 navpoints_nb++;
             }
 
@@ -166,8 +167,9 @@ int Path::find_neighbors(int cur_point, struct astar_neighbor_t *neighbors)
         if (i!=cur_point)
         {
             /* Get segment length */
-            uint16_t weight = navweights[i] * distance_point_point(&navpoints[cur_point], &navpoints[i]);
-            DPRINTF("- Node %u (%u;%u) w=%u ", i, navpoints[i].x, navpoints[i].y, weight);
+            uint32_t weight = navweights[i] * (uint32_t)distance_point_point(&navpoints[cur_point], &navpoints[i]);
+            weight >>= PATH_WEIGHT_PRECISION;
+            DPRINTF("- Node %u (%u;%u) w=%u (%u) ", i, navpoints[i].x, navpoints[i].y, weight, navweights[i]);
 
             /* Check every obstacle */
             for(int j=0; j<obstacles_nb; j++)
@@ -241,7 +243,7 @@ void Path::compute(uint16_t escape)
         DPRINTF(">> Path found: ");
         while(node!=PATH_NAVPOINT_DST_IDX)
         {
-            DPRINTF("%u, ", node);
+            DPRINTF("%u (%u), ", node, navweights[node]);
             path[path_nb++] = navpoints[node];
             node = astar_nodes[node].prev;
         }
@@ -264,9 +266,9 @@ void Path::endpoints(const vect_t &src, const vect_t &dst)
     DPRINTF("Set path endpoints src=(%u;%u) dst=(%u;%u)\n",
             src.x, src.y, dst.x, dst.y);
     navpoints[PATH_NAVPOINT_SRC_IDX] = src;
-    navweights[PATH_NAVPOINT_SRC_IDX] = 1;
+    navweights[PATH_NAVPOINT_SRC_IDX] = (1<<PATH_WEIGHT_PRECISION);
     navpoints[PATH_NAVPOINT_DST_IDX] = dst;
-    navweights[PATH_NAVPOINT_DST_IDX] = 1;
+    navweights[PATH_NAVPOINT_DST_IDX] = (1<<PATH_WEIGHT_PRECISION);
 }
 
 bool Path::get_next(vect_t &p)
