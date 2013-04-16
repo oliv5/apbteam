@@ -31,7 +31,7 @@
 #include "modules/twi/twi.h"
 #include "io.h"
 
-#include "aux.h"
+#include "aux_traj.h"
 
 #ifdef HOST
 # include "simu.host.h"

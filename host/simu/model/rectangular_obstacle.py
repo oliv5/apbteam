@@ -61,3 +61,14 @@ class RectangularObstacle (Observable):
                     found = i
         return found
 
+    def inside (self, a):
+        """If A is inside obstacle, return True."""
+        # Map point in obstacle coordinates.
+        u = vector.polar (self.angle, 1)
+        o = vector (self.pos)
+        a = vector (a)
+        oa = a - o
+        x = oa * u / (.5 * self.dim[0])
+        y = oa * u.normal () / (.5 * self.dim[1])
+        return x > -1 and x < 1 and y > -1 and y < 1
+

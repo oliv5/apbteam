@@ -1,7 +1,7 @@
 BASE = ../../../avr
 PROGS = asserv
 asserv_SOURCES = main.c timer.avr.c \
-		 postrack.c traj.c aux.c cs.c \
+		 postrack.c traj.c aux_traj.c cs.c \
 		 twi_proto.c eeprom.avr.c seq.c \
 		 simu.host.c models.host.c
 MODULES = proto uart utils math/fixed twi spi \

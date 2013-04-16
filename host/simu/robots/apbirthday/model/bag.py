@@ -29,6 +29,7 @@ from simu.model.distance_sensor_trig import DistanceSensorTrig
 from simu.model.distance_sensor_sensopart import DistanceSensorSensopart
 from simu.model.pneumatic_cylinder import PneumaticCylinder
 from simu.robots.apbirthday.model.cake_arm import CakeArm
+from simu.robots.apbirthday.model.cannon import Cannon
 from math import pi
 import random
 
@@ -72,6 +73,16 @@ class Bag:
                     link_bag.cake_push_near_out,
                     scheduler, 0., 1., 10., 10., 0.),
                 link_bag.cake_arm_out_contact, link_bag.cake_arm_in_contact)
+        self.cannon = Cannon (table, self.position,
+                PneumaticCylinder (
+                    link_bag.cherry_plate_up,
+                    link_bag.cherry_plate_down,
+                    scheduler, 0., 1., 2., 2., 1.),
+                PneumaticCylinder (None,
+                    link_bag.cherry_plate_clamp,
+                    scheduler, 0., 1., 10., 10., 0.),
+                (Switch (link_bag.cherry_plate_left_contact),
+                    Switch (link_bag.cherry_plate_right_contact)))
         self.path = link_bag.io_hub.path
         self.pos_report = link_bag.io_hub.pos_report
 

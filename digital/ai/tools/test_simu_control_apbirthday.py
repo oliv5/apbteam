@@ -37,8 +37,8 @@ class TestSimuControl (TestSimu):
         self.asserv = self.robots[0].asserv
         self.robot_model = self.robots[0].model
         self.io.output (io_hub.apbirthday.output_mask (
-            'cake_arm_in', 'cake_push_far_in', 'cake_push_near_in'),
-            'toggle')
+            'cake_arm_in', 'cake_push_far_in', 'cake_push_near_in',
+            'cherry_plate_down'), 'toggle')
 
     def create_widgets (self):
         TestSimu.create_widgets (self)
@@ -59,6 +59,8 @@ class TestSimuControl (TestSimu):
         out_button ('Arm in/out', 'cake_arm_in', 'cake_arm_out')
         out_button ('Push far in/out', 'cake_push_far_in', 'cake_push_far_out')
         out_button ('Push near in/out', 'cake_push_near_in', 'cake_push_near_out')
+        out_button ('Plate arm up/down', 'cherry_plate_up', 'cherry_plate_down')
+        out_button ('Plate clamp', 'cherry_plate_clamp')
         self.backward_var = IntVar ()
         self.backward_button = Checkbutton (self.control_frame,
                 text = 'Backward', variable = self.backward_var)

@@ -79,26 +79,15 @@ class Plate (Drawable):
         self.reset ()
         if self.model.pos:
             self.trans_translate (self.model.pos)
+            self.trans_rotate (self.model.angle)
             w, h = self.model.dim
             w, h = w/2, h/2
             self.draw_rectangle ((-w, -h), (w, h), fill = PINK)
             self.draw_rectangle ((-w + 22, -h + 22), (w - 22, h - 22),
                     fill = PINK)
-            Drawable.draw (self)
-
-class Cherry (Drawable):
-
-    def __init__ (self, onto, model):
-        Drawable.__init__ (self, onto)
-        self.model = model
-        self.model.register (self.update)
-
-    def draw (self):
-        self.reset ()
-        model = self.model
-        if model.pos:
-            self.draw_circle (model.pos, model.radius,
-                    fill = colors[model.color])
+            for c in self.model.cherries:
+                if c.pos:
+                    self.draw_circle (c.pos, c.radius, fill = colors[c.color])
             Drawable.draw (self)
 
 class Gift (Drawable):
@@ -133,8 +122,6 @@ class Table (Drawable):
             Glass (self, e)
         for e in self.model.plates:
             Plate (self, e)
-        for e in self.model.cherries:
-            Cherry (self, e)
         for e in self.model.gifts:
             Gift (self, e)
 

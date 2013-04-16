@@ -33,7 +33,7 @@
 
 #include "postrack.h"
 #include "traj.h"
-#include "aux.h"
+#include "aux_traj.h"
 
 #ifdef HOST
 # include "simu.host.h"

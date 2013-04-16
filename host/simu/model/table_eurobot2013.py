@@ -76,11 +76,11 @@ class Table (simu.model.table.Table):
         add_glass ((1200, 1050))
         # Cherries.
         self.plates = [ ]
-        self.cherries = [ ]
         def add_plate (pos, color):
             plate = RectangularObstacle ((170, 170), 0)
             plate.pos = pos
             plate.angle = 0
+            plate.cherries = [ ]
             self.plates.append (plate)
             cpos = ((-42, -42), (-42, 0), (-42, +42), (0, -21), (0, 21),
                     (42, -42), (42, 0), (42, +42))
@@ -88,9 +88,9 @@ class Table (simu.model.table.Table):
             random.shuffle (ccol)
             for p, c in zip (cpos, ccol):
                 cherry = RoundObstacle (20, 0)
-                cherry.pos = (pos[0] + p[0], pos[1] + p[1])
+                cherry.pos = p
                 cherry.color = c
-                self.cherries.append (cherry)
+                plate.cherries.append (cherry)
         for py in (250, 600, 1000, 1400, 1750):
             add_plate ((200, py), False)
             add_plate ((3000 - 200, py), True)
@@ -114,6 +114,5 @@ class Table (simu.model.table.Table):
         self.obstacles += self.candles
         self.obstacles += self.glasses
         self.obstacles += self.plates
-        self.obstacles += self.cherries
         self.obstacles += self.gifts
 

@@ -32,7 +32,7 @@
 #include "models.host.h"
 #include "simu.host.h"
 
-#include "aux.h"
+#include "aux_traj.h"
 
 #include AC_ASSERV_CONTACTS_H
 

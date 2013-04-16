@@ -34,13 +34,6 @@ class Proto:
     """Provide functions to communicate with asserv using the proto
     interface."""
 
-    stats_format = {
-            'C': 'HHHH',
-            'S': 'hhhh',
-            'P': 'hhhh',
-            'Q': 'hhhh',
-            'W': 'hhhh',
-            }
     # The last occuring stats will increment stats_count, so they have to
     # be in the same order than in asserv program.
     stats_order = 'CSPQW'
@@ -95,6 +88,14 @@ class Proto:
         self.aseq = [ 0 ] * aux_nb
         self.aseq_ack = [ 0 ] * aux_nb
         self.proto.register ('A', 'B' * (aux_nb + 1), self.__handle_ack)
+        n = 2 + aux_nb
+        self.stats_format = {
+                'C': 'H' * n,
+                'S': 'h' * n,
+                'P': 'h' * 4,
+                'Q': 'h' * 2 * aux_nb,
+                'W': 'h' * n,
+                }
         def make_handle (s):
             return lambda *args: self.__handle_stats (s, *args)
         for (s, f) in self.stats_format.iteritems ():
@@ -129,7 +130,6 @@ class Proto:
     def stats (self, *stats_items, **options):
         """Activate stats.  Take a list of items to record, and an optional
         interval option."""
-        assert self.aux_nb == 2, 'not supported'
         interval = 1
         if 'interval' in options:
             interval = options['interval']
