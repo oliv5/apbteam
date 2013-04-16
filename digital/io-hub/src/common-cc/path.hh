@@ -6,7 +6,7 @@
 // Copyright (C) 2013 Olivier Lanneluc
 //
 // APBTeam:
-//        Web: http://apbteam.org/
+//      Web: http://apbteam.org/
 //      Email: team AT apbteam DOT org
 //
 // This program is free software; you can redistribute it and/or modify
@@ -52,7 +52,7 @@ class Path
     /** Set path source and destination */
     void endpoints(const vect_t &src, const vect_t &dst);
     /** Compute path with the given escape factor */
-    void compute(int escape = 0);
+    void compute(uint16_t escape = 0);
     /** Return a point vector by index */
     vect_t& get_point_vect(const int index);
     /** Return a point index */
@@ -63,14 +63,14 @@ class Path
     /** Find all neighbors of a given node, fill the astar_neighbor structure */
     int find_neighbors(int node, struct astar_neighbor_t *neighbors);
     /** Prepare score computation for the given source, with given escape factor */
-    void prepare_score(const vect_t &src, int escape = 0);
+    void prepare_score(const vect_t &src, uint16_t escape = 0);
     /** Return score for a given destination, using a previous preparation
        (also reuse previously given escape factor) */
     uint16_t get_score(const vect_t &dst);
 
   private:
     /** Add an obstacle on the field */
-    void add_obstacle(const vect_t &c, uint16_t r, int nodes);
+    void add_obstacle(const vect_t &c, uint16_t r, const int nodes);
 
     /** Number of possible obstacles. */
     static const int PATH_OBSTACLES_NB = (4+1/*cake*/);
@@ -80,21 +80,25 @@ class Path
     static const int PATH_CAKE_NAVPOINTS_NB = 14;
     /** Number of reserved points for the 2 endpoints  */
     static const int PATH_RESERVED_NAVPOINTS_NB = 2;
+    /** Number of navigation points layers for each obstacle. */
+    static const int PATH_NAVPOINTS_LAYERS = 2;
     /** Number of points. */
     static const int PATH_NAVPOINTS_NB = (PATH_RESERVED_NAVPOINTS_NB +
-                                          (PATH_OBSTACLES_NB * PATH_OBSTACLES_NAVPOINTS_NB) +
-                                          (PATH_CAKE_NAVPOINTS_NB - PATH_OBSTACLES_NAVPOINTS_NB));
+                                           PATH_NAVPOINTS_LAYERS * (PATH_OBSTACLES_NB * PATH_OBSTACLES_NAVPOINTS_NB) +
+                                           PATH_NAVPOINTS_LAYERS * (PATH_CAKE_NAVPOINTS_NB - PATH_OBSTACLES_NAVPOINTS_NB));
 
     /** Borders, any point outside borders is eliminated. */
     const uint16_t border_xmin, border_ymin, border_xmax, border_ymax;
     /** Escape factor, 0 if none. */
-    int escape_factor;
+    uint16_t escape_factor;
     /** List of obstacles. */
     path_obstacle_t obstacles[PATH_OBSTACLES_NB];
     /** Number of obstacles */
     int obstacles_nb;
     /** List of navigation points coordonates */
     vect_t navpoints[PATH_NAVPOINTS_NB];
+    /** List of navigation points weights */
+    uint16_t navweights[PATH_NAVPOINTS_NB];
     /** Number of navigation points */
     int navpoints_nb;
     /** List of nodes used for A*. */
