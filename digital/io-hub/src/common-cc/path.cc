@@ -28,7 +28,6 @@
 #include "bot.hh"
 #include "robot.hh"
 #include "playground.hh"
-#include "playground_2013.hh"
 
 extern "C" {
 #include "modules/math/fixed/fixed.h"
@@ -47,6 +46,10 @@ extern "C" {
 /** Angle between obstacles points. */
 #define PATH_ANGLE_824(pOINTS_NB)  ((1L << 24) / (pOINTS_NB))
 
+/** Check for vectors equality */
+#define PATH_VECT_EQUAL(v1, v2)    ((v1)->x==(v2)->x && (v1)->y==(v2)->y)
+
+/** Static nodes index for the endpoints */
 enum {
     PATH_NAVPOINT_SRC_IDX = 0,
     PATH_NAVPOINT_DST_IDX
@@ -78,8 +81,10 @@ void Path::reset()
     next_node = 0;
     escape_factor = 0;
 
+#ifdef playground_2013_hh
     /* Declare the cake as an obstacle */
     add_obstacle(pg_cake_pos, pg_cake_radius, PATH_CAKE_NAVPOINTS_NB);
+#endif
 }
 
 void Path::add_obstacle(const vect_t &c, uint16_t r, const int nodes)
@@ -148,11 +153,6 @@ void Path::add_obstacle(const vect_t &c, uint16_t r, const int nodes)
 #ifdef HOST
     /* Plot obstacle points */
     robot->hardware.simu_report.pos( &navpoints[PATH_RESERVED_NAVPOINTS_NB], navpoints_nb-PATH_RESERVED_NAVPOINTS_NB, PATH_PLOT_ID);
-#if 0
-    /* Draw the last obstacle */
-    navpoints[navpoints_nb] = navpoints[navpoints_nb - num];
-    robot->hardware.simu_report.path( &navpoints[navpoints_nb - num], num + 1);
-#endif
 #endif
 }
 
@@ -175,27 +175,37 @@ int Path::find_neighbors(int cur_point, struct astar_neighbor_t *neighbors)
             for(int j=0; j<obstacles_nb; j++)
             {
                 /* Check for intersection with obstacle */
-              uint16_t d = distance_segment_point(&navpoints[cur_point], &navpoints[i], &obstacles[j].c);
-              if (d < obstacles[j].r)
-              {
-                  /* Collision: try to escape when node is the source point */
-                  if (i==PATH_NAVPOINT_SRC_IDX &&
-                        (cur_point!=PATH_NAVPOINT_DST_IDX ||
-                        (navpoints[cur_point].x==pg_cake_pos.x && navpoints[cur_point].y==pg_cake_pos.y)))
-                  {
-                      weight *= escape_factor; /* allow this navigation point, but it costs */
-                  }
-                  else
-                  {
-                      weight = 0; /* disable this navigation point */
-                  }
-                  DPRINTF("in collision with c=(%u;%u) r=%u w=%u ",
-                      obstacles[j].c.x, obstacles[j].c.y, obstacles[j].r, weight);
-                  break; /* Stop checking obstacle for this node */
-              }
+                uint16_t d = distance_segment_point(&navpoints[cur_point], &navpoints[i], &obstacles[j].c);
+                if (d < obstacles[j].r)
+                {
+                    /* Collision while forcing the last move to the destination */
+                    if (force_move && cur_point==PATH_NAVPOINT_DST_IDX &&
+                        PATH_VECT_EQUAL(&navpoints[cur_point], &obstacles[j].c))
+                    {
+                        /* Skip this obstacle */
+                        DPRINTF("in collision with c=(%u;%u) r=%u allowed ",
+                            obstacles[j].c.x, obstacles[j].c.y, obstacles[j].r);
+                        continue;
+                    }
+                    /* Collision while trying to escape the source point */
+                    else if (i==PATH_NAVPOINT_SRC_IDX)
+                    {
+                        /* Allow this navigation point with an extra cost */
+                        weight *= escape_factor;
+                    }
+                    /* Collision during a standard move */
+                    else
+                    {
+                        /* Disable this navigation point */
+                        weight = 0;
+                    }
+                    DPRINTF("in collision with c=(%u;%u) r=%u w=%u ",
+                        obstacles[j].c.x, obstacles[j].c.y, obstacles[j].r, weight);
+                    break; /* Stop checking for obstacles with this node */
+                }
             }
 
-            /* Add neighbor if valid */
+            /* Add this navigation point in the neighbor list when valid */
             if (weight)
             {
                 DPRINTF("=> validated w=%u\n", weight);
@@ -261,14 +271,30 @@ void Path::obstacle(int index, const vect_t &c, uint16_t r, int f)
     add_obstacle(c, r, PATH_OBSTACLES_NAVPOINTS_NB);
 }
 
-void Path::endpoints(const vect_t &src, const vect_t &dst)
+void Path::endpoints(const vect_t &src, const vect_t &dst, const bool force_move)
 {
+    /* Store endpoints location */
     DPRINTF("Set path endpoints src=(%u;%u) dst=(%u;%u)\n",
             src.x, src.y, dst.x, dst.y);
     navpoints[PATH_NAVPOINT_SRC_IDX] = src;
     navpoints[PATH_NAVPOINT_DST_IDX] = dst;
+
+    /* Init endpoints weights */
     navweights[PATH_NAVPOINT_SRC_IDX] = (1<<PATH_WEIGHT_PRECISION);
     navweights[PATH_NAVPOINT_DST_IDX] = (1<<PATH_WEIGHT_PRECISION);
+
+    /* Set force_move to allow the path to end inside an obstacle */
+    /* This is useful to target the center of an obstacle and stop */
+    /* in front of it before the collision happens */
+    this->force_move = force_move;
+
+#ifdef playground_2013_hh
+    /* Temporary code for the cake */
+    if (PATH_VECT_EQUAL(&dst, &pg_cake_pos))
+    {
+        this->force_move = true;
+    }
+#endif
 }
 
 bool Path::get_next(vect_t &p)
