@@ -25,6 +25,7 @@
 //
 // }}}
 #include "defs.hh"
+#include "playground_2013.hh"
 
 extern "C" {
 #include "modules/path/astar/astar.h"
@@ -52,7 +53,7 @@ class Path
     /** Set a moving obstacle position, radius and factor*/
     void obstacle(int index, const vect_t &c, uint16_t r, int f = 0);
     /** Set path source and destination */
-    void endpoints(const vect_t &src, const vect_t &dst);
+    void endpoints(const vect_t &src, const vect_t &dst, const bool force_move=false);
     /** Compute path with the given escape factor */
     void compute(weight_t escape = 0);
     /** Return a point vector by index */
@@ -78,16 +79,20 @@ class Path
     static const int PATH_OBSTACLES_NB = (4+1/*cake*/);
     /** Number of points per standard obstacle. */
     static const int PATH_OBSTACLES_NAVPOINTS_NB = 8;
+#ifdef playground_2013_hh
     /** Number of points for the cake */
     static const int PATH_CAKE_NAVPOINTS_NB = 14;
+#endif
     /** Number of reserved points for the 2 endpoints  */
     static const int PATH_RESERVED_NAVPOINTS_NB = 2;
     /** Number of navigation points layers for each obstacle. */
     static const int PATH_NAVPOINTS_LAYERS = 2;
     /** Number of navigation points. */
     static const int PATH_NAVPOINTS_NB = (PATH_RESERVED_NAVPOINTS_NB +
-                                           PATH_NAVPOINTS_LAYERS * (PATH_OBSTACLES_NB * PATH_OBSTACLES_NAVPOINTS_NB) +
-                                           PATH_NAVPOINTS_LAYERS * (PATH_CAKE_NAVPOINTS_NB - PATH_OBSTACLES_NAVPOINTS_NB));
+#ifdef playground_2013_hh
+                                           PATH_NAVPOINTS_LAYERS * (PATH_CAKE_NAVPOINTS_NB - PATH_OBSTACLES_NAVPOINTS_NB) +
+#endif
+                                           PATH_NAVPOINTS_LAYERS * (PATH_OBSTACLES_NB * PATH_OBSTACLES_NAVPOINTS_NB));
     /** Navigation points weight precision (2^-n). */
     static const int PATH_WEIGHT_PRECISION = 4;
     /** Navigation points weight step (2^-n). */
@@ -113,6 +118,10 @@ class Path
     int next_node;
     /** TRUE when a path has been found */
     bool path_found;
+    /** TRUE to allow last movement to enter an obstacle
+     * This may be used to target the center of an obstacle
+     * and stop closed to it */
+    bool force_move;
 };
 
 #endif // path_hh
