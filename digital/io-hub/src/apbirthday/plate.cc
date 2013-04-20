@@ -21,15 +21,9 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 //
 // }}}
-
 #include "robot.hh"
 #include "defs.hh"
 #include "plate.hh"
-
-extern "C" {
-#define ANGFSM_NAME AI
-#include "angfsm.h"
-}
 
 inline void Plate::arm_down ()
 {
@@ -45,12 +39,12 @@ inline void Plate::arm_up ()
 
 inline void Plate::clamp_open ()
 {
-    robot->hardware.cherry_plate_clamp.set (true);
+    robot->hardware.cherry_plate_clamp.set (false);
 }
 
 inline void Plate::clamp_close ()
 {
-    robot->hardware.cherry_plate_clamp.set (false);
+    robot->hardware.cherry_plate_clamp.set (true);
 }
 
 FSM_STATES (PLATE_OFF,
