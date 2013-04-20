@@ -23,6 +23,9 @@
 # }}}
 """Tools to interface with apbirthday io-hub."""
 from Tkinter import *
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
+import numpy
 
 import io_hub
 from utils.init_proto import init_proto
@@ -35,10 +38,10 @@ class InterAPBirthday (Frame):
         Frame.__init__ (self, master)
         self.pack (expand = True, fill = 'both')
         self.create_widgets ()
-        self.current_value = 0
         self.update ()
         self.io = init_proto ('apbirthday', io_hub.Proto)
         self.io.async = True
+        self.io.register_stats (self.handle_stats)
         def io_read (*args):
             self.io.proto.read ()
             self.io.proto.sync ()
@@ -135,6 +138,50 @@ class InterAPBirthday (Frame):
         button = Checkbutton (frame, indicatoron = 0, text = 'Fire!',
                 command = cannon_fire, variable = self.cannon_fire_var)
         button.pack (side = LEFT)
+        # Graph.
+        graph_frame = Frame (self)
+        graph_frame.pack (side = LEFT, fill = BOTH, expand = 1)
+        self.graph_figure = Figure ()
+        self.graph_axes = self.graph_figure.add_subplot (111)
+        self.graph_canvas = FigureCanvasTkAgg (self.graph_figure,
+                master = graph_frame)
+        self.graph_canvas.show ()
+        self.graph_canvas.get_tk_widget ().pack (fill = BOTH, expand = 1)
+        #  Graph information.
+        class Graph:
+            def __init__ (self, stat):
+                self.var = IntVar ()
+                self.line = None
+                self.data = None
+                self.stat = stat
+        class GraphStat:
+            def __init__ (self, stat):
+                self.stat = stat
+                self.usage = 0
+        self.graphs = { }
+        self.graph_enabled = False
+        #  Buttons.
+        self.graphs['pressure'] = Graph (GraphStat ('pressure'))
+        button = Checkbutton (graph_frame, text = 'Pressure',
+                variable = self.graphs['pressure'].var,
+                command = self.graph_update)
+        button.pack ()
+        gstat = GraphStat ('us')
+        for i in xrange (4):
+            stat = 'us%d' % i
+            self.graphs[stat] = Graph (gstat)
+            button = Checkbutton (graph_frame, text = 'US %d' % i,
+                    variable = self.graphs[stat].var,
+                    command = self.graph_update)
+            button.pack ()
+        gstat = GraphStat ('cake')
+        for i in xrange (2):
+            stat = 'cake%d' % i
+            self.graphs[stat] = Graph (gstat)
+            button = Checkbutton (graph_frame, text = 'Cake %d' % i,
+                    variable = self.graphs[stat].var,
+                    command = self.graph_update)
+            button.pack ()
 
     def reset (self):
         mask = 0
@@ -145,6 +192,52 @@ class InterAPBirthday (Frame):
         self.io.pressure (0)
         self.cannon_fire_var.set (0)
         self.io.potentiometer (0, 0)
+
+    def graph_update (self):
+        graph_sample_rate = 1
+        graph_history = 250 * 4
+        for k, g in self.graphs.iteritems ():
+            val = g.var.get ()
+            if g.line is None and val:
+                g.stat.usage += 1
+                if g.stat.usage == 1:
+                    self.io.stats (g.stat.stat, graph_sample_rate)
+                g.data = numpy.zeros (graph_history)
+                g.line, = self.graph_axes.plot (g.data, label = k)
+            elif g.line is not None and not val:
+                g.stat.usage -= 1
+                if g.stat.usage == 0:
+                    self.io.stats (g.stat.stat, 0)
+                self.graph_axes.lines.remove (g.line)
+                g.data, g.line = None, None
+        if not self.graph_enabled and self.graph_axes.lines:
+            self.graph_draw ()
+
+    def graph_draw (self):
+        ymin, ymax = 0, 0
+        for g in self.graphs.itervalues ():
+            if g.line is not None:
+                g.line.recache ()
+                ymin = min (ymin, g.data.min ())
+                ymax = max (ymax, g.data.max ())
+        self.graph_axes.set_ylim (ymin * 1.1, ymax * 1.1)
+        self.graph_canvas.draw ()
+        if self.graph_axes.lines:
+            self.graph_enabled = True
+            self.after (200, self.graph_draw)
+        else:
+            self.graph_enabled = False
+
+    def handle_stats (self, stats, *values):
+        if len (values) != 1:
+            stats = [ '%s%d' % (stats, i) for i in xrange (len (values)) ]
+        else:
+            stats = (stats, )
+        for stat, value in zip (stats, values):
+            g = self.graphs[stat]
+            if g.line is not None:
+                g.data[0:-1] = g.data[1:]
+                g.data[-1] = value
 
 if __name__ == '__main__':
     app = InterAPBirthday ()

@@ -27,11 +27,31 @@ __all__ = [ 'Proto', 'ProtoRobospierre', 'ProtoGuybrush' ]
 
 class Proto:
 
+    stats_items = {
+            'pressure': ('F', 'H'),
+            'us': ('U', 'hhhh'),
+            'cake': ('G', 'hh'),
+            }
+
     def __init__ (self, file, time = time.time, **param):
         self.proto = proto.Proto (file, time, 0.1)
         self.async = False
         self.param = param
+        self.stats_callback = None
+        def make_handler (stat):
+            def handler (*values):
+                if self.stats_callback:
+                    self.stats_callback (stat, *values)
+            return handler
+        for stat, cmd in self.stats_items.iteritems ():
+            self.proto.register (cmd[0], cmd[1], make_handler (stat))
         self.send_param ()
+
+    def register_stats (self, stats_callback):
+        self.stats_callback = stats_callback
+
+    def stats (self, stat, interval):
+        self.proto.send (self.stats_items[stat][0], 'B', interval)
 
     def send_param (self):
         pass
