@@ -35,6 +35,8 @@ struct top_t
     Strat::CandlesDecision candles;
     /// Last blown candles.
     int candles_last_blown[Candles::FLOOR_NB];
+    /// Plate decision information.
+    Strat::PlateDecision plate;
 };
 static top_t top;
 
@@ -221,6 +223,13 @@ top_fsm_gen_event ()
             }
         }
     }
+    // Plate contacts.
+    if (!robot->hardware.cherry_plate_left_contact.get ()
+        && !robot->hardware.cherry_plate_right_contact.get ())
+    {
+        if (ANGFSM_HANDLE (AI, top_plate_present))
+            return true;
+    }
     return false;
 }
 
@@ -257,6 +266,14 @@ ANGFSM_STATES (
             TOP_CANDLES_LEAVE_TURN,
             // Candles: go away so that the robot is free to turn.
             TOP_CANDLES_LEAVE_GO_AWAY,
+            // Plate: go to plate, normal move.
+            TOP_PLATE_GOTO,
+            // Plate: go backward until a plate is seen.
+            TOP_PLATE_APPROACH,
+            // Plate: loading plate.
+            TOP_PLATE_LOADING,
+            // Plate: drop plate.
+            TOP_PLATE_DROPING,
             // Demo mode: push the wall near the cake.
             TOP_DEMO_CANDLES_PUSH_WALL,
             // Demo mode: move away from the wall.
@@ -269,6 +286,8 @@ ANGFSM_EVENTS (
             top_follow_finished,
             // Problem with cake following.
             top_follow_blocked,
+            // Plate present, can be taken.
+            top_plate_present,
             // Start candle demo.
             top_demo_candles,
             // Start follow the cake demo.
@@ -293,18 +312,24 @@ FSM_TRANS (TOP_INIT, init_start_round, TOP_DECISION)
 
 FSM_TRANS_TIMEOUT (TOP_DECISION, 1,
                    candles, TOP_CANDLES_GOTO_NORMAL,
+                   plate, TOP_PLATE_GOTO,
                    none, TOP_START)
 {
     if (robot->demo)
         return FSM_BRANCH (none);
-    vect_t d_pos;
+    robot->asserv.set_speed (BOT_SPEED_NORMAL);
+    Position d_pos;
     Strat::Decision d = robot->strat.decision (d_pos);
     switch (d)
     {
     case Strat::CANDLES:
-        robot->move.start (d_pos, Asserv::BACKWARD, pg_cake_radius
+        robot->move.start (d_pos.v, Asserv::BACKWARD, pg_cake_radius
                            + pg_cake_distance + BOT_SIZE_SIDE);
         return FSM_BRANCH (candles);
+    case Strat::PLATE:
+        robot->strat.decision_plate (top.plate);
+        robot->move.start (d_pos);
+        return FSM_BRANCH (plate);
     default:
         ucoo::assert_unreachable ();
     }
@@ -405,6 +430,59 @@ FSM_TRANS (TOP_CANDLES_LEAVE_GO_AWAY, robot_move_success, TOP_DECISION)
 }
 
 FSM_TRANS (TOP_CANDLES_LEAVE_GO_AWAY, robot_move_failure, TOP_DECISION)
+{
+}
+
+///
+/// Plate.
+///
+
+FSM_TRANS (TOP_PLATE_GOTO, move_success,
+           load, TOP_PLATE_APPROACH,
+           drop, TOP_PLATE_DROPING)
+{
+    if (top.plate.drop)
+    {
+        ANGFSM_HANDLE (AI, plate_drop);
+        return FSM_BRANCH (drop);
+    }
+    else
+    {
+        robot->asserv.set_speed (BOT_SPEED_PLATE);
+        robot->move.start (top.plate.loading_pos, Asserv::BACKWARD);
+        return FSM_BRANCH (load);
+    }
+}
+
+FSM_TRANS (TOP_PLATE_GOTO, move_failure, TOP_DECISION)
+{
+    robot->strat.failure ();
+}
+
+FSM_TRANS (TOP_PLATE_DROPING, plate_droped, TOP_PLATE_GOTO)
+{
+    top.plate.drop = false;
+    robot->move.start (top.plate.approaching_pos);
+}
+
+FSM_TRANS (TOP_PLATE_APPROACH, move_success, TOP_DECISION)
+{
+    // TODO: no plate.
+    robot->strat.failure ();
+}
+
+FSM_TRANS (TOP_PLATE_APPROACH, move_failure, TOP_DECISION)
+{
+    robot->strat.failure ();
+}
+
+FSM_TRANS (TOP_PLATE_APPROACH, top_plate_present, TOP_PLATE_LOADING)
+{
+    robot->move.stop ();
+    ANGFSM_HANDLE (AI, plate_take);
+}
+
+FSM_TRANS (TOP_PLATE_LOADING, plate_taken, TOP_DECISION)
 {
 }
 

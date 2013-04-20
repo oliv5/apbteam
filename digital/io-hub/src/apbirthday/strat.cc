@@ -25,13 +25,36 @@
 #include "robot.hh"
 #include "top.hh"
 #include "debug.host.hh"
+#include "bot.hh"
 
 Strat::Decision
-Strat::decision (vect_t &pos)
+Strat::decision (Position &pos)
 {
     // TODO: this is a stub.
-    pos = pg_cake_pos;
-    return CANDLES;
+    static int step;
+    static const int plate_app = pg_plate_size_border + BOT_SIZE_RADIUS + 20;
+    static const int plate_load = pg_plate_size_border + BOT_SIZE_BACK - 40;
+    switch (step++)
+    {
+    case 0:
+        plate_decision_.drop = false;
+        plate_decision_.approaching_pos =
+            pg_position_deg (200, 250 + plate_app, 90);
+        plate_decision_.loading_pos = pg_vect (200, 250 + plate_load);
+        pos = plate_decision_.approaching_pos;
+        return PLATE;
+    case 1:
+        plate_decision_.drop = true;
+        plate_decision_.approaching_pos =
+            pg_position_deg (200, 1000 - plate_app, -90);
+        plate_decision_.loading_pos = pg_vect (200, 1000 - plate_load);
+        pos = pg_position_deg (200, 250 + plate_load, 90);
+        return PLATE;
+    default:
+        pos.v = pg_cake_pos;
+        pos.a = 0;
+        return CANDLES;
+    }
 }
 
 /// Compute score for candles between first and last.
@@ -94,6 +117,12 @@ Strat::decision_candles (CandlesDecision &decision, uint16_t robot_angle)
         }
         return true;
     }
+}
+
+void
+Strat::decision_plate (PlateDecision &decision)
+{
+    decision = plate_decision_;
 }
 
 void

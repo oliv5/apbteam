@@ -33,6 +33,7 @@ class Strat
     enum Decision
     {
         CANDLES,
+        PLATE,
     };
     /// Information on a candle decision.
     struct CandlesDecision
@@ -42,14 +43,31 @@ class Strat
         /// Angle relative to cake to end the movement.
         uint16_t end_angle;
     };
+    /// Information on a plate decision.
+    struct PlateDecision
+    {
+        /// Should drop plate before.
+        bool drop;
+        /// Approach position, where the robot should be before starting
+        /// approaching.
+        Position approaching_pos;
+        /// Loading position, point where to go backward to load the plate. If
+        /// the point is reached, there is no plate.
+        vect_t loading_pos;
+    };
   public:
     /// Return new decision and associated position.
-    Decision decision (vect_t &pos);
+    Decision decision (Position &pos);
     /// Take a decision related to candles, return false to give up candles.
     bool decision_candles (CandlesDecision &decision,
                            uint16_t robot_angle);
+    /// Take a decision related to plate.
+    void decision_plate (PlateDecision &decision);
     /// Report a failure to apply the previous decision.
     void failure ();
+  private:
+    /// Last plate decision.
+    PlateDecision plate_decision_;
 };
 
 #endif // strat_hh
