@@ -34,4 +34,7 @@ static const vect_t pg_cake_pos = { pg_width / 2, pg_length };
 /// Distance from the cake to blow candles.
 static const int pg_cake_distance = 30;
 
+/// Plate width / 2.
+static const int pg_plate_size_border = 170 / 2;
+
 #endif // playground_2013_hh
