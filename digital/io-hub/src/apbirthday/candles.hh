@@ -69,10 +69,17 @@ class Candles
         static void deploy_arm ();
         static void undeploy_arm_1 ();
         static void undeploy_arm_2 ();
+        static void undeploy_arm_3 ();
+        static void arm_out ();
+        static void arm_back ();
         static void push_near ();
         static void unpush_near ();
         static void push_far ();
         static void unpush_far ();
+        static void flamby_arm ();
+        static void flamby_far ();
+        static void crampe_arm ();
+        static void crampe_far ();
     private:
         static const int total_count = 20;
         static const int near_count = 12;
