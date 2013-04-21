@@ -218,6 +218,12 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
         // Enter FSM debug mode, then step once.
         fsm_debug_state_ = FSM_DEBUG_STEP;
         break;
+    case c ('d', 2):
+        // Demo mode.
+        // 1B: 'f for follow mode.
+        // 1B: 00 for clockwise, 01 for anti-clockwise
+        top_demo_follow (args[0] == 1 ? 1 : -1);
+        break;
     case c ('m', 5):
         // Go to position.
         // 2H: x, y.
