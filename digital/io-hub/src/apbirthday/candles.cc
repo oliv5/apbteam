@@ -96,41 +96,45 @@ inline bool Candles::is_near (int pos)
     return pos >= far_count;
 }
 
-
 inline bool Candles::is_far (int pos)
 {
     return pos < far_count;
 }
 
-void Candles::deploy_arm ()
+void Candles::flamby_arm ()
 {
-    // Deploy arm.
-    robot->hardware.cake_arm_out.set (true);
-    robot->hardware.cake_arm_in.set (false);
-    // Prepare punhers.
-    unpush_far ();
-    unpush_near ();
-}
-
-void Candles::undeploy_arm_1 ()
-{
-    // Get a flabby arm (usefull in case of failure).
      robot->hardware.cake_arm_out.set (false);
      robot->hardware.cake_arm_in.set (false);
-    // Prepare far puncher to undeploy.
-    Candles::push_far ();
-    // Be sure the near punched in not punching.
-    Candles::unpush_near ();
 }
 
-void Candles::undeploy_arm_2 ()
+void Candles::flamby_far ()
 {
-    // Unleach far puncher.
     robot->hardware.cake_push_far_out.set (false);
     robot->hardware.cake_push_far_in.set (false);
-    // Put arm back.
+}
+
+void Candles::crampe_arm ()
+{
+     robot->hardware.cake_arm_out.set (true);
+     robot->hardware.cake_arm_in.set (true);
+}
+
+void Candles::crampe_far ()
+{
+    robot->hardware.cake_push_far_out.set (true);
+    robot->hardware.cake_push_far_in.set (true);
+}
+
+void Candles::arm_back ()
+{
     robot->hardware.cake_arm_out.set (false);
     robot->hardware.cake_arm_in.set (true);
+}
+
+void Candles::arm_out ()
+{
+    robot->hardware.cake_arm_out.set (true);
+    robot->hardware.cake_arm_in.set (false);
 }
 
 void Candles::push_near ()
@@ -157,15 +161,44 @@ void Candles::unpush_far ()
     robot->hardware.cake_push_far_in.set (true);
 }
 
+void Candles::deploy_arm ()
+{
+    // Deploy arm.
+    arm_out ();
+    // Prepare punhers.
+    unpush_far ();
+    unpush_near ();
+}
+
+void Candles::undeploy_arm_1 ()
+{
+    arm_back ();
+    // Just to be sure.
+    unpush_far ();
+    unpush_near ();
+}
+
+void Candles::undeploy_arm_2 ()
+{
+    crampe_far ();
+}
+
+void Candles::undeploy_arm_3 ()
+{
+    flamby_far ();
+}
+
 // Global candle FSM.
 FSM_STATES (AI_CANDLE_OFF,
             AI_CANDLE_INIT,
             AI_CANDLE_SLEEPING,
             AI_CANDLE_DEPLOYING,
-            AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED,
+            AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED_1,
+            AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED_2,
             AI_CANDLE_READY,
             AI_CANDLE_UNDEPLOYING,
-            AI_CANDLE_UNDEPLOYING_2)
+            AI_CANDLE_UNDEPLOYING_2,
+            AI_CANDLE_UNDEPLOYING_3)
 
 FSM_EVENTS (ai_candle_deploy,
             ai_candle_undeploy,
@@ -180,7 +213,7 @@ FSM_TRANS (AI_CANDLE_OFF, init_actuators, AI_CANDLE_INIT)
     Candles::deploy_arm ();
 }
 
-FSM_TRANS_TIMEOUT (AI_CANDLE_INIT, 125, AI_CANDLE_UNDEPLOYING)
+FSM_TRANS_TIMEOUT (AI_CANDLE_INIT, 200, AI_CANDLE_UNDEPLOYING)
 {
     Candles::undeploy_arm_1 ();
 }
@@ -195,9 +228,9 @@ FSM_TRANS (AI_CANDLE_SLEEPING, ai_candle_undeploy, AI_CANDLE_SLEEPING)
     robot->fsm_queue.post (FSM_EVENT (ai_candle_success));
 }
 
-FSM_TRANS_TIMEOUT (AI_CANDLE_DEPLOYING, 125,
+FSM_TRANS_TIMEOUT (AI_CANDLE_DEPLOYING, 200,
                    success, AI_CANDLE_READY,
-                   failure, AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED)
+                   failure, AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED_1)
 {
     if (!robot->hardware.cake_arm_out_contact.get ())
     {
@@ -213,9 +246,14 @@ FSM_TRANS_TIMEOUT (AI_CANDLE_DEPLOYING, 125,
     }
 }
 
-FSM_TRANS_TIMEOUT (AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED, 12, AI_CANDLE_SLEEPING)
+FSM_TRANS_TIMEOUT (AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED_1, 160, AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED_2)
 {
     Candles::undeploy_arm_2 ();
+}
+
+FSM_TRANS_TIMEOUT (AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED_2, 56, AI_CANDLE_SLEEPING)
+{
+    Candles::undeploy_arm_3 ();
 }
 
 FSM_TRANS (AI_CANDLE_READY, ai_candle_blow, AI_CANDLE_READY)
@@ -259,12 +297,17 @@ FSM_TRANS (AI_CANDLE_READY, ai_candle_undeploy, AI_CANDLE_UNDEPLOYING)
     Candles::undeploy_arm_1 ();
 }
 
-FSM_TRANS_TIMEOUT (AI_CANDLE_UNDEPLOYING, 10, AI_CANDLE_UNDEPLOYING_2) //TODO timeout value
+FSM_TRANS_TIMEOUT (AI_CANDLE_UNDEPLOYING, 160, AI_CANDLE_UNDEPLOYING_2)
 {
     Candles::undeploy_arm_2 ();
 }
 
-FSM_TRANS_TIMEOUT (AI_CANDLE_UNDEPLOYING_2, 125,
+FSM_TRANS_TIMEOUT (AI_CANDLE_UNDEPLOYING_2, 56, AI_CANDLE_UNDEPLOYING_3)
+{
+    Candles::undeploy_arm_3 ();
+}
+
+FSM_TRANS_TIMEOUT (AI_CANDLE_UNDEPLOYING_3, 100,
                    success, AI_CANDLE_SLEEPING,
                    failure, AI_CANDLE_READY)
 {
@@ -294,7 +337,7 @@ FSM_TRANS (AI_CANDLE_FAR_SLEEPING, ai_candle_far_punch, AI_CANDLE_FAR_PUNCHING)
     Candles::push_far ();
 }
 
-FSM_TRANS_TIMEOUT (AI_CANDLE_FAR_PUNCHING, 25, AI_CANDLE_FAR_SLEEPING) //TODO timeout value
+FSM_TRANS_TIMEOUT (AI_CANDLE_FAR_PUNCHING, 48, AI_CANDLE_FAR_SLEEPING)
 {
     Candles::unpush_far ();
 }
@@ -312,7 +355,7 @@ FSM_TRANS (AI_CANDLE_NEAR_SLEEPING, ai_candle_near_punch, AI_CANDLE_NEAR_PUNCHIN
     Candles::push_near ();
 }
 
-FSM_TRANS_TIMEOUT (AI_CANDLE_NEAR_PUNCHING, 25, AI_CANDLE_NEAR_SLEEPING) //TODO timeout value
+FSM_TRANS_TIMEOUT (AI_CANDLE_NEAR_PUNCHING, 37, AI_CANDLE_NEAR_SLEEPING)
 {
     Candles::unpush_near ();
 }

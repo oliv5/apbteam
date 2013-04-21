@@ -320,17 +320,99 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
         break;
     case c ('b', 2):
         // Candles arm manipulation.
-        // - 1B: manipulate arm (0) or punchers (1)
-        // - 1B: action:
-        //       * deploy arm (0)
-        //       * undeploy arm (1)
-        //       * candle value
+        //   - 00: arm events
+        //      - 00: deploy arm
+        //      - 01: undeploy arm
+        //   - 01: near
+        //      - 00: push
+        //      - 01: unpush
+        //   - 02: far
+        //      - 00: push
+        //      - 01: unpush
+        //   - 03: deploying
+        //      - 00: deploy
+        //      - 01: undeploy 1
+        //      - 02: undeploy 2
+        //   - 04: flamby
+        //      - 00: arm
+        //      - 01: far puncher
+        //   - 05: arm
+        //      - 00: out
+        //      - 01: in
+        //   - 06: crampe
+        //      - 00: arm
+        //      - 01: far
+        //   - 07: test undeploy
+        //      - bb: sleep 1
+        //      - bb: sleep 2
+        //   - 08: test sleep
+        //      - 01: near
+        //          - bb: sleep
+        //      - 02: far
+        //          - bb: sleep
         if (args[0] == 0 && args[1] == 0)
             FSM_HANDLE (AI, ai_candle_deploy);
         else if (args[0] == 0 && args[1] == 1)
             FSM_HANDLE (AI, ai_candle_undeploy);
-        else
-            candles.blow (args[1]);
+        else if (args[0] == 1 && args[1] == 0)
+            Candles::push_near ();
+        else if (args[0] == 1 && args[1] == 1)
+            Candles::unpush_near ();
+        else if (args[0] == 2 && args[1] == 0)
+            Candles::push_far ();
+        else if (args[0] == 2 && args[1] == 1)
+            Candles::unpush_far ();
+        else if (args[0] == 3 && args[1] == 0)
+            Candles::deploy_arm ();
+        else if (args[0] == 3 && args[1] == 1)
+            Candles::undeploy_arm_1 ();
+        else if (args[0] == 3 && args[1] == 2)
+            Candles::undeploy_arm_2 ();
+        else if (args[0] == 4 && args[1] == 0)
+            Candles::flamby_arm ();
+        else if (args[0] == 4 && args[1] == 1)
+            Candles::flamby_far ();
+        else if (args[0] == 5 && args[1] == 0)
+            Candles::arm_out ();
+        else if (args[0] == 5 && args[1] == 1)
+            Candles::arm_back ();
+        else if (args[0] == 6 && args[1] == 0)
+            Candles::crampe_arm ();
+        else if (args[0] == 6 && args[1] == 1)
+            Candles::crampe_far ();
+
+         break;
+    case c ('b', 3):
+        if (args[0] == 7)
+        {
+            int a = 0;
+            Candles::arm_back ();
+            while (a++ != args[1])
+                robot->hardware.wait ();
+            Candles::crampe_far ();
+            a = 0;
+            while (a++ != args[2])
+                robot->hardware.wait ();
+            Candles::flamby_far ();
+        }
+        if (args[0] == 8)
+        {
+            int a = 0;
+            if (args[1] == 1)
+            {
+                Candles::push_near ();
+                while (a++ != args[2])
+                    robot->hardware.wait ();
+                Candles::unpush_near ();
+            }
+            if (args[1] == 2)
+            {
+                Candles::push_far ();
+                while (a++ != args[2])
+                    robot->hardware.wait ();
+                Candles::unpush_far ();
+            }
+        }
         break;
     default:
         proto.send ('?');
