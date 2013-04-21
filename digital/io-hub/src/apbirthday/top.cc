@@ -224,6 +224,13 @@ top_fsm_gen_event ()
     return false;
 }
 
+void
+top_demo_follow (int dir_sign)
+{
+    top.candles.dir_sign = dir_sign;
+    ANGFSM_HANDLE (AI, top_demo_follow);
+}
+
 ANGFSM_INIT
 
 ANGFSM_STATES (
@@ -253,7 +260,9 @@ ANGFSM_STATES (
             // Demo mode: push the wall near the cake.
             TOP_DEMO_CANDLES_PUSH_WALL,
             // Demo mode: move away from the wall.
-            TOP_DEMO_CANDLES_MOVE_AWAY)
+            TOP_DEMO_CANDLES_MOVE_AWAY,
+            // Demo mode: follow the cake (or anything else actually).
+            TOP_DEMO_FOLLOW)
 
 ANGFSM_EVENTS (
             // Cake following finished (end point reached).
@@ -261,7 +270,9 @@ ANGFSM_EVENTS (
             // Problem with cake following.
             top_follow_blocked,
             // Start candle demo.
-            top_demo_candles)
+            top_demo_candles,
+            // Start follow the cake demo.
+            top_demo_follow)
 
 ANGFSM_START_WITH (TOP_START)
 
@@ -426,5 +437,16 @@ FSM_TRANS (TOP_INIT, top_demo_candles, TOP_CANDLES_GOTO_NORMAL)
 {
     robot->move.start (pg_cake_pos, Asserv::BACKWARD, pg_cake_radius
                        + pg_cake_distance + BOT_SIZE_SIDE);
+}
+
+FSM_TRANS (TOP_START, top_demo_follow, TOP_DEMO_FOLLOW)
+{
+    robot->asserv.follow (top.candles.dir_sign == 1
+                          ? Asserv::FORWARD : Asserv::BACKWARD);
+}
+
+FSM_TRANS (TOP_DEMO_FOLLOW, top_follow_finished, TOP_DEMO_FOLLOW)
+{
+    // Transition needed for top_update.
 }
 

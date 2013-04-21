@@ -43,4 +43,8 @@ top_update ();
 bool
 top_fsm_gen_event ();
 
+/// Lauch follow the cake demo mode.
+void
+top_demo_follow (int dir_sign);
+
 #endif // top_hh
