@@ -176,8 +176,13 @@ top_update ()
         // Update consign.
         int cons;
         const int k = 200;
+#ifdef TARGET_host
         const int front_offset = 0x07fb;
         const int back_offset = 0x09af;
+#else
+        const int front_offset = 0x0762;
+        const int back_offset = 0x08b3;
+#endif
         if (top.candles.dir_sign == 1)
             cons = - robot->hardware.adc_cake_front.read () + front_offset;
         else
