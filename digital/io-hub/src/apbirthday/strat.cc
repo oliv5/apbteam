@@ -108,12 +108,12 @@ Strat::decision_candles (CandlesDecision &decision, uint16_t robot_angle)
         if (score_forward > score_backward)
         {
             decision.dir_sign = 1;
-            decision.end_angle = G_ANGLE_UF016_DEG (-180. / 12);
+            decision.end_angle = G_ANGLE_UF016_DEG (-20);
         }
         else
         {
             decision.dir_sign = -1;
-            decision.end_angle = G_ANGLE_UF016_DEG (180 + 180. / 12);
+            decision.end_angle = G_ANGLE_UF016_DEG (180 + 20);
         }
         return true;
     }
