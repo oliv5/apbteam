@@ -36,6 +36,8 @@ class Move
         LINEAR,
         ANGULAR,
     };
+    /// Distance considered too small to move.
+    static const int eps = 15;
   public:
     /// Go to a position.
     void start (const Position &position,

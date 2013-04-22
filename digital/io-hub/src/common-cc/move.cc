@@ -147,16 +147,22 @@ Move::go_or_rotate (const vect_t &dst, uint16_t angle, bool with_angle,
     step_angle_ = angle;
     step_with_angle_ = with_angle;
     step_direction_consign_ = direction_consign;
-    // Compute angle to destination.
+    // Compute angle to destination, if destination is really near, angle is
+    // almost meaningless.
     vect_t v = dst; vect_sub (&v, &robot_position.v);
-    uint16_t dst_angle = std::atan2 (v.y, v.x) * ((1l << 16) / (2 * M_PI));
-    if (direction_consign & Asserv::BACKWARD)
-        dst_angle += 0x8000;
-    int16_t diff_angle = dst_angle - robot_angle;
-    if ((direction_consign & Asserv::REVERT_OK)
-        && (diff_angle > 0x4000 || diff_angle < -0x4000))
-        dst_angle += 0x8000;
-    int16_t diff = dst_angle - robot_angle;
+    uint16_t dst_angle = 0;
+    int16_t diff = 0;
+    if (vect_dot_product (&v, &v) > eps * eps)
+    {
+        dst_angle = std::atan2 (v.y, v.x) * ((1l << 16) / (2 * M_PI));
+        if (direction_consign & Asserv::BACKWARD)
+            dst_angle += 0x8000;
+        int16_t diff_angle = dst_angle - robot_angle;
+        if ((direction_consign & Asserv::REVERT_OK)
+            && (diff_angle > 0x4000 || diff_angle < -0x4000))
+            dst_angle += 0x8000;
+        diff = dst_angle - robot_angle;
+    }
     // Move or rotate.
     if (std::abs (diff) < 0x1000)
     {
