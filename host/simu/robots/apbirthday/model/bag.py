@@ -77,7 +77,7 @@ class Bag:
                 PneumaticCylinder (
                     link_bag.cherry_plate_up,
                     link_bag.cherry_plate_down,
-                    scheduler, 0., 1., 2., 2., 1.),
+                    scheduler, 0., 1., 2.5, 2.5, 1.),
                 PneumaticCylinder (None,
                     link_bag.cherry_plate_clamp,
                     scheduler, 0., 1., 10., 10., 0.),
