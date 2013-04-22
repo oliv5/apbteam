@@ -376,7 +376,7 @@ proto_callback (uint8_t cmd, uint8_t size, uint8_t *args)
 	speed_control_pos_offset (&cs_main.speed_alpha,
 				  v8_to_v32 (args[4], args[5], args[6],
 					     args[7]));
-	control_state_set_mode (&cs_main.state, CS_MODE_SPEED_CONTROL, 0);
+	traj_speed_start ();
 	break;
       case c ('l', 5):
 	/* Set linear speed controlled position consign.
