@@ -273,6 +273,18 @@ class Proto:
 	self.proto.send ('y', 'BhB', i, pos, self.aseq[i])
         self.wait (self.finished, auto = True)
 
+    def move_distance (self, d):
+        """Move by a specified distance."""
+        self.mseq += 1
+        self.proto.send ('l', 'lB', self._dist (d), self.mseq)
+        self.wait (self.finished, auto = True)
+
+    def move_angle (self, a):
+        """Move by a specified angle."""
+        self.mseq += 1
+        self.proto.send ('a', 'lB', self._angle_f824 (a), self.mseq)
+        self.wait (self.finished, auto = True)
+
     def ftw (self, backward = True):
         """Go to the wall."""
         self.mseq += 1
