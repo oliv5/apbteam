@@ -231,6 +231,8 @@ void APS_DataConf(APS_DataConf_t* confInfo)
 		
 		if (MAX_RETRIES_BEFORE_REJOIN == retryCounter)
 		{
+			uprintf("!!! Too much failed transfert. You are now disconnected from the network %d\r\n",retryCounter);
+			retryCounter = 0;
 			network_leave();
 			network_set_transmission_state(APP_DATA_TRANSMISSION_READY_STATE);
 			network_set_state(APP_NETWORK_JOIN_REQUEST);
@@ -238,16 +240,16 @@ void APS_DataConf(APS_DataConf_t* confInfo)
 		else
 		{
 			/*  Data not delivered, resend.*/
+			network_set_transmission_state(APP_DATA_TRANSMISSION_SENDING_STATE);
 			network_start_transmission();
 		}
-		return;
 	}
 	else
 	{
 		network_set_transmission_state(APP_DATA_TRANSMISSION_READY_STATE);
 		network_specific_DataConfcallback();
+		retryCounter = 0;
 	}
-	retryCounter = 0;
 }
 
 
@@ -255,7 +257,7 @@ void APS_DataConf(APS_DataConf_t* confInfo)
 void network_start_transmission(void)
 {
 	/* Check the transmission state and send if ready */
-	if(network_get_transmission_state() == APP_DATA_TRANSMISSION_READY_STATE)
+	if((network_get_transmission_state() == APP_DATA_TRANSMISSION_READY_STATE)||(network_get_transmission_state() == APP_DATA_TRANSMISSION_SENDING_STATE))
 	{ 
 		network_set_transmission_state(APP_DATA_TRANSMISSION_BUSY_STATE);
 		APS_DataReq(&network_config);
