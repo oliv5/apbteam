@@ -28,6 +28,7 @@
 #include <usart.h>
 #include "configuration.h"
 #include "print.h"
+#include "uid.h"
 
 
 extern HAL_UsartDescriptor_t appUsartDescriptor;          			// USART descriptor (required by stack)
@@ -65,6 +66,10 @@ void uprintf(char *format, ...)
 {
 	va_list args;
 	va_start(args,format);
+	
+	/* UART security for coordinator */
+	if(get_uid() == 0)
+		return;
 	
 	if(end_offset+strlen(format)+sizeof(args) < APP_USART_TX_BUFFER_SIZE)
 	{
