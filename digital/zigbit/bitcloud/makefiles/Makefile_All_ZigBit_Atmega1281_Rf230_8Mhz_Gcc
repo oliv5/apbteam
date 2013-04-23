@@ -64,6 +64,8 @@ SRCS = \
   $(BITCLOUD_PATH)/Components/ConfigServer/src/configServer.c \
   $(BITCLOUD_COMMON_SOURCES)/print.c \
   $(BITCLOUD_COMMON_SOURCES)/network.c \
+  $(BITCLOUD_COMMON_SOURCES)/network_send_commands.c \
+  $(BITCLOUD_COMMON_SOURCES)/serial_ota.c \
   $(BITCLOUD_COMMON_SOURCES)/uid.c \
   $(BITCLOUD_COMMON_SOURCES)/reset.c \
   $(APB_AVR_PATH)/modules/twi/twi_hard.avr.c \

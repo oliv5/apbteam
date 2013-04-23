@@ -1,5 +1,5 @@
-/* print.h */
-/* Zigbit common functions for debug {{{
+/* serial_ota.c */
+/* Serial over ZB interface. {{{
  *
  * Copyright (C) 2012 Florent Duchon
  *
@@ -23,38 +23,30 @@
  *
  * }}} */
 
-#ifndef _PRINT_H
-#define _PRINT_H
+static uint8_t serial_over_zigbit_flag = 0;
+static uint16_t serial_over_zibgit_addr = 0;
 
-#include <stdio.h>
-#include <usart.h>
-#include "configuration.h"
-
-#define OPEN_USART            		HAL_OpenUsart
-#define CLOSE_USART           	HAL_CloseUsart
-#define WRITE_USART          		HAL_WriteUsart
-#define READ_USART           		HAL_ReadUsart
-#define USART_CHANNEL    		APP_USART_CHANNEL
-
-typedef enum
+/* This function stops the uart over zb mode */
+void serial_over_zigbit_stop(void)
 {
-	FREE,
-	BUSY
-} TUSART_bus_state;
+	serial_over_zigbit_flag = 0;
+}
 
-typedef enum
+/* This function starts the uart over zb mode */
+void serial_over_zigbit_start(uint16_t addr)
 {
-	EMPTY,
-	FILLED
-} TUSART_buffer_level;
+	serial_over_zibgit_addr = addr;
+	serial_over_zigbit_flag = 1;
+}
 
-/* TX USART Callback */
-void usartTXCallback(void);
+/* This function returns the serial ota mode */
+uint8_t get_serial_ota_mode(void)
+{
+	return serial_over_zigbit_flag;
+}
 
-/* This function sends data string via the USART interface */
-void uprintf(char *format, ...);
-
-/* This function send raw data over uart */
-void print_raw_data(uint8_t * buffer,uint8_t len);
-
-#endif
+/* This function returns the serial ota ED address */
+uint16_t get_serial_ota_EDaddr(void)
+{
+	return serial_over_zibgit_addr;
+}
