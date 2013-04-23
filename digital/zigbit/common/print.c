@@ -90,3 +90,9 @@ void uprintf(char *format, ...)
 	}
 	va_end(args);
 }
+
+/* This function send raw data over uart */
+void print_raw_data(uint8_t * buffer,uint8_t len)
+{
+	WRITE_USART(&appUsartDescriptor,buffer,len);
+}

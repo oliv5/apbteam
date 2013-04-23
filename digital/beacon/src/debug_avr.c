@@ -33,9 +33,13 @@
 #include "codewheel.h"
 #include "laser.h"
 #include "network_specific.h"
+#include "network_send_commands.h"
+#include "serial_ota.h"
 #include "motor.h"
 #include "position.h"
 #include "reset.h"
+#include "uid.h"
+#include "misc.h"
 
 HAL_UsartDescriptor_t appUsartDescriptor;          			// USART descriptor (required by stack)
 static HAL_AppTimer_t debugTimer;						// TIMER descripor used by the DEBUG task
@@ -68,13 +72,24 @@ uint8_t rxBuffer[40];
 	OPEN_USART(&appUsartDescriptor);
  }
 
+
 /* RX USART Callback */
 void usartRXCallback(uint16_t bytesToRead)
 {
+	uint16_t dest = 0;
 	
 	/* Read RX buffer from HAL */
 	READ_USART(&appUsartDescriptor,rxBuffer,bytesToRead);
 	
+	if(get_serial_ota_mode() == 1)
+	{
+		if(get_uid() == 0)
+			dest = get_serial_ota_EDaddr();
+		else
+			dest = 0;
+		network_send_buffer_over_zb(dest,rxBuffer,bytesToRead);
+	}
+	else
 	{
 		switch(rxBuffer[0])
 		{

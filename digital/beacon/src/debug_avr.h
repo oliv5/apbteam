@@ -43,4 +43,10 @@ void debug_start_stop_task(void);
 /* Debug task callback */
 void debug_task(void);
 
+/* This function stops the uart over zb mode */
+void serial_over_zigbit_stop(void);
+
+/* This function starts the uart over zb mode */
+void serial_over_zigbit_start(uint16_t addr);
+
 #endif
