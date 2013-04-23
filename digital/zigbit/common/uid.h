@@ -23,11 +23,32 @@
  *
  * }}} */
 
-#define APBTEAM_MAX_ZIGBIT_DEVICES 3
+#ifndef _UID_H
+#define _UID_H
 
+#define APBTEAM_MAX_ZIGBIT_DEVICES 16
+
+typedef enum 
+{
+	ZIGBIT_NOT_DEFINED,
+	ZIGBIT_BEACON,
+	ZIGBIT_DONGLE,
+} TFunctionnality;
+
+typedef struct 
+{
+	uint16_t uid;
+	DeviceType_t type;
+	TFunctionnality func;
+} zigbit_definition_s;
 
 /* This function returns the UID of the device according to the mapping of F5 F6 F7 F8*/
 uint16_t get_uid(void);
 
 /* This function returns the device type */
 DeviceType_t get_device_type(uint16_t uid);
+
+/* This function returns the device functionnaly */
+TFunctionnality get_device_functionnality(uint16_t uid);
+
+#endif
