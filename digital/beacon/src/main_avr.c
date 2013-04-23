@@ -38,6 +38,9 @@
 #include "servo.h"
 #include "led.h"
 #include "twi.h"
+#include "uid.h"
+#include "serial_ota.h"
+
 
 static uint8_t uid;
 
@@ -50,10 +53,11 @@ void APL_TaskHandler(void)
 			/* Init Led */
 			init_led();
 			
-			/* Init Serial Interface for debug */ 
-  			initSerialInterface();          
-			
+			/* get uid */
 			uid = get_uid();
+			
+			/* Init Serial Interface for debug */ 
+			initSerialInterface();          
 			
 			/* Init network */
 			network_init(uid);
