@@ -25,6 +25,7 @@
 
 #include "misc.h"
 #include "network_specific.h"
+#include "network_send_commands.h"
 
 static int8_t color = -1;
 
@@ -36,7 +37,7 @@ void jack_on_off(void)
 		jack = 1;
 	else
 		jack = 0;
-	network_send_data(NETWORK_JACK_STATE,jack);
+	network_send_jack_state(0xFFFF,jack);
 }
 
 
@@ -46,7 +47,7 @@ void jack_update_status(uint8_t value)
 	static uint8_t old_jack = 0;
 	if(value != old_jack)
 	{
-		network_send_data(NETWORK_JACK_STATE,value);
+		network_send_jack_state(0xFFFF,value);
 		old_jack = value;
 	}	
 }
