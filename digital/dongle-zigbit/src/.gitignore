@@ -1,0 +1,9 @@
+# Git ignore file for beacon directory
+*~
+*.o
+*.bin
+*.elf
+*.map
+*.hex
+*.srec
+*.pyc
