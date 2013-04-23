@@ -46,6 +46,9 @@ uint8_t usartTxBuffer[APP_USART_TX_BUFFER_SIZE];   	// USART Tx buffer
 uint8_t debug_network = 0;
 uint8_t debug_network_enable = 0;
 
+uint8_t rxBuffer[40];
+
+
 /* This function initializes the USART interface for debugging on avr */
  void initSerialInterface(void)
  {
@@ -68,84 +71,86 @@ uint8_t debug_network_enable = 0;
 /* RX USART Callback */
 void usartRXCallback(uint16_t bytesToRead)
 {
-	uint8_t rxBuffer;	
 	
 	/* Read RX buffer from HAL */
-	READ_USART(&appUsartDescriptor,&rxBuffer,bytesToRead);
+	READ_USART(&appUsartDescriptor,rxBuffer,bytesToRead);
 	
-	switch(rxBuffer)
 	{
-		case 'o':
-			/* Increase servo 1 angle */
-			uprintf("SERVO_1 = %d\r\n",servo_angle_increase(SERVO_1));
-			break;
-		case 'l':
-			/* Decrease servo 1 angle */
-			uprintf("SERVO_1 = %d\r\n",servo_angle_decrease(SERVO_1));
-			break;
-		case 'p':
-			/* Increase servo 2 angle */
-			uprintf("SERVO_2 = %d\r\n",servo_angle_increase(SERVO_2));
-			break;
-		case 'm':
-			/* Decrease servo 2 angle */
-			uprintf("SERVO_2 = %d\r\n",servo_angle_decrease(SERVO_2));
-			break;
-		case 'a':
-			uprintf("CodeWheel Value = %d\r\n",codewheel_get_value());
-			break;
-		case 'd':
-			debug_start_stop_task();
-			break;
-		case 'z':
-			codewheel_reset();
-			break;
-		case 'c':
-			calibration_start_stop_task();
-			break;
-		case 'q':
-			calibration_set_laser_flag(SET_SERVO_1);
-			break;
-		case 's':
-			calibration_set_laser_flag(SET_SERVO_2);
-			break;
-		case 'r':
-			reset_avr();
-			break;
-		case 't':
-			motor_start_stop_control();
-			break;
-		case 'j':
-			jack_on_off();
-			break;
-		case '0':
-			network_send_data(NETWORK_RESET,0x1);
-			break;
-		case 'w':
-			motor_set_target_speed(motor_get_target_speed()-1);
-			uprintf("target speed = %d\r\n",motor_get_target_speed());
-			break;
-		case 'x':
-			motor_set_target_speed(motor_get_target_speed()+1);
-			uprintf("target speed = %d\r\n",motor_get_target_speed());
-			break;
-		case 'f':
-			if(debug_network_enable == 1)
-			{
-				debug_network_enable = 0;
-				debug_network = 0;
-			}
-			else
-			{
-				debug_network_enable = 1;
-				debug_network = 1;
-			}
-			break;
-		/* Default */
-		default :
-			uprintf(" ?? Unknown command ??\r\n");
-			break;
+		switch(rxBuffer[0])
+		{
+			case 'o':
+				/* Increase servo 1 angle */
+				uprintf("SERVO_1 = %d\r\n",servo_angle_increase(SERVO_1));
+				break;
+			case 'l':
+				/* Decrease servo 1 angle */
+				uprintf("SERVO_1 = %d\r\n",servo_angle_decrease(SERVO_1));
+				break;
+			case 'p':
+				/* Increase servo 2 angle */
+				uprintf("SERVO_2 = %d\r\n",servo_angle_increase(SERVO_2));
+				break;
+			case 'm':
+				/* Decrease servo 2 angle */
+				uprintf("SERVO_2 = %d\r\n",servo_angle_decrease(SERVO_2));
+				break;
+			case 'a':
+				uprintf("CodeWheel Value = %d\r\n",codewheel_get_value());
+				break;
+			case 'd':
+				debug_start_stop_task();
+				break;
+			case 'z':
+				codewheel_reset();
+				break;
+			case 'c':
+				calibration_start_stop_task();
+				break;
+			case 'q':
+				calibration_set_laser_flag(SET_SERVO_1);
+				break;
+			case 's':
+				calibration_set_laser_flag(SET_SERVO_2);
+				break;
+			case 'r':
+				reset_avr();
+				break;
+			case 't':
+				motor_start_stop_control();
+				break;
+			case 'j':
+				jack_on_off();
+				break;
+			case '0':
+	// 			network_send_data(NETWORK_RESET,0x1);
+				break;
+			case 'w':
+				motor_set_target_speed(motor_get_target_speed()-1);
+				uprintf("target speed = %d\r\n",motor_get_target_speed());
+				break;
+			case 'x':
+				motor_set_target_speed(motor_get_target_speed()+1);
+				uprintf("target speed = %d\r\n",motor_get_target_speed());
+				break;
+			case 'f':
+				if(debug_network_enable == 1)
+				{
+					debug_network_enable = 0;
+					debug_network = 0;
+				}
+				else
+				{
+					debug_network_enable = 1;
+					debug_network = 1;
+				}
+				break;
+			/* Default */
+			default :
+				uprintf(" ?? Unknown command ??\r\n");
+				break;
+		}
 	}
+	
 }
 
 /* This function starts the debug task */
