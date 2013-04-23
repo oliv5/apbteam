@@ -102,7 +102,7 @@
 //  The parameter determines how many routers the device can have as children. Note
 // that the maximum number of end devices is equal to CS_MAX_CHILDREN_AMOUNT -
 // CS_MAX_CHILDREN_ROUTER_AMOUNT.
-#define CS_MAX_CHILDREN_ROUTER_AMOUNT 0
+#define CS_MAX_CHILDREN_ROUTER_AMOUNT 4
 
 // Network depht limits amount of hops that packet may travel in the network.
 // Actual maximum number of hops is network depth multiplied by 2.
