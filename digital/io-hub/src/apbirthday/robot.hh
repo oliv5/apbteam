@@ -44,6 +44,7 @@
 #include "candles.hh"
 #include "drinks.hh"
 #include "plate.hh"
+#include "cannon.hh"
 
 #include "ucoolib/base/proto/proto.hh"
 #include "ucoolib/dev/usdist/usdist.hh"
@@ -119,6 +120,8 @@ class Robot : public ucoo::Proto::Handler
     Drinks drinks;
     /// Plate.
     Plate plate;
+    /// Cannon
+    Cannon cannon;
   private:
     /// FSM debug mode.
     enum FsmDebugState
