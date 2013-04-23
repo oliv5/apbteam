@@ -28,9 +28,9 @@
 #include "print.h"
 #include "laser.h"
 #include "servo.h"
-#include "network.h"
 #include "codewheel.h"
 #include "calibration.h"
+#include "network_send_commands.h"
 
 laser_s laser;
 
@@ -158,7 +158,7 @@ ISR(TIMER3_COMPB_vect)
 #ifdef LOL_NUMBER_2
 			angle_to_send = (CODEWHEEL_CPR/4 - laser_get_angle_raw()) + (laser.angle_id << 9);
 #endif
-			network_send_data(NETWORK_ANGLE_RAW,angle_to_send);
+			network_send_angle(0,angle_to_send);
 			laser.angle_id++;
 		}
 	}
