@@ -39,12 +39,7 @@
 #include "codewheel.h"
 #include "servo.h"
 #include "reset.h"
-
-AppMessageBuffer_t zigbit_tx_buffer;
-
-extern APS_RegisterEndpointReq_t endpointParams;
-extern APS_DataReq_t network_config;
-
+#include "uid.h"
 
 /* Specific callback after data packet received */
 void network_specific_DataIndicationcallback(APS_DataInd_t* indData)
@@ -52,13 +47,14 @@ void network_specific_DataIndicationcallback(APS_DataInd_t* indData)
 	uint8_t beacon = 0;
 	uint16_t angle = 0;
 	uint16_t angle_id = 0;
-	AppMessage_t *appMessage = (AppMessage_t *) indData->asdu;
 	
+	AppMessage_t *FrameReceived = (AppMessage_t *) indData->asdu;
+
 	/* Data received indication */
-	switch(appMessage->data[NETWORK_MSG_TYPE_FIELD])
+	switch(FrameReceived->type)
 	{
 		case NETWORK_JACK_STATE:
-			if(appMessage->data[NETWORK_MSG_DATA_LSB_FIELD])
+			if(FrameReceived->data[NETWORK_MSG_DATA_MSB_FIELD])
 			{
 				motor_start();
 				servo_start_wave_task();
@@ -72,15 +68,13 @@ void network_specific_DataIndicationcallback(APS_DataInd_t* indData)
 		case NETWORK_OPPONENT_NUMBER:
 			break;
 		case NETWORK_ANGLE_RAW:
-			
 			/* Beacon address */
-			beacon = appMessage->data[NETWORK_MSG_ADDR_FIELD];
-			
+			beacon = indData->srcAddress.shortAddress;
 			/* Angle ID */
-			angle_id = appMessage->data[NETWORK_MSG_DATA_MSB_FIELD] >> 1;
+			angle_id = FrameReceived->data[NETWORK_MSG_DATA_MSB_FIELD] >> 1;
 			
 			/* Angle value */
-			angle = ((appMessage->data[NETWORK_MSG_DATA_MSB_FIELD]&0x01) << 8) + appMessage->data[NETWORK_MSG_DATA_LSB_FIELD];
+			angle = ((FrameReceived->data[NETWORK_MSG_DATA_MSB_FIELD]&0x01) << 8) + FrameReceived->data[NETWORK_MSG_DATA_LSB_FIELD];
 			
 			/* New angle is avaiiable, update position */
 			update_position(beacon,angle_id,codewheel_convert_angle_raw2radians(angle));
@@ -88,8 +82,11 @@ void network_specific_DataIndicationcallback(APS_DataInd_t* indData)
 		case NETWORK_RESET:
 			reset_avr();
 			break;
+		case NETWORK_UART_OVER_ZB:
+			print_raw_data(FrameReceived->data,indData->asduLength-1);
+			break;
 		default:
-			uprintf("Unknown data type received = %x\r\n",appMessage->data[NETWORK_MSG_TYPE_FIELD]);
+			uprintf("Unknown data type received = %x\r\n",FrameReceived->type);
 			break;
 	}
 }
@@ -100,40 +97,4 @@ void network_specific_DataConfcallback(void)
 }
 
 
-/* This function must be used to send data through zigbee network */
-void network_send_data(TMessage_type type, uint16_t data)
-{
-	
-	if(network_get_state() == APP_NETWORK_JOINED_STATE)
-	{
-		/* Configure the message structure */
-		network_config.dstAddrMode = APS_SHORT_ADDRESS;					// Short addressing mode
-		network_config.dstAddress.shortAddress = 0x00;						// Destination address	
-		network_config.profileId = APP_PROFILE_ID;						// Profile ID
-		network_config.dstEndpoint = APP_ENDPOINT;						// Desctination endpoint
-		network_config.clusterId = APP_CLUSTER_ID;						// Desctination cluster ID
-		network_config.srcEndpoint = APP_ENDPOINT;						// Source endpoint
-		network_config.asdu = (uint8_t*) &zigbit_tx_buffer.message;					// application message pointer
-		network_config.txOptions.acknowledgedTransmission = 0;				// Acknowledged transmission enabled
-		network_config.radius = 0;										// Use maximal possible radius
-		network_config.APS_DataConf = APS_DataConf;	
-		
-		/* Message type*/
-		zigbit_tx_buffer.message.data[NETWORK_MSG_TYPE_FIELD] = type;
-		
-		/* Source address */
-		zigbit_tx_buffer.message.data[NETWORK_MSG_ADDR_FIELD] = CS_NWK_ADDR;
-		
-		/* LSB Data */
-		zigbit_tx_buffer.message.data[NETWORK_MSG_DATA_LSB_FIELD] = data;
-		
-		/* MSB Data */
-		zigbit_tx_buffer.message.data[NETWORK_MSG_DATA_MSB_FIELD] = data >> 8;
-		
-		/* Bitcloud sending request */
-		network_set_transmission_state(APP_DATA_TRANSMISSION_WAIT_STATE);
-		network_config.asduLength = 4 + sizeof(zigbit_tx_buffer.message.messageId);		// actual application message length
-		
-		network_start_transmission();
-	}
-}
+

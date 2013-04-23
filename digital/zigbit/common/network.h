@@ -28,34 +28,35 @@
 
 #include <zdo.h>
 
+BEGIN_PACK
 typedef struct
 {
-	uint8_t messageId;                           		// message ID
+	uint8_t type;                           		// message ID
 	uint8_t data[APP_MAX_PACKET_SIZE];           // data
 } AppMessage_t;
+END_PACK
 
-
+BEGIN_PACK
 typedef struct
 {
 	uint8_t header[APS_ASDU_OFFSET];					// Auxiliary header (required by stack)
 	AppMessage_t message;                               				// Application message
 	uint8_t footer[APS_AFFIX_LENGTH - APS_ASDU_OFFSET]; 	// Auxiliary footer (required by stack)
 } AppMessageBuffer_t;
-
+END_PACK
 
 typedef enum
 {
 	NETWORK_JACK_STATE,
 	NETWORK_OPPONENT_NUMBER,
 	NETWORK_ANGLE_RAW,
-	NETWORK_RESET
+	NETWORK_RESET,
+	NETWORK_UART_OVER_ZB
 } TMessage_type;
 
 
 typedef enum
 {
-	NETWORK_MSG_TYPE_FIELD,
-	NETWORK_MSG_ADDR_FIELD,
 	NETWORK_MSG_DATA_MSB_FIELD,
 	NETWORK_MSG_DATA_LSB_FIELD
 } TMessage_field;

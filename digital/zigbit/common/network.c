@@ -30,12 +30,13 @@
 #include "configuration.h"
 #include "network.h"
 #include "network_specific.h"
+#include "serial_ota.h"
 #include "print.h"
 #include "led.h"
 #include "uid.h"
 
 /* Endpoint parameters */
-SimpleDescriptor_t simpleDescriptor = { APP_ENDPOINT, APP_PROFILE_ID, 1, 1, 0, 0 , NULL, 0, NULL };
+SimpleDescriptor_t simpleDescriptor = { 1, 1, 1, 1, 0, 0 , NULL, 0, NULL };
 APS_RegisterEndpointReq_t endpointParams;
 
 /* Network related variables */
@@ -60,16 +61,15 @@ void network_init(uint16_t uid)
 	if(deviceType == DEVICE_TYPE_COORDINATOR)
 	{
 		uprintf("I'm a Cooridinator\r\n");
-		bool rx_on_idle = true;
-		CS_WriteParameter(CS_RX_ON_WHEN_IDLE_ID, &rx_on_idle);
 	}
-	if(deviceType == DEVICE_TYPE_END_DEVICE)
+	if(deviceType == DEVICE_TYPE_ROUTER)
 	{
-		uprintf("I'm an End-Device\r\n");
-		bool rx_on_idle = false;
-		CS_WriteParameter(CS_RX_ON_WHEN_IDLE_ID, &rx_on_idle);		
+		uprintf("I'm a Router\r\n");
 	}
 	
+	bool rx_on_idle = true;
+	CS_WriteParameter(CS_RX_ON_WHEN_IDLE_ID, &rx_on_idle);
+
 	/*False = random ID */
 	/* True = static short address */
 	bool unique_addr = true;
@@ -167,9 +167,18 @@ void ZDO_MgmtNwkUpdateNotf(ZDO_MgmtNwkUpdateNotf_t *nwkParams)
 			uprintf("Child %d joined\r\n",nwkParams->childInfo.shortAddr);
 			uprintf("	> RSSI = %d dBm (-91 dBm to -7 dBm)\r\n",(int8_t)network_get_rssi(nwkParams->childInfo.shortAddr));
 			uprintf("	> LQI = %d (0 to 255)\r\n",(uint8_t)network_get_lqi(nwkParams->childInfo.shortAddr));
+			
+			/* if dongle_zigbit then aciivate uart over zb  */
+			if(get_device_functionnality(nwkParams->childInfo.shortAddr) == ZIGBIT_DONGLE)
+				serial_over_zigbit_start(nwkParams->childInfo.shortAddr);
+			
 			break;
 		case ZDO_CHILD_REMOVED_STATUS:
 			uprintf("Child %d quit\r\n",nwkParams->childInfo.shortAddr);
+			
+			/* if dongle_zigbit then deaciivate uart over zb  */
+			if(get_device_functionnality(nwkParams->childInfo.shortAddr) == ZIGBIT_DONGLE)
+				serial_over_zigbit_stop();
 			break;
 		default:
 			uprintf("Network status = 0x%x\r\n",nwkParams->status);
@@ -218,7 +227,7 @@ void APS_DataConf(APS_DataConf_t* confInfo)
 	if (APS_SUCCESS_STATUS != confInfo->status)
 	{
 		retryCounter++;
-// 		uprintf("!!! Last transfert was failed. Reset it (retry = %d)\r\n",retryCounter);
+		uprintf("!!! Last transfert was failed. Reset it (retry = %d)\r\n",retryCounter);
 		
 		if (MAX_RETRIES_BEFORE_REJOIN == retryCounter)
 		{
@@ -246,7 +255,7 @@ void APS_DataConf(APS_DataConf_t* confInfo)
 void network_start_transmission(void)
 {
 	/* Check the transmission state and send if ready */
-	if(network_get_transmission_state() != APP_DATA_TRANSMISSION_BUSY_STATE)
+	if(network_get_transmission_state() == APP_DATA_TRANSMISSION_READY_STATE)
 	{ 
 		network_set_transmission_state(APP_DATA_TRANSMISSION_BUSY_STATE);
 		APS_DataReq(&network_config);
@@ -259,7 +268,6 @@ void network_start_transmission(void)
 void network_set_transmission_state(AppDataTransmissionState_t state)
 {
 	appDataTransmissionState = state;
-	
 	/* Modify the LED in accordance with the transmission state */
 	if(state == APP_DATA_TRANSMISSION_BUSY_STATE)
 		led_on(NETWORK_ACTIVITY_LED);

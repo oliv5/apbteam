@@ -38,7 +38,4 @@ void network_specific_DataIndicationcallback(APS_DataInd_t* indData);
 /* Specific callback after data packet sent */
 void network_specific_DataConfcallback(void);
 
-/* This function must be used to send data through zigbee network */
-void network_send_data(TMessage_type type, uint16_t data);
-
 #endif
