@@ -38,7 +38,7 @@ void buttons_init(void)
 /* This function retuns the button state according to its number */
 TButton_state button_get_state(uint8_t number)
 {
-	TButton_state state;
+	TButton_state state = BUTTON_RELEASED;
 	
 	switch(number)
 	{
