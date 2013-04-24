@@ -25,22 +25,29 @@
 from utils.observable import Observable
 from simu.utils.trans_matrix import TransMatrix
 from simu.utils.vector import vector
+import random
+from math import pi
 
 class Cannon (Observable):
 
+    # TODO: update distance with real robot.
+    cannon_hit = (1000, 80)
+
     def __init__ (self, table, robot_position,
-            arm_cyl, clamp_cyl, contacts):
+            arm_cyl, clamp_cyl, contacts, pot):
         Observable.__init__ (self)
         self.table = table
         self.robot_position = robot_position
         self.arm_cyl = arm_cyl
         self.clamp_cyl = clamp_cyl
         self.contacts = contacts
+        self.pot = pot
         self.plate = None
         self.cherries = [ ]
         self.robot_position.register (self.__robot_position_notified)
         self.arm_cyl.register (self.__arm_notified)
         self.clamp_cyl.register (self.__arm_notified)
+        self.pot.register (self.__pot_notified)
 
     def __robot_position_notified (self):
         if self.robot_position.pos is None:
@@ -82,8 +89,24 @@ class Cannon (Observable):
         elif (self.plate is not None and self.plate.cherries and
                 self.arm_cyl.pos < .1):
             # Load cherries.
-            self.cherries = self.plate.cherries
+            self.cherries.extend (self.plate.cherries)
             self.plate.cherries = [ ]
+            self.__pot_notified ()
+        self.notify ()
+
+    def __pot_notified (self):
+        if self.cherries and self.pot.wiper[0] > 0.5:
+            m = TransMatrix ()
+            m.translate (self.robot_position.pos)
+            m.rotate (self.robot_position.angle)
+            hit = vector (*m.apply (self.cannon_hit))
+            for c in self.cherries:
+                c.pos = hit + vector.polar (random.uniform (-pi, pi),
+                        random.uniform (0, 50))
+                c.notify ()
+            self.table.cherries.cherries.extend (self.cherries)
+            self.table.cherries.notify ()
+            self.cherries = [ ]
         self.notify ()
 
     def __plate_drop_point (self):

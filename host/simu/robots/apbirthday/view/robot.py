@@ -27,6 +27,7 @@ from simu.view.table_eurobot2013 import PINK, colors
 
 COLOR_ROBOT = '#000000'
 COLOR_AXES = '#202040'
+COLOR_CANNON = '#808080'
 
 class Robot (simu.inter.drawable.Drawable):
 
@@ -69,6 +70,8 @@ class Robot (simu.inter.drawable.Drawable):
             # Draw robot body.
             self.draw_polygon ((102, 140), (102, -140), (-108, -140),
                     (-108, 70), (-58, 140), fill = COLOR_ROBOT)
+            self.draw_circle ((70, self.cannon_model.cannon_hit[1]), 20,
+                    fill = COLOR_CANNON)
             # Draw Robot axis.
             self.draw_line ((-50, 0), (50, 0), fill = COLOR_AXES,
                     arrow = 'last')
