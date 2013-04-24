@@ -61,6 +61,11 @@ class TestSimuControl (TestSimu):
         out_button ('Push near in/out', 'cake_push_near_in', 'cake_push_near_out')
         out_button ('Plate arm up/down', 'cherry_plate_up', 'cherry_plate_down')
         out_button ('Plate clamp', 'cherry_plate_clamp')
+        cannon_var = IntVar ()
+        def cannon_cmd ():
+            self.io.potentiometer (0, 256 if cannon_var.get () else 0)
+        Checkbutton (self.control_frame, text = 'Fire!', indicatoron = 0,
+                variable = cannon_var, command = cannon_cmd).pack ()
         self.backward_var = IntVar ()
         self.backward_button = Checkbutton (self.control_frame,
                 text = 'Backward', variable = self.backward_var)

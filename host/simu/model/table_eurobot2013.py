@@ -22,12 +22,19 @@
 #
 # }}}
 """Table model for Eurobot 2013."""
+from utils.observable import Observable
 import simu.model.table
 from simu.model.round_obstacle import RoundObstacle
 from simu.model.rectangular_obstacle import RectangularObstacle
 from math import pi
 import math
 import random
+
+class Cherries (Observable):
+
+    def __init__ (self):
+        Observable.__init__ (self)
+        self.cherries = [ ]
 
 class Table (simu.model.table.Table):
 
@@ -94,6 +101,7 @@ class Table (simu.model.table.Table):
         for py in (250, 600, 1000, 1400, 1750):
             add_plate ((200, py), False)
             add_plate ((3000 - 200, py), True)
+        self.cherries = Cherries ()
         # Gifts.
         self.gifts = [ ]
         def add_gift (pos, color):

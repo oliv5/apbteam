@@ -1,5 +1,3 @@
-#ifndef potentiometer_hh
-#define potentiometer_hh
 // io-hub - Modular Input/Output. {{{
 //
 // Copyright (C) 2013 Nicolas Schodet
@@ -23,20 +21,31 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 //
 // }}}
-#include "i2c_queue.hh"
+#include "potentiometer.stm32.hh"
 
-/// I2C potentiometer, MCP4661.
-class Potentiometer : public I2cQueue::Slave
+Potentiometer::Potentiometer (I2cQueue &queue, int a2a1a0)
+    : I2cQueue::Slave (queue, 0x50 | (a2a1a0 << 1), 0)
 {
-  public:
-    /// Constructor with address variable part.
-    Potentiometer (I2cQueue &queue, int a2a1a0);
-    /// See I2cQueue::Slave::recv_status.
-    void recv_status (const uint8_t *status);
-    /// Send a low level command.
-    void send_command (int mem_addr, int data);
-    /// Set wiper to specified level.
-    void set_wiper (int index, int data, bool eeprom = false);
-};
+}
 
-#endif // potentiometer_hh
+void
+Potentiometer::recv_status (const uint8_t *status)
+{
+}
+
+void
+Potentiometer::send_command (int mem_addr, int data)
+{
+    uint8_t buf[] = {
+        (uint8_t) ((mem_addr << 4) | ((data >> 8) & 1)),
+        (uint8_t) (data & 0xff),
+    };
+    send (buf, sizeof (buf), I2cQueue::RAW);
+}
+
+void
+Potentiometer::set_wiper (int index, int data, bool eeprom)
+{
+    send_command (index + (eeprom ? 2 : 0), data);
+}
+

@@ -187,6 +187,24 @@ class Mex:
                     m.push ('b', c)
                 self.node.send (m)
 
+    class Potentiometer (Observable):
+        """I2C Potentiometer.
+
+        - wiper: list of wiper values (0 ... 1).
+
+        """
+
+        def __init__ (self, node, instance):
+            Observable.__init__ (self)
+            self.wiper = [ 0, 0 ]
+            node.register (instance + ':potentiometer', self.__handle)
+
+        def __handle (self, msg):
+            index, value = msg.pop ('BH')
+            value = value / 256.
+            self.wiper[index] = value
+            self.notify ()
+
     class Path (Observable):
         """Path finding algorithm report.
 
@@ -256,7 +274,7 @@ class Mex:
 
     def __init__ (self, node, instance = 'io-hub0',
             pwm_nb = 0, contact_nb = 0, output_nb = 0, gpios = False,
-            adc_channels = False, codebar = False):
+            adc_channels = False, codebar = False, potentiometer = False):
         self.adc = tuple (self.ADC (node, instance, i) for i in range (0, ADC_NB))
         if pwm_nb:
             self.pwm = tuple (self.PWM () for i in range (0, pwm_nb))
@@ -278,6 +296,8 @@ class Mex:
             self.__codebar_pack = self.Codebar.Pack (node, instance)
             self.codebar = tuple (self.Codebar (self.__codebar_pack, i)
                     for i in (0, 1))
+        if potentiometer:
+            self.potentiometer = self.Potentiometer (node, instance)
         self.path = self.Path (node, instance)
         self.pos_report = self.PosReport (node, instance)
         self.debug_draw = self.DebugDraw (node, instance)

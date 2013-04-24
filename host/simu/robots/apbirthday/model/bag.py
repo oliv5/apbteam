@@ -82,6 +82,7 @@ class Bag:
                     link_bag.cherry_plate_clamp,
                     scheduler, 0., 1., 10., 10., 0.),
                 (Switch (link_bag.cherry_plate_left_contact),
-                    Switch (link_bag.cherry_plate_right_contact)))
+                    Switch (link_bag.cherry_plate_right_contact)),
+                link_bag.io_hub.potentiometer)
         self.pos_report = link_bag.io_hub.pos_report
 

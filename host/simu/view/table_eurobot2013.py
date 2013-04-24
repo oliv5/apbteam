@@ -90,6 +90,19 @@ class Plate (Drawable):
                     self.draw_circle (c.pos, c.radius, fill = colors[c.color])
             Drawable.draw (self)
 
+class Cherries (Drawable):
+
+    def __init__ (self, onto, model):
+        Drawable.__init__ (self, onto)
+        self.model = model
+        self.model.register (self.update)
+
+    def draw (self):
+        self.reset ()
+        for c in self.model.cherries:
+            if c.pos:
+                self.draw_circle (c.pos, c.radius, fill = colors[c.color])
+
 class Gift (Drawable):
 
     def __init__ (self, onto, model):
@@ -122,6 +135,7 @@ class Table (Drawable):
             Glass (self, e)
         for e in self.model.plates:
             Plate (self, e)
+        Cherries (self, self.model.cherries)
         for e in self.model.gifts:
             Gift (self, e)
 

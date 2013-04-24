@@ -21,31 +21,23 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 //
 // }}}
-#include "potentiometer.hh"
+#include "potentiometer.host.hh"
 
-Potentiometer::Potentiometer (I2cQueue &queue, int a2a1a0)
-    : I2cQueue::Slave (queue, 0x50 | (a2a1a0 << 1), 0)
+PotentiometerHost::PotentiometerHost (ucoo::Host &host)
+    : node_ (host.get_node ())
 {
+    std::string instance (host.get_instance ());
+    mtype_ = node_.reserve (instance + ":potentiometer");
 }
 
 void
-Potentiometer::recv_status (const uint8_t *status)
+PotentiometerHost::set_wiper (int index, int data, bool eeprom)
 {
-}
-
-void
-Potentiometer::send_command (int mem_addr, int data)
-{
-    uint8_t buf[] = {
-        (uint8_t) ((mem_addr << 4) | ((data >> 8) & 1)),
-        (uint8_t) (data & 0xff),
-    };
-    send (buf, sizeof (buf), I2cQueue::RAW);
-}
-
-void
-Potentiometer::set_wiper (int index, int data, bool eeprom)
-{
-    send_command (index + (eeprom ? 2 : 0), data);
+    if (!eeprom)
+    {
+        ucoo::mex::Msg msg (mtype_);
+        msg.push ("BH") << index << data;
+        node_.send (msg);
+    }
 }
 

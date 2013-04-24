@@ -34,7 +34,7 @@ class Bag:
         self.asserv = asserv.mex.Mex (node, '%s:asserv0' % instance,
                 aux_nb = 0)
         self.io_hub = io_hub.mex.Mex (node, '%s:io0' % instance, gpios = True,
-                adc_channels = True)
+                adc_channels = True, potentiometer = True)
         for gpio in io_hub.apbirthday.gpios:
             setattr (self, gpio, MexGpio (self.io_hub.gpios, gpio))
         adc_channels = self.io_hub.adc_channels
