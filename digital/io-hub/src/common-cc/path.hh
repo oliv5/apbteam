@@ -73,30 +73,32 @@ class Path
 
   private:
     /** Add an obstacle on the field */
-    void add_obstacle(const vect_t &c, uint16_t r, const int nodes);
+    void add_obstacle(const vect_t &c, uint16_t r, const int nodes, const int nlayers, const uint16_t clearance);
 
     /** Number of possible obstacles. */
     static const int PATH_OBSTACLES_NB = (4+1/*cake*/);
     /** Number of points per standard obstacle. */
-    static const int PATH_OBSTACLES_NAVPOINTS_NB = 8;
+    static const int PATH_OBSTACLES_NAVPOINTS_NB = 12;
 #ifdef playground_2013_hh
     /** Number of points for the cake */
     static const int PATH_CAKE_NAVPOINTS_NB = 14;
 #endif
     /** Number of reserved points for the 2 endpoints  */
     static const int PATH_RESERVED_NAVPOINTS_NB = 2;
+    /** Number of navigation points layers for the cake. */
+    static const int PATH_CAKE_NAVPOINTS_LAYERS = 1;
     /** Number of navigation points layers for each obstacle. */
-    static const int PATH_NAVPOINTS_LAYERS = 2;
+    static const int PATH_OBSTACLES_NAVPOINTS_LAYERS = 2;
     /** Number of navigation points. */
     static const int PATH_NAVPOINTS_NB = (PATH_RESERVED_NAVPOINTS_NB +
 #ifdef playground_2013_hh
-                                           PATH_NAVPOINTS_LAYERS * (PATH_CAKE_NAVPOINTS_NB - PATH_OBSTACLES_NAVPOINTS_NB) +
+                                           PATH_CAKE_NAVPOINTS_LAYERS * (PATH_CAKE_NAVPOINTS_NB - PATH_OBSTACLES_NAVPOINTS_NB) +
 #endif
-                                           PATH_NAVPOINTS_LAYERS * (PATH_OBSTACLES_NB * PATH_OBSTACLES_NAVPOINTS_NB));
+                                           PATH_OBSTACLES_NAVPOINTS_LAYERS * (PATH_OBSTACLES_NB * PATH_OBSTACLES_NAVPOINTS_NB));
     /** Navigation points weight precision (2^-n). */
     static const int PATH_WEIGHT_PRECISION = 4;
     /** Navigation points weight step (2^-n). */
-    static const int PATH_WEIGHT_STEP = 5;
+    static const int PATH_WEIGHT_STEP = 6;
 
     /** Borders, any point outside borders is eliminated. */
     const uint16_t border_xmin, border_ymin, border_xmax, border_ymax;
