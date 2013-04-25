@@ -49,6 +49,9 @@ extern "C" {
 /** Check for vectors equality */
 #define PATH_VECT_EQUAL(v1, v2)    ((v1)->x==(v2)->x && (v1)->y==(v2)->y)
 
+/** Check if point is inside a circle */
+#define PATH_IN_CIRCLE(pOINT, cENTER, rADIUS) (distance_point_point((pOINT), (cENTER)) <= (rADIUS))
+
 /** Static nodes index for the endpoints */
 enum {
     PATH_NAVPOINT_SRC_IDX = 0,
@@ -83,20 +86,20 @@ void Path::reset()
 
 #ifdef playground_2013_hh
     /* Declare the cake as an obstacle */
-    add_obstacle(pg_cake_pos, pg_cake_radius, PATH_CAKE_NAVPOINTS_NB);
+    add_obstacle(pg_cake_pos, pg_cake_radius, PATH_CAKE_NAVPOINTS_NB, PATH_CAKE_NAVPOINTS_LAYERS, 0 /* no extra clearance radius */);
 #endif
 }
 
-void Path::add_obstacle(const vect_t &c, uint16_t r, const int nodes)
+void Path::add_obstacle(const vect_t &c, uint16_t r, const int nodes, const int nlayers, const uint16_t clearance)
 {
     uint32_t rot_a, rot_b, nr;
     uint32_t x, y, nx;
     int npt, layer;
 
-    DPRINTF("Add obstacle c=(%u;%u) r=%u num=%u\n",c.x, c.y, r, nodes);
+    DPRINTF("Add obstacle c=(%u;%u) r=%u nodes=%u layers=%u\n",c.x, c.y, r, nodes, nlayers);
 
     /* Enlarge the obstacle radius by the robot size and clearance area width */
-    r += BOT_SIZE_RADIUS/*BOT_SIZE_SIDE*/ + Obstacles::clearance_mm;
+    r += BOT_SIZE_RADIUS /*BOT_SIZE_SIDE*/ + clearance;
 
     /* Store obstacle */
     //assert(obstacles_nb < PATH_OBSTACLES_NB);
@@ -117,8 +120,8 @@ void Path::add_obstacle(const vect_t &c, uint16_t r, const int nodes)
     y = 0;
 
     /* Add a number of sets of navigation points with different weights */
-    //for(weight=PATH_NAVPOINTS_LAYERS; weight>0; weight--)
-    for(layer=PATH_NAVPOINTS_LAYERS-1; layer>=0; layer--)
+    //for(weight=PATH_OBSTACLES_NAVPOINTS_LAYERS; weight>0; weight--)
+    for(layer=nlayers-1; layer>=0; layer--)
     {
         /* Compute obstacle points positions around a circle */
         for (npt=0; npt<nodes; npt++)
@@ -188,7 +191,9 @@ int Path::find_neighbors(int cur_point, struct astar_neighbor_t *neighbors)
                         continue;
                     }
                     /* Collision while trying to escape the source point */
-                    else if (i==PATH_NAVPOINT_SRC_IDX)
+                    /* if and only if the source point is in this obstacle */
+                    else if (i==PATH_NAVPOINT_SRC_IDX &&
+                             PATH_IN_CIRCLE(&navpoints[i], &obstacles[j].c, obstacles[j].r))
                     {
                         /* Allow this navigation point with an extra cost */
                         weight *= escape_factor;
@@ -268,7 +273,7 @@ void Path::compute(weight_t escape)
 
 void Path::obstacle(int index, const vect_t &c, uint16_t r, int f)
 {
-    add_obstacle(c, r, PATH_OBSTACLES_NAVPOINTS_NB);
+    add_obstacle(c, r, PATH_OBSTACLES_NAVPOINTS_NB, PATH_OBSTACLES_NAVPOINTS_LAYERS, Obstacles::clearance_mm + 100/* extra clearance radius */);
 }
 
 void Path::endpoints(const vect_t &src, const vect_t &dst, const bool force_move)
