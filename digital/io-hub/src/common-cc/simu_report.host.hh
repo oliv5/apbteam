@@ -34,9 +34,12 @@ class SimuReport
     SimuReport (ucoo::Host &host);
     /// Report positions.
     void pos (vect_t *pos, int pos_nb, uint8_t id);
+    /// Report path.
+    void path (const vect_t *pos, int pos_nb);
   private:
     ucoo::mex::Node &node_;
     ucoo::mex::mtype_t pos_mtype_;
+    ucoo::mex::mtype_t path_mtype_;
 };
 
 #endif // simu_report_host_hh

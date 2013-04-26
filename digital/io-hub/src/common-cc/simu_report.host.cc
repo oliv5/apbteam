@@ -28,6 +28,7 @@ SimuReport::SimuReport (ucoo::Host &host)
 {
     std::string instance (host.get_instance ());
     pos_mtype_ = node_.reserve (instance + ":pos-report");
+    path_mtype_ = node_.reserve (instance + ":path");
 }
 
 void
@@ -35,6 +36,15 @@ SimuReport::pos (vect_t *pos, int pos_nb, uint8_t id)
 {
     ucoo::mex::Msg msg (pos_mtype_);
     msg.push ("B") << id;
+    for (; pos_nb; pos++, pos_nb--)
+        msg.push ("hh") << pos->x << pos->y;
+    node_.send (msg);
+}
+
+void
+SimuReport::path (const vect_t *pos, int pos_nb)
+{
+    ucoo::mex::Msg msg (path_mtype_);
     for (; pos_nb; pos++, pos_nb--)
         msg.push ("hh") << pos->x << pos->y;
     node_.send (msg);
