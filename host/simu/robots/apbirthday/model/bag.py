@@ -86,5 +86,6 @@ class Bag:
                 (Switch (link_bag.cherry_plate_left_contact),
                     Switch (link_bag.cherry_plate_right_contact)),
                 link_bag.io_hub.potentiometer)
+        self.path = link_bag.io_hub.path
         self.pos_report = link_bag.io_hub.pos_report
 
