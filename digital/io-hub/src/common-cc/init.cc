@@ -120,13 +120,15 @@ FSM_TRANS_TIMEOUT (INIT_WAITING_AFTER_FACING_SECOND_WALL, 250 / 2,
     robot->asserv.push_wall (INIT_SECOND_WALL_PUSH);
 }
 
+#if !INIT_START_SECOND_WALL
+
 FSM_TRANS (INIT_FINDING_SECOND_WALL, robot_move_success,
 	   INIT_GOING_AWAY_SECOND_WALL)
 {
     robot->asserv.move_distance (INIT_SECOND_WALL_AWAY);
 }
 
-#ifdef INIT_START_POSITION_ANGLE
+# ifdef INIT_START_POSITION_ANGLE
 FSM_TRANS (INIT_GOING_AWAY_SECOND_WALL, robot_move_success,
 	   INIT_FACING_START_POSITION)
 {
@@ -139,7 +141,7 @@ FSM_TRANS (INIT_FACING_START_POSITION, robot_move_success,
     robot->asserv.goto_xya (INIT_START_POSITION);
 }
 
-#else
+# else
 
 FSM_TRANS (INIT_GOING_AWAY_SECOND_WALL, robot_move_success,
 	   INIT_GOING_TO_START_POSITION)
@@ -147,7 +149,7 @@ FSM_TRANS (INIT_GOING_AWAY_SECOND_WALL, robot_move_success,
     robot->asserv.goto_xya (INIT_START_POSITION);
 }
 
-#endif
+# endif
 
 FSM_TRANS (INIT_GOING_TO_START_POSITION, robot_move_success,
 	   INIT_WAITING_SECOND_JACK_OUT)
@@ -162,3 +164,35 @@ FSM_TRANS (INIT_WAITING_SECOND_JACK_OUT, jack_removed, INIT_FINISHED)
     robot->fsm_queue.post (FSM_EVENT (init_start_round));
 }
 
+#else // INIT_START_SECOND_WALL
+
+FSM_TRANS (INIT_FINDING_SECOND_WALL, robot_move_success,
+	   INIT_WAITING_SECOND_JACK_OUT)
+{
+    robot->asserv.stop ();
+    robot->fsm_queue.post (FSM_EVENT (init_done));
+}
+
+FSM_TRANS (INIT_WAITING_SECOND_JACK_OUT, jack_removed,
+           INIT_GOING_AWAY_SECOND_WALL)
+{
+    robot->chrono.start ();
+    robot->asserv.move_distance (INIT_SECOND_WALL_AWAY);
+}
+
+FSM_TRANS (INIT_GOING_AWAY_SECOND_WALL, robot_move_success,
+	   INIT_FINISHED)
+{
+    robot->asserv.set_speed (BOT_SPEED_NORMAL);
+    robot->fsm_queue.post (FSM_EVENT (init_start_round));
+}
+
+FSM_TRANS (INIT_GOING_AWAY_SECOND_WALL, robot_move_failure,
+	   INIT_FINISHED)
+{
+    // Well... try to continue.
+    robot->asserv.set_speed (BOT_SPEED_NORMAL);
+    robot->fsm_queue.post (FSM_EVENT (init_start_round));
+}
+
+#endif // INIT_START_SECOND_WALL

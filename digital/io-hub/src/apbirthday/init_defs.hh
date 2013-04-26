@@ -29,19 +29,15 @@
     Asserv::FORWARD, pg_x (650), pg_y (pg_length - BOT_FRONT_CONTACT_DIST), \
     pg_a_deg (90 + BOT_BACK_CONTACT_ANGLE_ERROR_DEG)
 /// Parameters to go away from the first wall.
-#define INIT_FIRST_WALL_AWAY (-(400 - BOT_FRONT_CONTACT_DIST))
+#define INIT_FIRST_WALL_AWAY (-(1000 - BOT_FRONT_CONTACT_DIST))
 /// Parameter to face the second wall.
 #define INIT_SECOND_WALL_ANGLE pg_a_deg (180)
 /// Parameters to push the second wall.
 #define INIT_SECOND_WALL_PUSH \
     Asserv::FORWARD, pg_x (BOT_FRONT_CONTACT_DIST), -1, -1
+/// Start match next to the wall.
+#define INIT_START_SECOND_WALL 1
 /// Parameters to go away from the second wall.
 #define INIT_SECOND_WALL_AWAY (-(200 - BOT_FRONT_CONTACT_DIST))
-/// Parameter to face the start position.
-#define INIT_START_POSITION_ANGLE \
-    pg_a_deg (-90)
-/// Start position.
-#define INIT_START_POSITION \
-    pg_position_deg (200, pg_length - 600, 0), Asserv::REVERT_OK
 
 #endif // init_defs_hh
