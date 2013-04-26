@@ -53,3 +53,11 @@ class Robot:
         self.beacon_stub = prog (beacon_stub_cmd)
         self.protos = (self.asserv, self.mimot, self.io)
 
+    def jack (self):
+        if self.model.jack.state:
+            plate_pos = ((200, 1000), (3000 - 200, 1000))[
+                    self.model.color_switch.state]
+            plate = self.model.table.nearest (plate_pos, max = 1)
+            if plate:
+                plate.pos = None
+                plate.notify ()

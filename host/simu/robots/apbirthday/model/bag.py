@@ -36,6 +36,7 @@ import random
 class Bag:
 
     def __init__ (self, scheduler, table, link_bag):
+        self.table = table
         self.color_switch = Switch (link_bag.ihm_color, invert = True)
         self.color_switch.state = random.choice ((False, True))
         self.color_switch.notify ()
