@@ -328,7 +328,7 @@ FSM_TRANS_TIMEOUT (TOP_DECISION, 1,
         return FSM_BRANCH (candles);
     case Strat::PLATE:
         robot->strat.decision_plate (top.plate);
-        robot->move.start (d_pos);
+        robot->move.start (d_pos, Asserv::BACKWARD_REVERT_OK);
         return FSM_BRANCH (plate);
     default:
         ucoo::assert_unreachable ();
@@ -462,7 +462,7 @@ FSM_TRANS (TOP_PLATE_GOTO, move_failure, TOP_DECISION)
 FSM_TRANS (TOP_PLATE_DROPING, plate_droped, TOP_PLATE_GOTO)
 {
     top.plate.drop = false;
-    robot->move.start (top.plate.approaching_pos);
+    robot->move.start (top.plate.approaching_pos, Asserv::BACKWARD_REVERT_OK);
 }
 
 FSM_TRANS (TOP_PLATE_APPROACH, move_success, TOP_DECISION)
