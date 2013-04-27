@@ -866,6 +866,9 @@ angfsm_build_trans (angfsm_build_t *fsm,
    t.state = angfsm_build_get_state (fsm, state);
    t.event = angfsm_build_get_event (fsm, event);
    assert (t.state);
+   if (!t.event)
+       fprintf (stderr, "Error: the event \"%s\" has not been declared "
+                        "in fsm \"%s\".\n", event, fsm->name);
    assert (t.event);
 
    angfsm_build_arg_parse (output_branches, &args, &nb);
