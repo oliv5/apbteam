@@ -336,9 +336,11 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
         //   - 01: near
         //      - 00: push
         //      - 01: unpush
+        //      - 02: event push
         //   - 02: far
         //      - 00: push
         //      - 01: unpush
+        //      - 02: event push
         //   - 03: deploying
         //      - 00: deploy
         //      - 01: undeploy 1
@@ -368,10 +370,14 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
             Candles::push_near ();
         else if (args[0] == 1 && args[1] == 1)
             Candles::unpush_near ();
+        else if (args[0] == 1 && args[1] == 2)
+            FSM_HANDLE (AI, ai_candle_near_punch);
         else if (args[0] == 2 && args[1] == 0)
             Candles::push_far ();
         else if (args[0] == 2 && args[1] == 1)
             Candles::unpush_far ();
+        else if (args[0] == 2 && args[1] == 2)
+            FSM_HANDLE (AI, ai_candle_far_punch);
         else if (args[0] == 3 && args[1] == 0)
             Candles::deploy_arm ();
         else if (args[0] == 3 && args[1] == 1)
