@@ -47,7 +47,8 @@ top_cake_angle (const vect_t &pos)
     float dx = pos.x - pg_cake_pos.x;
     float dy = pos.y - pg_cake_pos.y;
     float angle_rad = std::atan2 (dy, dx);
-    uint16_t angle = angle_rad * ((1 << 16) / (2 * M_PI));
+    // Be careful not to lose sign during conversion.
+    int16_t angle = angle_rad * ((1 << 16) / (2 * M_PI));
     return angle;
 }
 

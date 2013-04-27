@@ -150,7 +150,7 @@ Move::go_or_rotate (const vect_t &dst, uint16_t angle, bool with_angle,
     // Compute angle to destination, if destination is really near, angle is
     // almost meaningless.
     vect_t v = dst; vect_sub (&v, &robot_position.v);
-    uint16_t dst_angle = 0;
+    int16_t dst_angle = 0;
     int16_t diff = 0;
     if (vect_dot_product (&v, &v) > eps * eps)
     {
