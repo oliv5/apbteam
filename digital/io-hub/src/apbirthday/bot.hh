@@ -58,4 +58,7 @@
 /// Speed used for plate loading.
 #define BOT_SPEED_PLATE 0x20, 0x20, 0x20, 0x20
 
+/// Normal pneumatic pressure.
+#define BOT_NORMAL_PRESSURE 0x0c00
+
 #endif // bot_hh

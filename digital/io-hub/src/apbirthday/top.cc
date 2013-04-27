@@ -300,6 +300,7 @@ FSM_TRANS (TOP_START, init_actuators, TOP_INIT_ACTUATORS)
 {
     // TODO: make sure the operator do not forget this is demo mode!
     robot->demo = !robot->hardware.ihm_strat.get ();
+    robot->pressure.set (BOT_NORMAL_PRESSURE);
 }
 
 FSM_TRANS (TOP_INIT_ACTUATORS, init_done, TOP_INIT)
