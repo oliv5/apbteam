@@ -98,6 +98,18 @@ Hardware::Hardware ()
                              GPIO10 | GPIO11);
     gpio_set_af (GPIOB, GPIO_AF4, GPIO10 | GPIO11);
     zb_i2c.enable ();
+    // GPIO.
+    raw_jack.pull (ucoo::Gpio::PULL_UP);
+    ihm_color.pull (ucoo::Gpio::PULL_UP);
+    ihm_strat.pull (ucoo::Gpio::PULL_UP);
+    ihm_robot_nb.pull (ucoo::Gpio::PULL_UP);
+    ihm_lol.pull (ucoo::Gpio::PULL_UP);
+    ihm_emerg_stop.pull (ucoo::Gpio::PULL_UP);
+    glass_contact.pull (ucoo::Gpio::PULL_UP);
+    cherry_plate_left_contact.pull (ucoo::Gpio::PULL_UP);
+    cherry_plate_right_contact.pull (ucoo::Gpio::PULL_UP);
+    cake_arm_out_contact.pull (ucoo::Gpio::PULL_UP);
+    cake_arm_in_contact.pull (ucoo::Gpio::PULL_UP);
     // ADC.
     gpio_mode_setup (GPIOA, GPIO_MODE_ANALOG, GPIO_PUPD_NONE,
                      GPIO0 | GPIO1 | GPIO2 | GPIO3 | GPIO6 | GPIO7);
