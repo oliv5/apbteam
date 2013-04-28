@@ -27,6 +27,11 @@ AVR_SOURCES = $(foreach module,$(AVR_MODULES),$($(subst /,_,$(module))_SOURCES))
 
 # FSM.
 INCLUDES += -I$(BASE)/../ai/src/fsm -I.
+FSM_EMBEDDED_STRINGS = n
+ifeq ($(FSM_EMBEDDED_STRINGS),y)
+ ANGFSM_OPTIONS += --ang-embedded-strings
+ DEFS += -DFSM_EMBEDDED_STRINGS=1
+endif
 vpath angfsm.host.c $(BASE)/../ai/src/fsm
 
 # Common files.
@@ -42,6 +47,6 @@ clean.project:
 obj/main.stm32f4.o: angfsm_gen_arm_AI.h
 angfsm_gen_arm_AI.arm.c: angfsm_gen_arm_AI.h
 angfsm_gen_arm_AI.h: apbirthday.host
-	./$< --ang-gen arm && mv angfsm_gen_arm_AI.c angfsm_gen_arm_AI.arm.c
+	./$< $(ANGFSM_OPTIONS) --ang-gen arm && mv angfsm_gen_arm_AI.c angfsm_gen_arm_AI.arm.c
 
 host: all.host

@@ -30,14 +30,12 @@ extern "C" {
 }
 
 #ifdef TARGET_host
+typedef unsigned State;
 typedef unsigned Branch;
-#else
-typedef angfsm_AI_branch_t Branch;
-#endif
-
-#ifdef TARGET_host
 typedef uint16_t Event;
 #else
+typedef angfsm_AI_state_t State;
+typedef angfsm_AI_branch_t Branch;
 typedef angfsm_AI_event_t Event;
 #endif
 

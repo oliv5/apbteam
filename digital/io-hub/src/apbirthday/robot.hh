@@ -65,6 +65,9 @@ class Robot : public ucoo::Proto::Handler
     void proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size);
     /// Send stats.
     void proto_stats ();
+    /// Transition callback.
+    static void trans_callback (int state, int event, int output_state,
+                                int branch);
   public:
     /// Public access to hardware class.
     Hardware hardware;

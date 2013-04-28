@@ -29,6 +29,10 @@
 #include "ucoolib/arch/arch.hh"
 #include "ucoolib/utils/bytes.hh"
 
+#ifdef FSM_EMBEDDED_STRINGS
+# include <cstdio>
+#endif
+
 Robot *robot;
 
 Robot::Robot ()
@@ -328,6 +332,11 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
         stats_pressure_cpt_ = stats_pressure_ = args[0];
         stats_proto_ = &proto;
         break;
+    case c ('T', 0):
+        // Transitions.
+        ANGFSM_TRANS_CALLBACK (Robot::trans_callback);
+        stats_proto_ = &proto;
+        break;
     case c ('b', 2):
         // Candles arm manipulation.
         //   - 00: arm events
@@ -497,5 +506,31 @@ Robot::proto_stats ()
         stats_proto_->send ('F', "H", pressure.get ());
         stats_pressure_cpt_ = stats_pressure_;
     }
+}
+
+void
+Robot::trans_callback (int state, int event, int output_state, int branch)
+{
+#ifdef FSM_EMBEDDED_STRINGS
+    ucoo::Stream *s;
+    if (robot->stats_proto_ == &robot->dev_proto)
+        s = &robot->hardware.dev_uart;
+    else if (robot->stats_proto_ == &robot->zb_proto)
+        s = &robot->hardware.zb_uart;
+    else if (robot->stats_proto_ == &robot->usb_proto)
+        s = &robot->hardware.usb;
+    else
+        return;
+    char buf[256];
+    int n = snprintf (buf, sizeof (buf), "%s -> %s -> %s\n",
+                      ANGFSM_STATE_STR (State (state)),
+                      ANGFSM_EVENT_STR (Event (event)),
+                      ANGFSM_STATE_STR (State (output_state)));
+    s->write (buf, n);
+#else
+    if (robot->stats_proto_)
+        robot->stats_proto_->send ('T', "BBBB", state, event, output_state,
+                                   branch);
+#endif
 }
 
