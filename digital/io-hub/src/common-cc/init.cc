@@ -50,12 +50,14 @@ FSM_STATES (
 	    INIT_FINDING_SECOND_WALL,
 	    // Going away from the wall.
 	    INIT_GOING_AWAY_SECOND_WALL,
-#ifdef INIT_START_POSITION_ANGLE
+#if !INIT_START_SECOND_WALL
+# ifdef INIT_START_POSITION_ANGLE
 	    // Facing the start position.
 	    INIT_FACING_START_POSITION,
-#endif
+# endif
 	    // Going to start position.
 	    INIT_GOING_TO_START_POSITION,
+#endif
 	    // Waiting for the round start (waiting for the jack).
 	    INIT_WAITING_SECOND_JACK_OUT,
 	    // Initialisation finished, nothing else to do.
