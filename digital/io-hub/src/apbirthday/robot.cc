@@ -234,7 +234,7 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
         // Demo mode.
         // 1B: 'f for follow mode.
         // 1B: 00 for clockwise, 01 for anti-clockwise
-        top_demo_follow (args[0] == 1 ? 1 : -1);
+        top_demo_follow (args[1] == 1 ? 1 : -1);
         break;
     case c ('m', 5):
         // Go to position.
