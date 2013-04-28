@@ -46,15 +46,16 @@ class Bag:
         self.beacon = RoundObstacle (40, 5)
         table.obstacles.append (self.beacon)
         self.position = Position (link_bag.asserv.position, [ self.beacon ])
+        usdist_f = 2040. / 3300
         self.distance_sensor = [
                 DistanceSensorSensopart (link_bag.adc_dist[0], scheduler, table,
-                    (102, 84), 0, (self.position, ), 4),
+                    (102, 84), 0, (self.position, ), 4, factor = usdist_f),
                 DistanceSensorSensopart (link_bag.adc_dist[1], scheduler, table,
-                    (102, -84), 0, (self.position, ), 4),
+                    (102, -84), 0, (self.position, ), 4, factor = usdist_f),
                 DistanceSensorSensopart (link_bag.adc_dist[2], scheduler, table,
-                    (-78, 104), pi, (self.position, ), 4),
+                    (-78, 104), pi, (self.position, ), 4, factor = usdist_f),
                 DistanceSensorSensopart (link_bag.adc_dist[3], scheduler, table,
-                    (-83, -120), pi, (self.position, ), 4),
+                    (-83, -120), pi, (self.position, ), 4, factor = usdist_f),
                 ]
         self.cake_front = DistanceSensorTrig (link_bag.adc_cake_front,
                 scheduler, table, (80, 136), pi / 2, (self.position, ), 0)
