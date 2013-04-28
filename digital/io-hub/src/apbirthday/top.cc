@@ -525,6 +525,18 @@ FSM_TRANS (TOP_START, top_demo_follow, TOP_DEMO_FOLLOW)
                           ? Asserv::FORWARD : Asserv::BACKWARD);
 }
 
+FSM_TRANS (TOP_INIT_ACTUATORS, top_demo_follow, TOP_DEMO_FOLLOW)
+{
+    robot->asserv.follow (top.candles.dir_sign == 1
+                          ? Asserv::FORWARD : Asserv::BACKWARD);
+}
+
+FSM_TRANS (TOP_DEMO_FOLLOW, top_demo_follow, TOP_DEMO_FOLLOW)
+{
+    robot->asserv.follow (top.candles.dir_sign == 1
+                          ? Asserv::FORWARD : Asserv::BACKWARD);
+}
+
 FSM_TRANS (TOP_DEMO_FOLLOW, top_follow_finished, TOP_DEMO_FOLLOW)
 {
     // Transition needed for top_update.
