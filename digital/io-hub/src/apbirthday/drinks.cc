@@ -112,11 +112,20 @@ FSM_EVENTS (drinks_take,
 
 FSM_START_WITH (DRINKS_OFF)
 
-FSM_TRANS (DRINKS_OFF, init_actuators, DRINKS_INIT_PREPARING)
+FSM_TRANS (DRINKS_OFF, init_actuators,
+           off, DRINKS_OFF,
+           on, DRINKS_INIT_PREPARING)
 {
-    Drinks::upper_down ();
-    Drinks::upper_close ();
-    Drinks::lower_close ();
+    // TODO: disabled until present.
+    if (1)
+        return FSM_BRANCH (off);
+    else
+    {
+        Drinks::upper_down ();
+        Drinks::upper_close ();
+        Drinks::lower_close ();
+        return FSM_BRANCH (on);
+    }
 }
 
 FSM_TRANS_TIMEOUT (DRINKS_INIT_PREPARING, 100, DRINKS_INIT_UPING)

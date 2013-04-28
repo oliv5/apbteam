@@ -67,10 +67,19 @@ FSM_EVENTS (plate_take,
 
 FSM_START_WITH (PLATE_OFF)
 
-FSM_TRANS (PLATE_OFF, init_actuators, PLATE_INIT_PREPARE)
+FSM_TRANS (PLATE_OFF, init_actuators,
+           off, PLATE_OFF,
+           on, PLATE_INIT_PREPARE)
 {
-    Plate::arm_down ();
-    Plate::clamp_open ();
+    // TODO: disabled until present.
+    if (1)
+        return FSM_BRANCH (off);
+    else
+    {
+        Plate::arm_down ();
+        Plate::clamp_open ();
+        return FSM_BRANCH (on);
+    }
 }
 
 FSM_TRANS_TIMEOUT (PLATE_INIT_PREPARE, 100, PLATE_INIT_TAKING)
