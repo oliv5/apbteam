@@ -28,6 +28,9 @@
 #include "bot.hh"
 #include "robot.hh"
 #include "playground.hh"
+#ifdef HOST
+#include "debug.host.hh"
+#endif
 
 extern "C" {
 #include "modules/math/fixed/fixed.h"
@@ -35,22 +38,23 @@ extern "C" {
 #include "modules/utils/utils.h"
 }
 
+/** Enable path finding debug code */
 #define PATH_DEBUG      1
 
-#ifdef HOST
-#include "../../digital/ai/src/common/debug.host.h"
-#endif
-
+/** Define path finding plot ID for the python simu framework */
 #define PATH_PLOT_ID    2
 
 /** Angle between obstacles points. */
-#define PATH_ANGLE_824(pOINTS_NB)  ((1L << 24) / (pOINTS_NB))
+#define PATH_ANGLE_824(pOINTS_NB) \
+    ((1L << 24) / (pOINTS_NB))
 
 /** Check for vectors equality */
-#define PATH_VECT_EQUAL(v1, v2)    ((v1)->x==(v2)->x && (v1)->y==(v2)->y)
+#define PATH_VECT_EQUAL(v1, v2) \
+    ((v1)->x==(v2)->x && (v1)->y==(v2)->y)
 
 /** Check if point is inside a circle */
-#define PATH_IN_CIRCLE(pOINT, cENTER, rADIUS) (distance_point_point((pOINT), (cENTER)) <= (rADIUS))
+#define PATH_IN_CIRCLE(pOINT, cENTER, rADIUS) \
+    (distance_point_point((pOINT), (cENTER)) <= (rADIUS))
 
 /** Static nodes index for the endpoints */
 enum {
@@ -68,7 +72,7 @@ Path::Path() :
     navpoints_nb(0),
     next_node(0)
 {
-    DPRINTF("Path constructor\n");
+    host_debug("Path constructor\n");
 }
 
 void Path::reset()
@@ -76,7 +80,7 @@ void Path::reset()
     vect_t nul = {0,0};
 
     /* Reset everything */
-    DPRINTF( "Path reset\n");
+    host_debug("Path reset\n");
     obstacles_nb = 0;
     navpoints_nb = PATH_RESERVED_NAVPOINTS_NB;
     navpoints[PATH_NAVPOINT_SRC_IDX] = nul;
@@ -96,7 +100,7 @@ void Path::add_obstacle(const vect_t &c, uint16_t r, const int nodes, const int 
     uint32_t x, y, nx;
     int npt, layer;
 
-    DPRINTF("Add obstacle c=(%u;%u) r=%u nodes=%u layers=%u\n",c.x, c.y, r, nodes, nlayers);
+    host_debug("Add obstacle c=(%u;%u) r=%u nodes=%u layers=%u\n",c.x, c.y, r, nodes, nlayers);
 
     /* Enlarge the obstacle radius by the robot size and clearance area width */
     r += BOT_SIZE_RADIUS /*BOT_SIZE_SIDE*/ + clearance;
@@ -138,7 +142,7 @@ void Path::add_obstacle(const vect_t &c, uint16_t r, const int nodes, const int 
             {
                 /* Accept point */
                 navweights[navpoints_nb] = (1 << PATH_WEIGHT_PRECISION) + (layer * PATH_WEIGHT_STEP);
-                DPRINTF("Add point %u (%u;%u) w=%u\n",
+                host_debug("Add point %u (%u;%u) w=%u\n",
                         navpoints_nb, navpoints[navpoints_nb].x, navpoints[navpoints_nb].y, navweights[navpoints_nb]);
                 navpoints_nb++;
             }
@@ -172,7 +176,7 @@ int Path::find_neighbors(int cur_point, struct astar_neighbor_t *neighbors)
             /* Get segment length */
             weight_t weight = navweights[i] * (weight_t)distance_point_point(&navpoints[cur_point], &navpoints[i]);
             weight >>= PATH_WEIGHT_PRECISION;
-            DPRINTF("- Node %u (%u;%u) w=%u (%u) ", i, navpoints[i].x, navpoints[i].y, weight, navweights[i]);
+            host_debug("- Node %u (%u;%u) w=%u (%u) ", i, navpoints[i].x, navpoints[i].y, weight, navweights[i]);
 
             /* Check every obstacle */
             for(int j=0; j<obstacles_nb; j++)
@@ -186,7 +190,7 @@ int Path::find_neighbors(int cur_point, struct astar_neighbor_t *neighbors)
                         PATH_VECT_EQUAL(&navpoints[cur_point], &obstacles[j].c))
                     {
                         /* Skip this obstacle */
-                        DPRINTF("in collision with c=(%u;%u) r=%u allowed ",
+                        host_debug("in collision with c=(%u;%u) r=%u allowed ",
                             obstacles[j].c.x, obstacles[j].c.y, obstacles[j].r);
                         continue;
                     }
@@ -204,7 +208,7 @@ int Path::find_neighbors(int cur_point, struct astar_neighbor_t *neighbors)
                         /* Disable this navigation point */
                         weight = 0;
                     }
-                    DPRINTF("in collision with c=(%u;%u) r=%u w=%u ",
+                    host_debug("in collision with c=(%u;%u) r=%u w=%u ",
                         obstacles[j].c.x, obstacles[j].c.y, obstacles[j].r, weight);
                     break; /* Stop checking for obstacles with this node */
                 }
@@ -213,23 +217,23 @@ int Path::find_neighbors(int cur_point, struct astar_neighbor_t *neighbors)
             /* Add this navigation point in the neighbor list when valid */
             if (weight)
             {
-                DPRINTF("=> validated w=%u\n", weight);
+                host_debug("=> validated w=%u\n", weight);
                 neighbors[neighbors_nb].node = i;
                 neighbors[neighbors_nb].weight = weight;
                 neighbors_nb++;
             }
             else
             {
-                DPRINTF("=> skipped\n");
+                host_debug("=> skipped\n");
             }
         }
     }
 
 #if PATH_DEBUG
-    DPRINTF("\tFound %u neighbors: ", neighbors_nb);
+    host_debug("\tFound %u neighbors: ", neighbors_nb);
     for(int i=0;i<neighbors_nb;i++)
-        DPRINTF("%u (%u)  ", neighbors[i].node, neighbors[i].weight);
-    DPRINTF("\n");
+        host_debug("%u (%u)  ", neighbors[i].node, neighbors[i].weight);
+    host_debug("\n");
 #endif
 
     return neighbors_nb;
@@ -237,7 +241,7 @@ int Path::find_neighbors(int cur_point, struct astar_neighbor_t *neighbors)
 
 void Path::compute(weight_t escape)
 {
-    DPRINTF("** Path compute(start) escape=%u\n", escape);
+    host_debug("** Path compute(start) escape=%u\n", escape);
 
     /* Store the escape factor */
     escape_factor = escape;
@@ -255,20 +259,20 @@ void Path::compute(weight_t escape)
         int node = PATH_NAVPOINT_SRC_IDX;
         int path_nb = 0;
 
-        DPRINTF(">> Path found: ");
+        host_debug(">> Path found: ");
         while(node!=PATH_NAVPOINT_DST_IDX)
         {
-            DPRINTF("%u (%u), ", node, navweights[node]);
+            host_debug("%u (%u), ", node, navweights[node]);
             path[path_nb++] = navpoints[node];
             node = astar_nodes[node].prev;
         }
         path[path_nb++] = navpoints[node];
         robot->hardware.simu_report.path(path, path_nb);
-        DPRINTF("%u\n", node);
+        host_debug("%u\n", node);
     }
 #endif
 
-    DPRINTF("** Path compute(end) found=%u escape=%u\n", path_found, escape);
+    host_debug("** Path compute(end) found=%u escape=%u\n", path_found, escape);
 }
 
 void Path::obstacle(int index, const vect_t &c, uint16_t r, int f)
@@ -279,7 +283,7 @@ void Path::obstacle(int index, const vect_t &c, uint16_t r, int f)
 void Path::endpoints(const vect_t &src, const vect_t &dst, const bool force_move)
 {
     /* Store endpoints location */
-    DPRINTF("Set path endpoints src=(%u;%u) dst=(%u;%u)\n",
+    host_debug("Set path endpoints src=(%u;%u) dst=(%u;%u)\n",
             src.x, src.y, dst.x, dst.y);
     navpoints[PATH_NAVPOINT_SRC_IDX] = src;
     navpoints[PATH_NAVPOINT_DST_IDX] = dst;
@@ -330,7 +334,7 @@ int Path::get_point_index(const vect_t& point)
 
 void Path::prepare_score(const vect_t &src, weight_t escape)
 {
-    DPRINTF("Path prepare score from src=(%u;%u) escape=%u\n", src.x, src.y, escape);
+    host_debug("Path prepare score from src=(%u;%u) escape=%u\n", src.x, src.y, escape);
     escape_factor = escape;
     astar_dijkstra_prepare(astar_nodes, PATH_NAVPOINTS_NB, get_point_index(src), PATH_NAVPOINT_DST_IDX);
 }
@@ -338,7 +342,7 @@ void Path::prepare_score(const vect_t &src, weight_t escape)
 weight_t Path::get_score(const vect_t &dst)
 {
     uint16_t score = astar_dijkstra_finish(astar_nodes, PATH_NAVPOINTS_NB, get_point_index(dst));
-    DPRINTF("Path get score=%u for dst=(%u;%u)\n", score, dst.x, dst.y);
+    host_debug("Path get score=%u for dst=(%u;%u)\n", score, dst.x, dst.y);
     return score;
 }
 
@@ -347,7 +351,7 @@ AC_ASTAR_NEIGHBOR_CALLBACK (uint8_t node, struct astar_neighbor_t *neighbors)
 {
 #if PATH_DEBUG
     vect_t point_v = robot->path.get_point_vect(node);
-    DPRINTF("AC_ASTAR_NEIGHBOR_CALLBACK node=%u (%u;%u)\n", node, point_v.x, point_v.y);
+    host_debug("AC_ASTAR_NEIGHBOR_CALLBACK node=%u (%u;%u)\n", node, point_v.x, point_v.y);
 #endif
     return robot->path.find_neighbors(node, neighbors);
 }
@@ -358,6 +362,6 @@ AC_ASTAR_HEURISTIC_CALLBACK (uint8_t node)
     vect_t point_a = robot->path.get_point_vect(node);
     vect_t point_b = robot->path.get_point_vect(PATH_NAVPOINT_SRC_IDX);
     int16_t dist = distance_point_point(&point_a, &point_b);
-    DPRINTF("Heuristic node=%u dist=%u\n", node, dist);
+    host_debug("Heuristic node=%u dist=%u\n", node, dist);
     return dist;
 }
