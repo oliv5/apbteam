@@ -53,6 +53,10 @@ class Proto:
     def stats (self, stat, interval):
         self.proto.send (self.stats_items[stat][0], 'B', interval)
 
+    def register_transitions (self, transitions_callback):
+        self.proto.register ('T', 'BBBB', transitions_callback)
+        self.proto.send ('T')
+
     def send_param (self):
         pass
 

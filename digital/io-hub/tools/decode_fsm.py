@@ -1,58 +1,58 @@
 #!/usr/bin/python
-"""This script will read FSM header file and proto output and decode to human
-readable transitions."""
+"""This script will read FSM header file, connect to target and decode to
+human readable transitions."""
 import re
 import sys
 import optparse
 
+import io_hub
+from utils.init_proto import InitProto
+
 def parse_header(fsm_name, fname):
-    """Parse header file and return a dict of states and a dict of events."""
-    r = dict(state = { }, event = { })
-    state_re = re.compile(r'^\s*FSM_(STATE)_%s_(.*) = (\d+),$' % fsm_name)
-    event_re = re.compile(r'^\s*FSM_(EVENT)_%s_(.*) = (\d+),$' % fsm_name)
+    """Parse header file and return dict of states, events and branches."""
+    r = dict(state = { }, event = { }, branch = { })
+    r['branch'][255] = None
+    state_re = re.compile(r'^\s*angfsm_(STATE)_%s_(.*) = (\d+),$' % fsm_name)
+    event_re = re.compile(r'^\s*angfsm_(EVENT)_%s_(.*) = (\d+),$' % fsm_name)
+    branch_re = re.compile(r'^\s*angfsm_(BRANCH)_%s_(.*) = (\d+),$' % fsm_name)
     with open(fname) as f:
         for l in f:
-            m = state_re.match(l) or event_re.match(l)
+            m = state_re.match(l) or event_re.match(l) or branch_re.match(l)
             if m:
                 t, name, value = m.groups()
                 t = t.lower()
                 value = int(value)
                 r[t][value] = name
-    return r['state'], r['event']
+    return r['state'], r['event'], r['branch']
 
-def parse_proto(states, events):
-    """Parse proto output from stdin and output FSM transitions."""
-    fsm_re = re.compile(r'!F([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})')
-    robot_re = re.compile(r'!R([0-9a-f]{4})([0-9a-f]{4})')
-    obstacle_re = re.compile(r'!O([0-9a-f]{4})([0-9a-f]{4})')
-    for l in sys.stdin:
-        for m in fsm_re.finditer(l):
-            old, event, new = [ int(i, 16) for i in m.groups() ]
-            try:
-                old = states[old]
-                event = events[event]
-                new = states[new]
-            except KeyError:
-                print "unknown transition"
-            else:
-                print "%s -> %s -> %s" % (old, event, new)
-        for m in robot_re.finditer(l):
-            x, y = [ int(i, 16) for i in m.groups() ]
-            print "robot %s %s" % (x, y)
-        for m in obstacle_re.finditer(l):
-            x, y = [ int(i, 16) for i in m.groups() ]
-            print "obstacle %s %s" % (x, y)
-
-op = optparse.OptionParser(description=__doc__)
-op.add_option('--file', '-f', metavar='HEADER',
+ip = InitProto(None, io_hub.Proto)
+ip.parser.add_option('--file', '-f', metavar='HEADER',
         help="give path to generated header file (default: %default)",
-        default='fsm_AI_gen.h')
-op.add_option('--fsm-name', '-n', metavar='NAME',
+        default='angfsm_gen_arm_AI.h')
+ip.parser.add_option('--fsm-name', '-n', metavar='NAME',
         help="FSM name (default: %default)",
         default='AI')
-options, args = op.parse_args()
-if args:
-    op.error("too many arguments")
+ip.parse_args()
+states, events, branches = parse_header(ip.options.fsm_name, ip.options.file)
 
-states, events = parse_header(options.fsm_name, options.file)
-parse_proto(states, events)
+io = ip.get_proto()
+
+def transition(state, event, output_state, branch):
+    try:
+        state = states[state]
+        event = events[event]
+        output_state = states[output_state]
+        branch = branches[branch]
+    except KeyError:
+        print "unknown transition"
+    else:
+        if branch is None:
+            print "%s -> %s -> %s" % (state, event, output_state)
+        else:
+            print "%s -> %s -> %s (%s)" % (state, event, branch, output_state)
+
+io.register_transitions(transition)
+try:
+    io.proto.wait()
+except KeyboardInterrupt:
+    pass
