@@ -229,7 +229,7 @@ int Path::find_neighbors(int cur_point, struct astar_neighbor_t *neighbors)
         }
     }
 
-#if PATH_DEBUG
+#ifdef PATH_DEBUG
     host_debug("\tFound %u neighbors: ", neighbors_nb);
     for(int i=0;i<neighbors_nb;i++)
         host_debug("%u (%u)  ", neighbors[i].node, neighbors[i].weight);
@@ -253,7 +253,7 @@ void Path::compute(weight_t escape)
         /* Store next node to go to */
         next_node = astar_nodes[0].prev;
 
-#if PATH_DEBUG
+#ifdef PATH_DEBUG
         /* Log and display the path found */
         vect_t path[PATH_NAVPOINTS_NB];
         int node = PATH_NAVPOINT_SRC_IDX;
@@ -349,7 +349,7 @@ weight_t Path::get_score(const vect_t &dst)
 extern "C" uint8_t
 AC_ASTAR_NEIGHBOR_CALLBACK (uint8_t node, struct astar_neighbor_t *neighbors)
 {
-#if PATH_DEBUG
+#ifdef PATH_DEBUG
     vect_t point_v = robot->path.get_point_vect(node);
     host_debug("AC_ASTAR_NEIGHBOR_CALLBACK node=%u (%u;%u)\n", node, point_v.x, point_v.y);
 #endif
