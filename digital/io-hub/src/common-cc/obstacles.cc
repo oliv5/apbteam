@@ -45,7 +45,11 @@ Obstacles::update ()
     for (int i = 0; i < obstacles_nb_; i++)
     {
         if (obstacles_[i].valid)
+        {
             obstacles_[i].valid--;
+            if (!obstacles_[i].valid)
+                changed_ = true;
+        }
     }
 #ifdef TARGET_host
     if (changed_)
