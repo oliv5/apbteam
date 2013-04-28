@@ -37,7 +37,7 @@ class DistanceSensorSensopart (Observable):
     # Secondary rays.  The simulated sensor will use several lines to sense
     # objects, this are for each secondary line, its angle and distance ratio
     # (see sensor area diagram).
-    SECONDARY = ((0.07, 0.8), (0.28, 0.4))
+    SECONDARY = ((0.07, 0.8), (0.12, 0.4))
     # Calibrated values.
     MIN = 100
     MAX = 700
