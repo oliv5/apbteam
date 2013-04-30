@@ -1,0 +1,2 @@
+[hal/uart]
+rx_buffer = 2048
