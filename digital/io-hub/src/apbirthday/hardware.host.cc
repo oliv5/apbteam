@@ -100,3 +100,9 @@ Hardware::zb_handle (ucoo::Stream &s)
     // No zb on host.
 }
 
+void
+Hardware::bootloader ()
+{
+    // No bootloader on host.
+}
+

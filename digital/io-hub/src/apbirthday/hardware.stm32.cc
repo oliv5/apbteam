@@ -25,6 +25,7 @@
 
 #include <libopencm3/stm32/f4/rcc.h>
 #include <libopencm3/stm32/f4/timer.h>
+#include <libopencm3/cm3/scb.h>
 #include "ucoolib/hal/gpio/gpio.hh"
 
 #include "zb_avrisp.stm32.hh"
@@ -151,5 +152,24 @@ Hardware::zb_handle (ucoo::Stream &s)
     gpio_mode_setup (GPIOD, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO8 | GPIO9);
     gpio_set_af (GPIOD, GPIO_AF7, GPIO8 | GPIO9);
     zb_uart.enable (38400, ucoo::Uart::EVEN, 1);
+}
+
+void
+Hardware::bootloader ()
+{
+    // Reset every peripherals.
+    RCC_AHB1RSTR = 0xffffffff;
+    RCC_AHB2RSTR = 0xffffffff;
+    RCC_APB1RSTR = 0xffffffff;
+    RCC_APB2RSTR = 0xffffffff;
+    RCC_AHB1RSTR = 0;
+    RCC_AHB2RSTR = 0;
+    RCC_APB1RSTR = 0;
+    RCC_APB2RSTR = 0;
+    // Jump to bootloader.
+    uint32_t bootloader_address = 0x080e0000;
+    SCB_VTOR = bootloader_address & 0x1fffff;
+    asm volatile ("msr msp, %0" : : "r" (* (uint32_t *) bootloader_address));
+    (*(void (**) ()) (bootloader_address + 4)) ();
 }
 

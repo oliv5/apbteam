@@ -111,6 +111,8 @@ struct Hardware
     void zb_handle ();
     // Handle zb programmation from specific stream.
     void zb_handle (ucoo::Stream &s);
+    // Go to bootloader.
+    void bootloader ();
 };
 
 #endif // hardware_hh
