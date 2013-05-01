@@ -48,14 +48,26 @@ inline void Plate::ppp ()
 
 inline void Plate::arm_down ()
 {
+#ifdef TARGET_host
     robot->hardware.cherry_plate_down.set (true);
     robot->hardware.cherry_plate_up.set (false);
+#else
+    // TODO: temp patch
+    robot->hardware.cherry_bad_out.set (true);
+    robot->hardware.cherry_bad_in.set (false);
+#endif
 }
 
 inline void Plate::arm_up ()
 {
+#ifdef TARGET_host
     robot->hardware.cherry_plate_down.set (false);
     robot->hardware.cherry_plate_up.set (true);
+#else
+    // TODO: temp patch
+    robot->hardware.cherry_bad_out.set (false);
+    robot->hardware.cherry_bad_in.set (true);
+#endif
 }
 
 inline void Plate::clamp_open ()
