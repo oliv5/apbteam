@@ -66,6 +66,8 @@ class Table (simu.model.table.Table):
         add_candle_circle ((1500, 2000), 450, pi + pi / 24, pi / 12, colors, 2)
         cake = RoundObstacle (500, 0)
         cake.pos = (1500, 2000)
+        cake_us = RoundObstacle (400, 4)
+        cake_us.pos = (1500, 2000)
         # Glasses.
         self.glasses = [ ]
         def add_glass (pos):
@@ -119,6 +121,7 @@ class Table (simu.model.table.Table):
         add_gifts ((2400, 0))
         # Add everything to obstacles.
         self.obstacles.append (cake)
+        self.obstacles.append (cake_us)
         self.obstacles += self.candles
         self.obstacles += self.glasses
         self.obstacles += self.plates

@@ -22,7 +22,7 @@
 //
 // }}}
 #include "radar_2013.hh"
-#include "playground.hh"
+#include "playground_2013.hh"
 
 RadarSensor sensors[] = {
     { 0, { 102, 84 }, G_ANGLE_UF016_DEG (0), true },
@@ -44,7 +44,14 @@ Radar2013::Radar2013 (ucoo::UsDist &dist0, ucoo::UsDist &dist1,
 bool
 Radar2013::valid (int sensor_index, vect_t &p)
 {
-    return p.x >= margin_mm && p.x < pg_width - margin_mm
-        && p.y >= margin_mm && p.y < pg_length - margin_mm;
+    if (p.x < margin_mm || p.x >= pg_width - margin_mm
+        || p.y < margin_mm || p.y >= pg_length - margin_mm)
+        return false;
+    vect_t v = pg_cake_pos; vect_sub (&v, &p);
+    int dist_sq = vect_dot_product (&v, &v);
+    int cake_margin = pg_cake_radius + 50;
+    if (dist_sq < cake_margin * cake_margin)
+        return false;
+    return true;
 }
 
