@@ -33,23 +33,21 @@ class Path_2013 : public Path
   public:
     /** Constructor */
     Path_2013();
-    /** Destructor */
-    ~Path_2013();
     /** Reset path computation, remove every obstacles */
     void reset(void);
     /** Set path source and destination */
     void endpoints(const vect_t &src, const vect_t &dst, const bool force_move=false);
 
   private:
-    /** Number of additional obstacles on the playground */
-    static const int PATH_2013_OBSTACLES_NB = PATH_OBSTACLES_NB + 1/*cake*/;
-    /** Number of points for the cake */
+    /** Number of additional obstacles on the 2013 playground */
+    static const int PATH_2013_OBSTACLES_NB = (PATH_CC_OBSTACLES_NB + 1/*cake*/);
+    /** Number of navigation points on each layer for the cake */
     static const int PATH_2013_CAKE_NAVPOINTS_NB = 14;
     /** Number of navigation points layers for the cake. */
     static const int PATH_2013_CAKE_NAVPOINTS_LAYERS = 1;
-    /** Number of additional navigation points. */
-    static const int PATH_2013_NAVPOINTS_NB = PATH_NAVPOINTS_NB +
-                                              PATH_2013_CAKE_NAVPOINTS_LAYERS * (PATH_2013_CAKE_NAVPOINTS_NB - PATH_2013_OBSTACLES_NB);
+    /** Number of additional navigation points on the 2013 playground */
+    static const int PATH_2013_NAVPOINTS_NB =
+        PATH_CC_NAVPOINTS_NB + PATH_2013_CAKE_NAVPOINTS_LAYERS * (PATH_2013_CAKE_NAVPOINTS_NB - PATH_2013_OBSTACLES_NB);
 };
 
 #endif // path_2013_hh

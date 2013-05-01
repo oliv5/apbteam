@@ -45,8 +45,64 @@ class Path
     /** Navpoints weight */
     typedef uint16_t weight_t;
 
+  private:
+    /** Obstacle */
+    typedef struct path_obstacle_t
+    {
+        /** Center. */
+        vect_t c;
+        /** Radius. */
+        uint16_t r;
+    } path_obstacle_t;
+    /** Number of points per standard obstacle. */
+    static const int PATH_CC_OBSTACLES_NAVPOINTS_NB = 12;
+    /** Number of reserved points for the 2 endpoints  */
+    static const int PATH_CC_RESERVED_NAVPOINTS_NB = 2;
+    /** Number of navigation points layers for each obstacle. */
+    static const int PATH_CC_OBSTACLES_NAVPOINTS_LAYERS = 2;
+    /** Navigation points weight precision (2^-n). */
+    static const int PATH_WEIGHT_PRECISION = 4;
+    /** Navigation points weight step (2^-n). */
+    static const int PATH_WEIGHT_STEP = 6;
+    /** Borders, any point outside borders is eliminated. */
+    const uint16_t border_xmin, border_ymin, border_xmax, border_ymax;
+    /** Escape factor, 0 if none. */
+    weight_t escape_factor;
+    /** List of obstacles. */
+    Path::path_obstacle_t* obstacles;
+    /** Number of obstacles */
+    int obstacles_nb;
+    /** List of navigation points coordonates */
+    vect_t* navpoints;
+    /** List of navigation points weights */
+    weight_t* navweights;
+    /** Number of navigation points */
+    int navpoints_nb;
+    /** Max number of navigation points */
+    int navpoints_nbmax;
+    /** List of nodes used for A*. */
+    struct astar_node_t* astar_nodes;
+    /** Which node to look at for next step. */
+    int next_node;
+    /** TRUE when a path has been found */
+    bool path_found;
+    /** TRUE to allow last movement to enter an obstacle
+     * This may be used to target the center of an obstacle
+     * and stop closed to it */
+    bool force_move;
+
+  protected:
+    /** Number of possible obstacles. */
+    static const int PATH_CC_OBSTACLES_NB = 4;
+    /** Number of navigation points. */
+    static const int PATH_CC_NAVPOINTS_NB =
+        (PATH_CC_RESERVED_NAVPOINTS_NB + PATH_CC_OBSTACLES_NAVPOINTS_LAYERS * PATH_CC_OBSTACLES_NB * PATH_CC_OBSTACLES_NAVPOINTS_NB);
+
+  public:
     /** Constructor */
-    Path(uint16_t xmin, uint16_t ymin, uint16_t xmax, uint16_t ymax);
+    Path(uint16_t xmin, uint16_t ymin, uint16_t xmax, uint16_t ymax, int obstacles_max, int navpoints_max);
+    /** Destructor */
+    virtual ~Path() = 0;
     /** Reset path computation, remove every obstacles */
     virtual void reset(void);
     /** Set a moving obstacle position, radius and factor*/
@@ -73,58 +129,6 @@ class Path
   protected:
     /** Add an obstacle on the field */
     void add_obstacle(const vect_t &c, uint16_t r, const int nodes, const int nlayers, const uint16_t clearance);
-
-  protected:
-    /** Obstacle */
-    typedef struct path_obstacle_t
-    {
-        /** Center. */
-        vect_t c;
-        /** Radius. */
-        uint16_t r;
-    } path_obstacle_t;
-
-    /** Number of possible obstacles. */
-    static const int PATH_OBSTACLES_NB = 4;
-    /** Number of points per standard obstacle. */
-    static const int PATH_OBSTACLES_NAVPOINTS_NB = 12;
-    /** Number of reserved points for the 2 endpoints  */
-    static const int PATH_RESERVED_NAVPOINTS_NB = 2;
-    /** Number of navigation points layers for each obstacle. */
-    static const int PATH_OBSTACLES_NAVPOINTS_LAYERS = 2;
-    /** Number of navigation points. */
-    static const int PATH_NAVPOINTS_NB = (PATH_RESERVED_NAVPOINTS_NB +
-                                          PATH_OBSTACLES_NAVPOINTS_LAYERS * PATH_OBSTACLES_NB * PATH_OBSTACLES_NAVPOINTS_NB);
-
-    /** Navigation points weight precision (2^-n). */
-    static const int PATH_WEIGHT_PRECISION = 4;
-    /** Navigation points weight step (2^-n). */
-    static const int PATH_WEIGHT_STEP = 6;
-
-    /** Borders, any point outside borders is eliminated. */
-    const uint16_t border_xmin, border_ymin, border_xmax, border_ymax;
-    /** Escape factor, 0 if none. */
-    weight_t escape_factor;
-    /** List of obstacles. */
-    Path::path_obstacle_t* obstacles;
-    /** Number of obstacles */
-    int obstacles_nb;
-    /** List of navigation points coordonates */
-    vect_t* navpoints;
-    /** List of navigation points weights */
-    weight_t* navweights;
-    /** Number of navigation points */
-    int navpoints_nb;
-    /** List of nodes used for A*. */
-    struct astar_node_t* astar_nodes;
-    /** Which node to look at for next step. */
-    int next_node;
-    /** TRUE when a path has been found */
-    bool path_found;
-    /** TRUE to allow last movement to enter an obstacle
-     * This may be used to target the center of an obstacle
-     * and stop closed to it */
-    bool force_move;
 };
 
 #endif // path_hh

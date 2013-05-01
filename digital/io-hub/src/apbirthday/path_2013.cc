@@ -24,29 +24,19 @@
 // }}}
 
 #include "path_2013.hh"
+#include "bot.hh"
 #ifdef HOST
 #include "debug.host.hh"
 #endif
 
 Path_2013::Path_2013() :
-    Path( pg_border_distance,
+    Path( pg_border_distance + pg_plate_size_border*2,
           pg_border_distance,
-          (pg_width - pg_border_distance),
-          (pg_length - pg_border_distance) )
+          pg_width - pg_border_distance - pg_plate_size_border*2,
+          pg_length - pg_border_distance,
+          PATH_2013_OBSTACLES_NB,
+          PATH_2013_NAVPOINTS_NB )
 {
-    host_debug("Path_2013 constructor\n");
-    obstacles = new path_obstacle_t[PATH_2013_OBSTACLES_NB];
-    navpoints = new vect_t[PATH_2013_NAVPOINTS_NB];
-    navweights = new weight_t[PATH_2013_NAVPOINTS_NB];
-    astar_nodes = new struct astar_node_t[PATH_2013_NAVPOINTS_NB];
-}
-
-Path_2013::~Path_2013()
-{
-    delete[] obstacles;
-    delete[] navpoints;
-    delete[] navweights;
-    delete[] astar_nodes;
 }
 
 void Path_2013::reset()
@@ -54,16 +44,16 @@ void Path_2013::reset()
     /* Base reset */
     Path::reset();
 
-    /* Declare the cake as an obstacle */
+    /* Declare the cake as a static obstacle */
     add_obstacle(pg_cake_pos, pg_cake_radius, PATH_2013_CAKE_NAVPOINTS_NB, PATH_2013_CAKE_NAVPOINTS_LAYERS, 0 /* no extra clearance radius */);
 }
 
 void Path_2013::endpoints(const vect_t &src, const vect_t &dst, const bool force_move)
 {
-    /* Temporary code for the cake */
+    /* Temporary code for the cake until force_move is used */
     if (PATH_VECT_EQUAL(&dst, &pg_cake_pos))
     {
-        /* Set the endpoints */
+        /* We are targetting the center of the cake: force_move is allowed */
         Path::endpoints(src,dst,true);
     }
     else

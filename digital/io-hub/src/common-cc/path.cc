@@ -54,7 +54,12 @@ enum {
     PATH_NAVPOINT_DST_IDX
 };
 
-Path::Path(uint16_t xmin, uint16_t ymin, uint16_t xmax, uint16_t ymax) :
+Path::Path(uint16_t xmin,
+           uint16_t ymin,
+           uint16_t xmax,
+           uint16_t ymax,
+           int obstacles_max,
+           int navpoints_max) :
     border_xmin(xmin),
     border_ymin(ymin),
     border_xmax(xmax),
@@ -62,9 +67,21 @@ Path::Path(uint16_t xmin, uint16_t ymin, uint16_t xmax, uint16_t ymax) :
     escape_factor(0),
     obstacles_nb(0),
     navpoints_nb(0),
+    navpoints_nbmax(navpoints_max),
     next_node(0)
 {
-    host_debug("Path constructor\n");
+    obstacles = new path_obstacle_t[obstacles_max];
+    navpoints = new vect_t[navpoints_max];
+    navweights = new weight_t[navpoints_max];
+    astar_nodes = new struct astar_node_t[navpoints_max];
+}
+
+Path::~Path()
+{
+    delete[] obstacles;
+    delete[] navpoints;
+    delete[] navweights;
+    delete[] astar_nodes;
 }
 
 void Path::reset()
@@ -72,7 +89,7 @@ void Path::reset()
     vect_t nul = {0,0};
     host_debug("Path reset\n");
     obstacles_nb = 0;
-    navpoints_nb = PATH_RESERVED_NAVPOINTS_NB;
+    navpoints_nb = PATH_CC_RESERVED_NAVPOINTS_NB;
     navpoints[PATH_NAVPOINT_SRC_IDX] = nul;
     navpoints[PATH_NAVPOINT_DST_IDX] = nul;
     next_node = 0;
@@ -109,7 +126,7 @@ void Path::add_obstacle(const vect_t &c, uint16_t r, const int nodes, const int 
     y = 0;
 
     /* Add a number of sets of navigation points with different weights */
-    //for(weight=PATH_OBSTACLES_NAVPOINTS_LAYERS; weight>0; weight--)
+    //for(weight=PATH_CC_OBSTACLES_NAVPOINTS_LAYERS; weight>0; weight--)
     for(layer=nlayers-1; layer>=0; layer--)
     {
         /* Compute obstacle points positions around a circle */
@@ -144,7 +161,7 @@ void Path::add_obstacle(const vect_t &c, uint16_t r, const int nodes, const int 
 
 #ifdef HOST
     /* Plot obstacle points */
-    robot->hardware.simu_report.pos( &navpoints[PATH_RESERVED_NAVPOINTS_NB], navpoints_nb-PATH_RESERVED_NAVPOINTS_NB, PATH_PLOT_ID);
+    robot->hardware.simu_report.pos( &navpoints[PATH_CC_RESERVED_NAVPOINTS_NB], navpoints_nb-PATH_CC_RESERVED_NAVPOINTS_NB, PATH_PLOT_ID);
 #endif
 }
 
@@ -181,7 +198,9 @@ int Path::find_neighbors(int cur_point, struct astar_neighbor_t *neighbors)
                     }
                     /* Collision while trying to escape the source point */
                     /* if and only if the source point is in this obstacle */
+                    /* and the distance is less than the obstacle radius */
                     else if (i==PATH_NAVPOINT_SRC_IDX &&
+                             obstacles[j].r < distance_point_point(&navpoints[cur_point], &navpoints[i]) &&
                              PATH_IN_CIRCLE(&navpoints[i], &obstacles[j].c, obstacles[j].r))
                     {
                         /* Allow this navigation point with an extra cost */
@@ -232,7 +251,7 @@ void Path::compute(weight_t escape)
     escape_factor = escape;
 
     /* Call the A* algorithm */
-    path_found = (bool)astar(astar_nodes, PATH_NAVPOINTS_NB, PATH_NAVPOINT_DST_IDX, PATH_NAVPOINT_SRC_IDX);
+    path_found = (bool)astar(astar_nodes, navpoints_nbmax, PATH_NAVPOINT_DST_IDX, PATH_NAVPOINT_SRC_IDX);
     if (path_found)
     {
         /* Store next node to go to */
@@ -240,7 +259,7 @@ void Path::compute(weight_t escape)
 
 #ifdef PATH_DEBUG
         /* Log and display the path found */
-        vect_t path[PATH_NAVPOINTS_NB];
+        vect_t path[navpoints_nbmax];
         int node = PATH_NAVPOINT_SRC_IDX;
         int path_nb = 0;
 
@@ -262,7 +281,7 @@ void Path::compute(weight_t escape)
 
 void Path::obstacle(int index, const vect_t &c, uint16_t r, int f)
 {
-    add_obstacle(c, r, PATH_OBSTACLES_NAVPOINTS_NB, PATH_OBSTACLES_NAVPOINTS_LAYERS, Obstacles::clearance_mm + 100/* extra clearance radius */);
+    add_obstacle(c, r, PATH_CC_OBSTACLES_NAVPOINTS_NB, PATH_CC_OBSTACLES_NAVPOINTS_LAYERS, Obstacles::clearance_mm + 100/* extra clearance radius */);
 }
 
 void Path::endpoints(const vect_t &src, const vect_t &dst, const bool force_move)
@@ -313,12 +332,12 @@ void Path::prepare_score(const vect_t &src, weight_t escape)
 {
     host_debug("Path prepare score from src=(%u;%u) escape=%u\n", src.x, src.y, escape);
     escape_factor = escape;
-    astar_dijkstra_prepare(astar_nodes, PATH_NAVPOINTS_NB, get_point_index(src), PATH_NAVPOINT_DST_IDX);
+    astar_dijkstra_prepare(astar_nodes, navpoints_nbmax, get_point_index(src), PATH_NAVPOINT_DST_IDX);
 }
 
 Path::weight_t Path::get_score(const vect_t &dst)
 {
-    uint16_t score = astar_dijkstra_finish(astar_nodes, PATH_NAVPOINTS_NB, get_point_index(dst));
+    uint16_t score = astar_dijkstra_finish(astar_nodes, navpoints_nbmax, get_point_index(dst));
     host_debug("Path get score=%u for dst=(%u;%u)\n", score, dst.x, dst.y);
     return score;
 }
