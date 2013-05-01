@@ -63,9 +63,9 @@ enum {
 };
 
 Path::Path() :
-    border_xmin(pg_border_distance),
+    border_xmin(pg_border_distance + pg_plate_size_border*2 + BOT_SIZE_RADIUS/2),
     border_ymin(pg_border_distance),
-    border_xmax(pg_width - pg_border_distance),
+    border_xmax(pg_width - pg_border_distance - pg_plate_size_border*2 - BOT_SIZE_RADIUS/2),
     border_ymax(pg_length - pg_border_distance),
     escape_factor(0),
     obstacles_nb(0),
