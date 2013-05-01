@@ -344,6 +344,19 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
         stats_pressure_cpt_ = stats_pressure_ = args[0];
         stats_proto_ = &proto;
         break;
+    case c ('P', 1):
+        // Plate test
+        // 1B:
+        // - 00: up
+        // - 01: down
+        if (args[0] == 0)
+            FSM_HANDLE (AI, plate_take);
+        else if (args[0] == 1)
+            FSM_HANDLE (AI, plate_drop);
+        break;
+    case c ('i', 0):
+        FSM_HANDLE (AI, init_actuators);
+        break;
     case c ('T', 0):
         // Transitions.
         ANGFSM_TRANS_CALLBACK (Robot::trans_callback);
