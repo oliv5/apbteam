@@ -48,36 +48,35 @@ inline void Plate::ppp ()
 
 inline void Plate::arm_down ()
 {
-#ifdef TARGET_host
     robot->hardware.cherry_plate_down.set (true);
     robot->hardware.cherry_plate_up.set (false);
-#else
-    // TODO: temp patch
-    robot->hardware.cherry_bad_out.set (true);
-    robot->hardware.cherry_bad_in.set (false);
-#endif
 }
 
 inline void Plate::arm_up ()
 {
-#ifdef TARGET_host
     robot->hardware.cherry_plate_down.set (false);
     robot->hardware.cherry_plate_up.set (true);
+}
+
+inline void Plate::clamp_open ()
+{
+#ifdef TARGET_host
+    robot->hardware.cherry_plate_clamp.set (false);
 #else
-    // TODO: temp patch
     robot->hardware.cherry_bad_out.set (false);
     robot->hardware.cherry_bad_in.set (true);
 #endif
 }
 
-inline void Plate::clamp_open ()
-{
-    robot->hardware.cherry_plate_clamp.set (false);
-}
-
 inline void Plate::clamp_close ()
 {
+#ifdef TARGET_host
     robot->hardware.cherry_plate_clamp.set (true);
+#else
+    robot->hardware.cherry_bad_out.set (true);
+    robot->hardware.cherry_bad_in.set (false);
+#endif
+
 }
 
 FSM_STATES (PLATE_OFF,
@@ -105,7 +104,7 @@ FSM_TRANS (PLATE_OFF, init_actuators,
            on, PLATE_INIT_PREPARE)
 {
     // TODO: disabled until present.
-    if (1)
+    if (0)
         return FSM_BRANCH (off);
     else
     {
