@@ -48,25 +48,17 @@ extern "C" {
 #define PATH_ANGLE_824(pOINTS_NB) \
     ((1L << 24) / (pOINTS_NB))
 
-/** Check for vectors equality */
-#define PATH_VECT_EQUAL(v1, v2) \
-    ((v1)->x==(v2)->x && (v1)->y==(v2)->y)
-
-/** Check if point is inside a circle */
-#define PATH_IN_CIRCLE(pOINT, cENTER, rADIUS) \
-    (distance_point_point((pOINT), (cENTER)) <= (rADIUS))
-
 /** Static nodes index for the endpoints */
 enum {
     PATH_NAVPOINT_SRC_IDX = 0,
     PATH_NAVPOINT_DST_IDX
 };
 
-Path::Path() :
-    border_xmin(pg_border_distance),
-    border_ymin(pg_border_distance),
-    border_xmax(pg_width - pg_border_distance),
-    border_ymax(pg_length - pg_border_distance),
+Path::Path(uint16_t xmin, uint16_t ymin, uint16_t xmax, uint16_t ymax) :
+    border_xmin(xmin),
+    border_ymin(ymin),
+    border_xmax(xmax),
+    border_ymax(ymax),
     escape_factor(0),
     obstacles_nb(0),
     navpoints_nb(0),
@@ -78,8 +70,6 @@ Path::Path() :
 void Path::reset()
 {
     vect_t nul = {0,0};
-
-    /* Reset everything */
     host_debug("Path reset\n");
     obstacles_nb = 0;
     navpoints_nb = PATH_RESERVED_NAVPOINTS_NB;
@@ -87,11 +77,6 @@ void Path::reset()
     navpoints[PATH_NAVPOINT_DST_IDX] = nul;
     next_node = 0;
     escape_factor = 0;
-
-#ifdef playground_2013_hh
-    /* Declare the cake as an obstacle */
-    add_obstacle(pg_cake_pos, pg_cake_radius, PATH_CAKE_NAVPOINTS_NB, PATH_CAKE_NAVPOINTS_LAYERS, 0 /* no extra clearance radius */);
-#endif
 }
 
 void Path::add_obstacle(const vect_t &c, uint16_t r, const int nodes, const int nlayers, const uint16_t clearance)
@@ -296,14 +281,6 @@ void Path::endpoints(const vect_t &src, const vect_t &dst, const bool force_move
     /* This is useful to target the center of an obstacle and stop */
     /* in front of it before the collision happens */
     this->force_move = force_move;
-
-#ifdef playground_2013_hh
-    /* Temporary code for the cake */
-    if (PATH_VECT_EQUAL(&dst, &pg_cake_pos))
-    {
-        this->force_move = true;
-    }
-#endif
 }
 
 bool Path::get_next(vect_t &p)
@@ -339,7 +316,7 @@ void Path::prepare_score(const vect_t &src, weight_t escape)
     astar_dijkstra_prepare(astar_nodes, PATH_NAVPOINTS_NB, get_point_index(src), PATH_NAVPOINT_DST_IDX);
 }
 
-weight_t Path::get_score(const vect_t &dst)
+Path::weight_t Path::get_score(const vect_t &dst)
 {
     uint16_t score = astar_dijkstra_finish(astar_nodes, PATH_NAVPOINTS_NB, get_point_index(dst));
     host_debug("Path get score=%u for dst=(%u;%u)\n", score, dst.x, dst.y);

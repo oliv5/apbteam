@@ -39,7 +39,7 @@
 #include "radar_2013.hh"
 #include "obstacles.hh"
 #include "move.hh"
-#include "path.hh"
+#include "path_2013.hh"
 #include "strat.hh"
 #include "candles.hh"
 #include "drinks.hh"
@@ -108,7 +108,7 @@ class Robot : public ucoo::Proto::Handler
     /// Obstacle database.
     Obstacles obstacles;
     /// Path finding.
-    Path path;
+    Path_2013 path;
     /// Move FSM.
     Move move;
     /// Strategy.

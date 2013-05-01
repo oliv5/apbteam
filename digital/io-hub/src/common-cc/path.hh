@@ -25,35 +25,34 @@
 //
 // }}}
 #include "defs.hh"
-#include "playground_2013.hh"
 
 extern "C" {
 #include "modules/path/astar/astar.h"
 }
 
-/** Obstacle */
-typedef struct path_obstacle_t
-{
-    /** Center. */
-    vect_t c;
-    /** Radius. */
-    uint16_t r;
-} path_obstacle_t;
+/** Check for vectors equality */
+#define PATH_VECT_EQUAL(v1, v2) \
+    ((v1)->x==(v2)->x && (v1)->y==(v2)->y)
 
-typedef uint16_t weight_t;
+/** Check if point is inside a circle */
+#define PATH_IN_CIRCLE(pOINT, cENTER, rADIUS) \
+    (distance_point_point((pOINT), (cENTER)) <= (rADIUS))
 
 /** Path finding class */
 class Path
 {
   public:
-    /** Initialise path */
-    Path();
+    /** Navpoints weight */
+    typedef uint16_t weight_t;
+
+    /** Constructor */
+    Path(uint16_t xmin, uint16_t ymin, uint16_t xmax, uint16_t ymax);
     /** Reset path computation, remove every obstacles */
-    void reset(void);
+    virtual void reset(void);
     /** Set a moving obstacle position, radius and factor*/
     void obstacle(int index, const vect_t &c, uint16_t r, int f = 0);
     /** Set path source and destination */
-    void endpoints(const vect_t &src, const vect_t &dst, const bool force_move=false);
+    virtual void endpoints(const vect_t &src, const vect_t &dst, const bool force_move=false);
     /** Compute path with the given escape factor */
     void compute(weight_t escape = 0);
     /** Return a point vector by index */
@@ -71,30 +70,32 @@ class Path
        (also reuse previously given escape factor) */
     weight_t get_score(const vect_t &dst);
 
-  private:
+  protected:
     /** Add an obstacle on the field */
     void add_obstacle(const vect_t &c, uint16_t r, const int nodes, const int nlayers, const uint16_t clearance);
 
+  protected:
+    /** Obstacle */
+    typedef struct path_obstacle_t
+    {
+        /** Center. */
+        vect_t c;
+        /** Radius. */
+        uint16_t r;
+    } path_obstacle_t;
+
     /** Number of possible obstacles. */
-    static const int PATH_OBSTACLES_NB = (4+1/*cake*/);
+    static const int PATH_OBSTACLES_NB = 4;
     /** Number of points per standard obstacle. */
     static const int PATH_OBSTACLES_NAVPOINTS_NB = 12;
-#ifdef playground_2013_hh
-    /** Number of points for the cake */
-    static const int PATH_CAKE_NAVPOINTS_NB = 14;
-#endif
     /** Number of reserved points for the 2 endpoints  */
     static const int PATH_RESERVED_NAVPOINTS_NB = 2;
-    /** Number of navigation points layers for the cake. */
-    static const int PATH_CAKE_NAVPOINTS_LAYERS = 1;
     /** Number of navigation points layers for each obstacle. */
     static const int PATH_OBSTACLES_NAVPOINTS_LAYERS = 2;
     /** Number of navigation points. */
     static const int PATH_NAVPOINTS_NB = (PATH_RESERVED_NAVPOINTS_NB +
-#ifdef playground_2013_hh
-                                           PATH_CAKE_NAVPOINTS_LAYERS * (PATH_CAKE_NAVPOINTS_NB - PATH_OBSTACLES_NAVPOINTS_NB) +
-#endif
-                                           PATH_OBSTACLES_NAVPOINTS_LAYERS * (PATH_OBSTACLES_NB * PATH_OBSTACLES_NAVPOINTS_NB));
+                                          PATH_OBSTACLES_NAVPOINTS_LAYERS * PATH_OBSTACLES_NB * PATH_OBSTACLES_NAVPOINTS_NB);
+
     /** Navigation points weight precision (2^-n). */
     static const int PATH_WEIGHT_PRECISION = 4;
     /** Navigation points weight step (2^-n). */
@@ -105,17 +106,17 @@ class Path
     /** Escape factor, 0 if none. */
     weight_t escape_factor;
     /** List of obstacles. */
-    path_obstacle_t obstacles[PATH_OBSTACLES_NB];
+    Path::path_obstacle_t* obstacles;
     /** Number of obstacles */
     int obstacles_nb;
     /** List of navigation points coordonates */
-    vect_t navpoints[PATH_NAVPOINTS_NB];
+    vect_t* navpoints;
     /** List of navigation points weights */
-    weight_t navweights[PATH_NAVPOINTS_NB];
+    weight_t* navweights;
     /** Number of navigation points */
     int navpoints_nb;
     /** List of nodes used for A*. */
-    struct astar_node_t astar_nodes[PATH_NAVPOINTS_NB];
+    struct astar_node_t* astar_nodes;
     /** Which node to look at for next step. */
     int next_node;
     /** TRUE when a path has been found */
