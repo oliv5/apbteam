@@ -103,7 +103,7 @@ void Path::add_obstacle(const vect_t &c, uint16_t r, const int nodes, const int 
     host_debug("Add obstacle c=(%u;%u) r=%u nodes=%u layers=%u\n",c.x, c.y, r, nodes, nlayers);
 
     /* Enlarge the obstacle radius by the robot size and clearance area width */
-    r += BOT_SIZE_RADIUS /*BOT_SIZE_SIDE*/ + clearance;
+    r += BOT_SIZE_RADIUS + clearance;
 
     /* Store obstacle */
     //assert(obstacles_nb < PATH_OBSTACLES_NB);
@@ -120,11 +120,10 @@ void Path::add_obstacle(const vect_t &c, uint16_t r, const int nodes, const int 
     /* from one to another without collision with the */
     /* obstacle circle. New radius is r / cos(angle/2) */
     nr = PATH_ANGLE_824(nodes*2);
-    x = fixed_div_f824(r, fixed_cos_f824(nr)) + 1 /* margin */;
+    x = fixed_div_f824(r, fixed_cos_f824(nr)) + 2 /* margin for the unprecise fixed point computation */;
     y = 0;
 
     /* Add a number of sets of navigation points with different weights */
-    //for(weight=PATH_OBSTACLES_NAVPOINTS_LAYERS; weight>0; weight--)
     for(layer=nlayers-1; layer>=0; layer--)
     {
         /* Compute obstacle points positions around a circle */
@@ -196,7 +195,9 @@ int Path::find_neighbors(int cur_point, struct astar_neighbor_t *neighbors)
                     }
                     /* Collision while trying to escape the source point */
                     /* if and only if the source point is in this obstacle */
+                    /* and the distance is less than the obstacle radius */
                     else if (i==PATH_NAVPOINT_SRC_IDX &&
+                             distance_point_point(&navpoints[cur_point], &navpoints[i]) < obstacles[j].r &&
                              PATH_IN_CIRCLE(&navpoints[i], &obstacles[j].c, obstacles[j].r))
                     {
                         /* Allow this navigation point with an extra cost */
