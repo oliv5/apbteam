@@ -25,6 +25,26 @@
 #include "defs.hh"
 #include "plate.hh"
 
+Plate::Plate ()
+{
+    reset_plate_nb ();
+}
+
+inline int Plate::get_plate_nb ()
+{
+    return nb_plate;
+}
+
+inline void Plate::reset_plate_nb ()
+{
+    nb_plate = 0;
+}
+
+inline void Plate::ppp ()
+{
+    nb_plate++;
+}
+
 inline void Plate::arm_down ()
 {
     robot->hardware.cherry_plate_down.set (true);
@@ -120,6 +140,7 @@ FSM_TRANS_TIMEOUT (PLATE_TAKE_GLUE, 100, PLATE_TAKE_UPING)
 FSM_TRANS_TIMEOUT (PLATE_TAKE_UPING, 100, PLATE_I_HAZ_PLATE)
 {
     robot->fsm_queue.post (FSM_EVENT (plate_taken));
+    robot->plate.ppp ();
 }
 
 FSM_TRANS (PLATE_I_HAZ_PLATE, plate_take, PLATE_I_HAZ_PLATE)

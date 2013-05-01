@@ -28,11 +28,18 @@
 class Plate
 {
     public:
+        Plate ();
+        int get_plate_nb ();
+        void reset_plate_nb ();
+        // Increment plate_nb, internal use for FSM
+        void ppp ();
         // GPIO manipulation.
         static void arm_down ();
         static void arm_up ();
         static void clamp_open ();
         static void clamp_close ();
+    private:
+        int nb_plate;
 };
 
 #endif // plate_hh
