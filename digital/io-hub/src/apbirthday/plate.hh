@@ -33,6 +33,8 @@ class Plate
         void reset_plate_nb ();
         // Increment plate_nb, internal use for FSM
         void ppp ();
+        // Read only: 1 if plate is up, 0 otherwhise
+        int is_up;
         // GPIO manipulation.
         static void arm_down ();
         static void arm_up ();

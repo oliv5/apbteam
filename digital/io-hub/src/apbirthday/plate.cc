@@ -28,6 +28,7 @@
 Plate::Plate ()
 {
     reset_plate_nb ();
+    is_up = 0;
 }
 
 inline int Plate::get_plate_nb ()
@@ -141,6 +142,7 @@ FSM_TRANS_TIMEOUT (PLATE_TAKE_UPING, 100, PLATE_I_HAZ_PLATE)
 {
     robot->fsm_queue.post (FSM_EVENT (plate_taken));
     robot->plate.ppp ();
+    robot->plate.is_up = 1;
 }
 
 FSM_TRANS (PLATE_I_HAZ_PLATE, plate_take, PLATE_I_HAZ_PLATE)
@@ -151,6 +153,7 @@ FSM_TRANS (PLATE_I_HAZ_PLATE, plate_take, PLATE_I_HAZ_PLATE)
 FSM_TRANS (PLATE_I_HAZ_PLATE, plate_drop, PLATE_DROP_DOWNING)
 {
     Plate::arm_down ();
+    robot->plate.is_up = 0;
 }
 
 FSM_TRANS_TIMEOUT (PLATE_DROP_DOWNING, 100, PLATE_DROP_OPENING)
