@@ -113,6 +113,8 @@ struct Hardware
     void zb_handle (ucoo::Stream &s);
     // Go to bootloader.
     void bootloader ();
+    // Compute code CRC.
+    uint32_t crc ();
 };
 
 #endif // hardware_hh

@@ -106,3 +106,10 @@ Hardware::bootloader ()
     // No bootloader on host.
 }
 
+uint32_t
+Hardware::crc ()
+{
+    // No CRC on host.
+    return 0;
+}
+

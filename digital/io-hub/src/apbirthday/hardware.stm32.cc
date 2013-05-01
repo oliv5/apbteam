@@ -27,6 +27,7 @@
 #include <libopencm3/stm32/f4/timer.h>
 #include <libopencm3/cm3/scb.h>
 #include "ucoolib/hal/gpio/gpio.hh"
+#include "ucoolib/utils/crc.hh"
 
 #include "zb_avrisp.stm32.hh"
 
@@ -171,5 +172,16 @@ Hardware::bootloader ()
     SCB_VTOR = bootloader_address & 0x1fffff;
     asm volatile ("msr msp, %0" : : "r" (* (uint32_t *) bootloader_address));
     (*(void (**) ()) (bootloader_address + 4)) ();
+}
+
+extern unsigned _data_loadaddr, _data, _edata;
+
+uint32_t
+Hardware::crc ()
+{
+    int binsize = ((int) &_data_loadaddr & 0x1fffff)
+        + (int) &_edata - (int) &_data;
+    const uint8_t *binaddr = (const uint8_t *) 0x08000000;
+    return ucoo::crc32_compute (binaddr, binsize);
 }
 

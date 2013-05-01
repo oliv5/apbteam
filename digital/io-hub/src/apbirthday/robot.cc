@@ -225,6 +225,10 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
         // Reset to bootloader.
         hardware.bootloader ();
         break;
+    case c ('c', 0):
+        // Compute code CRC.
+        proto.send ('c', "L", hardware.crc ());
+        break;
     case c ('Z', 0):
         // Enter zigbit update from uart.
         proto.send ('Z');
