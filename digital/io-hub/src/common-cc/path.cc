@@ -90,11 +90,21 @@ void Path::reset()
 
 #ifdef playground_2013_hh
     /* Declare the cake as an obstacle */
-    add_obstacle(pg_cake_pos, pg_cake_radius, PATH_CAKE_NAVPOINTS_NB, PATH_CAKE_NAVPOINTS_LAYERS, 0 /* no extra clearance radius */);
+    add_obstacle( pg_cake_pos,
+                  pg_cake_radius,
+                  PATH_CAKE_NAVPOINTS_NB,
+                  PATH_CAKE_NAVPOINTS_LAYERS,
+                  0 /* no extra clearance radius */,
+                  true /*target the center is allowed*/);
 #endif
 }
 
-void Path::add_obstacle(const vect_t &c, uint16_t r, const int nodes, const int nlayers, const uint16_t clearance)
+void Path::add_obstacle( const vect_t &c,
+                         uint16_t r,
+                         const int nodes,
+                         const int nlayers,
+                         const uint16_t clearance,
+                         const bool target)
 {
     uint32_t rot_a, rot_b, nr;
     uint32_t rot_c, rot_d;
@@ -110,6 +120,7 @@ void Path::add_obstacle(const vect_t &c, uint16_t r, const int nodes, const int 
     //assert(obstacles_nb < PATH_OBSTACLES_NB);
     obstacles[obstacles_nb].c = c;
     obstacles[obstacles_nb].r = r;
+    obstacles[obstacles_nb].target_allowed = target;
     obstacles_nb++;
 
     /* Complex number A = cos(angle) + i sin(angle) */
@@ -196,8 +207,12 @@ int Path::find_neighbors(int cur_point, struct astar_neighbor_t *neighbors)
                 uint16_t d = distance_segment_point(&navpoints[cur_point], &navpoints[i], &obstacles[j].c);
                 if (d < obstacles[j].r)
                 {
-                    /* Collision while forcing the last move to the destination */
-                    if (force_move && cur_point==PATH_NAVPOINT_DST_IDX &&
+                    /* Collision while planing the last move to the */
+                    /* the center of an obstacle. This is useful to */
+                    /* target the center of an obstacle and stop */
+                    /* in front of it (ex, the cake in apbirthday 2013) */
+                    if (obstacles[j].target_allowed &&
+                        cur_point==PATH_NAVPOINT_DST_IDX &&
                         PATH_VECT_EQUAL(&navpoints[cur_point], &obstacles[j].c))
                     {
                         /* Skip this obstacle */
@@ -288,12 +303,17 @@ void Path::compute(weight_t escape)
     host_debug("** Path compute(end) found=%u escape=%u\n", path_found, escape);
 }
 
-void Path::obstacle(int index, const vect_t &c, uint16_t r, int f)
+void Path::obstacle(const int index, const vect_t &c, const uint16_t r, const int f, const bool target)
 {
-    add_obstacle(c, r, PATH_OBSTACLES_NAVPOINTS_NB, PATH_OBSTACLES_NAVPOINTS_LAYERS, Obstacles::clearance_mm + 100/* extra clearance radius */);
+    add_obstacle( c,
+                  r,
+                  PATH_OBSTACLES_NAVPOINTS_NB,
+                  PATH_OBSTACLES_NAVPOINTS_LAYERS,
+                  Obstacles::clearance_mm + 100/* extra clearance radius */,
+                  target);
 }
 
-void Path::endpoints(const vect_t &src, const vect_t &dst, const bool force_move)
+void Path::endpoints(const vect_t &src, const vect_t &dst)
 {
     /* Store endpoints location */
     host_debug("Set path endpoints src=(%u;%u) dst=(%u;%u)\n",
@@ -304,19 +324,6 @@ void Path::endpoints(const vect_t &src, const vect_t &dst, const bool force_move
     /* Init endpoints weights */
     navweights[PATH_NAVPOINT_SRC_IDX] = (1<<PATH_WEIGHT_PRECISION);
     navweights[PATH_NAVPOINT_DST_IDX] = (1<<PATH_WEIGHT_PRECISION);
-
-    /* Set force_move to allow the path to end inside an obstacle */
-    /* This is useful to target the center of an obstacle and stop */
-    /* in front of it before the collision happens */
-    this->force_move = force_move;
-
-#ifdef playground_2013_hh
-    /* Temporary code for the cake */
-    if (PATH_VECT_EQUAL(&dst, &pg_cake_pos))
-    {
-        this->force_move = true;
-    }
-#endif
 }
 
 bool Path::get_next(vect_t &p)

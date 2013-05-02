@@ -38,6 +38,10 @@ typedef struct path_obstacle_t
     vect_t c;
     /** Radius. */
     uint16_t r;
+    /** Allow the robot to target the obstacle
+     * in order to go in front of it, while stopping
+     * at a given distance, before the collision happens */
+    bool target_allowed;
 } path_obstacle_t;
 
 typedef uint16_t weight_t;
@@ -51,9 +55,9 @@ class Path
     /** Reset path computation, remove every obstacles */
     void reset(void);
     /** Set a moving obstacle position, radius and factor*/
-    void obstacle(int index, const vect_t &c, uint16_t r, int f = 0);
+    void obstacle(const int index, const vect_t &c, const uint16_t r, const int f = 0, const bool target = false);
     /** Set path source and destination */
-    void endpoints(const vect_t &src, const vect_t &dst, const bool force_move=false);
+    void endpoints(const vect_t &src, const vect_t &dst);
     /** Compute path with the given escape factor */
     void compute(weight_t escape = 0);
     /** Return a point vector by index */
@@ -73,7 +77,7 @@ class Path
 
   private:
     /** Add an obstacle on the field */
-    void add_obstacle(const vect_t &c, uint16_t r, const int nodes, const int nlayers, const uint16_t clearance);
+    void add_obstacle(const vect_t &c, uint16_t r, const int nodes, const int nlayers, const uint16_t clearance, const bool target);
 
     /** Number of possible obstacles. */
     static const int PATH_OBSTACLES_NB = (4+1/*cake*/);
@@ -120,10 +124,6 @@ class Path
     int next_node;
     /** TRUE when a path has been found */
     bool path_found;
-    /** TRUE to allow last movement to enter an obstacle
-     * This may be used to target the center of an obstacle
-     * and stop closed to it */
-    bool force_move;
 };
 
 #endif // path_hh
