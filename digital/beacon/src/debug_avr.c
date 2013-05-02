@@ -138,6 +138,11 @@ void usartRXCallback(uint16_t bytesToRead)
 				break;
 			case '0':
 	// 			network_send_data(NETWORK_RESET,0x1);
+				network_send_reset(0xFFFF);
+				break;
+			case '1':
+	// 			network_send_data(NETWORK_RESET,0x1);
+				network_send_start_calibration();
 				break;
 			case 'w':
 				motor_set_target_speed(motor_get_target_speed()-1);
@@ -146,6 +151,9 @@ void usartRXCallback(uint16_t bytesToRead)
 			case 'x':
 				motor_set_target_speed(motor_get_target_speed()+1);
 				uprintf("target speed = %d\r\n",motor_get_target_speed());
+				break;
+			case 'v':
+				servo_start_wave_task();
 				break;
 			case 'f':
 				if(debug_network_enable == 1)
