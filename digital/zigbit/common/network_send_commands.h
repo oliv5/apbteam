@@ -38,4 +38,7 @@ void network_send_reset(uint16_t address);
 /* This function must be used to send jack state through zigbee network */
 void network_send_jack_state(uint16_t address,uint8_t state);
 
+/* This function must be used to send calibration command through zigbee network */
+void network_send_start_calibration();
+
 #endif

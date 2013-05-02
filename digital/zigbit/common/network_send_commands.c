@@ -160,4 +160,25 @@ void network_send_jack_state(uint16_t address,uint8_t state)
 	}
 }
 
+/* This function must be used to send calibration command through zigbee network */
+void network_send_start_calibration()
+{
+	
+	if(network_get_state() == APP_NETWORK_JOINED_STATE)
+	{
+		/* Configure network for tx */
+		network_TX_prepare_configuration();
+		network_config.dstAddress.shortAddress = 0xFFFF;						// Destination address	
+		network_config.asdu = (uint8_t*) &zigbit_tx_buffer.message;					// application message pointer
+		
+		/* Message type*/
+		zigbit_tx_buffer.message.type = NETWORK_START_CALIBRATION;
+		
+		/* Bitcloud sending request */
+		network_config.asduLength = sizeof(zigbit_tx_buffer.message.type);		// actual application message length
+		
+		network_start_transmission();
+	}
+}
+
 
