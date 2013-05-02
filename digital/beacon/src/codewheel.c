@@ -111,7 +111,12 @@ ISR(TIMER3_COMPA_vect)
 {
 	if(codewheel_get_state() == CODEWHEEL_REQUEST_REBASE)
 	{
-		OCR3A = codewheel_get_rebase_offset();
+		/* if rebase offset is too short, wait 1 turn before doing it */
+		if(codewheel_get_rebase_offset() < 60)
+			OCR3A = CODEWHEEL_CPR+codewheel_get_rebase_offset();
+		else
+			OCR3A = codewheel_get_rebase_offset();
+		
 		codewheel_set_state(CODEWHEEL_REBASED);
 		uprintf("Rebased\r\n");
 	}	
