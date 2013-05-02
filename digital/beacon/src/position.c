@@ -208,3 +208,9 @@ int8_t position_get_trust(TOpponent_ID id)
 {
 	return opponent[id].trust;
 }
+
+/* This function returns the latest angle to a specified beacon */
+float position_get_beacon_angle(TBeacon_ID id)
+{
+	return beacon[id].angle[1];
+}

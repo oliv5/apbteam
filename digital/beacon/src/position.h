@@ -103,4 +103,7 @@ int16_t position_get_coord(TOpponent_ID id, TCoord_type type);
 /* This function returns the trust according to opponent number */
 int8_t position_get_trust(TOpponent_ID id);
 
+/* This function returns the latest angle to a specified beacon */
+float position_get_beacon_angle(TBeacon_ID id);
+
 #endif
