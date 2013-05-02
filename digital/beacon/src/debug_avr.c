@@ -137,11 +137,9 @@ void usartRXCallback(uint16_t bytesToRead)
 				jack_on_off();
 				break;
 			case '0':
-	// 			network_send_data(NETWORK_RESET,0x1);
 				network_send_reset(0xFFFF);
 				break;
 			case '1':
-	// 			network_send_data(NETWORK_RESET,0x1);
 				network_send_start_calibration();
 				break;
 			case 'w':
