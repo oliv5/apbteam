@@ -31,6 +31,7 @@
 #include "codewheel.h"
 #include "buttons.h"
 #include "uid.h"
+#include "customisation.h"
 
 HAL_AppTimer_t calibrationTimer;		// TIMER descripor used by the calibration task
 HAL_AppTimer_t ManualcalibrationTimer;		// TIMER descripor used by the manual calibration task
@@ -106,9 +107,9 @@ void calibration_task(void)
 
 	/* Select which servo need to be calibrated */
 	if(servo_get_state(SERVO_1) == servo_get_state(SERVO_2))
-		servo = SERVO_1;
+		servo = custom_get_servoID_order(1,get_uid());
 	else
-		servo = SERVO_2;
+		servo = custom_get_servoID_order(2,get_uid());
 	
 	switch(calibration.state)
 	{
@@ -130,8 +131,9 @@ void calibration_task(void)
 				/* Laser detected the aim, reset the servo with the previous value and update the servo status */
 				servo_set_value(servo,servo_get_value(servo) - servo_get_scanning_sense(servo)*FAST_SCANNING_OFFSET);
 				servo_set_state(servo,SERVO_SCANNING_FAST_FINISHED);
-				
+
 				uprintf("servo[%d] FAST finished\r\n",servo);
+				
 				
 				if((servo_get_state(SERVO_1) == SERVO_SCANNING_FAST_FINISHED) && (servo_get_state(SERVO_2) == SERVO_SCANNING_FAST_FINISHED))
 				{
@@ -159,7 +161,7 @@ void calibration_task(void)
 				calibration_set_laser_flag(CLEAR);
 				
 				/* Laser detected the aim, reset the servo with the previous value and update the servo status */
-				servo_set_value(servo,servo_get_value(servo) + servo_get_scanning_sense(servo)*9);
+				servo_set_value(servo,servo_get_value(servo) - servo_get_scanning_sense(servo)*13);
 				servo_set_state(servo,SERVO_SCANNING_SLOW_FINISHED);
 				
 				uprintf("servo[%d] SLOW finished\r\n",servo);
@@ -222,6 +224,7 @@ void calibration_scanning(TServo_ID servo_id)
 /* This function sets the laser flag according the given value SET or CLEAR */
 void calibration_set_laser_flag(TLaser_flag_type value)
 {
+// 	uprintf("&&&&&&&&&&&&&&&&& laser flag ok %d\r\n",(int)value);
 	calibration.laser_flag = value;
 }
 

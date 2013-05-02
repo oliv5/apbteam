@@ -31,6 +31,8 @@
 #include "codewheel.h"
 #include "calibration.h"
 #include "network_send_commands.h"
+#include "uid.h"
+#include "customisation.h"
 
 laser_s laser;
 
@@ -139,14 +141,29 @@ ISR(TIMER3_COMPB_vect)
 		else
 		{
 			/* If mire 1 is spotted */
-			if(((laser_get_angle_degree() <= SERVO_1_ANGLE_POSITION + SERVO_ANGLE_POSITION_TOLERANCE) || (laser_get_angle_degree() >= 360 - SERVO_ANGLE_POSITION_TOLERANCE)) && ((servo_get_state(SERVO_1) == SERVO_SCANNING_FAST_IN_PROGRESS) || (servo_get_state(SERVO_1) == SERVO_SCANNING_SLOW_IN_PROGRESS)))
+			if(((laser_get_angle_degree() <= custom_get_mire_angle(1,get_uid()) + SERVO_ANGLE_POSITION_TOLERANCE) || (laser_get_angle_degree() >= 360 - SERVO_ANGLE_POSITION_TOLERANCE)) && ((servo_get_state(custom_get_servoID_order(1,get_uid())) == SERVO_SCANNING_FAST_IN_PROGRESS) || (servo_get_state(custom_get_servoID_order(1,get_uid())) == SERVO_SCANNING_SLOW_IN_PROGRESS)))
 			{
-				calibration_set_laser_flag(SET_SERVO_1);
+				if(custom_get_servoID_order(1,get_uid()) == SERVO_1)
+				{
+					calibration_set_laser_flag(SET_SERVO_1);
+				}
+				else
+				{
+					calibration_set_laser_flag(SET_SERVO_2);
+				}
 			}
+			
 			/* If mire 2 is spotted */
-			else if(((laser_get_angle_degree() <= SERVO_2_ANGLE_POSITION + SERVO_ANGLE_POSITION_TOLERANCE) && (laser_get_angle_degree() >= SERVO_2_ANGLE_POSITION - SERVO_ANGLE_POSITION_TOLERANCE)) && ((servo_get_state(SERVO_2) == SERVO_SCANNING_FAST_IN_PROGRESS) || (servo_get_state(SERVO_2) == SERVO_SCANNING_SLOW_IN_PROGRESS)))
+			else if(((laser_get_angle_degree() <= custom_get_mire_angle(2,get_uid()) + SERVO_ANGLE_POSITION_TOLERANCE) && (laser_get_angle_degree() >= custom_get_mire_angle(2,get_uid()) - SERVO_ANGLE_POSITION_TOLERANCE)) && ((servo_get_state(custom_get_servoID_order(2,get_uid())) == SERVO_SCANNING_FAST_IN_PROGRESS) || (servo_get_state(custom_get_servoID_order(2,get_uid())) == SERVO_SCANNING_SLOW_IN_PROGRESS)))
 			{
-				calibration_set_laser_flag(SET_SERVO_2);		
+				if(custom_get_servoID_order(2,get_uid()) == SERVO_1)
+				{
+					calibration_set_laser_flag(SET_SERVO_1);
+				}
+				else
+				{
+					calibration_set_laser_flag(SET_SERVO_2);
+				}
 			}
 		}
 	}
