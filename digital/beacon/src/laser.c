@@ -155,9 +155,6 @@ ISR(TIMER3_COMPB_vect)
 		if(laser_get_angle_degree() < ANGLE_RANGE_MAX)
 		{
 			angle_to_send = laser_get_angle_raw() + (laser.angle_id << 9);
-#ifdef LOL_NUMBER_2
-			angle_to_send = (CODEWHEEL_CPR/4 - laser_get_angle_raw()) + (laser.angle_id << 9);
-#endif
 			network_send_angle(0,angle_to_send);
 			laser.angle_id++;
 		}
