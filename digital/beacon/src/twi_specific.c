@@ -31,7 +31,7 @@
 #include "misc.h"
 #include "twi.h"
 #include "network.h"
-
+#include "formula.h"
 
 static HAL_AppTimer_t twiTimer;
 extern robot_s my_robot;
