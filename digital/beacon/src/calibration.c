@@ -240,12 +240,25 @@ TCalibration_state calibration_get_state(void)
 /* Manual calibration task */
 void calibration_manual_task(void)
 {
+	uint16_t value = 0;
 	if(button_get_state(1) == BUTTON_PRESSED)
-		servo_angle_increase(SERVO_1);
+	{
+		value = servo_angle_decrease(SERVO_1);
+		uprintf("boutton 1 value = %d\r\n",value);
+	}
 	if(button_get_state(2) == BUTTON_PRESSED)
-		servo_angle_decrease(SERVO_1);
+	{
+		value = servo_angle_increase(SERVO_1);
+		uprintf("boutton 2 value = %d\r\n",value);
+	}
 	if(button_get_state(3) == BUTTON_PRESSED)
-		servo_angle_increase(SERVO_2);
+	{
+		value = servo_angle_increase(SERVO_2);
+		uprintf("boutton 3 value = %d\r\n",value);
+	}
 	if(button_get_state(4) == BUTTON_PRESSED)
-		servo_angle_decrease(SERVO_2);
+	{
+		value = servo_angle_decrease(SERVO_2);
+		uprintf("boutton 4 value = %d\r\n",value);
+	}
 }
