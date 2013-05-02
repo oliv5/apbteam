@@ -118,7 +118,7 @@ ISR(TIMER3_COMPA_vect)
 			OCR3A = codewheel_get_rebase_offset();
 		
 		codewheel_set_state(CODEWHEEL_REBASED);
-		uprintf("Rebased\r\n");
+		uprintf("Rebased with offset == %d\r\n",codewheel_get_rebase_offset());
 	}	
 	else
 	{
