@@ -40,6 +40,7 @@
 #include "servo.h"
 #include "reset.h"
 #include "uid.h"
+#include "calibration.h"
 
 /* Specific callback after data packet received */
 void network_specific_DataIndicationcallback(APS_DataInd_t* indData)
@@ -82,6 +83,9 @@ void network_specific_DataIndicationcallback(APS_DataInd_t* indData)
 			break;
 		case NETWORK_UART_OVER_ZB:
 			print_raw_data(FrameReceived->data,indData->asduLength-1);
+			break;
+		case NETWORK_START_CALIBRATION:
+			calibration_start_stop_task();
 			break;
 		default:
 			uprintf("Unknown data type received = %x\r\n",FrameReceived->type);
