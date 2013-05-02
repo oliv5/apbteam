@@ -30,6 +30,7 @@
 #include "motor.h"
 #include "codewheel.h"
 #include "buttons.h"
+#include "uid.h"
 
 HAL_AppTimer_t calibrationTimer;		// TIMER descripor used by the calibration task
 HAL_AppTimer_t ManualcalibrationTimer;		// TIMER descripor used by the manual calibration task
@@ -165,19 +166,24 @@ void calibration_task(void)
 				
 				if((servo_get_state(SERVO_1) == SERVO_SCANNING_SLOW_FINISHED) && (servo_get_state(SERVO_2) == SERVO_SCANNING_SLOW_FINISHED))
 				{
-					/* If both servo have finished FAST SCANNING go to SLOW SCANNING state */
+					/* If both servo have finished SLOW SCANNING go to calibrated state */
 					calibration.state = SCANNING_STATE_CALIBRATED;
-#ifdef LOL_NUMBER_1					
-					codewheel_set_rebase_offset(496);
-					servo_set_value(SERVO_1,servo_get_value(SERVO_1) + servo_get_scanning_sense(SERVO_1)*8);
-#elif LOL_NUMBER_2
-					codewheel_set_rebase_offset(3);
-					servo_set_value(SERVO_2,servo_get_value(SERVO_2) + servo_get_scanning_sense(SERVO_2)*8);
-#elif LOL_NUMBER_3
-					codewheel_set_rebase_offset(CODEWHEEL_CPR*3/4);
-#endif
-					codewheel_set_state(CODEWHEEL_REQUEST_REBASE);
+					if(get_uid() == 1)
+					{
+						codewheel_set_rebase_offset(0);
+// 						servo_set_value(SERVO_1,servo_get_value(SERVO_1) + servo_get_scanning_sense(SERVO_1)*8);
+					}
+					else if(get_uid() == 2)
+					{
+						codewheel_set_rebase_offset(0);
+// 						servo_set_value(SERVO_2,servo_get_value(SERVO_2) + servo_get_scanning_sense(SERVO_2)*8);
+					}
+					else
+					{
+						codewheel_set_rebase_offset(CODEWHEEL_CPR*3/4);
+					}
 					
+					codewheel_set_state(CODEWHEEL_REQUEST_REBASE);
 				}
 			}
 			else
