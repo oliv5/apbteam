@@ -193,19 +193,25 @@ void debug_task(void)
  	uprintf("------------------------- debug TASK -------------------------\r\n");
 	uprintf("## Network\r\n");
 	uprintf("Status : 0x%x - ",network_get_state());
-#ifdef TYPE_COOR
-	uprintf("X = %d   ---   ",position_get_coord(OPPONENT_1,X));
-	uprintf("Y = %d   ---   ",position_get_coord(OPPONENT_1,Y));
-	uprintf("Trust = %d\r\n",position_get_trust(OPPONENT_1));
-#else
-	uprintf("## Calibration\r\n");
-	uprintf("State : %d\r\n",calibration_get_state());
-	uprintf("## Servo\r\n");
- 	uprintf("State : [1]=%d [2]=%d - ",servo_get_state(SERVO_1),servo_get_state(SERVO_2));
- 	uprintf("Value : [1]=%d [2]=%d\r\n",servo_get_value(SERVO_1),servo_get_value(SERVO_2));
-	uprintf("## Codewheel\r\n");
-	uprintf("State = %d - Raw = %d - Degree = %f\r\n",codewheel_get_state(),codewheel_get_value(),codewheel_convert_angle_raw2degrees(codewheel_get_value()));
-	uprintf("## Motor\r\n");
-	uprintf("State : %d   ----    speed = %d\r\n",motor_get_state(),OCR0A);
-#endif
+	if(get_uid() == 0)
+	{
+		uprintf("Beacon[1] = %f   ---  ",position_get_beacon_angle(POV_BEACON_1));
+		uprintf("Beacon[2] = %f   ---  ",position_get_beacon_angle(POV_BEACON_2));
+		uprintf("Beacon[3] = %f   ---  ",position_get_beacon_angle(POV_BEACON_3));
+		uprintf("X = %d   ---   ",position_get_coord(OPPONENT_1,X));
+		uprintf("Y = %d   ---   ",position_get_coord(OPPONENT_1,Y));
+		uprintf("Trust = %d\r\n",position_get_trust(OPPONENT_1));
+	}
+	else
+	{
+		uprintf("## Calibration\r\n");
+		uprintf("State : %d\r\n",calibration_get_state());
+		uprintf("## Servo\r\n");
+		uprintf("State : [1]=%d [2]=%d - ",servo_get_state(SERVO_1),servo_get_state(SERVO_2));
+		uprintf("Value : [1]=%d [2]=%d\r\n",servo_get_value(SERVO_1),servo_get_value(SERVO_2));
+		uprintf("## Codewheel\r\n");
+		uprintf("State = %d - Raw = %d - Degree = %f\r\n",codewheel_get_state(),codewheel_get_value(),codewheel_convert_angle_raw2degrees(codewheel_get_value()));
+		uprintf("## Motor\r\n");
+		uprintf("State : %d   ----    speed = %d\r\n",motor_get_state(),OCR0A);
+	}
 }
