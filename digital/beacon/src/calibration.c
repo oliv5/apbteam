@@ -114,7 +114,8 @@ void calibration_task(void)
 		case CALIBRATION_INIT:
 			
 			/* Go directly to next step */
-			calibration.state = CALIBRATION_FAST_SCANNING;
+			calibration.state = CALIBRATION_SLOW_SCANNING;
+			uprintf("calibration init done \r\n");
 			break;
 			
 		case CALIBRATION_FAST_SCANNING:
