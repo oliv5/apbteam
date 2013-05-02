@@ -29,7 +29,7 @@
 #define MOTOR_TARGET_SPEED_INIT	140
 #define MOTOR_SPEED_STOP		0
 #define MOTOR_SPEED_MIN			140
-#define MOTOR_SPEED_MAX			140
+#define MOTOR_SPEED_MAX			155
 
 typedef struct
 {

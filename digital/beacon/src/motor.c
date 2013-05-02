@@ -54,7 +54,7 @@ void motor_init(void)
 /* This function starts the motor rotation */
 void motor_start(void)
 {
-	motor_set_speed(MOTOR_SPEED_MIN);
+	motor_set_speed(MOTOR_SPEED_MAX);
 	start_codewheel_timer_task();
 }
 
