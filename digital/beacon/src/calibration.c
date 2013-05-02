@@ -177,7 +177,6 @@ void calibration_task(void)
 #endif
 					codewheel_set_state(CODEWHEEL_REQUEST_REBASE);
 					
-					servo_start_wave_task();
 				}
 			}
 			else

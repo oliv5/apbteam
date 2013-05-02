@@ -57,12 +57,10 @@ void network_specific_DataIndicationcallback(APS_DataInd_t* indData)
 			if(FrameReceived->data[NETWORK_MSG_DATA_MSB_FIELD])
 			{
 				motor_start();
-				servo_start_wave_task();
 			}
 			else
 			{
 				motor_stop();
-				servo_stop_wave_task();
 			}
 			break;
 		case NETWORK_OPPONENT_NUMBER:
