@@ -36,7 +36,9 @@
 Robot *robot;
 
 Robot::Robot ()
-    : main_i2c_queue_ (hardware.main_i2c), zb_i2c_queue_ (hardware.zb_i2c),
+    : main_i2c_queue_ (hardware.main_i2c),
+      secondary_i2c_queue_ (hardware.secondary_i2c),
+      zb_i2c_queue_ (hardware.zb_i2c),
       asserv (main_i2c_queue_, BOT_SCALE),
       mimot (main_i2c_queue_),
 #ifdef TARGET_host
@@ -44,6 +46,7 @@ Robot::Robot ()
 #else
       pot_regul (main_i2c_queue_, 0x7),
 #endif
+      lcd (secondary_i2c_queue_),
       beacon (zb_i2c_queue_),
       dev_proto (*this, hardware.dev_uart),
       zb_proto (*this, hardware.zb_uart),
@@ -136,6 +139,7 @@ Robot::main_loop ()
         top_update ();
         // Handle communications.
         bool sync = main_i2c_queue_.sync ();
+        secondary_i2c_queue_.sync ();
         zb_i2c_queue_.sync ();
         Position robot_pos = asserv.get_position ();
         beacon.send_position (robot_pos.v);
@@ -297,6 +301,11 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
         // - 1b: 01 for eeprom, 00 for volatile.
         pot_regul.set_wiper (args[0], ucoo::bytes_pack (args[1], args[2]),
                              args[3] ? true : false);
+        break;
+    case c ('l', 3):
+        // Test LCD interface, set team color.
+        // - 3B: R, G, B.
+        lcd.team_color (args[0], args[1], args[2]);
         break;
     case c ('A', 1):
         // Asserv position stats.

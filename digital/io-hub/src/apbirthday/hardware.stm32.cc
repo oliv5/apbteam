@@ -35,7 +35,7 @@ Hardware::Hardware ()
     : dev_uart (4), zb_uart (2),
       usb_control ("APBTeam", "APBirthday"), usb (usb_control, 0),
       zb_usb_avrisp (usb_control, 1),
-      main_i2c (2), zb_i2c (1),
+      main_i2c (2), secondary_i2c (0), zb_i2c (1),
       raw_jack (GPIOD, 12),
       ihm_color (GPIOD, 14),
       ihm_strat (GPIOD, 13),
@@ -94,6 +94,11 @@ Hardware::Hardware ()
     gpio_set_af (GPIOA, GPIO_AF4, GPIO8);
     gpio_set_af (GPIOC, GPIO_AF4, GPIO9);
     main_i2c.enable ();
+    // secondary_i2c
+    gpio_mode_setup (GPIOB, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO8 | GPIO9);
+    gpio_set_output_options (GPIOB, GPIO_OTYPE_OD, GPIO_OSPEED_2MHZ, GPIO8 | GPIO9);
+    gpio_set_af (GPIOB, GPIO_AF4, GPIO8 | GPIO9);
+    secondary_i2c.enable ();
     // zb_i2c
     gpio_mode_setup (GPIOB, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO10 | GPIO11);
     gpio_set_output_options (GPIOB, GPIO_OTYPE_OD, GPIO_OSPEED_2MHZ,

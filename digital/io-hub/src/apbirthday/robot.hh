@@ -25,6 +25,7 @@
 // }}}
 #include "hardware.hh"
 #include "asserv.hh"
+#include "lcd.hh"
 #include "beacon.hh"
 #ifdef TARGET_host
 # include "potentiometer.host.hh"
@@ -73,7 +74,7 @@ class Robot : public ucoo::Proto::Handler
     Hardware hardware;
   private:
     /// I2C queues.
-    I2cQueue main_i2c_queue_, zb_i2c_queue_;
+    I2cQueue main_i2c_queue_, secondary_i2c_queue_, zb_i2c_queue_;
   public:
     /// Public access to asserv class.
     Asserv asserv;
@@ -85,6 +86,8 @@ class Robot : public ucoo::Proto::Handler
 #else
     Potentiometer pot_regul;
 #endif
+    /// Public access to LCD class.
+    LCD lcd;
     /// Public access to beacon class.
     Beacon beacon;
   private:
