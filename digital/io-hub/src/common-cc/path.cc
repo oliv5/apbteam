@@ -27,7 +27,6 @@
 #include "path.hh"
 #include "bot.hh"
 #include "robot.hh"
-#include "playground.hh"
 #ifdef HOST
 #include "debug.host.hh"
 #endif
@@ -63,11 +62,18 @@ static int32_t pos_dot_product(vect_t* pa, vect_t* pb, vect_t* pc, vect_t* pd)
     return vect_dot_product(&vab, &vcd);
 }
 
-Path::Path() :
-    border_xmin(pg_border_distance + pg_plate_size_border*2 + BOT_SIZE_RADIUS/2),
-    border_ymin(pg_border_distance),
-    border_xmax(pg_width - pg_border_distance - pg_plate_size_border*2 - BOT_SIZE_RADIUS/2),
-    border_ymax(pg_length - pg_border_distance),
+Path::Path( const uint16_t border_xmin,
+            const uint16_t border_ymin,
+            const uint16_t border_xmax,
+            const uint16_t border_ymax) :
+    border_xmin(border_xmin),
+    border_ymin(border_ymin),
+    border_xmax(border_xmax),
+    border_ymax(border_ymax),
+    obstacles(NULL),
+    navpoints(NULL),
+    navweights(NULL),
+    astar_nodes(NULL),
     escape_factor(0),
     obstacles_nb(0),
     navpoints_nb(0),
@@ -79,8 +85,6 @@ Path::Path() :
 void Path::reset()
 {
     vect_t nul = {0,0};
-
-    /* Reset everything */
     host_debug("Path reset\n");
     obstacles_nb = 0;
     navpoints_nb = PATH_RESERVED_NAVPOINTS_NB;
@@ -88,16 +92,6 @@ void Path::reset()
     navpoints[PATH_NAVPOINT_DST_IDX] = nul;
     next_node = 0;
     escape_factor = 0;
-
-#ifdef playground_2013_hh
-    /* Declare the cake as an obstacle */
-    add_obstacle( pg_cake_pos,
-                  pg_cake_radius,
-                  PATH_CAKE_NAVPOINTS_NB * 2 /* only half the navpoints are on the playground */,
-                  PATH_CAKE_NAVPOINTS_LAYERS,
-                  0 /* no extra clearance radius */,
-                  true /*target the center is allowed*/);
-#endif
 }
 
 void Path::add_obstacle( const vect_t &c,
@@ -275,7 +269,7 @@ void Path::compute(weight_t escape)
     escape_factor = escape;
 
     /* Call the A* algorithm */
-    path_found = (bool)astar(astar_nodes, PATH_NAVPOINTS_NB, PATH_NAVPOINT_DST_IDX, PATH_NAVPOINT_SRC_IDX);
+    path_found = (bool)astar(astar_nodes, navpoints_nb, PATH_NAVPOINT_DST_IDX, PATH_NAVPOINT_SRC_IDX);
     if (path_found)
     {
         /* Store next node to go to */
@@ -283,7 +277,7 @@ void Path::compute(weight_t escape)
 
 #ifdef PATH_DEBUG
         /* Log and display the path found */
-        vect_t path[PATH_NAVPOINTS_NB];
+        vect_t path[navpoints_nb];
         int node = PATH_NAVPOINT_SRC_IDX;
         int path_nb = 0;
 
@@ -330,7 +324,7 @@ bool Path::get_next(vect_t &p)
 {
     if (path_found)
     {
-        ucoo::assert(next_node<PATH_NAVPOINTS_NB);
+        ucoo::assert(next_node<navpoints_nb);
         p = navpoints[next_node];
         next_node = astar_nodes[next_node].prev;
     }
@@ -357,12 +351,12 @@ void Path::prepare_score(const vect_t &src, weight_t escape)
 {
     host_debug("Path prepare score from src=(%u;%u) escape=%u\n", src.x, src.y, escape);
     escape_factor = escape;
-    astar_dijkstra_prepare(astar_nodes, PATH_NAVPOINTS_NB, get_point_index(src), PATH_NAVPOINT_DST_IDX);
+    astar_dijkstra_prepare(astar_nodes, navpoints_nb, get_point_index(src), PATH_NAVPOINT_DST_IDX);
 }
 
 weight_t Path::get_score(const vect_t &dst)
 {
-    uint16_t score = astar_dijkstra_finish(astar_nodes, PATH_NAVPOINTS_NB, get_point_index(dst));
+    uint16_t score = astar_dijkstra_finish(astar_nodes, navpoints_nb, get_point_index(dst));
     host_debug("Path get score=%u for dst=(%u;%u)\n", score, dst.x, dst.y);
     return score;
 }

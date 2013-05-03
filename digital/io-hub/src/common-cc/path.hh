@@ -25,8 +25,7 @@
 //
 // }}}
 #include "defs.hh"
-#include "playground_2013.hh"
-
+#include "playground.hh"
 extern "C" {
 #include "modules/path/astar/astar.h"
 }
@@ -58,9 +57,9 @@ class Path
 {
   public:
     /** Initialise path */
-    Path();
-    /** Reset path computation, remove every obstacles */
-    void reset(void);
+    Path(const uint16_t, const uint16_t, const uint16_t, const uint16_t);
+    /** Reset path computation, remove mobile obstacles, add static obstacles */
+    virtual void reset(void);
     /** Set a moving obstacle position, radius and factor*/
     void obstacle(const int index, const vect_t &c, const uint16_t r, const int f = 0, const bool target = false);
     /** Set path source and destination */
@@ -82,28 +81,30 @@ class Path
        (also reuse previously given escape factor) */
     weight_t get_score(const vect_t &dst);
 
-  private:
+  protected:
     /** Add an obstacle on the field */
     void add_obstacle(const vect_t &c, uint16_t r, int nodes, const int nlayers, const uint16_t clearance, const bool target);
-
-    /** Number of possible obstacles. */
-    static const int PATH_OBSTACLES_NB = (4+1/*cake*/);
+    /** Number of possible mobile obstacles. */
+    static const int PATH_OBSTACLES_NB = 4;
     /** Number of points per standard obstacle. */
     static const int PATH_OBSTACLES_NAVPOINTS_NB = 10;
-#ifdef playground_2013_hh
-    /** Number of points for the cake (plus 1) */
-    static const int PATH_CAKE_NAVPOINTS_NB = 6;
-#endif
-    /** Number of navigation points layers for the cake. */
-    static const int PATH_CAKE_NAVPOINTS_LAYERS = 1;
     /** Number of navigation points layers for each obstacle. */
     static const int PATH_OBSTACLES_NAVPOINTS_LAYERS = 2;
     /** Number of navigation points. */
-    static const int PATH_NAVPOINTS_NB = (PATH_RESERVED_NAVPOINTS_NB +
-#ifdef playground_2013_hh
-                                           PATH_CAKE_NAVPOINTS_LAYERS * (PATH_CAKE_NAVPOINTS_NB - PATH_OBSTACLES_NAVPOINTS_NB) +
-#endif
-                                           PATH_OBSTACLES_NAVPOINTS_LAYERS * (PATH_OBSTACLES_NB * PATH_OBSTACLES_NAVPOINTS_NB));
+    static const int PATH_NAVPOINTS_NB =
+        (PATH_RESERVED_NAVPOINTS_NB + PATH_OBSTACLES_NAVPOINTS_LAYERS * PATH_OBSTACLES_NB * PATH_OBSTACLES_NAVPOINTS_NB);
+    /** Borders, any point outside borders is eliminated. */
+    const uint16_t border_xmin, border_ymin, border_xmax, border_ymax;
+    /** List of obstacles. */
+    path_obstacle_t* obstacles;
+    /** List of navigation points coordonates */
+    vect_t* navpoints;
+    /** List of navigation points weights */
+    weight_t* navweights;
+    /** List of nodes used for A*. */
+    struct astar_node_t* astar_nodes;
+
+  private:
     /** Navigation points weight precision (2^-n).
      * Pay attention to overflow on weight_t variables */
     static const int PATH_WEIGHT_PRECISION = 4;
@@ -115,23 +116,12 @@ class Path
     /** Extra clearance area added to the radius of the navigation points
      * circle to move the navpoints away from the obstacle circle */
     static const uint16_t PATH_NAVPOINTS_CLEARANCE = 40;
-
-    /** Borders, any point outside borders is eliminated. */
-    const uint16_t border_xmin, border_ymin, border_xmax, border_ymax;
     /** Escape factor, 0 if none. */
     weight_t escape_factor;
-    /** List of obstacles. */
-    path_obstacle_t obstacles[PATH_OBSTACLES_NB];
     /** Number of obstacles */
     int obstacles_nb;
-    /** List of navigation points coordonates */
-    vect_t navpoints[PATH_NAVPOINTS_NB];
-    /** List of navigation points weights */
-    weight_t navweights[PATH_NAVPOINTS_NB];
     /** Number of navigation points */
     int navpoints_nb;
-    /** List of nodes used for A*. */
-    struct astar_node_t astar_nodes[PATH_NAVPOINTS_NB];
     /** Which node to look at for next step. */
     uint8_t next_node;
     /** TRUE when a path has been found */
