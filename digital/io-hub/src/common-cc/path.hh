@@ -84,12 +84,12 @@ class Path
 
   private:
     /** Add an obstacle on the field */
-    void add_obstacle(const vect_t &c, uint16_t r, const int nodes, const int nlayers, const uint16_t clearance, const bool target);
+    void add_obstacle(const vect_t &c, uint16_t r, int nodes, const int nlayers, const uint16_t clearance, const bool target);
 
     /** Number of possible obstacles. */
     static const int PATH_OBSTACLES_NB = (4+1/*cake*/);
     /** Number of points per standard obstacle. */
-    static const int PATH_OBSTACLES_NAVPOINTS_NB = 12;
+    static const int PATH_OBSTACLES_NAVPOINTS_NB = 10;
 #ifdef playground_2013_hh
     /** Number of points for the cake (plus 1) */
     static const int PATH_CAKE_NAVPOINTS_NB = 6;

@@ -102,14 +102,13 @@ void Path::reset()
 
 void Path::add_obstacle( const vect_t &c,
                          uint16_t r,
-                         const int nodes,
+                         int nodes,
                          const int nlayers,
                          const uint16_t clearance,
                          const bool target)
 {
     uint32_t rot_a, rot_b, nr;
-    uint32_t rot_c, rot_d;
-    uint32_t x, y, nx;
+    int32_t x, y, nx;
     int npt, layer;
 
     host_debug("Add obstacle c=(%u;%u) r=%u nodes=%u layers=%u\n",c.x, c.y, r, nodes, nlayers);
@@ -124,25 +123,21 @@ void Path::add_obstacle( const vect_t &c,
     obstacles[obstacles_nb].target_allowed = target;
     obstacles_nb++;
 
-    /* Complex number A = cos(angle) + i sin(angle) */
-    nr = PATH_ANGLE_824(nodes);
-    rot_a = fixed_cos_f824(nr);
-    rot_b = fixed_sin_f824(nr);
-
-    /* Complex number B = cos(angle/2) + i sin(angle/2) */
-    nr = PATH_ANGLE_824(nodes*2);
-    rot_c = fixed_cos_f824(nr);
-    rot_d = fixed_sin_f824(nr);
-
     /* Extend the points radius to allow the robot to go */
     /* from one to another without collision with the */
     /* obstacle circle. New radius is r / cos(angle/2) */
-    x = fixed_div_f824(r, rot_c) + 3 /* margin for the unprecise fixed point computation */;
-    y = 0;
+    nr = PATH_ANGLE_824(nodes*2);
+    y = fixed_div_f824(r, fixed_cos_f824(nr)) + 3 /* margin for the unprecise fixed point computation */;
+    x = 0;
 
     /* Add a number of sets of navigation points with different weights */
     for(layer=nlayers-1; layer>=0; layer--)
     {
+        /* Complex number A = cos(angle) + i sin(angle) */
+        nr = PATH_ANGLE_824(nodes);
+        rot_a = fixed_cos_f824(nr);
+        rot_b = fixed_sin_f824(nr);
+
         /* Compute obstacle points positions around a circle */
         for (npt=0; npt<nodes; npt++)
         {
@@ -170,14 +165,11 @@ void Path::add_obstacle( const vect_t &c,
         }
 
         /* Prepare the next layer */
-        /* Enlarge the circle */
-        x += BOT_SIZE_RADIUS; y = 0;
+        /* Twice less navpoints */
+        nodes >>= 1;
 
-        /* Rotate the next point by (angle/2) */
-        /* This interleaves the new navpoints with the previous ones */
-        nx = fixed_mul_f824(x, rot_c) - fixed_mul_f824(y, rot_d);
-        y =  fixed_mul_f824(y, rot_c) + fixed_mul_f824(x, rot_d);
-        x = nx;
+        /* Enlarge the circle */
+        y += BOT_SIZE_RADIUS; x = 0;
     }
 
 #ifdef HOST
