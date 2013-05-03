@@ -93,7 +93,7 @@ void Path::reset()
     /* Declare the cake as an obstacle */
     add_obstacle( pg_cake_pos,
                   pg_cake_radius,
-                  PATH_CAKE_NAVPOINTS_NB,
+                  PATH_CAKE_NAVPOINTS_NB * 2 /* only half the navpoints are on the playground */,
                   PATH_CAKE_NAVPOINTS_LAYERS,
                   0 /* no extra clearance radius */,
                   true /*target the center is allowed*/);
@@ -137,7 +137,7 @@ void Path::add_obstacle( const vect_t &c,
     /* Extend the points radius to allow the robot to go */
     /* from one to another without collision with the */
     /* obstacle circle. New radius is r / cos(angle/2) */
-    x = fixed_div_f824(r, rot_c) + 2 /* margin for the unprecise fixed point computation */;
+    x = fixed_div_f824(r, rot_c) + 3 /* margin for the unprecise fixed point computation */;
     y = 0;
 
     /* Add a number of sets of navigation points with different weights */

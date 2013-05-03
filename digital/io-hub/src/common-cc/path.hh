@@ -91,8 +91,8 @@ class Path
     /** Number of points per standard obstacle. */
     static const int PATH_OBSTACLES_NAVPOINTS_NB = 12;
 #ifdef playground_2013_hh
-    /** Number of points for the cake */
-    static const int PATH_CAKE_NAVPOINTS_NB = 14;
+    /** Number of points for the cake (plus 1) */
+    static const int PATH_CAKE_NAVPOINTS_NB = 6;
 #endif
     /** Number of navigation points layers for the cake. */
     static const int PATH_CAKE_NAVPOINTS_LAYERS = 1;
