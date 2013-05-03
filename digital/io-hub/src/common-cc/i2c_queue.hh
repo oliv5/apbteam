@@ -111,6 +111,8 @@ class I2cQueue : public ucoo::I2cMaster::FinishedHandler
         uint8_t address_;
         /// Last command sequence number.
         uint8_t seq_;
+        /// Is this slave present?
+        bool present_;
         /// Whether last received status was valid.
         bool last_status_valid_;
         /// Last received status.

@@ -43,8 +43,8 @@
 I2cQueue::Slave::Slave (I2cQueue &queue, uint8_t address, int status_size)
     : next_ (0), queue_ (queue),
       raw_status_size_ (status_size ? header_size + status_size : 0),
-      address_ (address), seq_ (0), last_status_valid_ (false),
-      transient_commands_index_ (0)
+      address_ (address), seq_ (0), present_ (status_size ? false : true),
+      last_status_valid_ (false), transient_commands_index_ (0)
 {
     queue.register_slave (*this);
     ucoo::assert (status_size <= status_size_max);
@@ -82,6 +82,7 @@ I2cQueue::sync ()
         {
             if (s->last_status_valid_)
             {
+                s->present_ = true;
                 s->recv_status (s->last_raw_status_ + header_size);
                 // On initialisation, copy sequence number.
                 if (!s->seq_)
@@ -116,6 +117,9 @@ I2cQueue::send (Slave &slave, const uint8_t *command, int size,
     Command *c;
     ucoo::assert (size <= command_size_max);
     unsigned int transient_commands_index = 0;
+    // If slave is not there, drop.
+    if (!slave.present_)
+        return;
     // Find command buffer.
     if (type == TRANSIENT)
     {
