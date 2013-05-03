@@ -349,7 +349,7 @@ int Path::get_point_index(const vect_t& point)
 {
     for(int i=0; i<navpoints_nb; i++)
     {
-        if (navpoints[i].x==point.x && navpoints[i].y==point.y)
+        if (PATH_VECT_EQUAL(&navpoints[i], &point))
             return i;
     }
     return -1;
