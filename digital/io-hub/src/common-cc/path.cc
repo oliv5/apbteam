@@ -56,12 +56,6 @@ extern "C" {
 #define PATH_IN_CIRCLE(pOINT, cENTER, rADIUS) \
     (distance_point_point((pOINT), (cENTER)) <= (rADIUS))
 
-/** Static nodes index for the endpoints */
-enum {
-    PATH_NAVPOINT_SRC_IDX = 0,
-    PATH_NAVPOINT_DST_IDX
-};
-
 static int32_t pos_dot_product(vect_t* pa, vect_t* pb, vect_t* pc, vect_t* pd)
 {
     vect_t vab = *pb; vect_sub(&vab, pa);
@@ -287,7 +281,7 @@ void Path::compute(weight_t escape)
     if (path_found)
     {
         /* Store next node to go to */
-        next_node = astar_nodes[0].prev;
+        next_node = astar_nodes[PATH_NAVPOINT_SRC_IDX].prev;
 
 #ifdef PATH_DEBUG
         /* Log and display the path found */

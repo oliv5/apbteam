@@ -31,6 +31,13 @@ extern "C" {
 #include "modules/path/astar/astar.h"
 }
 
+/** Static nodes index for the endpoints */
+enum {
+    PATH_NAVPOINT_SRC_IDX = 0,
+    PATH_NAVPOINT_DST_IDX,
+    PATH_RESERVED_NAVPOINTS_NB
+};
+
 /** Obstacle */
 typedef struct path_obstacle_t
 {
@@ -87,8 +94,6 @@ class Path
     /** Number of points for the cake */
     static const int PATH_CAKE_NAVPOINTS_NB = 14;
 #endif
-    /** Number of reserved points for the 2 endpoints  */
-    static const int PATH_RESERVED_NAVPOINTS_NB = 2;
     /** Number of navigation points layers for the cake. */
     static const int PATH_CAKE_NAVPOINTS_LAYERS = 1;
     /** Number of navigation points layers for each obstacle. */
@@ -121,7 +126,7 @@ class Path
     /** List of nodes used for A*. */
     struct astar_node_t astar_nodes[PATH_NAVPOINTS_NB];
     /** Which node to look at for next step. */
-    int next_node;
+    uint8_t next_node;
     /** TRUE when a path has been found */
     bool path_found;
 };
