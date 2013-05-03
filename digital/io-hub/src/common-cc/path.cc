@@ -62,6 +62,13 @@ enum {
     PATH_NAVPOINT_DST_IDX
 };
 
+static int32_t pos_dot_product(vect_t* pa, vect_t* pb, vect_t* pc, vect_t* pd)
+{
+    vect_t vab = *pb; vect_sub(&vab, pa);
+    vect_t vcd = *pd; vect_sub(&vcd, pc);
+    return vect_dot_product(&vab, &vcd);
+}
+
 Path::Path() :
     border_xmin(pg_border_distance + pg_plate_size_border*2 + BOT_SIZE_RADIUS/2),
     border_ymin(pg_border_distance),
@@ -222,15 +229,15 @@ int Path::find_neighbors(int cur_point, struct astar_neighbor_t *neighbors)
                     }
                     /* Collision while trying to escape the source point */
                     /* if and only if the source point is in this obstacle */
-                    /* and the distance is less than the obstacle radius */
-                    else if (i==PATH_NAVPOINT_SRC_IDX &&
-                             distance_point_point(&navpoints[cur_point], &navpoints[i]) < obstacles[j].r &&
-                             PATH_IN_CIRCLE(&navpoints[i], &obstacles[j].c, obstacles[j].r))
+                    /* and we are going away from the obstacle center */
+                    else if (escape_factor!=0 && i==PATH_NAVPOINT_SRC_IDX &&
+                             PATH_IN_CIRCLE(&navpoints[i], &obstacles[j].c, obstacles[j].r) &&
+                             pos_dot_product(&navpoints[i], &obstacles[j].c, &navpoints[i], &navpoints[cur_point])<=0)
                     {
                         /* Allow this navigation point with an extra cost */
                         weight *= escape_factor;
                     }
-                    /* Collision during a standard move */
+                    /* Other collisions are not allowed */
                     else
                     {
                         /* Disable this navigation point */
