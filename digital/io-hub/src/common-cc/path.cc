@@ -156,7 +156,7 @@ void Path::add_obstacle( const vect_t &c,
              && navpoints[navpoints_nb].y <= border_ymax)
             {
                 /* Accept point */
-                navweights[navpoints_nb] = (1 << PATH_WEIGHT_PRECISION) + (layer * PATH_WEIGHT_STEP);
+                navweights[navpoints_nb] = (layer * PATH_WEIGHT_STEP);
                 host_debug("Add point %u (%u;%u) w=%u\n",
                         navpoints_nb, navpoints[navpoints_nb].x, navpoints[navpoints_nb].y, navweights[navpoints_nb]);
                 navpoints_nb++;
@@ -187,15 +187,17 @@ int Path::find_neighbors(int cur_point, struct astar_neighbor_t *neighbors)
     int neighbors_nb = 0;
     ucoo::assert(cur_point<navpoints_nb && neighbors!=NULL);
 
-    /* Parse all nodes */
+    /* Parse all navigation points */
     for(int i=0; i<navpoints_nb; i++)
     {
         /* Except the current one */
         if (i!=cur_point)
         {
-            /* Get segment length */
-            weight_t weight = navweights[i] * (weight_t)distance_point_point(&navpoints[cur_point], &navpoints[i]);
-            weight >>= PATH_WEIGHT_PRECISION;
+            /* Compute the segment weight */
+            /* 1st: compute the distance to go */
+            weight_t weight =  (weight_t)distance_point_point(&navpoints[cur_point], &navpoints[i]);
+            /* 2nd: Add the target navpoint extra weigth */
+            weight += (weight * navweights[cur_point]) >> PATH_WEIGHT_PRECISION;
             host_debug("- Node %u (%u;%u) w=%u (%u) ", i, navpoints[i].x, navpoints[i].y, weight, navweights[i]);
 
             /* Check every obstacle */
@@ -320,8 +322,8 @@ void Path::endpoints(const vect_t &src, const vect_t &dst)
     navpoints[PATH_NAVPOINT_DST_IDX] = dst;
 
     /* Init endpoints weights */
-    navweights[PATH_NAVPOINT_SRC_IDX] = (1<<PATH_WEIGHT_PRECISION);
-    navweights[PATH_NAVPOINT_DST_IDX] = (1<<PATH_WEIGHT_PRECISION);
+    navweights[PATH_NAVPOINT_SRC_IDX] = 0;
+    navweights[PATH_NAVPOINT_DST_IDX] = 0;
 }
 
 bool Path::get_next(vect_t &p)

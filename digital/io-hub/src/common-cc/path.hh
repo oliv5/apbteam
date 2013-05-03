@@ -104,10 +104,11 @@ class Path
                                            PATH_CAKE_NAVPOINTS_LAYERS * (PATH_CAKE_NAVPOINTS_NB - PATH_OBSTACLES_NAVPOINTS_NB) +
 #endif
                                            PATH_OBSTACLES_NAVPOINTS_LAYERS * (PATH_OBSTACLES_NB * PATH_OBSTACLES_NAVPOINTS_NB));
-    /** Navigation points weight precision (2^-n). */
+    /** Navigation points weight precision (2^-n).
+     * Pay attention to overflow on weight_t variables */
     static const int PATH_WEIGHT_PRECISION = 4;
-    /** Navigation points weight step (2^-n). */
-    static const int PATH_WEIGHT_STEP = 6;
+    /** Navigation points weight step * (2^-n). */
+    static const int PATH_WEIGHT_STEP = 8;
     /** Extra clearance area added to the radius of the mobile obstacles
      * to counter the imprecision of the sonic sensors when the robot brakes */
     static const uint16_t PATH_OBSTACLES_CLEARANCE = 60;
