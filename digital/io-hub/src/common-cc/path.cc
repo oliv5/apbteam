@@ -188,23 +188,23 @@ int Path::find_neighbors(int cur_point, struct astar_neighbor_t *neighbors)
     ucoo::assert(cur_point<navpoints_nb && neighbors!=NULL);
 
     /* Parse all navigation points */
-    for(int i=0; i<navpoints_nb; i++)
+    for(int next_point=0; next_point<navpoints_nb; next_point++)
     {
         /* Except the current one */
-        if (i!=cur_point)
+        if (next_point!=cur_point)
         {
             /* Compute the segment weight */
             /* 1st: compute the distance to go */
-            weight_t weight =  (weight_t)distance_point_point(&navpoints[cur_point], &navpoints[i]);
+            weight_t weight =  (weight_t)distance_point_point(&navpoints[cur_point], &navpoints[next_point]);
             /* 2nd: Add the target navpoint extra weigth */
             weight += (weight * navweights[cur_point]) >> PATH_WEIGHT_PRECISION;
-            host_debug("- Node %u (%u;%u) w=%u (%u) ", i, navpoints[i].x, navpoints[i].y, weight, navweights[i]);
+            host_debug("- Node %u (%u;%u) w=%u (%u) ", next_point, navpoints[next_point].x, navpoints[next_point].y, weight, navweights[next_point]);
 
             /* Check every obstacle */
             for(int j=0; j<obstacles_nb; j++)
             {
                 /* Check for intersection with obstacle */
-                uint16_t d = distance_segment_point(&navpoints[cur_point], &navpoints[i], &obstacles[j].c);
+                uint16_t d = distance_segment_point(&navpoints[cur_point], &navpoints[next_point], &obstacles[j].c);
                 if (d < obstacles[j].r)
                 {
                     /* Collision while planing the last move to the */
@@ -223,9 +223,9 @@ int Path::find_neighbors(int cur_point, struct astar_neighbor_t *neighbors)
                     /* Collision while trying to escape the source point */
                     /* if and only if the source point is in this obstacle */
                     /* and we are going away from the obstacle center */
-                    else if (escape_factor!=0 && i==PATH_NAVPOINT_SRC_IDX &&
-                             PATH_IN_CIRCLE(&navpoints[i], &obstacles[j].c, obstacles[j].r) &&
-                             pos_dot_product(&navpoints[i], &obstacles[j].c, &navpoints[i], &navpoints[cur_point])<=0)
+                    else if (escape_factor!=0 && next_point==PATH_NAVPOINT_SRC_IDX &&
+                             PATH_IN_CIRCLE(&navpoints[next_point], &obstacles[j].c, obstacles[j].r) &&
+                             pos_dot_product(&navpoints[next_point], &obstacles[j].c, &navpoints[next_point], &navpoints[cur_point])<=0)
                     {
                         /* Allow this navigation point with an extra cost */
                         weight *= escape_factor;
@@ -246,7 +246,7 @@ int Path::find_neighbors(int cur_point, struct astar_neighbor_t *neighbors)
             if (weight)
             {
                 host_debug("=> validated w=%u\n", weight);
-                neighbors[neighbors_nb].node = i;
+                neighbors[neighbors_nb].node = next_point;
                 neighbors[neighbors_nb].weight = weight;
                 neighbors_nb++;
             }
