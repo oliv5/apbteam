@@ -261,6 +261,9 @@ I2cQueue::end_send_queue (int status)
             // Wait for acknowledgement.
             queue_timeout_ = retry_timeout;
     }
+    else
+        // Big problem, retry at next cycle.
+        queue_timeout_ = 1;
 }
 
 void
