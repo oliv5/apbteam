@@ -195,6 +195,7 @@ void Path::add_obstacle( const vect_t &c,
 int Path::find_neighbors(int cur_point, struct astar_neighbor_t *neighbors)
 {
     int neighbors_nb = 0;
+    ucoo::assert(cur_point<navpoints_nb && neighbors!=NULL);
 
     /* Parse all nodes */
     for(int i=0; i<navpoints_nb; i++)
@@ -337,6 +338,7 @@ bool Path::get_next(vect_t &p)
 {
     if (path_found)
     {
+        ucoo::assert(next_node<PATH_NAVPOINTS_NB);
         p = navpoints[next_node];
         next_node = astar_nodes[next_node].prev;
     }
@@ -345,7 +347,7 @@ bool Path::get_next(vect_t &p)
 
 vect_t& Path::get_point_vect(const int index)
 {
-    //assert(index<navpoints_nb);
+    ucoo::assert(index<navpoints_nb);
     return navpoints[index];
 }
 
