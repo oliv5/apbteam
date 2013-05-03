@@ -108,6 +108,12 @@ class Path
     static const int PATH_WEIGHT_PRECISION = 4;
     /** Navigation points weight step (2^-n). */
     static const int PATH_WEIGHT_STEP = 6;
+    /** Extra clearance area added to the radius of the mobile obstacles
+     * to counter the imprecision of the sonic sensors when the robot brakes */
+    static const uint16_t PATH_OBSTACLES_CLEARANCE = 60;
+    /** Extra clearance area added to the radius of the navigation points
+     * circle to move the navpoints away from the obstacle circle */
+    static const uint16_t PATH_NAVPOINTS_CLEARANCE = 40;
 
     /** Borders, any point outside borders is eliminated. */
     const uint16_t border_xmin, border_ymin, border_xmax, border_ymax;

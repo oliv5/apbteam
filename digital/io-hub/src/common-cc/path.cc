@@ -104,7 +104,7 @@ void Path::add_obstacle( const vect_t &c,
                          uint16_t r,
                          int nodes,
                          const int nlayers,
-                         const uint16_t clearance,
+                         const uint16_t nav_clearance,
                          const bool target)
 {
     uint32_t rot_a, rot_b, nr;
@@ -113,8 +113,8 @@ void Path::add_obstacle( const vect_t &c,
 
     host_debug("Add obstacle c=(%u;%u) r=%u nodes=%u layers=%u\n",c.x, c.y, r, nodes, nlayers);
 
-    /* Enlarge the obstacle radius by the robot size and clearance area width */
-    r += BOT_SIZE_RADIUS + clearance;
+    /* Enlarge the obstacle radius by the robot size */
+    r += BOT_SIZE_RADIUS;
 
     /* Store obstacle */
     //assert(obstacles_nb < PATH_OBSTACLES_NB);
@@ -122,6 +122,10 @@ void Path::add_obstacle( const vect_t &c,
     obstacles[obstacles_nb].r = r;
     obstacles[obstacles_nb].target_allowed = target;
     obstacles_nb++;
+
+    /* Enlarge the navigation points circle radius by */
+    /* the additionnal clearance area width */
+    r += nav_clearance;
 
     /* Extend the points radius to allow the robot to go */
     /* from one to another without collision with the */
@@ -300,10 +304,10 @@ void Path::compute(weight_t escape)
 void Path::obstacle(const int index, const vect_t &c, const uint16_t r, const int f, const bool target)
 {
     add_obstacle( c,
-                  r,
+                  (r + Obstacles::clearance_mm + PATH_OBSTACLES_CLEARANCE),
                   PATH_OBSTACLES_NAVPOINTS_NB,
                   PATH_OBSTACLES_NAVPOINTS_LAYERS,
-                  Obstacles::clearance_mm + 100/* extra clearance radius */,
+                  PATH_NAVPOINTS_CLEARANCE,
                   target);
 }
 
