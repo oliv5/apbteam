@@ -32,9 +32,9 @@ extern "C" {
 
 /** Static nodes index for the endpoints */
 enum {
-    PATH_NAVPOINT_SRC_IDX = 0,
-    PATH_NAVPOINT_DST_IDX,
-    PATH_RESERVED_NAVPOINTS_NB
+    CC_NAVPOINT_SRC_IDX = 0,
+    CC_NAVPOINT_DST_IDX,
+    CC_RESERVED_NAVPOINTS_NB
 };
 
 /** Obstacle */
@@ -85,14 +85,14 @@ class Path
     /** Add an obstacle on the field */
     void add_obstacle(const vect_t &c, uint16_t r, int nodes, const int nlayers, const uint16_t clearance, const bool target);
     /** Number of possible mobile obstacles. */
-    static const int PATH_OBSTACLES_NB = 4;
+    static const int CC_OBSTACLES_NB = 4;
     /** Number of points per standard obstacle. */
-    static const int PATH_OBSTACLES_NAVPOINTS_NB = 10;
+    static const int CC_OBSTACLE_NAVPOINTS_NB = 10;
     /** Number of navigation points layers for each obstacle. */
-    static const int PATH_OBSTACLES_NAVPOINTS_LAYERS = 2;
+    static const int CC_OBSTACLE_NAVPOINTS_LAYERS = 2;
     /** Number of navigation points. */
-    static const int PATH_NAVPOINTS_NB =
-        (PATH_RESERVED_NAVPOINTS_NB + PATH_OBSTACLES_NAVPOINTS_LAYERS * PATH_OBSTACLES_NB * PATH_OBSTACLES_NAVPOINTS_NB);
+    static const int CC_NAVPOINTS_NB =
+        (CC_RESERVED_NAVPOINTS_NB + CC_OBSTACLE_NAVPOINTS_LAYERS * CC_OBSTACLES_NB * CC_OBSTACLE_NAVPOINTS_NB);
     /** Borders, any point outside borders is eliminated. */
     const uint16_t border_xmin, border_ymin, border_xmax, border_ymax;
     /** List of obstacles. */
@@ -107,15 +107,15 @@ class Path
   private:
     /** Navigation points weight precision (2^-n).
      * Pay attention to overflow on weight_t variables */
-    static const int PATH_WEIGHT_PRECISION = 4;
+    static const int CC_NAVWEIGHT_PRECISION = 4;
     /** Navigation points weight step * (2^-n). */
-    static const int PATH_WEIGHT_STEP = 8;
+    static const int CC_NAVWEIGHT_STEP = 8;
     /** Extra clearance area added to the radius of the mobile obstacles
      * to counter the imprecision of the sonic sensors when the robot brakes */
-    static const uint16_t PATH_OBSTACLES_CLEARANCE = 60;
+    static const uint16_t CC_OBSTACLES_CLEARANCE = 60;
     /** Extra clearance area added to the radius of the navigation points
      * circle to move the navpoints away from the obstacle circle */
-    static const uint16_t PATH_NAVPOINTS_CLEARANCE = 40;
+    static const uint16_t CC_NAVPOINTS_CLEARANCE = 40;
     /** Escape factor, 0 if none. */
     weight_t escape_factor;
     /** Number of obstacles */

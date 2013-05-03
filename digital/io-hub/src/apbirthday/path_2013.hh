@@ -40,14 +40,14 @@ class Path_2013 : public Path
 
   private:
     /** Number of additional obstacles on the playground */
-    static const int PATH_2013_OBSTACLES_NB = PATH_OBSTACLES_NB + 1/*cake*/;
+    static const int PATH_2013_OBSTACLES_NB = CC_OBSTACLES_NB + 1/*cake*/;
     /** Number of points for the cake (plus 1) */
     static const int PATH_2013_CAKE_NAVPOINTS_NB = 6;
     /** Number of navigation points layers for the cake. */
     static const int PATH_2013_CAKE_NAVPOINTS_LAYERS = 1;
     /** Number of additional navigation points. */
     static const int PATH_2013_NAVPOINTS_NB =
-        PATH_NAVPOINTS_NB + PATH_2013_CAKE_NAVPOINTS_LAYERS * PATH_2013_CAKE_NAVPOINTS_NB;
+        CC_NAVPOINTS_NB + PATH_2013_CAKE_NAVPOINTS_LAYERS * PATH_2013_CAKE_NAVPOINTS_NB;
 };
 
 #endif // path_2013_hh

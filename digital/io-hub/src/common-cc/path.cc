@@ -87,9 +87,9 @@ void Path::reset()
     vect_t nul = {0,0};
     host_debug("Path reset\n");
     obstacles_nb = 0;
-    navpoints_nb = PATH_RESERVED_NAVPOINTS_NB;
-    navpoints[PATH_NAVPOINT_SRC_IDX] = nul;
-    navpoints[PATH_NAVPOINT_DST_IDX] = nul;
+    navpoints_nb = CC_RESERVED_NAVPOINTS_NB;
+    navpoints[CC_NAVPOINT_SRC_IDX] = nul;
+    navpoints[CC_NAVPOINT_DST_IDX] = nul;
     next_node = 0;
     escape_factor = 0;
 }
@@ -111,7 +111,6 @@ void Path::add_obstacle( const vect_t &c,
     r += BOT_SIZE_RADIUS;
 
     /* Store obstacle */
-    //assert(obstacles_nb < PATH_OBSTACLES_NB);
     obstacles[obstacles_nb].c = c;
     obstacles[obstacles_nb].r = r;
     obstacles[obstacles_nb].target_allowed = target;
@@ -150,7 +149,7 @@ void Path::add_obstacle( const vect_t &c,
              && navpoints[navpoints_nb].y <= border_ymax)
             {
                 /* Accept point */
-                navweights[navpoints_nb] = (layer * PATH_WEIGHT_STEP);
+                navweights[navpoints_nb] = (layer * CC_NAVWEIGHT_STEP);
                 host_debug("Add point %u (%u;%u) w=%u\n",
                         navpoints_nb, navpoints[navpoints_nb].x, navpoints[navpoints_nb].y, navweights[navpoints_nb]);
                 navpoints_nb++;
@@ -172,7 +171,7 @@ void Path::add_obstacle( const vect_t &c,
 
 #ifdef HOST
     /* Plot obstacle points */
-    robot->hardware.simu_report.pos( &navpoints[PATH_RESERVED_NAVPOINTS_NB], navpoints_nb-PATH_RESERVED_NAVPOINTS_NB, PATH_PLOT_ID);
+    robot->hardware.simu_report.pos( &navpoints[CC_RESERVED_NAVPOINTS_NB], navpoints_nb-CC_RESERVED_NAVPOINTS_NB, PATH_PLOT_ID);
 #endif
 }
 
@@ -191,7 +190,7 @@ int Path::find_neighbors(int cur_point, struct astar_neighbor_t *neighbors)
             /* 1st: compute the distance to go */
             weight_t weight =  (weight_t)distance_point_point(&navpoints[cur_point], &navpoints[next_point]);
             /* 2nd: Add the target navpoint extra weigth */
-            weight += (weight * navweights[cur_point]) >> PATH_WEIGHT_PRECISION;
+            weight += (weight * navweights[cur_point]) >> CC_NAVWEIGHT_PRECISION;
             host_debug("- Node %u (%u;%u) w=%u (%u) ", next_point, navpoints[next_point].x, navpoints[next_point].y, weight, navweights[next_point]);
 
             /* Check every obstacle */
@@ -206,7 +205,7 @@ int Path::find_neighbors(int cur_point, struct astar_neighbor_t *neighbors)
                     /* target the center of an obstacle and stop */
                     /* in front of it (ex, the cake in apbirthday 2013) */
                     if (obstacles[j].target_allowed &&
-                        cur_point==PATH_NAVPOINT_DST_IDX &&
+                        cur_point==CC_NAVPOINT_DST_IDX &&
                         PATH_VECT_EQUAL(&navpoints[cur_point], &obstacles[j].c))
                     {
                         /* Skip this obstacle */
@@ -217,7 +216,7 @@ int Path::find_neighbors(int cur_point, struct astar_neighbor_t *neighbors)
                     /* Collision while trying to escape the source point */
                     /* if and only if the source point is in this obstacle */
                     /* and we are going away from the obstacle center */
-                    else if (escape_factor!=0 && next_point==PATH_NAVPOINT_SRC_IDX &&
+                    else if (escape_factor!=0 && next_point==CC_NAVPOINT_SRC_IDX &&
                              PATH_IN_CIRCLE(&navpoints[next_point], &obstacles[j].c, obstacles[j].r) &&
                              pos_dot_product(&navpoints[next_point], &obstacles[j].c, &navpoints[next_point], &navpoints[cur_point])<=0)
                     {
@@ -269,20 +268,20 @@ void Path::compute(weight_t escape)
     escape_factor = escape;
 
     /* Call the A* algorithm */
-    path_found = (bool)astar(astar_nodes, navpoints_nb, PATH_NAVPOINT_DST_IDX, PATH_NAVPOINT_SRC_IDX);
+    path_found = (bool)astar(astar_nodes, navpoints_nb, CC_NAVPOINT_DST_IDX, CC_NAVPOINT_SRC_IDX);
     if (path_found)
     {
         /* Store next node to go to */
-        next_node = astar_nodes[PATH_NAVPOINT_SRC_IDX].prev;
+        next_node = astar_nodes[CC_NAVPOINT_SRC_IDX].prev;
 
 #ifdef PATH_DEBUG
         /* Log and display the path found */
         vect_t path[navpoints_nb];
-        int node = PATH_NAVPOINT_SRC_IDX;
+        int node = CC_NAVPOINT_SRC_IDX;
         int path_nb = 0;
 
         host_debug(">> Path found: ");
-        while(node!=PATH_NAVPOINT_DST_IDX)
+        while(node!=CC_NAVPOINT_DST_IDX)
         {
             host_debug("%u (%u), ", node, navweights[node]);
             path[path_nb++] = navpoints[node];
@@ -300,10 +299,10 @@ void Path::compute(weight_t escape)
 void Path::obstacle(const int index, const vect_t &c, const uint16_t r, const int f, const bool target)
 {
     add_obstacle( c,
-                  (r + Obstacles::clearance_mm + PATH_OBSTACLES_CLEARANCE),
-                  PATH_OBSTACLES_NAVPOINTS_NB,
-                  PATH_OBSTACLES_NAVPOINTS_LAYERS,
-                  PATH_NAVPOINTS_CLEARANCE,
+                  (r + Obstacles::clearance_mm + CC_OBSTACLES_CLEARANCE),
+                  CC_OBSTACLE_NAVPOINTS_NB,
+                  CC_OBSTACLE_NAVPOINTS_LAYERS,
+                  CC_NAVPOINTS_CLEARANCE,
                   target);
 }
 
@@ -312,12 +311,12 @@ void Path::endpoints(const vect_t &src, const vect_t &dst)
     /* Store endpoints location */
     host_debug("Set path endpoints src=(%u;%u) dst=(%u;%u)\n",
             src.x, src.y, dst.x, dst.y);
-    navpoints[PATH_NAVPOINT_SRC_IDX] = src;
-    navpoints[PATH_NAVPOINT_DST_IDX] = dst;
+    navpoints[CC_NAVPOINT_SRC_IDX] = src;
+    navpoints[CC_NAVPOINT_DST_IDX] = dst;
 
     /* Init endpoints weights */
-    navweights[PATH_NAVPOINT_SRC_IDX] = 0;
-    navweights[PATH_NAVPOINT_DST_IDX] = 0;
+    navweights[CC_NAVPOINT_SRC_IDX] = 0;
+    navweights[CC_NAVPOINT_DST_IDX] = 0;
 }
 
 bool Path::get_next(vect_t &p)
@@ -351,7 +350,7 @@ void Path::prepare_score(const vect_t &src, weight_t escape)
 {
     host_debug("Path prepare score from src=(%u;%u) escape=%u\n", src.x, src.y, escape);
     escape_factor = escape;
-    astar_dijkstra_prepare(astar_nodes, navpoints_nb, get_point_index(src), PATH_NAVPOINT_DST_IDX);
+    astar_dijkstra_prepare(astar_nodes, navpoints_nb, get_point_index(src), CC_NAVPOINT_DST_IDX);
 }
 
 weight_t Path::get_score(const vect_t &dst)
@@ -375,7 +374,7 @@ extern "C" uint16_t
 AC_ASTAR_HEURISTIC_CALLBACK (uint8_t node)
 {
     vect_t point_a = robot->path.get_point_vect(node);
-    vect_t point_b = robot->path.get_point_vect(PATH_NAVPOINT_SRC_IDX);
+    vect_t point_b = robot->path.get_point_vect(CC_NAVPOINT_SRC_IDX);
     int16_t dist = distance_point_point(&point_a, &point_b);
     host_debug("Heuristic node=%u dist=%u\n", node, dist);
     return dist;
